@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="group_zone_manager" model="res.groups">
+        <field name="name">Zone Manager</field>
+        <field name="comment">Acceso completo a todos los datos de su zona comercial</field>
+        <field name="implied_ids" eval="[(4, ref('user_management_group.group_user_management'))]"/>
+    </record>
+</odoo>

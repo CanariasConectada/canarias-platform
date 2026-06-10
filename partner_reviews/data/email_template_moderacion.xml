@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="email_template_comentario_moderacion" model="mail.template">
+        <field name="name">Reseñas - Comentario pendiente de moderación</field>
+        <field name="model_id" ref="model_partner_review_comment"/>
+        <field name="subject">Nuevo comentario pendiente de moderación</field>
+        <field name="email_from">${object.env.user.email or 'noreply@canariasconectada.es'}</field>
+        <field name="email_to">${ctx.get('destinatario') and ctx.get('destinatario').email or ''}</field>
+        <field name="body_html" type="html">
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #d9534f;">Nuevo comentario pendiente de moderación</h2>
+                <p>Se ha recibido un nuevo comentario que contiene palabras que requieren revisión.</p>
+                <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                    <p><strong>Autor:</strong> <t t-out="ctx.get('comentario') and ctx.get('comentario').autor_nombre or ''"/></p>
+                    <p><strong>Comercio:</strong> <t t-out="ctx.get('comentario') and ctx.get('comentario').partner_id.name or ''"/></p>
+                    <p><strong>Comentario:</strong></p>
+                    <p style="font-style: italic;"><t t-out="ctx.get('comentario') and ctx.get('comentario').contenido or ''"/></p>
+                </div>
+                <p>Por favor, accede al panel de administración para aprobar o rechazar este comentario.</p>
+            </div>
+        </field>
+    </record>
+</odoo>

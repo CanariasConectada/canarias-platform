@@ -1,0 +1,135 @@
+# -*- coding: utf-8 -*-
+"""
+Microsite Company Switch - Control del Company Switcher
+
+LÓGICA CORREGIDA:
+- NO modifica allowed_company_ids (para que res.company funcione con todas las compañías)
+- Solo establece company_id (singular) para operaciones de creación
+- El aislamiento de contactos se hace via selected_company_id en ir_rule.py
+"""
+import logging
+from odoo import models, api
+from odoo.http import request
+
+_logger = logging.getLogger(__name__)
+
+
+class IrHttp(models.AbstractModel):
+    _name = 'ir.http'
+    _inherit = 'ir.http'
+
+    @classmethod
+    def _pre_dispatch(cls, rule, args):
+        """Aplicar aislamiento ANTES de procesar la request"""
+        cls._apply_company_isolation()
+        super(IrHttp, cls)._pre_dispatch(rule, args)
+    
+    @classmethod
+    def _is_admin_user(cls, user):
+        """Verifica si el usuario es administrador"""
+        try:
+            if user.has_group('base.group_system'):
+                return True
+            if user.has_group('base.group_erp_manager'):
+                return True
+            return False
+        except Exception:
+            return False
+    
+    @classmethod
+    def _apply_company_isolation(cls):
+        """
+        Establece company_id para operaciones de creación.
+        NO modifica allowed_company_ids para no afectar res.company.
+        """
+        try:
+            if not request or not request.httprequest or not request.env:
+                return
+            
+            user = request.env.user
+            
+            if not user or len(user) != 1:
+                return
+            
+            # Obtener compañías del usuario
+            try:
+                user_company_ids = user.sudo().company_ids.ids
+            except Exception:
+                user_company_ids = []
+            
+            if not user_company_ids:
+                return
+            
+            # Leer cookie de compañía seleccionada
+            cookie_cids = request.httprequest.cookies.get('cids', '')
+            selected_company_id = None
+            
+            if cookie_cids:
+                try:
+                    selected_company_id = int(str(cookie_cids).split('-')[0].strip())
+                except (ValueError, IndexError, AttributeError):
+                    pass
+            
+            # Validar selección
+            if selected_company_id and selected_company_id not in user_company_ids:
+                selected_company_id = None
+            
+            # Default: primera compañía
+            if not selected_company_id:
+                selected_company_id = user_company_ids[0]
+            
+            # Solo establecer company_id (para creaciones)
+            # NO modificar allowed_company_ids
+            new_context = dict(request.env.context)
+            new_context['company_id'] = selected_company_id
+            
+            if new_context != request.env.context:
+                request.env = request.env(context=new_context)
+            
+            _logger.warning(
+                f"[MCS-HTTP] User={user.name}, Cookie={cookie_cids[:30]}, Selected={selected_company_id}"
+            )
+                
+        except Exception as e:
+            _logger.error("[MCS-HTTP] Error: %s", e, exc_info=True)
+
+    @api.model
+    def session_info(self):
+        """
+        SOBRESCRIBE session_info para controlar el switcher de compañías.
+        """
+        result = super(IrHttp, self).session_info()
+        
+        if not result.get('user_companies'):
+            return result
+        
+        try:
+            user = request.env.user
+            
+            if not self._is_admin_user(user):
+                return result
+            
+            cookie_cids = request.httprequest.cookies.get('cids', '') if request.httprequest else ''
+            
+            if not cookie_cids:
+                return result
+            
+            try:
+                selected_id = int(str(cookie_cids).split('-')[0].strip())
+            except (ValueError, IndexError, AttributeError):
+                return result
+            
+            user_company_ids = user._get_company_ids()
+            
+            if selected_id not in user_company_ids:
+                return result
+            
+            # Actualizar current_company en el switcher
+            result['user_companies']['current_company'] = selected_id
+            
+            _logger.debug(f"[MCS-SESSION] Admin {user.name}: current_company={selected_id}")
+            
+        except Exception as e:
+            _logger.error(f"[MCS-SESSION] Error: {e}", exc_info=True)
+        
+        return result

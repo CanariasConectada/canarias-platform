@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- 
+    Template para mostrar el pill del comercio en la página de detalle del producto.
+    Solo se muestra en los 4 websites autorizados:
+    - Guanarteme (ID: 229)
+    - Tamaraceite (ID: 231)
+    - Lomo Los Frailes (ID: 230)
+    - Canarias Conectada (ID: 228)
+    -->
+    <template id="product_detail_company_pill" inherit_id="website_sale.product_title" priority="99">
+        <xpath expr="//h1[@t-field='product.name']" position="after">
+            <t t-if="website.zone_id or website.is_canarias_conectada">
+                <div class="o_wsale_company_pill mt-2 mb-2">
+                    <a t-att-href="product.company_id.website_id.domain or '#'" 
+                       class="text-decoration-none"
+                       target="_blank">
+                        <span class="badge rounded-pill bg-light text-secondary border small fw-normal" style="font-size: 0.8rem;">
+                            <i class="fa fa-store me-1" aria-hidden="true"/>
+                            <t t-esc="product.company_id.name or 'Tienda'"/>
+                        </span>
+                    </a>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ======================================== -->
+    <!-- VISTAS PARA PÚBLICO OBJETIVO -->
+    <!-- ======================================== -->
+    <record id="view_memoria_viva_publico_objetivo_list" model="ir.ui.view">
+        <field name="name">memoria.viva.publico.objetivo.list</field>
+        <field name="model">memoria.viva.publico.objetivo</field>
+        <field name="arch" type="xml">
+            <list string="Públicos">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_memoria_viva_publico_objetivo_form" model="ir.ui.view">
+        <field name="name">memoria.viva.publico.objetivo.form</field>
+        <field name="model">memoria.viva.publico.objetivo</field>
+        <field name="arch" type="xml">
+            <form string="Público Objetivo">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="sequence"/>
+                        <field name="color" widget="color_picker"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_memoria_viva_publico_objetivo" model="ir.actions.act_window">
+        <field name="name">Público Objetivo</field>
+        <field name="res_model">memoria.viva.publico.objetivo</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ======================================== -->
+    <!-- VISTAS PARA MOMENTO DEL DÍA -->
+    <!-- ======================================== -->
+    <record id="view_memoria_viva_momento_dia_list" model="ir.ui.view">
+        <field name="name">memoria.viva.momento.dia.list</field>
+        <field name="model">memoria.viva.momento.dia</field>
+        <field name="arch" type="xml">
+            <list string="Momentos">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_memoria_viva_momento_dia_form" model="ir.ui.view">
+        <field name="name">memoria.viva.momento.dia.form</field>
+        <field name="model">memoria.viva.momento.dia</field>
+        <field name="arch" type="xml">
+            <form string="Momento del Día">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="sequence"/>
+                        <field name="color" widget="color_picker"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_memoria_viva_momento_dia" model="ir.actions.act_window">
+        <field name="name">Momento del Día</field>
+        <field name="res_model">memoria.viva.momento.dia</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ======================================== -->
+    <!-- VISTAS PARA AMBIENTE -->
+    <!-- ======================================== -->
+    <record id="view_memoria_viva_ambiente_list" model="ir.ui.view">
+        <field name="name">memoria.viva.ambiente.list</field>
+        <field name="model">memoria.viva.ambiente</field>
+        <field name="arch" type="xml">
+            <list string="Ambientes">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_memoria_viva_ambiente_form" model="ir.ui.view">
+        <field name="name">memoria.viva.ambiente.form</field>
+        <field name="model">memoria.viva.ambiente</field>
+        <field name="arch" type="xml">
+            <form string="Ambiente">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="sequence"/>
+                        <field name="color" widget="color_picker"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_memoria_viva_ambiente" model="ir.actions.act_window">
+        <field name="name">Ambientes</field>
+        <field name="res_model">memoria.viva.ambiente</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ======================================== -->
+    <!-- VISTAS PARA EXPERIENCIAS -->
+    <!-- ======================================== -->
+    <record id="view_memoria_viva_experiencia_list" model="ir.ui.view">
+        <field name="name">memoria.viva.experiencia.list</field>
+        <field name="model">memoria.viva.experiencia</field>
+        <field name="arch" type="xml">
+            <list string="Experiencias">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_memoria_viva_experiencia_form" model="ir.ui.view">
+        <field name="name">memoria.viva.experiencia.form</field>
+        <field name="model">memoria.viva.experiencia</field>
+        <field name="arch" type="xml">
+            <form string="Experiencia">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="sequence"/>
+                        <field name="color" widget="color_picker"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_memoria_viva_experiencia" model="ir.actions.act_window">
+        <field name="name">Experiencias</field>
+        <field name="res_model">memoria.viva.experiencia</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ======================================== -->
+    <!-- VISTAS PARA FIESTAS/EVENTOS -->
+    <!-- ======================================== -->
+    <record id="view_memoria_viva_fiesta_evento_list" model="ir.ui.view">
+        <field name="name">memoria.viva.fiesta.evento.list</field>
+        <field name="model">memoria.viva.fiesta.evento</field>
+        <field name="arch" type="xml">
+            <list string="Fiestas/Eventos">
+                <field name="name"/>
+                <field name="frecuencia"/>
+                <field name="mes_inicio"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_memoria_viva_fiesta_evento_form" model="ir.ui.view">
+        <field name="name">memoria.viva.fiesta.evento.form</field>
+        <field name="model">memoria.viva.fiesta.evento</field>
+        <field name="arch" type="xml">
+            <form string="Fiesta/Evento">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="frecuencia"/>
+                        <field name="mes_inicio"/>
+                        <field name="descripcion"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_memoria_viva_fiesta_evento" model="ir.actions.act_window">
+        <field name="name">Fiestas/Eventos</field>
+        <field name="res_model">memoria.viva.fiesta.evento</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Cron: Recordatorio de reintento disponible (cada día) -->
+        <record id="ir_cron_silver_retry_reminder" model="ir.cron">
+            <field name="name">Silver Economy: Recordar reintentos disponibles</field>
+            <field name="model_id" ref="survey.model_survey_user_input"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_silver_retry_reminder()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+        </record>
+
+        <!-- Cron: Recordatorio de renovación próxima (cada día) -->
+        <record id="ir_cron_silver_renewal_reminder" model="ir.cron">
+            <field name="name">Silver Economy: Recordar renovaciones próximas</field>
+            <field name="model_id" ref="survey.model_survey_user_input"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_silver_renewal_reminder()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+        </record>
+
+        <!-- Cron: Alerta al admin de sellos expirados (cada día) -->
+        <record id="ir_cron_silver_expiry_alert" model="ir.cron">
+            <field name="name">Silver Economy: Alertar admin de sellos expirados</field>
+            <field name="model_id" ref="survey.model_survey_user_input"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_silver_expiry_alert()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+        </record>
+    </data>
+</odoo>

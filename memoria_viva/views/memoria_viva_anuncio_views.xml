@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ======================================== -->
+    <!-- VISTAS DEL MODELO: memoria.viva.anuncio -->
+    <!-- ======================================== -->
+
+    <!-- VISTA TREE -->
+    <record id="view_memoria_viva_anuncio_list" model="ir.ui.view">
+        <field name="name">memoria.viva.anuncio.list</field>
+        <field name="model">memoria.viva.anuncio</field>
+        <field name="arch" type="xml">
+            <list string="Anuncios">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="image" widget="image" options="{'size': [60, 60]}" optional="show"/>
+                <field name="website_id"/>
+                <field name="position"/>
+                <field name="size"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="state" widget="badge" decoration-success="state == 'activo'" decoration-muted="state == 'inactivo'" decoration-info="state == 'programado'"/>
+                <field name="is_visible" optional="hide"/>
+                <field name="click_count" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- VISTA FORM -->
+    <record id="view_memoria_viva_anuncio_form" model="ir.ui.view">
+        <field name="name">memoria.viva.anuncio.form</field>
+        <field name="model">memoria.viva.anuncio</field>
+        <field name="arch" type="xml">
+            <form string="Anuncio">
+                <header>
+                    <button name="action_activar" string="Activar" type="object" class="btn-primary" invisible="state != 'inactivo'"/>
+                    <button name="action_desactivar" string="Desactivar" type="object" invisible="state == 'inactivo'"/>
+                    <button name="action_programar" string="Programar" type="object" invisible="state != 'inactivo'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="activo,programado,inactivo"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Título del anuncio..."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="website_id"/>
+                            <field name="position"/>
+                            <field name="size"/>
+                            <field name="sequence"/>
+                        </group>
+                        <group>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                            <field name="active"/>
+                            <field name="click_count" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Contenido">
+                        <field name="description" placeholder="Descripción del anuncio..."/>
+                        <field name="url" placeholder="https://..."/>
+                    </group>
+                    <group string="Imagen">
+                        <field name="image" widget="image" class="oe_avatar oe_right" options="{'preview_image': 'image'}"/>
+                    </group>
+                    <group string="Vista previa">
+                        <div class="alert alert-info" role="alert">
+                            <strong>Visible hoy:</strong> <field name="is_visible" readonly="1"/>
+                            <br/>
+                            <strong>Clase CSS:</strong> <field name="size_class" readonly="1"/>
+                        </div>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- VISTA SEARCH -->
+    <record id="view_memoria_viva_anuncio_search" model="ir.ui.view">
+        <field name="name">memoria.viva.anuncio.search</field>
+        <field name="model">memoria.viva.anuncio</field>
+        <field name="arch" type="xml">
+            <search string="Anuncios">
+                <field name="name"/>
+                <field name="description"/>
+                <field name="website_id"/>
+                
+                <filter string="Activos" name="filter_activo" domain="[('state','=','activo')]"/>
+                <filter string="Inactivos" name="filter_inactivo" domain="[('state','=','inactivo')]"/>
+                <filter string="Programados" name="filter_programado" domain="[('state','=','programado')]"/>
+                <filter string="Visibles hoy" name="filter_visible" domain="[('is_visible','=',True)]"/>
+                
+                <separator/>
+                
+                <filter string="Debajo del Hero" name="filter_hero" domain="[('position','=','hero_bottom')]"/>
+                <filter string="Barra lateral" name="filter_sidebar" domain="[('position','=','sidebar')]"/>
+                <filter string="Pie de página" name="filter_footer" domain="[('position','=','footer')]"/>
+                
+                <group>
+                    <filter string="Website" name="group_website" context="{'group_by': 'website_id'}"/>
+                    <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Posición" name="group_position" context="{'group_by': 'position'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ACTION -->
+    <record id="action_memoria_viva_anuncio" model="ir.actions.act_window">
+        <field name="name">Anuncios</field>
+        <field name="res_model">memoria.viva.anuncio</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_memoria_viva_anuncio_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crea el primer anuncio
+            </p>
+            <p>
+                Los anuncios aparecerán en el frontend de Memoria Viva según su posición y configuración.
+            </p>
+        </field>
+    </record>
+
+    <!-- Nota: El menú de anuncios se define en memoria_viva_menus.xml
+         bajo el submenú Contenido para mejor organización -->
+</odoo>

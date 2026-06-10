@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menús Directorio comentados temporalmente - se crean manualmente si es necesario -->
+    <!-- 
+    <record id="menu_directory_canarias" model="website.menu">
+        <field name="name">Directorio</field>
+        <field name="url">/directorio</field>
+        <field name="parent_id" search="[('website_id.name', '=', 'Canarias Conectada'), ('parent_id', '=', False)]"/>
+        <field name="sequence">50</field>
+    </record>
+    
+    <record id="menu_directory_guanarteme" model="website.menu">
+        <field name="name">Directorio</field>
+        <field name="url">/directorio/zona/guanarteme</field>
+        <field name="parent_id" search="[('website_id.name', 'ilike', 'Guanarteme'), ('parent_id', '=', False)]"/>
+        <field name="sequence">50</field>
+    </record>
+    
+    <record id="menu_directory_tamaraceite" model="website.menu">
+        <field name="name">Directorio</field>
+        <field name="url">/directorio/zona/tamaraceite</field>
+        <field name="parent_id" search="[('website_id.name', 'ilike', 'Tamaraceite'), ('parent_id', '=', False)]"/>
+        <field name="sequence">50</field>
+    </record>
+    
+    <record id="menu_directory_lomolosfrailes" model="website.menu">
+        <field name="name">Directorio</field>
+        <field name="url">/directorio/zona/lomolosfrailes</field>
+        <field name="parent_id" search="[('website_id.name', 'ilike', 'Lomo los Frailes'), ('parent_id', '=', False)]"/>
+        <field name="sequence">50</field>
+    </record>
+    -->
+</odoo>

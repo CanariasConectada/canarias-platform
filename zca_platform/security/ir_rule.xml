@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="0">
+<!--
+    ZCA Platform — Reglas de acceso por empresa activa.
+
+    ARQUITECTURA DE SEGURIDAD (dos capas):
+    1. ir.rule (este fichero): frontera ORM estándar por grupo.
+       - Solo cubre grupos ZCA (Gestor y Básico).
+       - Admin (group_system) bypasea ir.rules por diseño Odoo → cubierto por _search.
+    2. zca_security.py (_search ORM override): filtro adicional dinámico.
+       - Admin: filtra por empresa activa.
+       - ZCA: excluye partners/users de administradores.
+
+    DOMINIOS: estáticos (sin llamadas ORM en expresión) para evitar recursión.
+    noupdate="0": las reglas se actualizan en cada upgrade.
+-->
+
+    <!-- ══════════════════════════════════════════════
+         RES.PARTNER
+         Gestor: lectura/escritura de contactos propios
+         Básico: solo lectura
+    ══════════════════════════════════════════════ -->
+
+    <record id="rule_partner_by_company" model="ir.rule">
+        <field name="name">Gestor: contactos de la empresa activa</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="groups" eval="[(4, ref('zca_platform.group_zca_comercio_manager'))]"/>
+        <field name="domain_force">[('company_id', '=', company_id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_partner_self" model="ir.rule">
+        <field name="name">Gestor: su propio partner de usuario</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="groups" eval="[(4, ref('zca_platform.group_zca_comercio_manager'))]"/>
+        <field name="domain_force">[('id', '=', user.partner_id.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_basic_partner_by_company" model="ir.rule">
+        <field name="name">Básico: contactos de la empresa activa</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="groups" eval="[(4, ref('zca_platform.group_zca_comercio_basic'))]"/>
+        <field name="domain_force">[('company_id', '=', company_id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_basic_partner_self" model="ir.rule">
+        <field name="name">Básico: su propio partner de usuario</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="groups" eval="[(4, ref('zca_platform.group_zca_comercio_basic'))]"/>
+        <field name="domain_force">[('id', '=', user.partner_id.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- ══════════════════════════════════════════════
+         RES.USERS
+    ══════════════════════════════════════════════ -->
+
+    <record id="rule_manager_users_by_company" model="ir.rule">
+        <field name="name">Gestor: usuarios de la empresa activa</field>
+        <field name="model_id" ref="base.model_res_users"/>
+        <field name="groups" eval="[(4, ref('zca_platform.group_zca_comercio_manager'))]"/>
+        <field name="domain_force">[('company_id', '=', company_id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- ══════════════════════════════════════════════
+         PRODUCTOS
+    ══════════════════════════════════════════════ -->
+
+    <record id="rule_manager_product_template_by_company" model="ir.rule">
+        <field name="name">Gestor: productos de la empresa activa</field>
+        <field name="model_id" ref="product.model_product_template"/>
+        <field name="groups" eval="[(4, ref('zca_platform.group_zca_comercio_manager'))]"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', '=', company_id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_manager_product_product_by_company" model="ir.rule">
+        <field name="name">Gestor: variantes de producto de la empresa activa</field>
+        <field name="model_id" ref="product.model_product_product"/>
+        <field name="groups" eval="[(4, ref('zca_platform.group_zca_comercio_manager'))]"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', '=', company_id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- ══════════════════════════════════════════════
+         VENTAS / COMPRAS
+    ══════════════════════════════════════════════ -->
+
+    <record id="rule_sale_order_by_company" model="ir.rule">
+        <field name="name">Gestor: ventas de la empresa activa</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="groups" eval="[(4, ref('zca_platform.group_zca_comercio_manager'))]"/>
+        <field name="domain_force">[('company_id', '=', company_id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_purchase_order_by_company" model="ir.rule">
+        <field name="name">Gestor: compras de la empresa activa</field>
+        <field name="model_id" ref="purchase.model_purchase_order"/>
+        <field name="groups" eval="[(4, ref('zca_platform.group_zca_comercio_manager'))]"/>
+        <field name="domain_force">[('company_id', '=', company_id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- ══════════════════════════════════════════════
+         CONTABILIDAD
+    ══════════════════════════════════════════════ -->
+
+    <record id="rule_account_move_by_company" model="ir.rule">
+        <field name="name">Gestor: facturas de la empresa activa</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="groups" eval="[(4, ref('zca_platform.group_zca_comercio_manager'))]"/>
+        <field name="domain_force">[('company_id', '=', company_id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- ══════════════════════════════════════════════
+         STOCK
+    ══════════════════════════════════════════════ -->
+
+    <record id="rule_stock_quant_by_company" model="ir.rule">
+        <field name="name">Gestor: stock de la empresa activa</field>
+        <field name="model_id" ref="stock.model_stock_quant"/>
+        <field name="groups" eval="[(4, ref('zca_platform.group_zca_comercio_manager'))]"/>
+        <field name="domain_force">[('company_id', '=', company_id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_stock_picking_by_company" model="ir.rule">
+        <field name="name">Gestor: albaranes de la empresa activa</field>
+        <field name="model_id" ref="stock.model_stock_picking"/>
+        <field name="groups" eval="[(4, ref('zca_platform.group_zca_comercio_manager'))]"/>
+        <field name="domain_force">[('company_id', '=', company_id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- ══════════════════════════════════════════════
+         WEBSITE
+         Solo por empresa activa (no bloquea frontend público)
+    ══════════════════════════════════════════════ -->
+
+    <record id="rule_manager_website_by_company" model="ir.rule">
+        <field name="name">Gestor: website de la empresa activa</field>
+        <field name="model_id" ref="website.model_website"/>
+        <field name="groups" eval="[(4, ref('zca_platform.group_zca_comercio_manager'))]"/>
+        <field name="domain_force">[('company_id', '=', company_id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+</odoo>

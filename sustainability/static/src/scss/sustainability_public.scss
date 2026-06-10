@@ -1,0 +1,312 @@
+/* ============================================================
+   SOSTENIBILIDAD — Public Page Styles (/sostenibilidad)
+   ============================================================ */
+
+/* --- Hero Section --- */
+.sust-hero {
+    position: relative;
+    min-height: 850px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-image: url('/sustainability/static/src/img/sostenibilidad/bosque.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 1;
+    }
+
+    h1, img {
+        position: relative;
+        z-index: 2;
+    }
+
+    h1 {
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+    }
+}
+
+/* --- Green accent for headings --- */
+.sust-green {
+    color: #198754;
+}
+
+/* --- Timeline --- */
+.sust-timeline {
+    position: relative;
+    padding: 2rem 0;
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: #dee2e6;
+        transform: translateX(-50%);
+    }
+}
+
+.sust-timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: flex-start;
+
+    &:nth-child(odd) {
+        flex-direction: row-reverse;
+        text-align: right;
+
+        .sust-timeline-content {
+            padding-right: 3rem;
+            padding-left: 0;
+        }
+    }
+
+    &:nth-child(even) {
+        .sust-timeline-content {
+            padding-left: 3rem;
+        }
+    }
+}
+
+.sust-timeline-icon {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #198754;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    z-index: 2;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.sust-timeline-content {
+    width: 45%;
+
+    h5 {
+        color: #198754;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    p {
+        color: #495057;
+        line-height: 1.7;
+        margin-bottom: 0;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .sust-timeline::before {
+        left: 24px;
+    }
+
+    .sust-timeline-item {
+        flex-direction: column !important;
+        text-align: left !important;
+        padding-left: 60px;
+
+        &:nth-child(odd),
+        &:nth-child(even) {
+            .sust-timeline-content {
+                width: 100%;
+                padding-left: 0;
+                padding-right: 0;
+            }
+        }
+    }
+
+    .sust-timeline-icon {
+        left: 0;
+        transform: none;
+    }
+}
+
+/* --- ODS Grid --- */
+.sust-ods-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 1rem;
+    padding: 1rem 0;
+}
+
+.sust-ods-item {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    text-align: center;
+
+    &:hover {
+        transform: scale(1.08);
+    }
+
+    img {
+        width: 100%;
+        max-width: 120px;
+        height: auto;
+        border-radius: 0.5rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .sust-ods-grid {
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+        gap: 0.5rem;
+    }
+
+    .sust-ods-item img {
+        max-width: 80px;
+    }
+}
+
+/* --- ODS Modal headers --- */
+.sust-ods-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: none;
+
+    img {
+        width: 48px;
+        height: 48px;
+        object-fit: contain;
+    }
+
+    h5 {
+        margin: 0;
+        font-weight: 600;
+    }
+}
+
+/* --- Carousel captions --- */
+.sust-carousel-caption {
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 0.5rem;
+    padding: 1rem;
+
+    h5 {
+        color: #fff;
+    }
+
+    p {
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 0;
+    }
+}
+
+/* --- Feature icons --- */
+.sust-feature-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.5rem;
+    background: #198754;
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+}
+
+/* --- Accordion image layout --- */
+.sust-accordion-layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    align-items: flex-start;
+
+    .sust-accordion-image {
+        flex: 0 0 280px;
+        max-width: 100%;
+
+        img {
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+    }
+
+    .sust-accordion-content {
+        flex: 1 1 0;
+        min-width: 280px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .sust-accordion-layout {
+        flex-direction: column;
+
+        .sust-accordion-image {
+            flex: 1 1 100%;
+            text-align: center;
+        }
+    }
+}
+
+/* --- Download buttons --- */
+.sust-downloads {
+    .sust-download-link {
+        display: block;
+        max-width: 500px;
+        margin: 0 auto 1rem;
+        padding: 1rem 1.5rem;
+        border: 2px solid #198754;
+        color: #198754;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s ease;
+
+        &:hover {
+            background: #198754;
+            color: #fff;
+        }
+
+        i {
+            margin-right: 0.5rem;
+        }
+    }
+}
+
+/* --- Grid columns (icon-grid) --- */
+.sust-columnas {
+    .sust-columna {
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        transition: background 0.2s ease;
+
+        &:hover {
+            background: #f8f9fa;
+        }
+
+        h3 {
+            color: #198754;
+            margin-bottom: 0.75rem;
+        }
+
+        p {
+            color: #6c757d;
+            line-height: 1.6;
+        }
+    }
+}
+
+/* --- Seal image in recognition section --- */
+.sust-seal-img {
+    max-height: 150px;
+    object-fit: contain;
+}

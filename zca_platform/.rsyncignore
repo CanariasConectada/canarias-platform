@@ -1,0 +1,12 @@
+# Archivos que NUNCA se suben al servidor en el deploy
+.backup_*/
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+.pytest_cache/
+*.swp
+.idea/
+.vscode/
+.git/
+.gitignore

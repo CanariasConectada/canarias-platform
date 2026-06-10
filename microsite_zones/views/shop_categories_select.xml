@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ============================================================
+         CATEGORÍAS COMO SELECTS/COMBOBOXES con Select2 (estilo directorio)
+         ============================================================ -->
+
+    <!-- Reemplazar el listado de categorías por selects con Select2 -->
+    <template id="shop_categories_as_selects" inherit_id="website_sale.products_categories_list" name="Categories as Selects">
+        <xpath expr="//ul[hasclass('nav', 'd-flex', 'flex-column', 'mb-3')]" position="replace">
+            <!-- Select de Categorías Padre - Disponible en todas las tiendas (zonas, Canarias Conectada y microsites) -->
+            <div class="mb-3 filter-section">
+                <label class="form-label fw-bold text-uppercase small text-muted">
+                    <i class="fa fa-folder-open text-primary"></i> Categoría
+                </label>
+                <select id="category-select-shop" class="form-select">
+                    <option t-att-value="keep(shop_path)" t-att-selected="not category">
+                        Todas las categorías
+                    </option>
+                    <t t-foreach="categories" t-as="c">
+                        <option t-att-value="keep('/shop/category/' + slug(c), category=0)"
+                                t-att-selected="category and c.id == category.id">
+                            <t t-esc="c.name"/>
+                        </option>
+                    </t>
+                </select>
+            </div>
+            
+            <!-- Select de Subcategorías (si hay categoría seleccionada) -->
+            <t t-if="category and category.child_id">
+                <div class="mb-3 filter-section">
+                    <label class="form-label fw-bold text-uppercase small text-muted">
+                        <i class="fa fa-folder text-primary"></i> Subcategoría
+                    </label>
+                    <select id="subcategory-select-shop" class="form-select">
+                        <option t-att-value="keep('/shop/category/' + slug(category), category=0)" 
+                                t-att-selected="not search_categories">
+                            Todas en <t t-esc="category.name"/>
+                        </option>
+                        <t t-foreach="category.child_id" t-as="child">
+                            <option t-att-value="keep('/shop/category/' + slug(child), category=0)"
+                                    t-att-selected="search_categories and child.id in search_categories.ids">
+                                <t t-esc="child.name"/>
+                            </option>
+                        </t>
+                    </select>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- Estilos para los selects de categorías (estilo directorio) -->
+    <template id="shop_categories_select_styles" inherit_id="website_sale.products" name="Categories Select Styles">
+        <xpath expr="//div[@id='oe_structure_website_sale_products_1']" position="after">
+            <style>
+                /* Estilos para selects de categorías - Estilo Directorio */
+                .filter-section {
+                    margin-bottom: 1.5rem;
+                }
+                .filter-section label {
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    color: #6c757d;
+                    margin-bottom: 0.5rem;
+                    display: block;
+                }
+                
+                /* Select2 personalizaciones para la tienda */
+                .select2-container--bootstrap-5 .select2-selection {
+                    min-height: 42px;
+                    padding: 0.5rem 1rem;
+                    border: 1px solid #dee2e6;
+                    border-radius: 0.375rem;
+                }
+                .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+                    padding-left: 0;
+                    color: #212529;
+                    font-weight: 500;
+                }
+                .select2-container--bootstrap-5 .select2-dropdown {
+                    border-color: #dee2e6;
+                    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+                }
+                .select2-container--bootstrap-5 .select2-results__option--highlighted {
+                    background-color: #0d6efd;
+                }
+                .select2-container--bootstrap-5 .select2-search__field {
+                    border-radius: 0.25rem;
+                    padding: 0.5rem;
+                }
+            </style>
+        </xpath>
+    </template>
+</odoo>

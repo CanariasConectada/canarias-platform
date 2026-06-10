@@ -1,0 +1,94 @@
+# -*- coding: utf-8 -*-
+"""
+FIX para el company switcher - Modifica session_info después de su generación
+"""
+import logging
+from odoo import http
+from odoo.http import request
+
+_logger = logging.getLogger(__name__)
+
+
+class CompanySwitcherFix(http.Controller):
+    
+    @http.route('/web', type='http', auth='user', website=False)
+    def web_client_with_company_fix(self, **kw):
+        """
+        Sobrescribe /web para modificar session_info antes de renderizar.
+        Esto asegura que el switcher muestre solo una compañía seleccionada.
+        """
+        _logger.info("[SWITCHER-FIX] /web llamado - aplicando fix")
+        
+        # Obtener session_info del ir.http original
+        session_info = request.env['ir.http'].session_info()
+        
+        # Verificar si tenemos user_companies
+        if not session_info.get('user_companies'):
+            _logger.info("[SWITCHER-FIX] No user_companies, renderizando sin cambios")
+            return request.render('web.webclient_bootstrap', {
+                'session_info': session_info,
+            })
+        
+        try:
+            user = request.env.user
+            
+            # Solo aplicar a usuarios internos (no públicos)
+            if not user._is_internal():
+                _logger.info("[SWITCHER-FIX] Usuario no interno, saltando")
+                return request.render('web.webclient_bootstrap', {
+                    'session_info': session_info,
+                })
+            
+            # Leer cookie cids
+            cookie_cids = request.httprequest.cookies.get('cids', '')
+            _logger.info(f"[SWITCHER-FIX] Cookie: {cookie_cids[:50]}")
+            
+            if not cookie_cids:
+                _logger.info("[SWITCHER-FIX] No hay cookie")
+                return request.render('web.webclient_bootstrap', {
+                    'session_info': session_info,
+                })
+            
+            # Parsear compañía seleccionada
+            try:
+                selected_id = int(str(cookie_cids).split('-')[0].strip())
+            except Exception as e:
+                _logger.error(f"[SWITCHER-FIX] Error parseando: {e}")
+                return request.render('web.webclient_bootstrap', {
+                    'session_info': session_info,
+                })
+            
+            _logger.info(f"[SWITCHER-FIX] Compañía seleccionada: {selected_id}")
+            
+            # Verificar que el usuario tiene acceso
+            user_companies = session_info['user_companies'].get('allowed_companies', {})
+            if selected_id not in user_companies:
+                _logger.warning(f"[SWITCHER-FIX] Compañía {selected_id} no disponible")
+                return request.render('web.webclient_bootstrap', {
+                    'session_info': session_info,
+                })
+            
+            # APLICAR FIX: Modificar session_info para que solo una compañía esté seleccionada
+            old_allowed = session_info.get('user_context', {}).get('allowed_company_ids', [])
+            
+            # Actualizar current_company
+            session_info['user_companies']['current_company'] = selected_id
+            
+            # Actualizar user_context - ESTO CONTROLA EL CHECK EN EL SWITCHER
+            if 'user_context' in session_info:
+                session_info['user_context']['allowed_company_ids'] = [selected_id]
+            
+            _logger.info("=" * 60)
+            _logger.info("[SWITCHER-FIX] *** FIX APLICADO ***")
+            _logger.info(f"[SWITCHER-FIX] Antes: {old_allowed}")
+            _logger.info(f"[SWITCHER-FIX] Después: [{selected_id}]")
+            _logger.info(f"[SWITCHER-FIX] Dropdown: {len(user_companies)} compañías")
+            _logger.info("=" * 60)
+            
+        except Exception as e:
+            _logger.error(f"[SWITCHER-FIX] ERROR: {e}", exc_info=True)
+        
+        # Renderizar con session_info modificado
+        return request.render('web.webclient_bootstrap', {
+            'session_info': session_info,
+        })

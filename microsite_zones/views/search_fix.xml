@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Cambiar search_type a products_only para mostrar solo productos (sin categorías ni páginas) -->
+    <template id="search_products_only" inherit_id="website_sale.search" name="Search Products Only">
+        <xpath expr="//t[@t-set='search_type']" position="replace">
+            <t t-set="search_type" t-valuef="products_only"/>
+        </xpath>
+    </template>
+</odoo>

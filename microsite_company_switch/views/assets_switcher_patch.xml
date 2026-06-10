@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Patch para evitar redirección al cambiar de website en el Website Builder -->
+    <!-- Se carga en el backend (web.layout) para que esté disponible cuando se usa el Website Builder -->
+    <template id="assets_website_switcher_patch" name="Website Switcher Patch" inherit_id="web.layout">
+        <xpath expr="//head/script[@id='web.layout.odooscript']" position="after">
+            <script type="text/javascript" src="/microsite_company_switch/static/src/js/website_switcher_patch.js"></script>
+        </xpath>
+    </template>
+</odoo>

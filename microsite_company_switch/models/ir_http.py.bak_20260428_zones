@@ -1,0 +1,122 @@
+# -*- coding: utf-8 -*-
+import logging
+from odoo import models
+from odoo.http import request
+
+_logger = logging.getLogger(__name__)
+
+
+class IrHttp(models.AbstractModel):
+    _name = 'ir.http'
+    _inherit = 'ir.http'
+
+    def session_info(self):
+        """
+        Sobrescribir current_company basado en cookie cids.
+        El switcher de compañía actualiza la cookie, NO user.company_id.
+        """
+        result = super(IrHttp, self).session_info()
+
+        try:
+            user = self.env.user
+            if not user or user._is_public():
+                return result
+
+            # No aplicar a administradores (system o manager)
+            if user.has_group('base.group_system') or user.has_group('base.group_erp_manager'):
+                return result
+
+            if 'user_companies' not in result:
+                return result
+
+            cookie_cids = request.httprequest.cookies.get('cids', '')
+            if not cookie_cids:
+                return result
+
+            selected_id = int(str(cookie_cids).split('-')[0].strip())
+            user_company_ids = user.company_ids.ids
+
+            if selected_id not in user_company_ids:
+                _logger.warning("[MCS] Compañía %s no permitida para %s", selected_id, user.name)
+                return result
+
+            if result['user_companies'].get('current_company') != selected_id:
+                result['user_companies']['current_company'] = selected_id
+                _logger.debug("[MCS] current_company=%s (cookie)", selected_id)
+
+            if 'user_context' not in result:
+                result['user_context'] = {}
+            result['user_context']['allowed_company_ids'] = user_company_ids
+
+        except Exception as e:
+            _logger.error("[MCS] Error en session_info: %s", e)
+
+        return result
+
+    @classmethod
+    def _pre_dispatch(cls, rule, args):
+        cls._apply_company_switch_for_admins()
+        super(IrHttp, cls)._pre_dispatch(rule, args)
+
+    @classmethod
+    def _apply_company_switch_for_admins(cls):
+        """
+        Permite a los administradores acceder a todas sus empresas asignadas y
+        cambiar entre ellas usando la cookie 'cids'.
+
+        IMPORTANTE: Usa únicamente las empresas asignadas al usuario
+        (user._get_company_ids()), NO todas las del sistema. Esto previene
+        AccessError cuando Odoo valida allowed_company_ids vs user_company_ids.
+
+        Movido desde el core ir_http.py a este módulo custom.
+        """
+        try:
+            if not request or not request.httprequest or not request.env or not request.env.user:
+                return
+
+            user = request.env.user
+
+            if not user.has_group('base.group_system'):
+                return
+
+            user_company_ids = user._get_company_ids()
+            if not user_company_ids:
+                return
+
+            cookie_cids = request.httprequest.cookies.get('cids', '')
+            selected_company_id = user.company_id.id
+
+            if cookie_cids:
+                try:
+                    cid = int(str(cookie_cids).split('-')[0].strip())
+                    if cid in user_company_ids:
+                        selected_company_id = cid
+                except (ValueError, IndexError, AttributeError):
+                    pass
+
+            ordered_company_ids = [selected_company_id] + [
+                cid for cid in user_company_ids if cid != selected_company_id
+            ]
+
+            new_context = dict(request.env.context)
+            current_allowed = new_context.get('allowed_company_ids', [])
+
+            if current_allowed != ordered_company_ids:
+                new_context['allowed_company_ids'] = ordered_company_ids
+                request.env = request.env(context=new_context)
+                _logger.debug(
+                    "[ADMIN-SWITCH] Context actualizado para %s: %s empresas, seleccionada=%s",
+                    user.login, len(ordered_company_ids), selected_company_id,
+                )
+
+        except Exception as e:
+            _logger.error("[ADMIN-SWITCH] ERROR: %s", e)
+
+    @classmethod
+    def _apply_company_isolation(cls):
+        """
+        DESACTIVADO: No aplicar aislamiento automático basado en cookie.
+        El switcher de compañía de Odoo maneja el cambio de compañía nativamente.
+        """
+        # Passthrough intencional - no tocar el contexto de compañía aquí
+        return

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="ir_cron_microsite_validation" model="ir.cron">
+        <field name="name">Validación semanal de microsites</field>
+        <field name="model_id" ref="model_microsite_validation_report"/>
+        <field name="state">code</field>
+        <field name="code">
+report = model.create({'name': 'Validación semanal auto'})
+report.action_validate_all()
+        </field>
+        <field name="interval_number">7</field>
+        <field name="interval_type">days</field>
+        <field name="active" eval="True"/>
+    </record>
+</odoo>

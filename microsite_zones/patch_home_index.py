@@ -1,0 +1,66 @@
+"""
+Parche para odoo.addons.web.controllers.home.Home.index
+
+Problema: En modo multi-db, Home.index (auth="none") captura la ruta raíz (/)
+cuando request.db es None (sin sesión). Esto redirige a /odoo en lugar de
+permitir que Website.index (auth="public", website=True) renderice la homepage.
+
+Solución:
+1. Si hay parámetro 'db' válido en la URL, establecer session.db y redirigir a /.
+2. Si el host coincide con staging_host (odoo.tools.config) y no hay DB,
+   forzar la staging_db configurada y redirigir a /.
+3. En caso contrario, mantener el comportamiento original (redirigir a /odoo).
+
+Configuración (en odoo.conf):
+  staging_host = staging.exagon.es
+  staging_db   = canarias_conectada_test_fix_20260420
+"""
+
+import logging
+from odoo import http
+from odoo.http import request
+from odoo.tools import config
+
+_logger = logging.getLogger(__name__)
+
+# Importar después de que Odoo haya cargado web
+try:
+    from odoo.addons.web.controllers.home import Home, is_user_internal
+    _original_home_index = Home.index
+
+    def _patched_home_index(self, s_action=None, db=None, **kw):
+        # Caso 1: Ya hay DB y usuario logueado no-interno → login_successful
+        if request.db and request.session.uid and not is_user_internal(request.session.uid):
+            return request.redirect_query('/web/login_successful', query=request.params)
+
+        # Caso 2: Parámetro 'db' en URL → establecer sesión y redirigir a /
+        if db:
+            db = db.strip()
+            if db in http.db_filter([db]):
+                request.session.db = db
+                _logger.info("[PATCH-HOME] DB desde query param, redirigiendo a /: %s", db)
+                return request.redirect('/')
+            else:
+                _logger.warning("[PATCH-HOME] Parámetro 'db' rechazado por db_filter: %s", db)
+
+        # Caso 3: Host configurado sin DB → forzar DB configurada
+        # Lee de odoo.conf (staging_host / staging_db) porque request.db es None aquí.
+        if not request.db and request.httprequest:
+            host = request.httprequest.host.split(':')[0]
+            configured_host = config.get('staging_host', '')
+            configured_db = config.get('staging_db', '')
+            if configured_host and configured_db and host == configured_host:
+                if configured_db in http.db_filter([configured_db]):
+                    request.session.db = configured_db
+                    _logger.info("[PATCH-HOME] DB forzada por host configurado, redirigiendo a /: %s", configured_db)
+                    return request.redirect('/')
+
+        # Comportamiento original
+        return request.redirect_query('/odoo', query=request.params)
+
+    # Parchear
+    Home.index = _patched_home_index
+    _logger.info("[PATCH-HOME] Home.index parcheado para soportar homepage en multi-db")
+
+except ImportError as e:
+    _logger.warning("[PATCH-HOME] No se pudo importar Home para parchear: %s", e)

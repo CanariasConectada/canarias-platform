@@ -1,0 +1,627 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================ -->
+    <!-- F5 - WEB INTEGRATION: Badges Silver Economy en web pública   -->
+    <!-- ============================================================ -->
+
+    <!--
+        BADGE SUTIL EN DIRECTORIO PÚBLICO (/directorio)
+        Se muestra en grid y list view como un pequeño badge/icono.
+        Aplicamos en el template principal (directory_index) y en el
+        template AJAX (directory_search_results) para que persista
+        tras filtros, búsquedas y cambios de página.
+    -->
+
+    <!-- Template reutilizable: badge Silver Economy para una entry -->
+    <template id="directory_silver_badge">
+        <t t-if="entry.company_id.silver_certification_level and entry.company_id.silver_certification_level != 'none'">
+            <t t-set="silver_level" t-value="entry.company_id.silver_certification_level"/>
+            <t t-set="silver_expired" t-value="entry.company_id.silver_expiry_date and entry.company_id.silver_expiry_date &lt; datetime.date.today()"/>
+            <span t-if="not silver_expired"
+                  t-att-class="'badge rounded-pill ms-1 ' + {
+                      'bronze': '',
+                      'silver': '',
+                      'gold': ''
+                  }.get(silver_level, '')"
+                  t-att-style="'font-size: 0.55rem; padding: 0.15em 0.4em; ' + {
+                      'bronze': 'background-color: #CD7F32 !important; color: #fff !important;',
+                      'silver': 'background-color: #C0C0C0 !important; color: #212529 !important;',
+                      'gold': 'background-color: #FFD700 !important; color: #212529 !important;'
+                  }.get(silver_level, 'background-color: #6c757d; color: #fff;')"
+                  t-att-title="'Certificado Silver Economy - ' + {'bronze': 'Bronce', 'silver': 'Plata', 'gold': 'Oro'}.get(silver_level, '')">
+                <i class="fa fa-certificate me-1"/>Silver Economy
+            </span>
+        </t>
+    </template>
+
+    <!-- Grid View (carga inicial) -->
+    <template id="directory_grid_badge_silver" inherit_id="website_directory.directory_index">
+        <xpath expr="//div[@class='card h-100 border-0 shadow-sm directory-card position-relative']//h5[@class='card-title mb-1 fs-6']" position="after">
+            <t t-call="silver_economy.directory_silver_badge"/>
+        </xpath>
+    </template>
+
+    <!-- List View (carga inicial) -->
+    <template id="directory_list_badge_silver" inherit_id="website_directory.directory_index">
+        <xpath expr="//div[@class='list-group-item d-flex align-items-center gap-3 py-3']//h5[@class='mb-0 fs-6']" position="after">
+            <t t-call="silver_economy.directory_silver_badge"/>
+        </xpath>
+    </template>
+
+    <!-- Grid View (AJAX) -->
+    <template id="directory_search_grid_badge_silver" inherit_id="website_directory.directory_search_results">
+        <xpath expr="//div[@class='card h-100 border-0 shadow-sm directory-card position-relative']//h5[@class='card-title mb-1 fs-6']" position="after">
+            <t t-call="silver_economy.directory_silver_badge"/>
+        </xpath>
+    </template>
+
+    <!-- List View (AJAX) -->
+    <template id="directory_search_list_badge_silver" inherit_id="website_directory.directory_search_results">
+        <xpath expr="//div[@class='list-group-item d-flex align-items-center gap-3 py-3']//h5[@class='mb-0 fs-6']" position="after">
+            <t t-call="silver_economy.directory_silver_badge"/>
+        </xpath>
+    </template>
+
+    <!--
+        SECCIÓN DINÁMICA EN MICROSITES (justo encima del footer)
+        Muestra cards de Silver Economy (y placeholder para Sostenible)
+    -->
+    <!-- Ocultar card en páginas de survey -->
+    <template id="survey_page_fill_suppress_silver" inherit_id="survey.survey_page_fill">
+        <xpath expr="//t[@t-call='survey.layout']" position="before">
+            <t t-set="suppress_silver_card" t-value="True"/>
+        </xpath>
+    </template>
+
+    <template id="silver_microsite_header_section" inherit_id="website.layout" name="Silver Economy - Footer Section">
+        <xpath expr="//footer[@id='bottom']" position="before">
+            <t t-set="company" t-value="website.company_id"/>
+            <t t-set="silver_level" t-value="company.silver_certification_level"/>
+            <t t-set="silver_expired" t-value="company.silver_expiry_date and company.silver_expiry_date &lt; datetime.date.today()"/>
+            <t t-set="has_silver" t-value="silver_level and silver_level != 'none' and not silver_expired"/>
+            <t t-set="is_homepage" t-value="request.httprequest.path == (website.homepage_url or '/')"/>
+            <t t-set="is_error_page" t-value="request.httprequest.path.startswith('/website/error') or request.httprequest.path in ['/404', '/500']"/>
+
+            <!-- Placeholder para futuro modulo Sostenibilidad -->
+            <t t-set="has_sustain" t-value="False"/>
+
+            <section t-if="is_homepage and not is_error_page and (has_silver or has_sustain) and not suppress_silver_card"
+                     class="s_three_columns o_cc o_cc2 pt32 pb32 o_colored_level"
+                     data-snippet="s_three_columns" data-name="Columnas">
+                <div class="container">
+                    <t t-set="cert_score" t-value="company.silver_cert_score"/>
+                    <t t-set="positive_items" t-value="company._get_silver_positive_items()"/>
+                    <t t-set="bar_color" t-value="{'gold': '#FFD700', 'silver': '#C0C0C0', 'bronze': '#CD7F32'}.get(silver_level, '#6c757d')"/>
+
+                    <!-- Parte superior: 2 columnas -->
+                    <div class="row align-items-center mb-5" t-if="has_silver">
+                        <!-- Columna izquierda: imagen del sello -->
+                        <div class="col-lg-6 text-center mb-4 mb-lg-0">
+                            <img src="/silver_economy/static/src/img/sello_silver-removebg-preview.png"
+                                 alt="Silver Economy"
+                                 class="img-fluid"
+                                 style="max-width: 280px; height: auto; object-fit: contain;"
+                                 loading="lazy"/>
+                        </div>
+
+                        <!-- Columna derecha: badge + porcentaje vertical, título, texto -->
+                        <div class="col-lg-6">
+                            <!-- Badge y porcentaje en fila con barra vertical -->
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <!-- Badge izquierda -->
+                                <span t-att-class="'badge rounded-pill px-4 py-2 fw-bold'"
+                                      t-attf-style="background-color: #{bar_color}; color: #{'#212529' if silver_level in ('gold', 'silver') else '#fff'}; font-size: 1rem;"
+                                      t-esc="{'bronze': '🥉 Bronce', 'silver': '🥈 Plata', 'gold': '🥇 Oro'}.get(silver_level, '')"/>
+                                <!-- Barra vertical -->
+                                <div t-attf-style="width: 3px; height: 60px; background-color: #{bar_color}; margin: 0 20px; opacity: 0.6;"></div>
+                                <!-- Porcentaje derecha -->
+                                <div class="display-3 fw-bold" t-attf-style="color: #{bar_color}; line-height: 1;">
+                                    <t t-esc="int(cert_score)"/>%
+                                </div>
+                            </div>
+
+                            <h3 class="fw-bold text-center mb-3" style="font-size: 1.5rem; color: #333;">Negocio Comprometido</h3>
+
+                            <p class="text-center text-muted" style="font-size: 0.95rem; line-height: 1.6;">
+                                Este negocio ha sido evaluado y reconocido con el sello de Silver Economy,
+                                por su compromiso con prácticas responsables en:<br/>
+                                <strong>Accesibilidad</strong><br/>
+                                <strong>Atención personalizada</strong><br/>
+                                <strong>Servicio y adaptación al colectivo</strong>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Parte inferior: Acciones sostenibles (dinámicas) -->
+                    <div class="row" t-if="has_silver and positive_items">
+                        <div class="col-12">
+                            <h4 class="fw-bold mb-3 text-center" style="font-size: 1.25rem; color: #333;">Acciones sostenibles de este negocio</h4>
+                            <div class="d-flex flex-column align-items-center">
+                                <div t-foreach="positive_items" t-as="item" class="d-flex align-items-center mb-2">
+                                    <i t-att-class="'fa %s me-2' % item['icon']"
+                                       t-attf-style="color: #{bar_color}; font-size: 1.1rem;"/>
+                                    <span style="font-size: 1rem;" t-esc="item['label']"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sostenible placeholder (futuro) -->
+                    <div class="row" t-if="has_sustain">
+                        <div class="col-12 text-center mt-4">
+                            <p class="text-muted">Comercio Sostenible — placeholder para futuro módulo</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </xpath>
+    </template>
+
+    <!-- ============================================================ -->
+    <!-- PÁGINA PÚBLICA: Silver Economy / Formaciones                 -->
+    <!-- ============================================================ -->
+    <template id="silver_economy_page" name="Silver Economy - Formaciones">
+        <t t-call="website.layout">
+            <!-- Hero Section -->
+            <div class="silver-hero">
+                <h1 class="display-3 fw-bold text-white">Silver Economy</h1>
+                <img src="/silver_economy/static/src/img/silver_economy/SILVER-ECONOMY-peque.webp"
+                     alt="Sello Silver Economy" class="img-fluid mt-3" style="max-height: 120px;"/>
+            </div>
+
+            <main class="container-fluid my-5">
+                <!-- Sección 1: ¿Qué es la Silver Economy? -->
+                <div class="row mt-5">
+                    <div class="col-12 mb-5">
+                        <section class="py-3">
+                            <h2 class="text-success text-center mb-4 pt-3">¿Qué es la Silver Economy?</h2>
+                            <div class="silver-timeline">
+                                <div class="silver-timeline-item">
+                                    <div class="silver-timeline-icon">
+                                        <i class="bi bi-clipboard-check"/>
+                                    </div>
+                                    <div class="silver-timeline-content">
+                                        <h5>La Silver Economy: Un Vistazo General</h5>
+                                        <p>La Silver Economy, o Economía Plateada, es el conjunto de actividades económicas, productos y
+                                            servicios diseñados para satisfacer las necesidades específicas de las personas mayores de 50 años.
+                                            Lejos de ser un concepto limitado a la geriatría, abarca un amplio espectro de sectores como la
+                                            tecnología, la vivienda, el turismo, la salud y el bienestar, los servicios financieros y la formación.
+                                            El rápido envejecimiento de la población a nivel global ha convertido a este segmento demográfico en un
+                                            motor económico de creciente importancia, impulsando la innovación y la adaptación en múltiples
+                                            industrias. No hablamos solo de una población que vive más años, sino de una generación con mayor poder
+                                            adquisitivo, más activa y digitalmente conectada, que busca soluciones que mejoren su calidad de vida y
+                                            les permitan mantener su independencia y participación social.</p>
+                                    </div>
+                                </div>
+                                <div class="silver-timeline-item">
+                                    <div class="silver-timeline-icon">
+                                        <i class="bi bi-file-earmark-text"/>
+                                    </div>
+                                    <div class="silver-timeline-content">
+                                        <h5>Desafíos Significativos</h5>
+                                        <p>A pesar de su potencial, la Silver Economy se enfrenta a desafíos significativos. Uno de los
+                                            principales es la heterogeneidad de la población mayor, que exige soluciones personalizadas y flexibles
+                                            para distintas edades, capacidades y estilos de vida, evitando así la generalización y el edadismo. Otro
+                                            reto crucial es la sostenibilidad de los sistemas de bienestar (pensiones y salud) ante el aumento de la
+                                            esperanza de vida y la disminución de la natalidad, lo que requiere modelos de financiación innovadores.
+                                            La brecha digital sigue siendo un obstáculo para muchos mayores, limitando su acceso a servicios
+                                            esenciales y su plena inclusión social. Finalmente, adaptar las infraestructuras urbanas y el mercado
+                                            laboral para fomentar la movilidad, la participación y el empleo senior también representa un desafío
+                                            considerable.</p>
+                                    </div>
+                                </div>
+                                <div class="silver-timeline-item">
+                                    <div class="silver-timeline-icon">
+                                        <i class="bi bi-globe2"/>
+                                    </div>
+                                    <div class="silver-timeline-content">
+                                        <h5>Oportunidades de Oro para el Futuro</h5>
+                                        <p>Estos retos, sin embargo, se traducen en inmensas oportunidades para la innovación y el crecimiento
+                                            económico. La Silver Economy impulsa el desarrollo de tecnologías asistenciales y soluciones de salud
+                                            digital que mejoran la autonomía y el monitoreo de la salud. Abre las puertas a la creación de viviendas
+                                            inteligentes y comunidades diseñadas para el bienestar y la seguridad de las personas mayores. En el
+                                            sector turístico, permite el diseño de experiencias de viaje personalizadas y accesibles. Además,
+                                            fomenta la creación de nuevos modelos de negocio en servicios financieros adaptados y en programas de
+                                            formación continua que permiten a los mayores mantenerse activos y productivos. En definitiva, entender
+                                            y atender las necesidades de este segmento no solo es una cuestión de justicia social, sino una
+                                            estrategia inteligente para el desarrollo económico y la creación de una sociedad más inclusiva y
+                                            próspera para todas las edades.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Sección 2: Evolución histórica -->
+                <hr class="my-4"/>
+                <div class="row">
+                    <div class="col-12 mb-5">
+                        <section class="bg-white p-5 rounded shadow-sm">
+                            <h2 class="text-success text-center mb-3">Evolución histórica</h2>
+                            <p class="fs-5">
+                                España ha experimentado un notable aumento en la esperanza de vida, posicionándose
+                                entre los líderes mundiales:
+                            </p>
+                            <div class="collapse" id="collapseSostenibilidadTexto">
+                                <ul class="fs-5 mt-2">
+                                    <li>Principios del Siglo XX: Apenas una de cada diez personas alcanzaba los 65 años,
+                                        y la esperanza de vida superó los 50 años solo en 1930.</li>
+                                    <li>Actualidad: "Nueve de cada diez" personas alcanzan los 65 años. Los años
+                                        promedio vividos después de la jubilación han aumentado de "apenas 10 a más de
+                                        23 años para las mujeres."</li>
+                                    <li>Datos Recientes: 2017: Esperanza de vida al nacer de 83.4 años (segunda más alta
+                                        de Europa). Esperanza de vida a los 65 años de 21.5 años (tercera más alta de
+                                        Europa).</li>
+                                    <li>2022: Récord de 83.1 años de esperanza de vida.</li>
+                                    <li>2040 (Proyección): 85.8 años, situando a España entre los países con mayor
+                                        esperanza de vida mundial.</li>
+                                    <li>2095-2100 (Proyección ONU): 92.6 años de esperanza de vida al nacer, "solo por
+                                        debajo de Japón."</li>
+                                    <li>Posición Global: España ostenta la "cuarta mayor esperanza de vida" a nivel
+                                        mundial, "solo por debajo de Japón, Suiza y Singapur."</li>
+                                </ul>
+                            </div>
+                            <button class="btn btn-primary rounded-circle mt-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSostenibilidadTexto" aria-expanded="false" aria-controls="collapseSostenibilidadTexto">
+                                <i class="bi bi-chevron-down"/>
+                            </button>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Sección 3: Distribución Geográfica del Envejecimiento -->
+                <section class="bg-white p-5 rounded shadow-sm mb-5">
+                    <h2 class="silver-blue text-center mb-4">Distribución Geográfica del Envejecimiento</h2>
+                    <div class="silver-barras">
+                        <p class="complemento-barras">Zonas rurales del interior de España</p>
+                        <div class="progress" role="progressbar" aria-label="Envejecimiento zonas rurales" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" style="width: 75%"/>
+                        </div>
+                        <p class="complemento-barras">Media nacional</p>
+                        <div class="progress" role="progressbar" aria-label="Envejecimiento media nacional" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" style="width: 50%"/>
+                        </div>
+                        <p class="complemento-barras">Grandes urbes</p>
+                        <div class="progress" role="progressbar" aria-label="Envejecimiento grandes urbes" aria-valuenow="35" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width: 35%"/>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sección 4: La economía del futuro -->
+                <div class="col-12 mb-5">
+                    <section class="bg-white p-4 rounded shadow-sm">
+                        <h2 class="text-success text-center mb-3">La economía del futuro</h2>
+                        <p class="fs-5 text-center mb-4">
+                            Aquellos que particularmente traten de cubrir las necesidades de los adultos mayores de 65 años y sus familias
+                            (responsables de su atención), con el propósito de transformar el envejecimiento de la población
+                            en una oportunidad comercial.
+                        </p>
+                        <div class="row justify-content-center text-center">
+                            <div class="col-md-8 col-sm-10 mb-3">
+                                <img src="/silver_economy/static/src/img/silver_economy/SILVER-ECONOMY-peque.webp" alt="Silver Economy" class="img-fluid mb-2" style="max-height: 150px;"/>
+                                <h5>Silver Economy</h5>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Sección 5: El Contexto del Desafío Demográfico y la España Vaciada -->
+                <section class="bg-white p-5 rounded shadow-sm mb-5">
+                    <div class="lado mb-4">
+                        <h2 class="silver-blue" style="font-size: xx-large; text-align: center;">El Contexto del Desafío Demográfico y la España Vaciada</h2>
+                    </div>
+                    <div class="silver-accordion-layout">
+                        <div class="silver-accordion-image">
+                            <img src="/silver_economy/static/src/img/silver_economy/medicina.webp" alt="Medicina" class="img-fluid"/>
+                        </div>
+                        <div class="silver-accordion-content">
+                            <div class="accordion" id="accordionExample">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                            Cambio demográfico
+                                        </button>
+                                    </h2>
+                                    <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                                        <div class="accordion-body">
+                                            España ha tenido un cambio demográfico rápido. La esperanza de vida ha superado los 50 años desde 1930.
+                                            Actualmente, las mujeres viven más de 23 años después de jubilarse. Hoy, nueve de cada diez españoles
+                                            llegan a los 65 años, una cifra mucho más alta que una de cada diez en 1900.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                            Desafíos Socioeconómicos
+                                        </button>
+                                    </h2>
+                                    <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                                        <div class="accordion-body">
+                                            La longevidad es un gran logro, pero trae muchos desafíos. Estos incluyen presión sobre el estado del
+                                            bienestar y las finanzas públicas, posible disminución de la fuerza laboral y aumento del gasto social y
+                                            sanitario.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                            Proyecciones Preocupantes
+                                        </button>
+                                    </h2>
+                                    <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                                        <div class="accordion-body">
+                                            Las proyecciones indican que la tasa de dependencia de la población
+                                            mayor podría alcanzar el 58,1% en 2040, y la población española
+                                            podría ser la más envejecida del mundo en 2050.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                            Generación y Mantenimiento de Empleo de Calidad
+                                        </button>
+                                    </h2>
+                                    <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                                        <div class="accordion-body">
+                                            Las empresas de Economía Social son frecuentes en zonas rurales y ayudan a mantener la población. Se
+                                            busca aumentar la participación laboral de personas inactivas y fomentar el emprendimiento colectivo a
+                                            través de cooperativas.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="true" aria-controls="collapseFive">
+                                            Vertebración Social y Territorial
+                                        </button>
+                                    </h2>
+                                    <div id="collapseFive" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+                                        <div class="accordion-body">
+                                            Las cooperativas de crédito ayudan a que las personas en áreas rurales accedan a servicios bancarios.
+                                            Las cooperativas de consumo ofrecen alimentos esenciales. Se crean empresas para servicios sociales y
+                                            atención a personas mayores. El sector de cuidados creará muchos empleos. Además, se fomenta la creación
+                                            de cooperativas de taxi y el uso de vehículos eléctricos. También se quiere mejorar la conectividad
+                                            rural con redes de 5G y banda ancha para apoyar el teletrabajo.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sección 6: Consideraciones éticas y Sociales -->
+                <section class="bg-white p-5 rounded shadow-sm mb-5">
+                    <div class="container px-4 py-5" id="icon-grid">
+                        <h2 class="pb-2 border-bottom silver-blue text-center">Consideraciones éticas y Sociales</h2>
+                        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 py-5 silver-columnas">
+                            <div class="col d-flex align-items-start silver-columna">
+                                <div>
+                                    <h3 class="fw-bold mb-0 fs-4 text-body-emphasis">Oportunidades de Negocio</h3>
+                                    <p>Es crucial que las soluciones tecnológicas se adapten a las necesidades de las personas mayores y no al
+                                    revés.</p>
+                                </div>
+                            </div>
+                            <div class="col d-flex align-items-start silver-columna">
+                                <div>
+                                    <h3 class="fw-bold mb-0 fs-4 text-body-emphasis">Inclusión y Dignidad</h3>
+                                    <p>La Economía Social, lucha contra los estereotipos y la discriminación por edad, y busca transformar la
+                                    percepción de las personas mayores de una carga a un valioso capital humano.</p>
+                                </div>
+                            </div>
+                            <div class="col d-flex align-items-start silver-columna">
+                                <div>
+                                    <h3 class="fw-bold mb-0 fs-4 text-body-emphasis">Dilemas éticos</h3>
+                                    <p>Es importante considerar los posibles dilemas éticos relacionados con el aislamiento social, la
+                                    dependencia tecnológica, la privacidad y el consentimiento de los usuarios.</p>
+                                </div>
+                            </div>
+                            <div class="col d-flex align-items-start silver-columna">
+                                <div>
+                                    <h3 class="fw-bold mb-0 fs-4 text-body-emphasis">Colaboración Público-Privada</h3>
+                                    <p>La clave es fomentar la colaboración público-privada para generar una malla protectora y asegurar que el
+                                    desarrollo se centre en el bienestar de las personas.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sección 7: En resumen -->
+                <section class="bg-white p-4 rounded shadow-sm mb-5">
+                    <div class="container px-4 py-5">
+                        <h2 class="pb-2 border-bottom silver-blue text-center">En resumen</h2>
+                        <p style="text-align: justify;">En síntesis, la Economía Social es una "<b>herramienta vital y un modelo de
+                            desarrollo sostenible</b> para abordar el desafío demográfico y la 'España Vaciada'". Su enfoque en <b>la
+                            creación de empleo</b>, la provisión de servicios esenciales en el medio rural, la promoción de
+                            la sostenibilidad y la digitalización, siempre con una profunda raíz territorial y un enfoque
+                            en la cohesión social" la posiciona como un pilar indispensable para el futuro
+                            socioeconómico de España.</p>
+                        <p class="placeholder-glow">
+                            <span class="placeholder col-12" style="color: rgba(25, 73, 218, 0.56);"/>
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Sección 8: SOSTENIBILIDAD Y DESARROLLO TERRITORIAL -->
+                <section class="bg-white p-5 rounded shadow-sm mb-5">
+                    <div class="container px-4 py-5">
+                        <h2 class="tituloB text-center mb-5">SOSTENIBILIDAD Y DESARROLLO TERRITORIAL</h2>
+                        <div class="row row-cols-1 row-cols-md-2 align-items-md-center g-5 py-5">
+                            <div class="col d-flex flex-column align-items-start gap-2">
+                                <h2 class="fw-bold text-body-emphasis"><span class="silver-blue" style="font-size: xx-large;">El concepto de
+                                    sostenibilidad en el desarrollo territorial</span></h2>
+                                <p class="text-body-secondary">
+                                    La sostenibilidad y el desarrollo territorial son esenciales para un futuro equitativo y próspero. Estos
+                                    conceptos buscan un equilibrio entre crecimiento económico, equidad social y protección ambiental. Es
+                                    importante que las acciones actuales no perjudiquen a las futuras generaciones.
+                                </p>
+                            </div>
+                            <div class="col">
+                                <div class="row row-cols-1 row-cols-sm-2 g-4">
+                                    <div class="col d-flex flex-column gap-2">
+                                        <div class="silver-feature-icon">
+                                            <i class="bi bi-tree"/>
+                                        </div>
+                                        <h4 class="fw-semibold mb-0 text-body-emphasis">Transición Ecológica</h4>
+                                        <p class="text-body-secondary">Eficiencia energética y uso de energías
+                                            renovables (fotovoltaica, bioenergía).</p>
+                                    </div>
+                                    <div class="col d-flex flex-column gap-2">
+                                        <div class="silver-feature-icon">
+                                            <i class="bi bi-arrow-repeat"/>
+                                        </div>
+                                        <h4 class="fw-semibold mb-0 text-body-emphasis">Economía Circular</h4>
+                                        <p class="text-body-secondary">Se busca promover la economía circular y la gestión de residuos. Esto
+                                            significa mejorar la recuperación de materiales y disminuir el consumo.</p>
+                                    </div>
+                                    <div class="col d-flex flex-column gap-2">
+                                        <div class="silver-feature-icon">
+                                            <i class="bi bi-shield-leaf"/>
+                                        </div>
+                                        <h4 class="fw-semibold mb-0 text-body-emphasis">Conservación</h4>
+                                        <p class="text-body-secondary">Políticas para vivir con animales, agricultura, restaurar ecosistemas,
+                                            reverdecer ciudades.</p>
+                                    </div>
+                                    <div class="col d-flex flex-column gap-2">
+                                        <div class="silver-feature-icon">
+                                            <i class="bi bi-droplet"/>
+                                        </div>
+                                        <h4 class="fw-semibold mb-0 text-body-emphasis">Gestión Hídrica</h4>
+                                        <p class="text-body-secondary">Se enfoca en usar el agua de manera eficiente y con calidad. También busca
+                                            reducir pérdidas, optimizar su uso, y fomentar la regeneración y reutilización del agua.</p>
+                                    </div>
+                                    <div class="col d-flex flex-column gap-2">
+                                        <div class="silver-feature-icon">
+                                            <i class="bi bi-airplane"/>
+                                        </div>
+                                        <h4 class="fw-semibold mb-0 text-body-emphasis">Turismo Sostenible</h4>
+                                        <p class="text-body-secondary">En Canarias, el turismo sostenible es clave, promoviendo bienestar social,
+                                            protección del medio ambiente y gestión eficiente.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sección 9: El Papel de la Economía Social -->
+                <section class="bg-white p-5 rounded shadow-sm mb-5">
+                    <h2 class="silver-blue text-center mb-4">El Papel de la Economía Social en la Sostenibilidad
+                        y el Desarrollo Territorial</h2>
+                    <div class="container-sm mb-4">
+                        <h4 class="fw-bold">Fijación de población y creación de empleo</h4>
+                        <p>Las empresas de Economía Social son clave en áreas rurales. No se deslocalizan, lo que ayuda a mantener la población.
+                            Promueven el emprendimiento colectivo, creando empleo estable y valioso.</p>
+                    </div>
+                    <div class="container-sm mb-4">
+                        <h4 class="fw-bold">Provisión de Servicios Esenciales</h4>
+                        <p>Entidades de Economía Social (cooperativas de crédito, consumo, enseñanza, servicios de atención a mayores y
+                            colectivos vulnerables) facilitan el acceso a servicios básicos y cubren necesidades en el medio rural,
+                            incluyendo la economía de los cuidados y el cohousing para seniors con servicios sociosanitarios.</p>
+                    </div>
+                    <div class="container-sm mb-4">
+                        <h4 class="fw-bold">Impulso a la Innovación y Digitalización</h4>
+                        <p>Apoyan la digitalización de cooperativas y sus socios. Las "platform coops" son una herramienta clave para
+                            potenciar el empleo cualificado de base tecnológica en entornos rurales, desvinculando el empleo de la
+                            localización geográfica.</p>
+                    </div>
+                    <div class="container-sm mb-4">
+                        <h4 class="fw-bold">Desarrollo Local y Sostenibilidad</h4>
+                        <p>Contribuyen a la diversificación de la economía rural y al aprovechamiento de sus potencialidades. Impulsan
+                            proyectos relacionados con la transición ecológica, como las comunidades energéticas y la economía circular.</p>
+                    </div>
+                    <div class="container-sm mb-4">
+                        <h4 class="fw-bold">Colaboración Público-Privada</h4>
+                        <p>La Economía Social es un socio clave para los poderes públicos, promoviendo medidas y proyectos conjuntos que
+                            favorezcan el desarrollo rural y la cohesión territorial.</p>
+                    </div>
+                </section>
+
+                <!-- Sección 10: Descarga los PDF de nuestros módulos -->
+                <section class="bg-white p-5 rounded shadow-sm mb-5">
+                    <h2 class="text-success text-center mb-3">Descarga los PDF de nuestros módulos</h2>
+                    <p class="lead text-center mb-4">Accede a material de apoyo y profundiza en los temas tratados.</p>
+                    <div class="text-center silver-downloads">
+                        <a href="/silver_economy/static/src/files/modulo_1_longevidad_vejez.pdf" download="download" class="silver-download-link">
+                            <i class="bi bi-download me-2"/>Módulo 1: Longevidad y vejez
+                        </a>
+                        <a href="/silver_economy/static/src/files/modulo_2_economia_plateada.pdf" download="download" class="silver-download-link">
+                            <i class="bi bi-download me-2"/>Módulo 2: Economía plateada
+                        </a>
+                        <a href="/silver_economy/static/src/files/modulo_3_desafio_demografico.pdf" download="download" class="silver-download-link">
+                            <i class="bi bi-download me-2"/>Módulo 3: Desafío demográfico
+                        </a>
+                        <a href="/silver_economy/static/src/files/modulo_4_sostenibilidad_desarrollo.pdf" download="download" class="silver-download-link">
+                            <i class="bi bi-download me-2"/>Módulo 4: Sostenibilidad y desarrollo
+                        </a>
+                        <a href="/silver_economy/static/src/files/modulo_5_retos_atencion.pdf" download="download" class="silver-download-link">
+                            <i class="bi bi-download me-2"/>Módulo 5: Retos en la atención
+                        </a>
+                    </div>
+                </section>
+
+                <!-- Sección 11: Subvenciones -->
+                <div class="silver-subvenciones mb-5">
+                    <div class="container-fluid">
+                        <div class="row justify-content-center mb-3">
+                            <div class="col-12 col-md-10 text-center">
+                                <img loading="lazy" class="img-fluid rounded shadow-sm" style="max-height:180px; object-fit:contain;" src="/silver_economy/static/src/img/silver_economy/zcalogo.png" alt="Logo de subvención"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alerta de cuestionario disponible -->
+                <div class="row justify-content-center mb-5">
+                    <div class="col-lg-8">
+                        <div t-if="survey" class="alert alert-info">
+                            <h4 class="alert-heading">Cuestionario disponible</h4>
+                            <p>
+                                Actualmente hay un cuestionario de evaluación activo.
+                                Accede a través de tu panel de <strong>Silver Economy &gt; Mis Evaluaciones</strong>.
+                            </p>
+                        </div>
+                        <div t-if="not survey" class="alert alert-warning">
+                            <h4 class="alert-heading">No hay cuestionarios activos</h4>
+                            <p>En este momento no hay ningún cuestionario de evaluación activo.</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </t>
+    </template>
+
+    <!-- ============================================================ -->
+    <!-- Página pública: Instrucciones del examen                     -->
+    <!-- ============================================================ -->
+    <template id="silver_instructions_page" name="Silver Economy - Instrucciones">
+        <t t-call="website.layout">
+            <div class="container py-5">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <h1 class="fw-bold mb-4 text-center">Instrucciones del Examen</h1>
+                        <div t-if="survey" class="card border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <h2 class="h4 mb-3" t-esc="survey.title"/>
+                                <div t-if="survey.description" t-out="survey.description"/>
+                                <div t-if="not survey.description" class="text-muted">
+                                    <p>No hay instrucciones definidas para este cuestionario.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div t-if="not survey" class="alert alert-warning text-center">
+                            <h4 class="alert-heading">No hay cuestionarios activos</h4>
+                            <p>En este momento no hay ningún cuestionario de evaluación activo.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_website_directory_entry_public,website.directory.entry.public,model_website_directory_entry,base.group_public,1,0,0,0
+access_website_directory_entry_user,website.directory.entry.user,model_website_directory_entry,base.group_user,1,0,0,0
+access_website_directory_entry_system,website.directory.entry.system,model_website_directory_entry,base.group_system,1,1,1,1

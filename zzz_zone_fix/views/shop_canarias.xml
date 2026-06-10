@@ -1,0 +1,875 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- HEADER: Solo título + search -->
+    <template id="canarias_header" inherit_id="website_sale.products" priority="99">
+        <xpath expr="//div[@id='oe_structure_website_sale_products_1']" position="after">
+            <!-- Solo aplicar a Canarias y Zonas - NO a microsites individuales -->
+            <t t-if="website.is_canarias_conectada or website.zone_id">
+                <style>
+                    /* Ocultar carrito solo en Canarias y Zonas - Microsites individuales mantienen carrito */
+                    .o_wsale_my_cart, .o_wsale_cart_quantity { display: none !important; }
+                    .o_wsale_product_btn { display: none !important; }
+                    .o_wsale_products_add_to_cart { display: none !important; }
+                    .o_add_to_cart_button { display: none !important; }
+                </style>
+                
+                <!-- CSS: Layout de 2 filas en móvil - Filtros arriba, productos abajo -->
+                <style id="mobile-sidebar-layout">
+                    @media (max-width: 991.98px) {
+                        /* La fila principal permite wrap (2 filas) */
+                        .o_wsale_products_main_row {
+                            flex-wrap: wrap !important;
+                        }
+                        
+                        /* Sidebar arriba: 100% width, posición normal */
+                        #products_grid_before {
+                            width: 100% !important;
+                            min-width: 100% !important;
+                            max-width: 100% !important;
+                            flex: 0 0 100% !important;
+                            position: relative !important;
+                            left: auto !important;
+                            top: auto !important;
+                            order: -1 !important; /* Mover al principio */
+                            margin-bottom: 20px !important;
+                            display: block !important;
+                            visibility: visible !important;
+                            opacity: 1 !important;
+                        }
+                        
+                        /* Grid de productos abajo: 100% width */
+                        #products_grid {
+                            width: 100% !important;
+                            min-width: 100% !important;
+                            max-width: 100% !important;
+                            flex: 0 0 100% !important;
+                        }
+                        
+                        /* Productos en 1 columna (100% width cada uno) */
+                        #products_grid .o_wsale_products_grid_table_wrapper .oe_product,
+                        #products_grid .oe_product,
+                        .oe_product.oe_grid {
+                            width: 100% !important;
+                            min-width: 100% !important;
+                            max-width: 100% !important;
+                            flex: 0 0 100% !important;
+                        }
+                        
+                        /* Forzar que el grid interno sea de 1 columna */
+                        #products_grid .o_wsale_products_grid_table_wrapper > div,
+                        #products_grid .o_wsale_grid_row {
+                            display: flex !important;
+                            flex-wrap: wrap !important;
+                        }
+                        
+                        #products_grid .o_wsale_grid_item,
+                        #products_grid .o_wsale_products_item {
+                            width: 100% !important;
+                            max-width: 100% !important;
+                            flex: 0 0 100% !important;
+                        }
+                        
+                        /* El rail de categorías sin altura fija */
+                        .o_wsale_products_grid_before_rail {
+                            height: auto !important;
+                            max-height: none !important;
+                        }
+                    }
+                    
+                    @media (min-width: 992px) {
+                        /* Desktop: layout normal de 2 columnas */
+                        .o_wsale_products_main_row {
+                            flex-wrap: nowrap !important;
+                        }
+                        
+                        #products_grid_before {
+                            width: 260px !important;
+                            min-width: 260px !important;
+                            max-width: 280px !important;
+                            flex: 0 0 260px !important;
+                            order: 0 !important;
+                        }
+                    }
+                </style>
+                <script>
+                    // MICROSITES: Redirigir clicks a los dominios de los comercios
+                    (function(){
+                        function redirectToMicrosites(){
+                            document.querySelectorAll('[data-merchant-domain]').forEach(function(el){
+                                var domain = el.getAttribute('data-merchant-domain');
+                                if(!domain) return;
+                                var links = el.querySelectorAll('a[href*="/shop/"]');
+                                links.forEach(function(a){
+                                    var href = a.getAttribute('href');
+                                    if(!href || href.indexOf(domain) !== -1) return;
+                                    var match = href.match(/\/shop\/([^?#]+)/);
+                                    if(match){
+                                        a.href = domain.replace(/\/$/, '') + '/shop/' + match[1];
+                                        a.target = '_blank';
+                                    }
+                                });
+                            });
+                        }
+                        
+                        if(document.readyState !== 'loading'){
+                            redirectToMicrosites();
+                        } else {
+                            document.addEventListener('DOMContentLoaded', redirectToMicrosites);
+                        }
+                        window.addEventListener('load', redirectToMicrosites);
+                    })();
+                </script>
+                
+
+                
+
+            </t>
+            <!-- HEADER: Canarias Conectada -->
+            <t t-if="website.is_canarias_conectada">
+                <section class="shop-directory-header py-5 bg-light border-bottom mb-4">
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8 text-center">
+                                <h1 class="display-5 mb-3 fw-bold text-primary">Tienda Canarias Conectada</h1>
+                                <p class="lead mb-4 text-muted">Encuentra los mejores productos y servicios de nuestras zonas</p>
+                                <form action="/shop" method="get" class="input-group input-group-lg">
+                                    <input type="text" name="search" class="form-control border-end-0" 
+                                           placeholder="Buscar productos..." 
+                                           t-att-value="request.params.get('search', '')"/>
+                                    <button type="submit" class="btn btn-primary px-4">
+                                        <i class="fa fa-search me-2"/> Buscar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </t>
+            <!-- HEADER: Zona Comercial -->
+            <t t-if="website.zone_id and not website.is_canarias_conectada">
+                <section class="shop-directory-header py-5 bg-light border-bottom mb-4">
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8 text-center">
+                                <h1 class="display-5 mb-3 fw-bold" style="color: #714B67;">Tienda <t t-esc="website.zone_id.name"/></h1>
+                                <p class="lead mb-4 text-muted">Descubre los productos de las empresas de la zona</p>
+                                <form action="/shop" method="get" class="input-group input-group-lg">
+                                    <input type="text" name="search" class="form-control border-end-0" 
+                                           placeholder="Buscar productos..." 
+                                           t-att-value="request.params.get('search', '')"/>
+                                    <button type="submit" class="btn px-4" style="background-color: #714B67; border-color: #714B67; color: white;">
+                                        <i class="fa fa-search me-2"/> Buscar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- AGREGAR data-merchant-domain al form del producto -->
+    <template id="canarias_product_data" inherit_id="website_sale.products_item" priority="99">
+        <xpath expr="//form[@t-attf-class]" position="attributes">
+            <attribute name="t-att-data-merchant-domain">product.company_id.website_id.domain if product.company_id and product.company_id.website_id else ''</attribute>
+        </xpath>
+    </template>
+
+    <!-- COMBOBOX SEARCHABLE DE CATEGORIAS CON SELECT2 -->
+    <template id="canarias_categories_searchable" inherit_id="website_sale.products" priority="98">
+        <!-- Reemplazar completamente el aside del sidebar -->
+        <xpath expr="//aside[@id='products_grid_before']" position="replace">
+            <t t-set="is_microsite" t-value="website.company_id and not website.is_canarias_conectada and not website.zone_id"/>
+            <aside t-if="website.is_canarias_conectada or website.zone_id or is_microsite" 
+                   id="products_grid_before" 
+                   class="d-none d-lg-block position-sticky align-self-start col clearfix pt-2"
+                   data-canarias-sidebar="true">
+                <t t-call="website_sale.sidebar_dropzone_at_top"/>
+                <div class="o_wsale_products_grid_before_rail vh-100 ms-n2 px-lg-2 ps-2 overflow-y-scroll">
+                    <!-- NUEVO: Filtro de categorías personalizado -->
+                    <div class="card border-0 shadow-sm mb-3 canarias-category-filter">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="mb-0 fw-bold fs-6">
+                                <i class="fa fa-folder-open text-primary me-2"/>
+                                <t t-if="website.is_canarias_conectada">Categorías</t>
+                                <t t-elif="website.zone_id">Categorías de <t t-esc="website.zone_id.name"/></t>
+                                <t t-else="">Categorías</t>
+                            </h5>
+                        </div>
+                        <div class="card-body" style="overflow: visible;">
+                            <select id="zone-category-select" class="form-select directory-select2" style="width: 100%;">
+                                <option value="/shop" t-att-selected="not category">Todas las categorias</option>
+                                <t t-foreach="website.get_canarias_categories()" t-as="cat">
+                                    <option t-att-value="'/shop?category=' + str(cat.id)" t-att-selected="category and category.id == cat.id" t-esc="cat.name"/>
+                                </t>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Filtro de Precios -->
+                    <t t-call="website_sale.filter_products_price"/>
+                    
+                    <!-- Dropzone al final -->
+                    <t t-call="website_sale.sidebar_dropzone_at_bottom"/>
+                </div>
+            </aside>
+            <t t-else="">
+                <!-- Para websites normales (no Canarias, no Zona, no Microsite), mantener sidebar original -->
+                <aside id="products_grid_before" class="d-none d-lg-block position-sticky align-self-start col clearfix pt-2">
+                    <t t-call="website_sale.sidebar_dropzone_at_top"/>
+                    <div class="o_wsale_products_grid_before_rail vh-100 ms-n2 px-lg-2 ps-2 overflow-y-scroll">
+                        <t t-call="website_sale.products_categories_list"/>
+                        <t t-call="website_sale.sidebar_dropzone_at_bottom"/>
+                    </div>
+                </aside>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- OCULTAR HEADER ORIGINAL DE ODOO (título "Todos los productos" + search + filtros) -->
+    <template id="canarias_hide_original_header" inherit_id="website_sale.products" priority="99">
+        <xpath expr="//header[@id='o_wsale_products_header']" position="replace">
+            <!-- Header original eliminado - usamos nuestro header personalizado -->
+        </xpath>
+    </template>
+
+    <!-- NOTA: La funcionalidad de ocultar sidebar en móviles está integrada en canarias_categories_searchable -->
+
+    <!-- SELECT2 PARA CATEGORIAS DE CANARIAS -->
+    <template id="canarias_select2_assets" inherit_id="website.layout" priority="99">
+        <xpath expr="//head" position="inside">
+            <t t-if="website.is_canarias_conectada or website.zone_id or (website.company_id and not website.is_canarias_conectada and not website.zone_id)">
+                <!-- jQuery desde CDN (carga ANTES que los assets de Odoo) -->
+                <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+                
+                <!-- CSS de Select2 -->
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"/>
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"/>
+                
+                <!-- Select2 JS desde CDN (carga ANTES que los assets de Odoo) -->
+                <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+                
+                <style>
+                    /* Ocultar select nativo hasta que Select2 este listo */
+                    #zone-category-select {
+                        visibility: hidden;
+                    }
+                    #zone-category-select.select2-hidden-accessible {
+                        visibility: visible;
+                    }
+                </style>
+                
+                <!-- Inicialización de Select2 con navegación y DEBUG -->
+                <script>
+                    (function() {
+// console.log('[ZONE-CAT] Script iniciado');
+                        
+                        function initSelect2() {
+// console.log('[ZONE-CAT] initSelect2 llamado');
+                            
+                            if (!window.location.pathname.startsWith('/shop')) {
+// console.log('[ZONE-CAT] No estamos en /shop, saliendo');
+                                return;
+                            }
+                            
+                            if (!window.jQuery) {
+// console.log('[ZONE-CAT] jQuery no disponible');
+                                return;
+                            }
+                            
+                            var $ = window.jQuery;
+                            var $select = $('#zone-category-select');
+                            
+// console.log('[ZONE-CAT] Select encontrado:', $select.length);
+                            
+                            if (!$select.length) {
+// console.log('[ZONE-CAT] Select no encontrado');
+                                return;
+                            }
+                            
+                            if ($select.hasClass('select2-hidden-accessible')) {
+// console.log('[ZONE-CAT] Select2 ya inicializado');
+                                return;
+                            }
+                            
+                            // Inicializar Select2
+// console.log('[ZONE-CAT] Inicializando Select2...');
+                            $select.select2({
+                                theme: 'bootstrap-5',
+                                width: '100%',
+                                placeholder: 'Buscar categoria...',
+                                allowClear: false,
+                                minimumResultsForSearch: 0,
+                                language: {
+                                    noResults: function() { return "No se encontro la categoria"; },
+                                    searching: function() { return "Buscando..."; }
+                                }
+                            });
+                            
+// console.log('[ZONE-CAT] Select2 inicializado');
+                            
+                            // SIEMPRE usar AJAX, nunca navegar directamente
+                            $select.off('change').on('change', function(e) {
+// console.log('[ZONE-CAT] Evento change disparado');
+                                var url = $(this).val();
+// console.log('[ZONE-CAT] Valor del select:', url);
+                                
+                                // Extraer category ID de la URL
+                                var categoryId = null;
+                                if (url &amp;&amp; url.includes('category=')) {
+                                    var match = url.match(/category=([0-9]+)/);
+                                    if (match) categoryId = match[1];
+                                }
+                                
+                                // Usar ZoneAjaxLoader si está disponible
+                                if (window.ZoneAjaxLoader) {
+// console.log('[ZONE-CAT] Usando AJAX para categoria:', categoryId);
+                                    var searchInput = document.querySelector('input[name="search"]');
+                                    var search = searchInput ? searchInput.value : '';
+                                    var minPrice = window.ZoneAjaxLoader.currentMinPrice || 0;
+                                    var maxPrice = window.ZoneAjaxLoader.currentMaxPrice || 0;
+                                    window.ZoneAjaxLoader.loadProducts(categoryId, search, minPrice, maxPrice);
+                                } else {
+// console.log('[ZONE-CAT] ZoneAjaxLoader no disponible');
+                                }
+                            });
+                        }
+                        
+                        // Función para seleccionar la categoría actual en el Select2
+                        function selectCurrentCategory() {
+                            var urlParams = new URLSearchParams(window.location.search);
+                            var categoryId = urlParams.get('category');
+                            if (categoryId) {
+                                var $select = $('#zone-category-select');
+                                if ($select.length &amp;&amp; $select.hasClass('select2-hidden-accessible')) {
+                                    // Buscar la opción que contiene el category ID
+                                    var found = false;
+                                    $select.find('option').each(function() {
+                                        var optionValue = $(this).val();
+                                        if (optionValue &amp;&amp; optionValue.includes('category=' + categoryId)) {
+                                            $select.val(optionValue).trigger('change');
+// console.log('[ZONE-CAT] Categoría actual seleccionada:', categoryId);
+                                            found = true;
+                                            return false;
+                                        }
+                                    });
+                                    return found;
+                                }
+                            }
+                            return false;
+                        }
+                        
+                        // Función global para actualizar Select2 desde el AJAX loader
+                        window.updateSelect2WithCategory = function(categoryId, categoryName) {
+// console.log('[ZONE-CAT] Actualizando Select2 con categoría:', categoryId, categoryName);
+                            var $select = $('#zone-category-select');
+                            if (!$select.length) return;
+                            
+                            if (!categoryId) {
+                                // Resetear a "Todas las categorías" (primera opción)
+                                var firstOption = $select.find('option:first').val();
+                                $select.val(firstOption).trigger('change');
+                                return;
+                            }
+                            
+                            // Buscar la opción que corresponde a esta categoría
+                            var found = false;
+                            $select.find('option').each(function() {
+                                var optionValue = $(this).val();
+                                if (optionValue &amp;&amp; optionValue.includes('category=' + categoryId)) {
+                                    $select.val(optionValue).trigger('change');
+// console.log('[ZONE-CAT] Select2 actualizado a:', optionValue);
+                                    found = true;
+                                    return false;
+                                }
+                            });
+                            
+                            // Si no se encontró, crear una opción temporal (para categorías dinámicas)
+                            if (!found &amp;&amp; categoryName) {
+                                var tempUrl = '/shop?category=' + categoryId;
+                                var newOption = new Option(categoryName, tempUrl, true, true);
+                                $select.append(newOption).trigger('change');
+// console.log('[ZONE-CAT] Opción temporal creada para:', categoryName);
+                            }
+                        };
+                        
+                        // Intentar inicializar múltiples veces
+                        function tryInit() {
+// console.log('[ZONE-CAT] Intentando inicializar...');
+                            initSelect2();
+                            // Después de inicializar, seleccionar la categoría actual
+                            setTimeout(selectCurrentCategory, 100);
+                        }
+                        
+                        if (document.readyState !== 'loading') {
+                            tryInit();
+                        } else {
+                            document.addEventListener('DOMContentLoaded', tryInit);
+                        }
+                        
+                        // Reintentar después de un tiempo
+                        setTimeout(tryInit, 500);
+                        setTimeout(tryInit, 1500);
+                        setTimeout(tryInit, 3000);
+                        
+                        // También intentar seleccionar la categoría cuando el DOM esté list
+                        setTimeout(selectCurrentCategory, 1000);
+                        setTimeout(selectCurrentCategory, 2500);
+                        
+                    })();
+                </script>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- TEMPLATE AJAX: Grid de productos para carga asíncrona -->
+    <!-- IMPORTANTE: Usa las mismas clases CSS que el grid original de Odoo -->
+    <template id="products_grid_ajax">
+        <t t-if="products">
+            <t t-set="ppr" t-value="website.shop_ppr or 4"/>
+            <t t-set="col_width" t-value="12 // ppr"/>
+            <t t-foreach="products" t-as="product">
+                <!-- Calcular URL correcta al microsite del comercio -->
+                <t t-set="microsite_url" t-value="product.company_id.website_id.domain if product.company_id and product.company_id.website_id else ''"/>
+                <t t-set="product_slug" t-value="product.website_url.split('/')[-1] if product.website_url else ''"/>
+                <t t-set="product_microsite_url" t-value="(microsite_url + '/shop/' + product_slug) if microsite_url else product.website_url"/>
+                
+                <!-- Clases del grid original: g-col-6 para móvil, g-col-lg-X para desktop -->
+                <div t-attf-class="o_wsale_grid_item g-col-6 g-col-lg-{{col_width}} {{'g-col-md-4' if ppr &gt;= 4 else 'g-col-md-6'}}"
+                     t-att-data-merchant-domain="microsite_url">
+                    <form t-attf-action="/shop/cart/update" method="post" enctype="multipart/form-data" class="o_wsale_product_grid_wrapper h-100 position-relative d-flex">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <input type="hidden" name="product_template_id" t-att-value="product.id"/>
+                        <div class="oe_product_cart h-100 w-100 d-flex flex-column">
+                            <div class="oe_product_image position-relative">
+                                <!-- Link al microsite del comercio -->
+                                <a t-att-href="product_microsite_url" target="_blank" class="d-flex h-100 align-items-center justify-content-center text-decoration-none">
+                                    <img t-att-src="'/web/image/product.template/%s/image_512' % product.id" 
+                                         class="img-fluid" 
+                                         t-att-alt="product.name"
+                                         loading="lazy"/>
+                                </a>
+                            </div>
+                            <div class="o_wsale_product_information p-3">
+                                <!-- Link al microsite del comercio -->
+                                <h5 class="o_wsale_products_item_title mb-1">
+                                    <a t-att-href="product_microsite_url" target="_blank" class="text-decoration-none text-dark" t-esc="product.name"/>
+                                </h5>
+                                <!-- Precio del producto -->
+                                <t t-set="template_price_vals" t-value="get_product_prices(product)"/>
+                                <t t-set="product_price_val" t-value="template_price_vals.get('price_reduce', 0)"/>
+                                <div class="o_wsale_product_price mb-2" t-if="product_price_val > 0">
+                                    <span class="fw-bold" t-esc="product_price_val" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                </div>
+                                <!-- Pill de comercio - link a la tienda del comercio, solo commercial name -->
+                                <t t-if="product.company_id">
+                                    <t t-set="microsite_url" t-value="product.company_id.website_id.domain if product.company_id.website_id else ''"/>
+                                    <div class="o_wsale_company_pill mt-1 mb-1">
+                                        <a t-att-href="microsite_url or '#'" 
+                                           class="text-decoration-none"
+                                           target="_blank"
+                                           title="Ver tienda del comercio">
+                                            <span class="badge rounded-pill bg-light text-secondary border small fw-normal" style="font-size: 0.75rem;">
+                                                <i class="fa fa-store me-1" aria-hidden="true"/>
+                                                <t t-esc="product.company_id.display_name_commercial"/>
+                                            </span>
+                                        </a>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </t>
+        </t>
+        <t t-else="">
+            <div class="alert alert-info text-center py-5">
+                <i class="fa fa-info-circle fa-2x mb-3 d-block"/>
+                <p class="mb-0">No se encontraron productos en esta categoría.</p>
+            </div>
+        </t>
+    </template>
+
+    <!-- AJAX: Carga asíncrona de productos al cambiar categoría -->
+    <template id="canarias_ajax_loader" inherit_id="website.layout" priority="99">
+        <xpath expr="//head" position="inside">
+            <t t-if="website.is_canarias_conectada or website.zone_id or (website.company_id and not website.is_canarias_conectada and not website.zone_id)">
+                <script>
+                    (function() {
+                        // AJAX para carga de productos sin recargar
+                        window.ZoneAjaxLoader = {
+                            isLoading: false,
+                            currentMinPrice: 0,
+                            currentMaxPrice: 0,
+                            
+                            loadProducts: function(categoryId, search, minPrice, maxPrice) {
+                                if (this.isLoading) return;
+                                this.isLoading = true;
+                                
+                                // Guardar valores actuales
+                                this.currentMinPrice = minPrice || 0;
+                                this.currentMaxPrice = maxPrice || 0;
+                                
+                                // Buscar el elemento GRID interno (con las clases CSS de columnas)
+                                // IMPORTANTE: No reemplazar el wrapper, solo el contenido interno
+                                var grid = document.getElementById('o_wsale_products_grid');
+                                if (!grid) {
+                                    grid = document.querySelector('#products_grid .o_wsale_products_grid_table');
+                                }
+                                if (!grid) {
+                                    grid = document.getElementById('products_grid');
+                                }
+                                if (!grid) {
+                                    this.isLoading = false;
+                                    return;
+                                }
+                                
+                                // Guardar contenido original para restaurar en caso de error
+                                var originalContent = grid.innerHTML;
+                                
+                                // Mostrar indicador de carga
+                                var loaderHtml = '<div id="zone-ajax-loader" class="text-center py-5 col-12"><i class="fa fa-spinner fa-spin fa-2x text-primary"></i><p class="mt-3 text-muted">Cargando productos...</p></div>';
+                                grid.innerHTML = loaderHtml;
+                                
+                                // Preparar URL con parámetros
+                                var url = '/shop/ajax/products';
+                                var params = new URLSearchParams();
+                                if (categoryId) params.append('category', categoryId);
+                                if (search) params.append('search', search);
+                                if (minPrice) params.append('min_price', minPrice);
+                                if (maxPrice) params.append('max_price', maxPrice);
+                                if (params.toString()) url += '?' + params.toString();
+                                
+// console.log('[ZONE-AJAX] Fetching:', url);
+                                
+                                // Hacer petición AJAX
+                                fetch(url, {
+                                    method: 'GET',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                    }
+                                })
+                                .then(function(response) {
+                                    if (!response.ok) throw new Error('Network error: ' + response.status);
+                                    return response.json();
+                                })
+                                .then(function(result) {
+// console.log('[ZONE-AJAX] Response:', result);
+                                    
+                                    if (result.error) throw new Error(result.error);
+                                    
+                                    // Actualizar el grid con el HTML recibido
+                                    if (result.html) {
+                                        grid.innerHTML = result.html;
+                                        
+                                        // Actualizar contador si existe
+                                        var counter = document.querySelector('.o_wsale_products_grid_header .o_wsale_products_grid_count');
+                                        if (counter &amp;&amp; result.count !== undefined) {
+                                            counter.textContent = result.count + ' productos';
+                                        }
+                                        
+                                        // Ocultar paginación original cuando hay filtros activos
+                                        var pagination = document.querySelector('.o_wsale_products_grid_bottom, .pagination, .o_pager');
+                                        if (pagination &amp;&amp; result.filters_active) {
+                                            pagination.style.display = 'none';
+                                        } else if (pagination &amp;&amp; !result.filters_active) {
+                                            pagination.style.display = '';
+                                        }
+                                        
+                                        // Mostrar indicador de filtros activos
+                                        var existingFilterInfo = document.getElementById('zone-active-filters');
+                                        if (existingFilterInfo) {
+                                            existingFilterInfo.remove();
+                                        }
+                                        
+                                        if (result.filters_active) {
+                                            var filterInfoHtml = '<div id="zone-active-filters" class="alert alert-info d-flex align-items-center justify-content-between mb-3">';
+                                            filterInfoHtml += '<div><i class="fa fa-filter me-2"></i>';
+                                            filterInfoHtml += '<strong>Mostrando ' + result.count + ' productos</strong>';
+                                            
+                                            var filterDetails = [];
+                                            if (result.category_name) {
+                                                filterDetails.push('categoría: <b>' + result.category_name + '</b>');
+                                            } else if (result.category_id) {
+                                                filterDetails.push('categoría seleccionada');
+                                            }
+                                            if (result.search) filterDetails.push('búsqueda: "' + result.search + '"');
+                                            if (result.price &amp;&amp; (result.price.min || result.price.max)) {
+                                                filterDetails.push('precio: ' + result.price.min + '€ - ' + result.price.max + '€');
+                                            }
+                                            
+                                            if (filterDetails.length > 0) {
+                                                filterInfoHtml += '<small class="text-muted ms-2">(' + filterDetails.join(', ') + ')</small>';
+                                            }
+                                            filterInfoHtml += '</div>';
+                                            filterInfoHtml += '<button type="button" class="btn btn-sm btn-outline-primary" onclick="window.location.href=\'/shop\'">';
+                                            filterInfoHtml += '<i class="fa fa-times me-1"></i>Limpiar filtros';
+                                            filterInfoHtml += '</button></div>';
+                                            
+                                            grid.insertAdjacentHTML('beforebegin', filterInfoHtml);
+                                        }
+                                        
+                                        // Re-inicializar redirección a microsites
+                                        if (window.redirectToMicrosites) {
+                                            window.redirectToMicrosites();
+                                        }
+                                        
+                                        // Actualizar URL sin recargar
+                                        var newUrl = categoryId ? '/shop?category=' + categoryId : '/shop';
+                                        var urlParams = [];
+                                        if (search) urlParams.push('search=' + encodeURIComponent(search));
+                                        if (minPrice) urlParams.push('min_price=' + minPrice);
+                                        if (maxPrice) urlParams.push('max_price=' + maxPrice);
+                                        if (urlParams.length > 0) {
+                                            newUrl += (newUrl.includes('?') ? '&amp;' : '?') + urlParams.join('&amp;');
+                                        }
+                                        window.history.pushState({category: categoryId, search: search, minPrice: minPrice, maxPrice: maxPrice}, '', newUrl);
+                                        
+                                        // ACTUALIZAR SELECT2 con la categoría seleccionada
+                                        updateSelect2WithCategory(categoryId, result.category_name);
+                                        
+// console.log('[ZONE-AJAX] Productos actualizados:', result.count);
+                                    } else {
+                                        throw new Error('No HTML in response');
+                                    }
+                                })
+                                .catch(function(error) {
+// console.error('[ZONE-AJAX] Error:', error);
+                                    // Restaurar contenido original
+                                    grid.innerHTML = originalContent;
+                                    // Fallback: recargar la página
+                                    var fallbackUrl = categoryId ? '/shop?category=' + categoryId : '/shop';
+                                    if (minPrice) fallbackUrl += (fallbackUrl.includes('?') ? '&amp;' : '?') + 'min_price=' + minPrice;
+                                    if (maxPrice) fallbackUrl += (fallbackUrl.includes('?') ? '&amp;' : '?') + 'max_price=' + maxPrice;
+                                    window.location.href = fallbackUrl;
+                                })
+                                .finally(function() {
+                                    window.ZoneAjaxLoader.isLoading = false;
+                                });
+                            }
+                        };
+                        
+                        // Interceptar cambios de categoría
+                        function setupAjaxCategoryChange() {
+                            var select = document.getElementById('zone-category-select');
+                            if (!select) {
+// console.log('[ZONE-AJAX] Select no encontrado');
+                                return;
+                            }
+                            
+                            // Remover el onchange inline
+                            select.removeAttribute('onchange');
+                            
+                            // Prevenir navegación por defecto del select
+                            select.addEventListener('click', function(e) {
+                                e.preventDefault();
+                            }, true);
+                            
+                            // Agregar listener AJAX
+                            select.addEventListener('change', function(e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                
+                                var value = this.value;
+                                var categoryId = null;
+                                
+                                // Extraer category ID de la URL
+                                if (value &amp;&amp; value.includes('category=')) {
+                                    var match = value.match(/category=([0-9]+)/);
+                                    if (match) categoryId = match[1];
+                                }
+                                
+                                var searchInput = document.querySelector('input[name="search"]');
+                                var search = searchInput ? searchInput.value : '';
+                                
+                                // Obtener precios actuales
+                                var minPrice = window.ZoneAjaxLoader.currentMinPrice;
+                                var maxPrice = window.ZoneAjaxLoader.currentMaxPrice;
+                                
+// console.log('[ZONE-AJAX] Cambio de categoría:', categoryId);
+                                window.ZoneAjaxLoader.loadProducts(categoryId, search, minPrice, maxPrice);
+                                
+                                return false;
+                            });
+                            
+// console.log('[ZONE-AJAX] Listener categoría configurado');
+                        }
+                        
+                        // Interceptar cambios en el filtro de precio de Odoo
+                        function setupPriceFilterIntercept() {
+                            // Múltiples selectores para encontrar el input de precio
+                            var priceRange = document.getElementById('o_wsale_price_range');
+                            if (!priceRange) {
+                                priceRange = document.querySelector('input[name="price"]');
+                            }
+                            if (!priceRange) {
+                                priceRange = document.querySelector('input[data-name="price"]');
+                            }
+                            if (!priceRange) {
+                                priceRange = document.querySelector('input[type="hidden"][name*="price"]');
+                            }
+                            
+                            // Buscar el contenedor del filtro de precio
+                            var priceFilterContainer = document.querySelector('.o_wsale_price_filter, .price-filter, #price-filter');
+                            
+                            if (priceRange) {
+// console.log('[ZONE-AJAX] Filtro de precio encontrado:', priceRange.id || priceRange.name);
+                                
+                                // Función para aplicar filtro de precio
+                                function applyPriceFilter() {
+                                    var value = priceRange.value;
+// console.log('[ZONE-AJAX] Aplicando filtro de precio:', value);
+                                    
+                                    // Parsear valor "min,max"
+                                    var prices = value.split(',');
+                                    var minPrice = parseFloat(prices[0]) || 0;
+                                    var maxPrice = parseFloat(prices[1]) || 0;
+                                    
+                                    window.ZoneAjaxLoader.currentMinPrice = minPrice;
+                                    window.ZoneAjaxLoader.currentMaxPrice = maxPrice;
+                                    
+                                    // Obtener categoría y búsqueda actuales
+                                    var urlParams = new URLSearchParams(window.location.search);
+                                    var categoryId = urlParams.get('category');
+                                    var searchInput = document.querySelector('input[name="search"]');
+                                    var search = searchInput ? searchInput.value : '';
+                                    
+                                    window.ZoneAjaxLoader.loadProducts(categoryId, search, minPrice, maxPrice);
+                                }
+                                
+                                // Método 1: Observar cambios en el atributo value
+                                var observer = new MutationObserver(function(mutations) {
+                                    mutations.forEach(function(mutation) {
+                                        if (mutation.type === 'attributes' &amp;&amp; mutation.attributeName === 'value') {
+                                            applyPriceFilter();
+                                        }
+                                    });
+                                });
+                                observer.observe(priceRange, { attributes: true });
+                                
+                                // Método 2: Escuchar evento change
+                                priceRange.addEventListener('change', applyPriceFilter);
+                                
+                                // Método 3: Escuchar evento input (para sliders)
+                                priceRange.addEventListener('input', function(e) {
+                                    // Solo actualizar sin hacer AJAX mientras se arrastra
+                                    var value = priceRange.value;
+                                    var prices = value.split(',');
+                                    window.ZoneAjaxLoader.currentMinPrice = parseFloat(prices[0]) || 0;
+                                    window.ZoneAjaxLoader.currentMaxPrice = parseFloat(prices[1]) || 0;
+                                });
+                                
+                                // Método 4: Interceptar cualquier botón dentro del filtro de precio
+                                if (priceFilterContainer) {
+                                    var buttons = priceFilterContainer.querySelectorAll('button, .btn, a');
+                                    buttons.forEach(function(btn) {
+                                        btn.addEventListener('click', function(e) {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            applyPriceFilter();
+                                        });
+                                    });
+                                }
+                                
+                                // Método 5: Detectar cambios en inputs visibles de precio (min/max)
+                                var minPriceInput = document.querySelector('input[name="min_price"], input#min_price');
+                                var maxPriceInput = document.querySelector('input[name="max_price"], input#max_price');
+                                
+                                if (minPriceInput) {
+                                    minPriceInput.addEventListener('change', function() {
+                                        var minPrice = parseFloat(this.value) || 0;
+                                        var maxPrice = window.ZoneAjaxLoader.currentMaxPrice || 0;
+                                        var urlParams = new URLSearchParams(window.location.search);
+                                        var categoryId = urlParams.get('category');
+                                        var searchInput = document.querySelector('input[name="search"]');
+                                        var search = searchInput ? searchInput.value : '';
+                                        window.ZoneAjaxLoader.loadProducts(categoryId, search, minPrice, maxPrice);
+                                    });
+                                }
+                                
+                                if (maxPriceInput) {
+                                    maxPriceInput.addEventListener('change', function() {
+                                        var minPrice = window.ZoneAjaxLoader.currentMinPrice || 0;
+                                        var maxPrice = parseFloat(this.value) || 0;
+                                        var urlParams = new URLSearchParams(window.location.search);
+                                        var categoryId = urlParams.get('category');
+                                        var searchInput = document.querySelector('input[name="search"]');
+                                        var search = searchInput ? searchInput.value : '';
+                                        window.ZoneAjaxLoader.loadProducts(categoryId, search, minPrice, maxPrice);
+                                    });
+                                }
+                                
+// console.log('[ZONE-AJAX] Filtro de precio configurado con múltiples métodos');
+                            } else {
+// console.log('[ZONE-AJAX] Filtro de precio no encontrado, reintentando...');
+                            }
+                        }
+                        
+                        // Configurar cuando el DOM esté listo
+                        if (document.readyState !== 'loading') {
+                            setupAjaxCategoryChange();
+                            setupPriceFilterIntercept();
+                        } else {
+                            document.addEventListener('DOMContentLoaded', function() {
+                                setupAjaxCategoryChange();
+                                setupPriceFilterIntercept();
+                            });
+                        }
+                        setTimeout(setupAjaxCategoryChange, 500);
+                        setTimeout(setupPriceFilterIntercept, 500);
+                        setTimeout(setupAjaxCategoryChange, 1500);
+                        setTimeout(setupPriceFilterIntercept, 1500);
+                        
+                        // Prevenir submit del formulario de filtros (para evitar recarga de página)
+                        function preventFormSubmit() {
+                            var forms = document.querySelectorAll('form[action*="/shop"], #o_wsale_price_range_form, .o_wsale_filters_form');
+                            forms.forEach(function(form) {
+                                form.addEventListener('submit', function(e) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+// console.log('[ZONE-AJAX] Form submit prevenido');
+                                    return false;
+                                });
+                            });
+                            
+                            // También interceptar clics en el área de filtros de precio
+                            var priceFilterArea = document.querySelector('.o_wsale_price_filter, #o_wsale_price_range');
+                            if (priceFilterArea) {
+                                priceFilterArea.addEventListener('click', function(e) {
+                                    // Si el clic viene de un input tipo range o slider
+                                    if (e.target.tagName === 'INPUT' || e.target.closest('input[type="range"]')) {
+                                        // Dejar que el slider funcione normalmente
+                                        return;
+                                    }
+                                    // Para otros elementos, prevenir navegación
+                                    if (e.target.tagName === 'A' || e.target.closest('a')) {
+                                        e.preventDefault();
+                                    }
+                                }, true);
+                            }
+                        }
+                        
+                        if (document.readyState !== 'loading') {
+                            preventFormSubmit();
+                        } else {
+                            document.addEventListener('DOMContentLoaded', preventFormSubmit);
+                        }
+                        setTimeout(preventFormSubmit, 1000);
+                        
+                    })();
+                </script>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- DEBUG CRÍTICO: Alert para verificar si el template se aplica -->
+    <template id="zone_cat_alert_debug" inherit_id="website.layout" priority="200">
+        <xpath expr="//head" position="inside">
+            <t t-if="website.is_canarias_conectada or website.zone_id or (website.company_id and not website.is_canarias_conectada and not website.zone_id)">
+                <script type="text/javascript">
+// console.log('!!! ZONE-CAT ALERT DEBUG !!!');
+                </script>
+            </t>
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Template para agregar marcadores de identificación del website -->
+    <template id="website_identifiers" inherit_id="website.layout" name="Website Identifiers" priority="99">
+        <xpath expr="//body" position="attributes">
+            <attribute name="t-att-data-website-name">website.name</attribute>
+            <attribute name="t-att-data-is-canarias">website.is_canarias_conectada</attribute>
+            <attribute name="t-att-data-is-zone">bool(website.zone_id)</attribute>
+        </xpath>
+    </template>
+    
+    <!-- Template para modificar los links de productos -->
+    <template id="product_link_microsite_disabled" inherit_id="website_sale.products_item" name="Product Link Microsite (Disabled)" priority="10" active="False">
+        <!-- Modificar todos los links que usan product_href -->
+        <xpath expr="//a[@t-att-href='product_href']" position="attributes">
+            <attribute name="t-att-href">
+                <t t-if="(website.is_canarias_conectada or website.zone_id) and product.get_product_microsite_url()">
+                    <t t-esc="product.get_product_microsite_url()"/>
+                </t>
+                <t t-else="">product_href</t>
+            </attribute>
+        </xpath>
+    </template>
+</odoo>

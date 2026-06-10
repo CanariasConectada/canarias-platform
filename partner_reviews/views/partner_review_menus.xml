@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Menú principal de Reseñas — prominente en el backend -->
+    <menuitem id="menu_partner_reviews_root"
+              name="Reseñas"
+              sequence="25"
+              groups="group_partner_reviews_manager,group_partner_reviews_moderator,group_partner_reviews_user"/>
+
+    <menuitem id="menu_partner_reviews_ratings"
+              name="Valoraciones"
+              parent="menu_partner_reviews_root"
+              action="action_partner_review_rating"
+              sequence="10"/>
+
+    <menuitem id="menu_partner_reviews_comments"
+              name="Comentarios"
+              parent="menu_partner_reviews_root"
+              action="action_partner_review_comment"
+              sequence="20"/>
+
+    <menuitem id="menu_partner_reviews_palabras"
+              name="Palabras Prohibidas"
+              parent="menu_partner_reviews_root"
+              action="action_partner_review_palabra_prohibida"
+              sequence="30"/>
+
+    <menuitem id="menu_partner_reviews_settings"
+              name="Configuración"
+              parent="menu_partner_reviews_root"
+              action="action_partner_review_settings"
+              sequence="40"/>
+</odoo>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Script que se ejecuta ANTES de que Odoo inicialice el web client -->
+    <template id="layout_preload_cookie" name="Microsite Preload Cookie" inherit_id="web.layout">
+        <xpath expr="//head/script[@id='web.layout.odooscript']" position="after">
+            <script type="text/javascript" src="/microsite_company_switch/static/src/js/company_preload.js"></script>
+        </xpath>
+    </template>
+</odoo>

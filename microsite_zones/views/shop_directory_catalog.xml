@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ============================================================
+         CATÁLOGO/DIRECTORIO - SIN FUNCIONALIDAD DE COMPRA
+         Para zonas comerciales y Canarias Conectada
+         ============================================================ -->
+
+    <!-- 1. OCULTAR BOTÓN "AÑADIR AL CARRITO" EN ZONAS Y CANARIAS CONECTADA -->
+    <template id="hide_add_to_cart_zones" inherit_id="website_sale.shop_product_buttons" name="Hide Add to Cart in Zones">
+        <xpath expr="//a[contains(@class, 'a-submit') or contains(@id, 'add_to_cart')]" position="attributes">
+            <attribute name="t-if">not (request.website.zone_id or request.website.is_canarias_conectada)</attribute>
+        </xpath>
+    </template>
+
+    <!-- 2. OCULTAR PRECIOS EN ZONAS Y CANARIAS CONECTADA -->
+    <template id="hide_prices_zones" inherit_id="website_sale.products_item" name="Hide Prices in Zones">
+        <xpath expr="//div[contains(@class, 'product_price')]" position="attributes">
+            <attribute name="t-if">not (request.website.zone_id or request.website.is_canarias_conectada)</attribute>
+        </xpath>
+    </template>
+
+    <!-- 3. AÑADIR BOTÓN "VER EN TIENDA" EN LUGAR DE COMPRAR -->
+    <template id="product_view_in_store_button" inherit_id="website_sale.products_item" name="View in Store Button" priority="98">
+        <xpath expr="//div[contains(@class, 'o_wsale_product_btn')]" position="after">
+            <t t-if="request.website.zone_id and not request.website.is_canarias_conectada">
+                <div class="o_wsale_product_btn mt-2 o_wsale_view_in_store_btn">
+                    <a t-att-href="product.company_id.website_id and product.company_id.website_id.domain + '/shop/' + product.website_url.split('/')[-1] or product.website_url"
+                       class="btn btn-primary btn-sm w-100">
+                        <i class="fa fa-external-link me-1"/>
+                        <span>Ver en tienda</span>
+                    </a>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- 4. MODIFICAR ENLACE DEL PRODUCTO PARA IR AL MICROSITE -->
+    <template id="product_link_to_microsite_zones" inherit_id="website_sale.products_item" name="Product Link to Microsite (Zones Only)" priority="95">
+        <xpath expr="//a[hasclass('oe_product_image_link')]" position="attributes">
+            <attribute name="t-att-href">
+                <t t-if="request.website.zone_id and not request.website.is_canarias_conectada">
+                    <t t-out="product.company_id.website_id and product.company_id.website_id.domain + '/shop/' + product.website_url.split('/')[-1] or product.website_url"/>
+                </t>
+                <t t-else="">
+                    <t t-out="product_href"/>
+                </t>
+            </attribute>
+        </xpath>
+    </template>
+
+    <!-- 5. MODIFICAR ENLACE DEL TÍTULO DEL PRODUCTO -->
+    <template id="product_title_link_to_microsite_zones" inherit_id="website_sale.products_item" name="Product Title Link to Microsite (Zones Only)" priority="95">
+        <xpath expr="//h2[hasclass('o_wsale_products_item_title')]//a" position="attributes">
+            <attribute name="t-att-href">
+                <t t-if="request.website.zone_id and not request.website.is_canarias_conectada">
+                    <t t-out="product.company_id.website_id and product.company_id.website_id.domain + '/shop/' + product.website_url.split('/')[-1] or product.website_url"/>
+                </t>
+                <t t-else="">
+                    <t t-out="product_href"/>
+                </t>
+            </attribute>
+        </xpath>
+    </template>
+
+    <!-- 6. OCULTAR CARRITO EN EL HEADER PARA ZONAS/CANARIAS -->
+    <template id="hide_cart_zones" inherit_id="website_sale.header_cart_link" name="Hide Cart in Zones">
+        <xpath expr="//t[@t-set='show_cart']" position="after">
+            <t t-if="request.website.zone_id and not request.website.is_canarias_conectada">
+                <t t-set="show_cart" t-value="False"/>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- 7. OCULTAR BOTONES DE COMPRA EN PÁGINA DE PRODUCTO -->
+    <template id="hide_product_cart_zones" inherit_id="website_sale.product" name="Hide Product Cart in Zones">
+        <xpath expr="//a[@id='add_to_cart']" position="attributes">
+            <attribute name="t-if">not (request.website.zone_id or request.website.is_canarias_conectada)</attribute>
+        </xpath>
+    </template>
+
+    <!-- 8. REEMPLAZAR BOTÓN DE COMPRA CON "VER EN TIENDA" EN PÁGINA DE PRODUCTO -->
+    <template id="product_page_view_in_store" inherit_id="website_sale.product" name="Product Page View in Store" priority="99">
+        <xpath expr="//a[@id='add_to_cart']" position="after">
+            <t t-if="request.website.zone_id and not request.website.is_canarias_conectada">
+                <a t-att-href="product.company_id.website_id and product.company_id.website_id.domain + '/shop/' + product.website_url.split('/')[-1] or product.website_url"
+                   class="btn btn-primary btn-lg w-100 w-md-auto mb-3">
+                    <i class="fa fa-external-link me-2"/>
+                    Ver en tienda de <t t-esc="product.company_id.name"/>
+                </a>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- 9. OCULTAR PRECIO EN PÁGINA DE PRODUCTO PARA ZONAS -->
+    <template id="hide_product_price_zones" inherit_id="website_sale.product_price" name="Hide Product Price in Zones">
+        <xpath expr="//span[@t-field='product.lst_price']" position="attributes">
+            <attribute name="t-if">not (request.website.zone_id or request.website.is_canarias_conectada)</attribute>
+        </xpath>
+    </template>
+
+    <!-- 10. ESTILOS ADICIONALES PARA EL MODO CATÁLOGO -->
+    <template id="catalog_mode_styles" inherit_id="website_sale.products" name="Catalog Mode Styles">
+        <xpath expr="//div[@id='oe_structure_website_sale_products_1']" position="after">
+            <style type="text/css">
+                /* ===== MODO CATÁLOGO - SIN COMPRA ===== */
+                
+                /* Estilo para el botón "Ver en tienda" */
+                .o_wsale_view_in_store_btn .btn-primary {
+                    background-color: #1561F0;
+                    border-color: #1561F0;
+                    font-weight: 500;
+                    transition: all 0.3s ease;
+                }
+                .o_wsale_view_in_store_btn .btn-primary:hover {
+                    background-color: #1046c9;
+                    border-color: #1046c9;
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 8px rgba(21, 97, 240, 0.3);
+                }
+                
+                /* Ocultar elementos de compra cuando no hay precios */
+                .oe_product_cart:has(.o_wsale_view_in_store_btn) .product_price {
+                    display: none !important;
+                }
+            </style>
+        </xpath>
+    </template>
+
+</odoo>

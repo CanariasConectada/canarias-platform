@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menú principal ZCA Platform -->
+    <menuitem id="menu_zca_root"
+              name="ZCA Comercios"
+              sequence="5"/>
+
+    <menuitem id="menu_zca_comercios"
+              name="Mis Comercios"
+              parent="menu_zca_root"
+              action="action_zca_comercios"
+              sequence="10"/>
+</odoo>

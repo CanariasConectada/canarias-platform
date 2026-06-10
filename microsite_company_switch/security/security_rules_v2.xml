@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- 
+        REGLAS DE SEGURIDAD V2 PARA RES.PARTNER (Contactos)
+        Fase 2: Contactos y Usuarios por Compañía
+        Fecha: 2026-03-25
+        
+        Objetivo:
+        - Usuarios normales: Ven contactos de su compañía + su propio contacto + My Company
+        - Administradores: Ven contactos de la compañía seleccionada + My Company (SIN bypass)
+        - My Company (ID: 1) es visible para todos como contenedor central de contactos
+    -->
+
+    <!-- 
+        REGLA 1 (v2): Usuarios Normales - Compañía + Propio Contacto + My Company
+        Grupo: Role / User (group_user)
+        Permite ver:
+        1. Contactos de las compañías del usuario (company_id in company_ids)
+        2. Su propio contacto de usuario (id = user.partner_id.id)
+        3. Todos los contactos de My Company (company_id = 1) - para edición centralizada
+    -->
+    <record id="rule_partner_user_company_v2" model="ir.rule">
+        <field name="name">Partner: User sees Company + My Company + Own Contact</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="domain_force">[
+            '|',
+                ('company_id', 'in', company_ids),
+                '|',
+                    ('id', '=', user.partner_id.id),
+                    ('company_id', '=', 1)
+        ]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- 
+        REGLA 2 (v2): Administradores - Compañía Seleccionada + My Company
+        Grupo: Administrator (group_system)
+        
+        IMPORTANTE: NO hay bypass [(1, '=', 1)]. El admin usa el switcher de compañía
+        como cualquier usuario. Al cambiar de compañía, ve los contactos de esa compañía.
+        
+        Permite ver:
+        1. Contactos de la compañía seleccionada (company_id in company_ids)
+        2. Todos los contactos de My Company (company_id = 1)
+    -->
+    <record id="rule_partner_admin_company_v2" model="ir.rule">
+        <field name="name">Partner: Admin sees Selected Company + My Company</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="domain_force">[
+            '|',
+                ('company_id', 'in', company_ids),
+                ('company_id', '=', 1)
+        ]</field>
+        <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- 
+        REGLA 3 (v2): OdooBot - Acceso Siempre Permitido
+        Grupo: Role / User (group_user)
+        Asegura que el usuario sistema (OdooBot, ID: 2) siempre sea visible
+    -->
+    <record id="rule_partner_odoo_bot_v2" model="ir.rule">
+        <field name="name">Partner: OdooBot Access</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="domain_force">[('id', '=', 2)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+</odoo>

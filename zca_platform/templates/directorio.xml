@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================
+         PÁGINA PRINCIPAL DEL DIRECTORIO
+         ============================================================ -->
+    <template id="directorio_page" name="Directorio ZCA">
+        <t t-call="website.layout">
+            <t t-set="title">Directorio de Comercios - ZCA Platform</t>
+
+            <!-- HERO DEL DIRECTORIO -->
+            <section class="zca-dir-hero">
+                <div class="container">
+                    <h1 class="zca-dir-hero__title">Directorio de Comercios</h1>
+                    <p class="zca-dir-hero__subtitle">Descubre los mejores comercios de tu zona</p>
+                    <!-- Barra de búsqueda hero -->
+                    <form class="zca-dir-hero__search" id="zca-search-form" action="/directorio" method="get">
+                        <div class="zca-search-bar">
+                            <input type="text"
+                                   name="search"
+                                   id="zca-search-input"
+                                   class="zca-search-bar__input"
+                                   placeholder="Buscar comercio, producto o servicio..."
+                                   t-att-value="current_search"
+                                   autocomplete="off"/>
+                            <button type="submit" class="zca-search-bar__btn">
+                                <i class="fa fa-search"/>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- FILTROS -->
+            <section class="zca-dir-filters">
+                <div class="container">
+                    <form id="zca-filter-form" class="zca-filters-row" action="/directorio" method="get">
+                        <!-- Zona -->
+                        <div class="zca-filter-group">
+                            <label class="zca-filter-label">Zona</label>
+                            <select name="zone" id="zca-filter-zone" class="zca-select">
+                                <option value="">Todas las zonas</option>
+                                <t t-foreach="[('guanarteme','Guanarteme'),('lomolosfrailes','Lomo Los Frailes'),('tamaraceite','Tamaraceite')]" t-as="z">
+                                    <option t-att-value="z[0]"
+                                            t-att-selected="'selected' if current_zone == z[0] else None">
+                                        <t t-out="z[1]"/>
+                                    </option>
+                                </t>
+                            </select>
+                        </div>
+
+                        <!-- Tipo (nivel 1) -->
+                        <div class="zca-filter-group">
+                            <label class="zca-filter-label">Tipo</label>
+                            <select name="tipo" id="zca-filter-tipo" class="zca-select">
+                                <option value="">Todos los tipos</option>
+                                <t t-foreach="category_tree.items()" t-as="tipo_item">
+                                    <option t-att-value="tipo_item[0]"
+                                            t-att-selected="'selected' if current_tipo == tipo_item[0] else None">
+                                        <t t-out="tipo_item[1]['label']"/>
+                                    </option>
+                                </t>
+                            </select>
+                        </div>
+
+                        <!-- Categoría (nivel 2) -->
+                        <div class="zca-filter-group">
+                            <label class="zca-filter-label">Categoría</label>
+                            <select name="category" id="zca-filter-cat" class="zca-select">
+                                <option value="">Todas las categorías</option>
+                                <t t-if="current_tipo and current_tipo in category_tree">
+                                    <t t-foreach="category_tree[current_tipo]['categorias'].items()" t-as="cat_item">
+                                        <option t-att-value="cat_item[0]"
+                                                t-att-selected="'selected' if current_category == cat_item[0] else None">
+                                            <t t-out="cat_item[1]['label']"/>
+                                        </option>
+                                    </t>
+                                </t>
+                            </select>
+                        </div>
+
+                        <!-- Subcategoría (nivel 3) -->
+                        <div class="zca-filter-group">
+                            <label class="zca-filter-label">Subcategoría</label>
+                            <select name="subcategory" id="zca-filter-subcat" class="zca-select">
+                                <option value="">Todas las subcategorías</option>
+                                <t t-if="current_tipo and current_category and current_tipo in category_tree and current_category in category_tree[current_tipo]['categorias']">
+                                    <t t-foreach="category_tree[current_tipo]['categorias'][current_category]['subcategorias']" t-as="subcat">
+                                        <option t-att-value="subcat"
+                                                t-att-selected="'selected' if current_subcategory == subcat else None">
+                                            <t t-out="subcat"/>
+                                        </option>
+                                    </t>
+                                </t>
+                            </select>
+                        </div>
+
+                        <!-- Búsqueda de texto -->
+                        <div class="zca-filter-group zca-filter-group--search">
+                            <label class="zca-filter-label">Buscar</label>
+                            <input type="text"
+                                   name="search"
+                                   id="zca-filter-search"
+                                   class="zca-input"
+                                   placeholder="Nombre o descripción..."
+                                   t-att-value="current_search"/>
+                        </div>
+
+                        <!-- Preservar otros params -->
+                        <input type="hidden" name="view" t-att-value="view"/>
+                        <input type="hidden" name="ppg" t-att-value="ppg"/>
+                        <input type="hidden" name="page" value="1"/>
+
+                        <button type="submit" class="zca-btn zca-btn--primary">
+                            <i class="fa fa-filter"/> Filtrar
+                        </button>
+                        <a href="/directorio" class="zca-btn zca-btn--outline">
+                            <i class="fa fa-times"/> Limpiar
+                        </a>
+                    </form>
+                </div>
+            </section>
+
+            <!-- BARRA DE STATS Y CONTROLES -->
+            <section class="zca-dir-toolbar">
+                <div class="container">
+                    <div class="zca-dir-toolbar__left">
+                        <span class="zca-dir-count">
+                            <strong t-out="total"/> comercios encontrados
+                        </span>
+                    </div>
+                    <div class="zca-dir-toolbar__right">
+                        <!-- Items por página -->
+                        <div class="zca-ppg-selector">
+                            <span>Mostrar:</span>
+                            <t t-foreach="[12, 21, 48]" t-as="ppg_val">
+                                <a t-attf-href="/directorio?zone=#{current_zone}&amp;tipo=#{current_tipo}&amp;category=#{current_category}&amp;subcategory=#{current_subcategory}&amp;search=#{current_search}&amp;view=#{view}&amp;ppg=#{ppg_val}&amp;page=1"
+                                   t-att-class="'zca-ppg-btn' + (' active' if ppg == ppg_val else '')">
+                                    <t t-out="ppg_val"/>
+                                </a>
+                            </t>
+                        </div>
+                        <!-- Toggle grid/list -->
+                        <div class="zca-view-toggle">
+                            <a t-attf-href="/directorio?zone=#{current_zone}&amp;tipo=#{current_tipo}&amp;category=#{current_category}&amp;subcategory=#{current_subcategory}&amp;search=#{current_search}&amp;view=grid&amp;ppg=#{ppg}&amp;page=#{page}"
+                               t-att-class="'zca-view-btn' + (' active' if view == 'grid' else '')"
+                               title="Vista cuadrícula"
+                               data-view="grid">
+                                <i class="fa fa-th-large"/>
+                            </a>
+                            <a t-attf-href="/directorio?zone=#{current_zone}&amp;tipo=#{current_tipo}&amp;category=#{current_category}&amp;subcategory=#{current_subcategory}&amp;search=#{current_search}&amp;view=list&amp;ppg=#{ppg}&amp;page=#{page}"
+                               t-att-class="'zca-view-btn' + (' active' if view == 'list' else '')"
+                               title="Vista lista"
+                               data-view="list">
+                                <i class="fa fa-list"/>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CONTENEDOR PRINCIPAL (cards + paginación, actualizable por AJAX) -->
+            <section class="zca-dir-content" id="zca-dir-results">
+                <div class="container">
+                    <t t-call="zca_platform.directorio_cards"/>
+                </div>
+            </section>
+
+            <!-- Datos para JS -->
+            <script type="text/javascript">
+                window.ZCA_DIR_DATA = {
+                    zone: "<t t-out='current_zone'/>",
+                    tipo: "<t t-out='current_tipo'/>",
+                    category: "<t t-out='current_category'/>",
+                    subcategory: "<t t-out='current_subcategory'/>",
+                    search: "<t t-out='current_search'/>",
+                    view: "<t t-out='view'/>",
+                    ppg: <t t-out='ppg'/>,
+                    page: <t t-out='page'/>,
+                    categoryTree: <t t-out="json.dumps(category_tree)"/>
+                };
+            </script>
+        </t>
+    </template>
+
+
+    <!-- ============================================================
+         FRAGMENTO DE CARDS (reutilizado en carga inicial y AJAX)
+         ============================================================ -->
+    <template id="directorio_cards" name="Cards del Directorio">
+
+        <t t-if="not comercios">
+            <div class="zca-empty-state">
+                <i class="fa fa-search fa-3x"/>
+                <h3>No se encontraron comercios</h3>
+                <p>Prueba a cambiar los filtros o la búsqueda.</p>
+                <a href="/directorio" class="zca-btn zca-btn--primary">Ver todos los comercios</a>
+            </div>
+        </t>
+
+        <t t-if="comercios">
+            <!-- Grid de cards -->
+            <div t-att-class="'zca-cards-grid' + (' zca-cards-grid--list' if view == 'list' else '')"
+                 id="zca-cards-container">
+                <t t-foreach="comercios" t-as="comercio">
+                    <div class="zca-card" t-att-data-id="comercio.id">
+                        <!-- Logo / imagen -->
+                        <div class="zca-card__img-wrap">
+                            <t t-if="comercio.image_128">
+                                <img t-attf-src="/directorio/img/#{comercio.id}"
+                                     t-att-alt="comercio.name"
+                                     class="zca-card__img"
+                                     loading="lazy"/>
+                            </t>
+                            <t t-else="">
+                                <div class="zca-card__img-placeholder">
+                                    <i class="fa fa-store"/>
+                                </div>
+                            </t>
+                            <!-- Badge zona -->
+                            <t t-if="comercio.x_zca_zona">
+                                <span class="zca-card__zona-badge">
+                                    <t t-out="comercio.x_zca_zona.title()"/>
+                                </span>
+                            </t>
+                        </div>
+
+                        <!-- Contenido -->
+                        <div class="zca-card__body">
+                            <h3 class="zca-card__name" t-out="comercio.name"/>
+
+                            <t t-if="comercio.x_zca_categoria">
+                                <span class="zca-card__cat">
+                                    <i class="fa fa-tag"/> <t t-out="comercio.x_zca_categoria"/>
+                                </span>
+                            </t>
+
+                            <t t-if="comercio.x_zca_descripcion_corta">
+                                <p class="zca-card__desc" t-out="comercio.x_zca_descripcion_corta[:120] + ('...' if len(comercio.x_zca_descripcion_corta or '') > 120 else '')"/>
+                            </t>
+
+                            <!-- Iconos de servicios -->
+                            <div class="zca-card__services">
+                                <t t-if="comercio.x_zca_horario_texto">
+                                    <span class="zca-service-icon" t-att-title="comercio.x_zca_horario_texto">
+                                        <i class="fa fa-clock-o"/>
+                                    </span>
+                                </t>
+                                <t t-if="comercio.x_zca_entrega">
+                                    <span class="zca-service-icon" t-att-title="comercio.x_zca_entrega">
+                                        <i class="fa fa-motorcycle"/>
+                                    </span>
+                                </t>
+                                <t t-if="comercio.x_zca_parking">
+                                    <span class="zca-service-icon" t-att-title="comercio.x_zca_parking">
+                                        <i class="fa fa-car"/>
+                                    </span>
+                                </t>
+                                <t t-if="comercio.x_zca_whatsapp">
+                                    <span class="zca-service-icon zca-service-icon--whatsapp">
+                                        <i class="fa fa-whatsapp"/>
+                                    </span>
+                                </t>
+                            </div>
+
+                            <!-- Redes sociales -->
+                            <div class="zca-card__social">
+                                <t t-if="comercio.x_zca_instagram">
+                                    <a t-att-href="'https://instagram.com/' + (comercio.x_zca_instagram.lstrip('@'))"
+                                       class="zca-social-link"
+                                       target="_blank" rel="noopener">
+                                        <i class="fa fa-instagram"/>
+                                    </a>
+                                </t>
+                                <t t-if="comercio.x_zca_tiktok">
+                                    <a t-att-href="'https://tiktok.com/@' + (comercio.x_zca_tiktok.lstrip('@'))"
+                                       class="zca-social-link"
+                                       target="_blank" rel="noopener">
+                                        <i class="fa fa-music"/>
+                                    </a>
+                                </t>
+                                <t t-if="comercio.website_id and comercio.website_id.domain">
+                                    <a t-att-href="'https://' + comercio.website_id.domain"
+                                       class="zca-social-link"
+                                       target="_blank" rel="noopener">
+                                        <i class="fa fa-globe"/>
+                                    </a>
+                                </t>
+                            </div>
+                        </div>
+
+                        <!-- Footer card -->
+                        <div class="zca-card__footer">
+                            <t t-if="comercio.x_zca_microsite_url">
+                                <a t-att-href="comercio.x_zca_microsite_url"
+                                   class="zca-btn zca-btn--primary zca-btn--full"
+                                   target="_blank" rel="noopener">
+                                    Visitar Web
+                                </a>
+                            </t>
+                            <t t-else="">
+                                <span class="zca-card__no-web">Sin web disponible</span>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+            </div>
+
+            <!-- PAGINACIÓN -->
+            <t t-if="page_count > 1">
+                <nav class="zca-pagination" aria-label="Paginación del directorio">
+                    <!-- Anterior -->
+                    <t t-if="page > 1">
+                        <a class="zca-page-btn zca-page-btn--prev"
+                           t-attf-href="/directorio?zone=#{current_zone}&amp;tipo=#{current_tipo}&amp;category=#{current_category}&amp;subcategory=#{current_subcategory}&amp;search=#{current_search}&amp;view=#{view}&amp;ppg=#{ppg}&amp;page=#{page - 1}"
+                           data-page="prev"
+                           aria-label="Página anterior">
+                            <i class="fa fa-chevron-left"/>
+                        </a>
+                    </t>
+
+                    <!-- Páginas -->
+                    <t t-foreach="pages" t-as="p">
+                        <t t-if="p == '...'">
+                            <span class="zca-page-btn zca-page-btn--ellipsis">…</span>
+                        </t>
+                        <t t-else="">
+                            <a t-att-class="'zca-page-btn' + (' active' if p == page else '')"
+                               t-attf-href="/directorio?zone=#{current_zone}&amp;tipo=#{current_tipo}&amp;category=#{current_category}&amp;subcategory=#{current_subcategory}&amp;search=#{current_search}&amp;view=#{view}&amp;ppg=#{ppg}&amp;page=#{p}"
+                               t-att-data-page="p"
+                               t-out="p"/>
+                        </t>
+                    </t>
+
+                    <!-- Siguiente -->
+                    <t t-if="page &lt; page_count">
+                        <a class="zca-page-btn zca-page-btn--next"
+                           t-attf-href="/directorio?zone=#{current_zone}&amp;tipo=#{current_tipo}&amp;category=#{current_category}&amp;subcategory=#{current_subcategory}&amp;search=#{current_search}&amp;view=#{view}&amp;ppg=#{ppg}&amp;page=#{page + 1}"
+                           data-page="next"
+                           aria-label="Página siguiente">
+                            <i class="fa fa-chevron-right"/>
+                        </a>
+                    </t>
+                </nav>
+            </t>
+
+            <!-- Info de página -->
+            <div class="zca-page-info">
+                Mostrando
+                <t t-out="(page - 1) * ppg + 1"/>–<t t-out="min(page * ppg, total)"/>
+                de <strong t-out="total"/> comercios
+            </div>
+        </t>
+    </template>
+
+</odoo>

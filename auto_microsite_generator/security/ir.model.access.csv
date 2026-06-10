@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_microsite_validation_report_user,Microsite Validation Report User,model_microsite_validation_report,base.group_user,1,1,1,0
+access_microsite_validation_line_user,Microsite Validation Line User,model_microsite_validation_line,base.group_user,1,0,0,0
+access_microsite_validation_report_admin,Microsite Validation Report Admin,model_microsite_validation_report,base.group_system,1,1,1,1
+access_microsite_validation_line_admin,Microsite Validation Line Admin,model_microsite_validation_line,base.group_system,1,1,1,1

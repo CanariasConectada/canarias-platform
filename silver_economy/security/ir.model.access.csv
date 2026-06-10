@@ -1,0 +1,12 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_silver_survey_user,silver.survey.user,model_survey_survey,silver_economy.group_silver_user,1,0,0,0
+access_silver_survey_manager,silver.survey.manager,model_survey_survey,silver_economy.group_silver_manager,1,1,1,1
+access_silver_user_input_user,silver.user_input.user,model_survey_user_input,silver_economy.group_silver_user,1,0,0,0
+access_silver_user_input_manager,silver.user_input.manager,model_survey_user_input,silver_economy.group_silver_manager,1,1,1,1
+access_silver_internal_survey,silver.internal.survey,model_survey_survey,base.group_user,1,0,0,0
+access_silver_internal_user_input,silver.internal.user_input,model_survey_user_input,base.group_user,1,0,1,0
+access_silver_internal_question,silver.internal.question,survey.model_survey_question,base.group_user,1,0,0,0
+access_silver_internal_question_answer,silver.internal.question_answer,survey.model_survey_question_answer,base.group_user,1,0,0,0
+access_silver_internal_user_input_line,silver.internal.user_input_line,survey.model_survey_user_input_line,base.group_user,1,0,1,0
+access_silver_positive_item_user,silver.positive.item.user,model_silver_positive_item,silver_economy.group_silver_user,1,0,0,0
+access_silver_positive_item_manager,silver.positive.item.manager,model_silver_positive_item,silver_economy.group_silver_manager,1,1,1,1

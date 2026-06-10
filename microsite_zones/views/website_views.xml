@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Herencia del formulario de website para añadir zona -->
+    <record id="view_website_form_inherit_zone" model="ir.ui.view">
+        <field name="name">website.form.inherit.zone</field>
+        <field name="model">website</field>
+        <field name="inherit_id" ref="website.view_website_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='company_id']" position="after">
+                <field name="zone_id" 
+                       string="Zona"
+                       options="{'no_create': True, 'no_open': False}"
+                       help="Zona asignada a este website. Los productos de compañías de esta zona serán visibles en la tienda."/>
+                <field name="is_canarias_conectada" 
+                       string="Es Canarias Conectada"
+                       readonly="1"
+                       groups="base.group_no_one"
+                       help="Indica si este website es Canarias Conectada (muestra todos los productos)"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vista de lista de websites con columna de zona -->
+    <record id="view_website_tree_inherit_zone" model="ir.ui.view">
+        <field name="name">website.tree.inherit.zone</field>
+        <field name="model">website</field>
+        <field name="inherit_id" ref="website.view_website_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='company_id']" position="after">
+                <field name="zone_id" string="Zona" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

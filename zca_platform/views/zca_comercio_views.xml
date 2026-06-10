@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Vista formulario extendida de comercio ZCA -->
+    <record id="view_zca_comercio_form" model="ir.ui.view">
+        <field name="name">zca.comercio.form</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="ZCA Comercio" name="zca_tab">
+                    <group>
+                        <group string="Identificación ZCA">
+                            <field name="x_zca_es_comercio"/>
+                            <field name="x_zca_slug"/>
+                            <field name="x_zca_zona"/>
+                            <field name="x_zca_tipo"/>
+                            <field name="x_zca_categoria"/>
+                            <field name="x_zca_subcategoria"/>
+                            <field name="x_zca_microsite_url" widget="url"/>
+                            <field name="x_zca_website_id"/>
+                        </group>
+                        <group string="Redes Sociales">
+                            <field name="x_zca_whatsapp"/>
+                            <field name="x_zca_instagram"/>
+                            <field name="x_zca_tiktok"/>
+                        </group>
+                    </group>
+                    <group string="Horarios y Servicios">
+                        <group>
+                            <field name="x_zca_horario_texto"/>
+                        </group>
+                        <group>
+                            <field name="x_zca_entrega"/>
+                            <field name="x_zca_parking"/>
+                        </group>
+                    </group>
+                    <group string="Contenido Microsite">
+                        <field name="x_zca_descripcion_corta" colspan="2"/>
+                        <field name="x_zca_sec1_texto" colspan="2"/>
+                        <field name="x_zca_hero_imagen_url" colspan="2"/>
+                        <field name="x_zca_sec1_imagen_url" colspan="2"/>
+                        <field name="x_zca_sec2_imagen_url" colspan="2"/>
+                        <field name="x_zca_historia_titulo"/>
+                        <field name="x_zca_servicio_titulo"/>
+                    </group>
+                    <group string="Texto Historia">
+                        <field name="x_zca_historia_texto" nolabel="1" colspan="2"/>
+                    </group>
+                    <group string="Texto Servicio">
+                        <field name="x_zca_servicio_texto" nolabel="1" colspan="2"/>
+                    </group>
+                    <group string="Valoraciones">
+                        <group>
+                            <field name="x_zca_review_google"/>
+                            <field name="x_zca_review_tripadvisor"/>
+                        </group>
+                        <group>
+                            <field name="x_zca_score_joven"/>
+                            <field name="x_zca_score_familiar"/>
+                            <field name="x_zca_score_turistico"/>
+                        </group>
+                    </group>
+                    <group string="Accesibilidad">
+                        <field name="x_zca_accesibilidad_silla"/>
+                        <field name="x_zca_accesibilidad_mayores"/>
+                        <field name="x_zca_accesibilidad_ninos"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Acción para listar comercios ZCA -->
+    <record id="action_zca_comercios" model="ir.actions.act_window">
+        <field name="name">Comercios ZCA</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('x_zca_es_comercio', '=', True)]</field>
+        <field name="context">{'default_x_zca_es_comercio': True}</field>
+    </record>
+
+</odoo>

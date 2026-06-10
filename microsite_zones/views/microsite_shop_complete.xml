@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+    ================================================================================
+    MICROSITE SHOP - TEMPLATE COMPLETO (v2.0 - 2025-03-10)
+    ================================================================================
+    Descripción:
+      Template completo para tiendas de microsites (webs individuales sin zona comercial)
+      
+    Características:
+      - Header personalizado con título "Tienda [nombre]" y buscador
+      - Toolbar funcional (contador productos, grid/list toggle, selector 12/24/48)
+      - Container responsive tipo Bootstrap container-lg
+      - Sidebar con categorías (sin selector de zonas - irrelevante para microsites)
+      
+    Condición de aplicación:
+      t-if="not website.zone_id and not website.is_canarias_conectada"
+      Solo aplica a microsites individuales (173 sitios)
+
+    Prioridades:
+      91: JS del toolbar
+      92: Container styles
+      93: Toolbar styles  
+      94: Toolbar HTML
+      95: Header styles
+      96: Header HTML
+    ================================================================================
+    -->
+    
+    <!-- ============================================================================
+         TEMPLATE 91: JAVASCRIPT DEL TOOLBAR (Grid/List Toggle Persistence)
+         ============================================================================ -->
+    <template id="microsite_shop_js" inherit_id="website_sale.products" name="Microsite Shop JS" priority="91">
+        <xpath expr="//div[@id='wrap']" position="before">
+            <script type="text/javascript">
+                // Grid/List toggle persistence
+                document.addEventListener('DOMContentLoaded', function() {
+                    const gridToggle = document.getElementById('o_wsale_grid_toggle');
+                    const listToggle = document.getElementById('o_wsale_list_toggle');
+                    const productGrid = document.getElementById('o_wsale_products_grid');
+                    
+                    // Load saved preference
+                    const savedView = localStorage.getItem('microsite_shop_view_mode') || 'grid';
+                    if (savedView === 'list' && productGrid) {
+                        productGrid.classList.remove('o_wsale_layout_grid');
+                        productGrid.classList.add('o_wsale_layout_list');
+                    }
+                    
+                    // Grid toggle
+                    if (gridToggle) {
+                        gridToggle.addEventListener('click', function() {
+                            if (productGrid) {
+                                productGrid.classList.remove('o_wsale_layout_list');
+                                productGrid.classList.add('o_wsale_layout_grid');
+                                localStorage.setItem('microsite_shop_view_mode', 'grid');
+                            }
+                        });
+                    }
+                    
+                    // List toggle
+                    if (listToggle) {
+                        listToggle.addEventListener('click', function() {
+                            if (productGrid) {
+                                productGrid.classList.remove('o_wsale_layout_grid');
+                                productGrid.classList.add('o_wsale_layout_list');
+                                localStorage.setItem('microsite_shop_view_mode', 'list');
+                            }
+                        });
+                    }
+                    
+                    // PPG (products per page) selector
+                    const ppgSelect = document.querySelector('select[name="ppg"]');
+                    if (ppgSelect) {
+                        // Load saved PPG
+                        const savedPPG = localStorage.getItem('microsite_shop_ppg');
+                        if (savedPPG) {
+                            ppgSelect.value = savedPPG;
+                        }
+                        
+                        ppgSelect.addEventListener('change', function() {
+                            localStorage.setItem('microsite_shop_ppg', this.value);
+                            this.closest('form').submit();
+                        });
+                    }
+                });
+            </script>
+        </xpath>
+    </template>
+
+    <!-- ============================================================================
+         TEMPLATE 92: CONTAINER STYLES (Bootstrap container-lg)
+         ============================================================================ -->
+    <template id="microsite_container_styles" inherit_id="website_sale.products" name="Microsite Container Styles" priority="92">
+        <xpath expr="//div[@id='wrap']" position="before">
+            <t t-if="not website.zone_id and not website.is_canarias_conectada">
+                <style>
+                    /* Container tipo Bootstrap container-lg */
+                    #wrap .container.o_wsale_products_main {
+                        max-width: 1140px !important;
+                        padding-left: 1.5rem !important;
+                        padding-right: 1.5rem !important;
+                    }
+                    
+                    @media (max-width: 991.98px) {
+                        #wrap .container.o_wsale_products_main {
+                            padding-left: 1rem !important;
+                            padding-right: 1rem !important;
+                        }
+                    }
+                    
+                    /* Mejoras al grid de productos */
+                    #o_wsale_products_grid .o_wsale_grid_row {
+                        gap: 1.5rem !important;
+                    }
+                    
+                    #o_wsale_products_grid .o_wsale_grid_row > * {
+                        margin-bottom: 0 !important;
+                    }
+                </style>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- ============================================================================
+         TEMPLATE 93: TOOLBAR STYLES (Colores corporativos)
+         ============================================================================ -->
+    <template id="microsite_toolbar_styles" inherit_id="website_sale.products" name="Microsite Toolbar Styles" priority="93">
+        <xpath expr="//div[@id='wrap']" position="before">
+            <t t-if="not website.zone_id and not website.is_canarias_conectada">
+                <style>
+                    /* TOOLBAR - Colores corporativos */
+                    .o_wsale_products_top {
+                        background: linear-gradient(135deg, #00A9E0 0%, #0077A3 100%) !important;
+                        border-radius: 8px !important;
+                        padding: 0.75rem 1rem !important;
+                        margin-bottom: 1.5rem !important;
+                    }
+                    
+                    .o_wsale_products_top .btn,
+                    .o_wsale_products_top .form-select {
+                        border-color: rgba(255,255,255,0.3) !important;
+                    }
+                    
+                    .o_wsale_products_top .btn-outline-secondary {
+                        color: white !important;
+                        border-color: rgba(255,255,255,0.5) !important;
+                    }
+                    
+                    .o_wsale_products_top .btn-outline-secondary:hover {
+                        background: rgba(255,255,255,0.2) !important;
+                    }
+                    
+                    .o_wsale_products_top .btn-outline-secondary.active {
+                        background: white !important;
+                        color: #0077A3 !important;
+                    }
+                    
+                    .o_wsale_products_top small,
+                    .o_wsale_products_top .text-muted {
+                        color: rgba(255,255,255,0.9) !important;
+                    }
+                    
+                    /* Contador de productos */
+                    .o_wsale_products_top .o_website_sale_products_recount {
+                        color: white !important;
+                        font-weight: 500;
+                    }
+                </style>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- ============================================================================
+         TEMPLATE 94: TOOLBAR HTML (Contador + Grid/List + PPG)
+         ============================================================================ -->
+    <template id="microsite_toolbar" inherit_id="website_sale.products" name="Microsite Toolbar" priority="94">
+        <xpath expr="//div[@id='o_wsale_products_top']" position="replace">
+            <t t-if="not website.zone_id and not website.is_canarias_conectada">
+                <div id="o_wsale_products_top" class="o_wsale_products_top d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <!-- Contador de productos -->
+                    <small class="o_website_sale_products_recount">
+                        <t t-esc="search_count or len(products) if products else 0"/> producto(s) encontrado(s)
+                    </small>
+                    
+                    <div class="d-flex align-items-center gap-2">
+                        <!-- Grid/List Toggle -->
+                        <div class="btn-group o_wsale_grid_list" role="group">
+                            <button type="button" id="o_wsale_grid_toggle" class="btn btn-outline-secondary btn-sm o_wsale_grid_toggle active" title="Vista de cuadrícula">
+                                <i class="fa fa-th"/>
+                            </button>
+                            <button type="button" id="o_wsale_list_toggle" class="btn btn-outline-secondary btn-sm o_wsale_list_toggle" title="Vista de lista">
+                                <i class="fa fa-list"/>
+                            </button>
+                        </div>
+                        
+                        <!-- PPG Selector -->
+                        <form method="get" action="/shop" class="d-flex align-items-center gap-2">
+                            <input type="hidden" name="search" t-att-value="search"/>  
+                            <input type="hidden" name="category" t-att-value="category.id if category else None"/>
+                            <label class="small text-nowrap text-white">Mostrar:</label>
+                            <select name="ppg" class="form-select form-select-sm" style="width: auto; min-width: 70px;">
+                                <option value="12" t-att-selected="ppg == 12">12</option>
+                                <option value="24" t-att-selected="ppg == 24">24</option>
+                                <option value="48" t-att-selected="ppg == 48">48</option>
+                            </select>
+                        </form>
+                        
+                        <!-- Ordenar -->
+                        <t t-call="website_sale.sort"/>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- ============================================================================
+         TEMPLATE 95: HEADER STYLES
+         ============================================================================ -->
+    <template id="microsite_header_styles" inherit_id="website_sale.products" name="Microsite Header Styles" priority="95">
+        <xpath expr="//div[@id='wrap']" position="before">
+            <t t-if="not website.zone_id and not website.is_canarias_conectada">
+                <style>
+                    /* HEADER - Estilos corporativos */
+                    .microsite-shop-header {
+                        background: linear-gradient(135deg, #00A9E0 0%, #0077A3 100%);
+                        border-radius: 12px;
+                        padding: 1.5rem 2rem;
+                        margin-bottom: 1.5rem;
+                        box-shadow: 0 4px 15px rgba(0, 119, 163, 0.2);
+                    }
+                    
+                    .microsite-shop-header h1 {
+                        color: white;
+                        font-weight: 600;
+                        margin: 0;
+                        font-size: 1.75rem;
+                    }
+                    
+                    .microsite-shop-header .search-box {
+                        position: relative;
+                        max-width: 400px;
+                        width: 100%;
+                    }
+                    
+                    .microsite-shop-header .search-box input {
+                        border-radius: 25px;
+                        border: 2px solid rgba(255,255,255,0.3);
+                        background: rgba(255,255,255,0.15);
+                        color: white;
+                        padding: 0.75rem 1rem 0.75rem 2.5rem;
+                    }
+                    
+                    .microsite-shop-header .search-box input::placeholder {
+                        color: rgba(255,255,255,0.7);
+                    }
+                    
+                    .microsite-shop-header .search-box i {
+                        position: absolute;
+                        left: 1rem;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        color: rgba(255,255,255,0.8);
+                    }
+                </style>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- ============================================================================
+         TEMPLATE 96: HEADER HTML
+         ============================================================================ -->
+    <template id="microsite_header" inherit_id="website_sale.products" name="Microsite Header" priority="96">
+        <xpath expr="//div[@id='o_wsale_products_main']" position="before">
+            <t t-if="not website.zone_id and not website.is_canarias_conectada">
+                <div class="microsite-shop-header">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                        <h1 class="mb-0">
+                            <i class="fa fa-shopping-bag me-2"/>Tienda <t t-esc="website.name"/>
+                        </h1>
+                        
+                        <!-- Buscador -->
+                        <form action="/shop" method="get" class="search-box">
+                            <i class="fa fa-search"/>
+                            <input type="text" name="search" class="form-control" 
+                                   t-att-value="search" 
+                                   placeholder="Buscar productos..."/>
+                        </form>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>

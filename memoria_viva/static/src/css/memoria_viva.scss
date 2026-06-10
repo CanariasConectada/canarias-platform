@@ -1,0 +1,249 @@
+/* ========================================
+   MEMORIA VIVA - ESTILOS FRONTEND
+   ======================================== */
+
+// Variables
+$primary-color: #2c5282;
+$secondary-color: #ed8936;
+$bg-light: #f7fafc;
+$border-radius: 8px;
+$shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+// Hero Section
+.memoria-viva-hero {
+    background: linear-gradient(135deg, $primary-color 0%, darken($primary-color, 10%) 100%);
+    color: white;
+    
+    h1 {
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+    
+    .lead {
+        font-size: 1.25rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+    }
+    
+    .btn-primary {
+        background-color: $secondary-color;
+        border-color: $secondary-color;
+        padding: 12px 30px;
+        font-weight: 600;
+        
+        &:hover {
+            background-color: darken($secondary-color, 10%);
+            border-color: darken($secondary-color, 10%);
+        }
+    }
+}
+
+// Anuncios
+.memoria-viva-anuncios {
+    background-color: white;
+    
+    .anuncio-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+        border: 1px solid #e2e8f0;
+        
+        &:hover {
+            transform: translateY(-5px);
+            box-shadow: $shadow;
+        }
+        
+        .card-title {
+            color: $primary-color;
+            font-weight: 600;
+        }
+        
+        .card-text {
+            font-size: 0.9rem;
+        }
+    }
+}
+
+// Mapa
+.memoria-viva-mapa {
+    background-color: $bg-light;
+    
+    h2 {
+        color: $primary-color;
+        font-weight: 600;
+    }
+    
+    #memoria-viva-map {
+        border-radius: $border-radius;
+        overflow: hidden;
+    }
+}
+
+// Galería
+.memoria-viva-galeria {
+    h2 {
+        color: $primary-color;
+        font-weight: 600;
+    }
+    
+    .lugar-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: none;
+        overflow: hidden;
+        
+        &:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        a {
+            color: inherit;
+            
+            &:hover {
+                text-decoration: none;
+            }
+        }
+        
+        .card-title {
+            color: $primary-color;
+            font-weight: 600;
+        }
+        
+        .badge {
+            font-size: 0.75rem;
+            padding: 0.4em 0.8em;
+        }
+    }
+}
+
+// Formulario
+.memoria-viva-formulario {
+    background-color: white;
+    
+    h2 {
+        color: $primary-color;
+        font-weight: 600;
+    }
+    
+    .card {
+        border: none;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #4a5568;
+    }
+    
+    .btn-primary {
+        background-color: $primary-color;
+        border-color: $primary-color;
+        padding: 12px 40px;
+        
+        &:hover {
+            background-color: darken($primary-color, 10%);
+            border-color: darken($primary-color, 10%);
+        }
+    }
+}
+
+// Página de Detalle
+.memoria-viva-detail-header {
+    background-color: $bg-light;
+    
+    .breadcrumb {
+        background: transparent;
+        padding: 0;
+        
+        a {
+            color: $primary-color;
+        }
+    }
+    
+    h1 {
+        color: $primary-color;
+        font-weight: 700;
+    }
+}
+
+.memoria-viva-detail-content {
+    .card {
+        border: 1px solid #e2e8f0;
+        box-shadow: none;
+        
+        h5, h6 {
+            color: $primary-color;
+            font-weight: 600;
+        }
+    }
+    
+    #memoria-viva-detail-map {
+        border-radius: $border-radius;
+        overflow: hidden;
+    }
+}
+
+// Anuncios Sidebar
+.anuncio-sidebar {
+    transition: transform 0.2s;
+    border: 1px solid #e2e8f0;
+    
+    &:hover {
+        transform: scale(1.02);
+    }
+    
+    .card-title {
+        font-size: 0.85rem;
+    }
+}
+
+// Responsive
+@media (max-width: 768px) {
+    .memoria-viva-hero {
+        padding: 3rem 0;
+        
+        h1 {
+            font-size: 2rem;
+        }
+        
+        .lead {
+            font-size: 1rem;
+        }
+    }
+    
+    .memoria-viva-galeria {
+        .lugar-card {
+            margin-bottom: 1.5rem;
+        }
+    }
+    
+    #memoria-viva-map {
+        height: 300px !important;
+    }
+}
+
+// Map InfoWindow
+.memoria-viva-infowindow {
+    padding: 10px;
+    max-width: 200px;
+    
+    h6 {
+        margin: 0 0 8px 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: $primary-color;
+    }
+    
+    img {
+        width: 100%;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 4px;
+        margin-bottom: 8px;
+    }
+    
+    a {
+        color: $secondary-color;
+        font-size: 12px;
+        font-weight: 500;
+    }
+}

@@ -1,0 +1,1571 @@
+<?xml version="1.0"?>
+<odoo>
+    <template id="directory_index" name="Directorio de Empresas">
+        <t t-call="website.layout">
+            <t t-set="additional_title">Directorio de Empresas</t>
+            
+            <section class="shop-directory-header py-5 bg-light border-bottom">
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8 text-center">
+                            <h1 class="display-5 mb-3 fw-bold">
+                                <t t-if="current_zone == 'canarias' or not current_zone">Directorio Canarias Conectada</t>
+                                <t t-elif="current_zone == 'guanarteme'">Zona Comercial Guanarteme</t>
+                                <t t-elif="current_zone == 'tamaraceite'">Zona Comercial Tamaraceite</t>
+                                <t t-elif="current_zone == 'lomolosfrailes'">Zona Comercial Lomo los Frailes</t>
+                            </h1>
+                            <p class="lead mb-4 text-muted">Encuentra los mejores comercios y servicios de tu zona</p>
+                            <form action="/directorio" method="get" class="input-group input-group-lg" id="directorySearchForm">
+                                <input type="hidden" name="silver_level" t-att-value="silver_level or ''" id="directorySearchSilverLevel"/>
+                                <input type="hidden" name="sustain_action" t-att-value="sustain_action or ''" id="directorySearchSustainAction"/>
+                                <input type="hidden" name="silver_action" t-att-value="silver_action or ''" id="directorySearchSilverAction"/>
+                                <input type="text" name="search" class="form-control border-end-0" placeholder="Buscar empresas..." t-att-value="search or ''" id="directorySearchInput" autocomplete="off"/>
+                                <button type="submit" class="btn btn-primary px-4" id="directorySearchBtn">
+                                    <i class="fa fa-search me-2"/> Buscar
+                                </button>
+                            </form>
+                            <!-- Loading indicator -->
+                            <div id="searchLoading" class="text-center mt-3" style="display:none;">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Cargando...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Calculate base_url for pagination and filters -->
+            <t t-set="base_url" t-value="base_url or (current_zone and current_zone != 'canarias' and '/directorio/zona/' + current_zone or '/directorio')"/>
+            
+            <div id="wrap" class="js_sale o_wsale_products_page">
+                <div class="container-lg container py-4 mb-5">
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="products_header btn-toolbar flex-wrap align-items-center justify-content-between gap-2 p-3 bg-light rounded">
+                                <div class="d-flex align-items-center flex-wrap gap-2">
+                                    <span class="text-muted">
+                                        <t t-if="entries_count == 0">No se encontraron empresas</t>
+                                        <t t-else=""><strong t-esc="entries_count"/> empresas</t>
+                                    </span>
+                                </div>
+                                
+                                <div class="d-flex align-items-center gap-3">
+                                    <!-- View Type Toggle -->
+                                    <div class="btn-group" role="group" aria-label="Tipo de vista">
+                                        <button type="button"
+                                           t-attf-class="btn btn-sm {{view_type == 'grid' and 'btn-primary active' or 'btn-outline-secondary'}}"
+                                           title="Vista Grid"
+                                           onclick="changeViewType('grid')">
+                                            <i class="fa fa-th"/>
+                                        </button>
+                                        <button type="button"
+                                           t-attf-class="btn btn-sm {{view_type == 'list' and 'btn-primary active' or 'btn-outline-secondary'}}"
+                                           title="Vista Lista"
+                                           onclick="changeViewType('list')">
+                                            <i class="fa fa-list"/>
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="o_wsale_products_header_limit d-flex align-items-center gap-2">
+                                        <label class="text-muted small mb-0 d-none d-md-block">Mostrar:</label>
+                                        <div class="btn-group" role="group">
+                                            <button type="button"
+                                               t-attf-class="btn btn-sm {{ppg == 12 and 'btn-primary active' or 'btn-outline-secondary'}}"
+                                               onclick="changeItemsPerPage(12)">12</button>
+                                            <button type="button"
+                                               t-attf-class="btn btn-sm {{ppg == 21 and 'btn-primary active' or 'btn-outline-secondary'}}"
+                                               onclick="changeItemsPerPage(21)">21</button>
+                                            <button type="button"
+                                               t-attf-class="btn btn-sm {{ppg == 48 and 'btn-primary active' or 'btn-outline-secondary'}}"
+                                               onclick="changeItemsPerPage(48)">48</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <aside class="col-lg-3 mb-4">
+                            <!-- Zone Filter - Custom Searchable Select -->
+                            <div class="card border-0 shadow-sm mb-3" id="zoneFilterCard">
+                                <div class="card-header bg-white py-3">
+                                    <h5 class="mb-0 fw-bold fs-6"><i class="fa fa-map-marker text-primary me-2"/>Zona Comercial</h5>
+                                </div>
+                                <div class="card-body">
+                                    <select class="form-select directory-custom-select" id="zoneSelect" data-zone="true">
+                                        <option value="" t-att-selected="not current_zone or current_zone == 'canarias'" data-url="https://canariasconectada.es/directorio">Todas las zonas</option>
+                                        <option value="guanarteme" t-att-selected="current_zone == 'guanarteme'" data-url="https://guanarteme.canariasconectada.es/directorio">Guanarteme</option>
+                                        <option value="lomolosfrailes" t-att-selected="current_zone == 'lomolosfrailes'" data-url="https://lomolosfrailes.canariasconectada.es/directorio">Lomo los Frailes</option>
+                                        <option value="tamaraceite" t-att-selected="current_zone == 'tamaraceite'" data-url="https://tamaraceite.canariasconectada.es/directorio">Tamaraceite</option>
+                                    </select>
+                                    
+                                    <div t-if="current_zone and current_zone != 'canarias'" class="mt-3">
+                                        <small class="text-muted d-block mb-1">Filtrando por:</small>
+                                        <span class="badge bg-primary d-inline-flex align-items-center">
+                                            <t t-esc="{'guanarteme': 'Guanarteme', 'tamaraceite': 'Tamaraceite', 'lomolosfrailes': 'Lomo los Frailes'}.get(current_zone, current_zone)"/>
+                                            <a href="/directorio" class="text-white ms-2 text-decoration-none fw-bold">×</a>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Category Filter - Cascading with Loader -->
+                            <div class="card border-0 shadow-sm mb-3" id="categoryFilterCard">
+                                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0 fw-bold fs-6"><i class="fa fa-tags text-primary me-2"/>Categoría</h5>
+                                    <div id="categoryLoader" class="spinner-border spinner-border-sm text-primary" style="display:none;" role="status">
+                                        <span class="visually-hidden">Cargando...</span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <form action="/directorio" method="get" id="categoryFilterForm" autocomplete="off">
+                                        <input type="hidden" name="search" t-att-value="search or ''"/>
+                                        <input type="hidden" name="ppg" t-att-value="ppg or '21'"/>
+                                        
+                                        <div class="mb-3 position-relative">
+                                            <label class="form-label small text-muted mb-1">
+                                                <i class="fa fa-folder-open me-1"/>Categoría Principal
+                                            </label>
+                                            <select name="category" class="form-select directory-custom-select directory-cat-select" id="catLevel1" data-level="1">
+                                                <option value="">Todas las categorías</option>
+                                                <t t-if="categories" t-foreach="sorted(categories, key=lambda x: x.name)" t-as="cat">
+                                                    <option t-att-value="cat.id" t-att-selected="selected_category_grandparent == cat.id" t-esc="cat.name"/>
+                                                </t>
+                                            </select>
+
+                                        </div>
+                                        
+                                        <div class="mb-3 category-level-transition" id="catLevel2Container" style="display:none; opacity:0;">
+                                            <label class="form-label category-filter-label text-muted mb-1">
+                                                <i class="fa fa-folder me-1"/>Subcategoría
+                                            </label>
+                                            <select name="category" class="form-select directory-cat-native" id="catLevel2" data-level="2">
+                                                <option value="">Seleccione subcategoría...</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="mb-3 category-level-transition" id="catLevel3Container" style="display:none; opacity:0;">
+                                            <label class="form-label category-filter-label text-muted mb-1">
+                                                <i class="fa fa-file-text me-1"/>Especialidad
+                                            </label>
+                                            <select name="category" class="form-select directory-cat-native" id="catLevel3" data-level="3">
+                                                <option value="">Seleccione especialidad...</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div id="categoryProgress" class="mt-2" style="display:none;">
+                                            <div class="d-flex align-items-center small text-muted">
+                                                <i class="fa fa-refresh fa-spin me-2"/>Aplicando filtro...
+                                            </div>
+                                        </div>
+                                    </form>
+                                    
+                                    <div id="activeCategoryBadge" t-if="selected_category or selected_category_parent or selected_category_grandparent" class="mt-3 pt-3 border-top">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <small class="text-muted">Filtrando por:</small>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 11px;" onclick="clearCategoryFilter()">
+                                                <i class="fa fa-times me-1"/>Limpiar
+                                            </button>
+                                        </div>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <t t-if="selected_category_grandparent">
+                                                <t t-set="cat_l1" t-value="request.env['business.category'].sudo().browse(selected_category_grandparent)"/>
+                                                <span t-if="cat_l1.exists()" class="badge bg-primary">
+                                                    <i class="fa fa-folder-open me-1"/><t t-esc="cat_l1.name"/>
+                                                </span>
+                                            </t>
+                                            <t t-if="selected_category_parent">
+                                                <t t-set="cat_l2" t-value="request.env['business.category'].sudo().browse(selected_category_parent)"/>
+                                                <span t-if="cat_l2.exists()" class="badge bg-info">
+                                                    <i class="fa fa-folder me-1"/><t t-esc="cat_l2.name"/>
+                                                </span>
+                                            </t>
+                                            <t t-if="selected_category">
+                                                <t t-set="cat_l3" t-value="request.env['business.category'].sudo().browse(selected_category)"/>
+                                                <span t-if="cat_l3.exists()" class="badge bg-success">
+                                                    <i class="fa fa-file-text me-1"/><t t-esc="cat_l3.name"/>
+                                                </span>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Sostenibilidad - Acciones Filter -->
+                            <div class="card border-0 shadow-sm mb-3" id="sustainFilterCard">
+                                <div class="card-header bg-white py-3">
+                                    <h5 class="mb-0 fw-bold fs-6"><i class="fa fa-leaf text-success me-2"/>Negocios sostenibles</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <a t-attf-href="/directorio?sustain_action=energy&amp;search=#{search or ''}&amp;category=#{selected_category or ''}&amp;ppg=#{ppg}#{'&amp;silver_level=' + silver_level if silver_level else ''}#{'&amp;silver_action=' + silver_action if silver_action else ''}"
+                                           t-attf-class="badge rounded-pill px-3 py-2 text-decoration-none {{ 'bg-light text-dark border' if sustain_action != 'energy' else '' }}"
+                                           t-attf-style="font-size: 0.8rem; {{ 'background-color: #28a745; color: #fff;' if sustain_action == 'energy' else '' }}"><i class="fa fa-bolt me-1"/> Ahorro energético (<t t-esc="sustain_action_counts.get('energy', 0)"/>)</a>
+                                        <a t-attf-href="/directorio?sustain_action=waste&amp;search=#{search or ''}&amp;category=#{selected_category or ''}&amp;ppg=#{ppg}#{'&amp;silver_level=' + silver_level if silver_level else ''}#{'&amp;silver_action=' + silver_action if silver_action else ''}"
+                                           t-attf-class="badge rounded-pill px-3 py-2 text-decoration-none {{ 'bg-light text-dark border' if sustain_action != 'waste' else '' }}"
+                                           t-attf-style="font-size: 0.8rem; {{ 'background-color: #28a745; color: #fff;' if sustain_action == 'waste' else '' }}"><i class="fa fa-recycle me-1"/> Gestión de residuos (<t t-esc="sustain_action_counts.get('waste', 0)"/>)</a>
+                                        <a t-attf-href="/directorio?sustain_action=eco&amp;search=#{search or ''}&amp;category=#{selected_category or ''}&amp;ppg=#{ppg}#{'&amp;silver_level=' + silver_level if silver_level else ''}#{'&amp;silver_action=' + silver_action if silver_action else ''}"
+                                           t-attf-class="badge rounded-pill px-3 py-2 text-decoration-none {{ 'bg-light text-dark border' if sustain_action != 'eco' else '' }}"
+                                           t-attf-style="font-size: 0.8rem; {{ 'background-color: #28a745; color: #fff;' if sustain_action == 'eco' else '' }}"><i class="fa fa-leaf me-1"/> Productos ecológicos (<t t-esc="sustain_action_counts.get('eco', 0)"/>)</a>
+                                        <a t-attf-href="/directorio?search=#{search or ''}&amp;category=#{selected_category or ''}&amp;ppg=#{ppg}#{'&amp;silver_level=' + silver_level if silver_level else ''}#{'&amp;silver_action=' + silver_action if silver_action else ''}"
+                                           t-attf-class="badge rounded-pill px-3 py-2 text-decoration-none {{ 'bg-light text-dark border' if sustain_action else '' }}"
+                                           t-attf-style="font-size: 0.8rem; {{ 'background-color: #28a745; color: #fff;' if not sustain_action else '' }}">Todos</a>
+                                    </div>
+                                    <div t-if="sustain_action" class="mt-2">
+                                        <small class="text-muted d-block mb-1">Filtrando por:</small>
+                                        <span class="badge bg-success d-inline-flex align-items-center">
+                                            <t t-esc="{'energy': '⚡ Ahorro energético', 'waste': '♻ Gestión de residuos', 'eco': '🌿 Productos ecológicos'}.get(sustain_action, sustain_action)"/>
+                                            <a t-attf-href="/directorio?search=#{search or ''}&amp;category=#{selected_category or ''}&amp;ppg=#{ppg}#{'&amp;silver_level=' + silver_level if silver_level else ''}#{'&amp;silver_action=' + silver_action if silver_action else ''}" class="text-white ms-2 text-decoration-none fw-bold">×</a>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Silver Economy - Acciones Filter -->
+                            <div class="card border-0 shadow-sm mb-3" id="silverActionFilterCard">
+                                <div class="card-header bg-white py-3">
+                                    <h5 class="mb-0 fw-bold fs-6"><i class="fa fa-users text-primary me-2"/>Atención Silver Economy</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <a t-attf-href="/directorio?silver_action=accessible&amp;search=#{search or ''}&amp;category=#{selected_category or ''}&amp;ppg=#{ppg}#{'&amp;silver_level=' + silver_level if silver_level else ''}#{'&amp;sustain_action=' + sustain_action if sustain_action else ''}"
+                                           t-attf-class="badge rounded-pill px-3 py-2 text-decoration-none {{ 'bg-light text-dark border' if silver_action != 'accessible' else '' }}"
+                                           t-attf-style="font-size: 0.8rem; {{ 'background-color: #0d6efd; color: #fff;' if silver_action == 'accessible' else '' }}"><i class="fa fa-wheelchair me-1"/> Local accesible (<t t-esc="silver_action_counts.get('accessible', 0)"/>)</a>
+                                        <a t-attf-href="/directorio?silver_action=personalized&amp;search=#{search or ''}&amp;category=#{selected_category or ''}&amp;ppg=#{ppg}#{'&amp;silver_level=' + silver_level if silver_level else ''}#{'&amp;sustain_action=' + sustain_action if sustain_action else ''}"
+                                           t-attf-class="badge rounded-pill px-3 py-2 text-decoration-none {{ 'bg-light text-dark border' if silver_action != 'personalized' else '' }}"
+                                           t-attf-style="font-size: 0.8rem; {{ 'background-color: #0d6efd; color: #fff;' if silver_action == 'personalized' else '' }}"><i class="fa fa-heart me-1"/> Atención personalizada (<t t-esc="silver_action_counts.get('personalized', 0)"/>)</a>
+                                        <a t-attf-href="/directorio?silver_action=adapted&amp;search=#{search or ''}&amp;category=#{selected_category or ''}&amp;ppg=#{ppg}#{'&amp;silver_level=' + silver_level if silver_level else ''}#{'&amp;sustain_action=' + sustain_action if sustain_action else ''}"
+                                           t-attf-class="badge rounded-pill px-3 py-2 text-decoration-none {{ 'bg-light text-dark border' if silver_action != 'adapted' else '' }}"
+                                           t-attf-style="font-size: 0.8rem; {{ 'background-color: #0d6efd; color: #fff;' if silver_action == 'adapted' else '' }}"><i class="fa fa-universal-access me-1"/> Productos adaptados (<t t-esc="silver_action_counts.get('adapted', 0)"/>)</a>
+                                        <a t-attf-href="/directorio?search=#{search or ''}&amp;category=#{selected_category or ''}&amp;ppg=#{ppg}#{'&amp;silver_level=' + silver_level if silver_level else ''}#{'&amp;sustain_action=' + sustain_action if sustain_action else ''}"
+                                           t-attf-class="badge rounded-pill px-3 py-2 text-decoration-none {{ 'bg-light text-dark border' if silver_action else '' }}"
+                                           t-attf-style="font-size: 0.8rem; {{ 'background-color: #0d6efd; color: #fff;' if not silver_action else '' }}">Todos</a>
+                                    </div>
+                                    <div t-if="silver_action" class="mt-2">
+                                        <small class="text-muted d-block mb-1">Filtrando por:</small>
+                                        <span class="badge bg-primary d-inline-flex align-items-center">
+                                            <t t-esc="{'accessible': '♿ Local accesible', 'personalized': '❤ Atención personalizada', 'adapted': '♿ Productos adaptados'}.get(silver_action, silver_action)"/>
+                                            <a t-attf-href="/directorio?search=#{search or ''}&amp;category=#{selected_category or ''}&amp;ppg=#{ppg}#{'&amp;silver_level=' + silver_level if silver_level else ''}#{'&amp;sustain_action=' + sustain_action if sustain_action else ''}" class="text-white ms-2 text-decoration-none fw-bold">×</a>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Silver Economy - Sello Filter -->
+                            <div class="card border-0 shadow-sm mb-3" id="silverFilterCard">
+                                <div class="card-header bg-white py-3">
+                                    <h5 class="mb-0 fw-bold fs-6"><i class="fa fa-certificate text-primary me-2"/>Silver Economy</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <a t-attf-href="/directorio?silver_level=gold&amp;search=#{search or ''}&amp;category=#{selected_category or ''}&amp;ppg=#{ppg}#{'&amp;sustain_action=' + sustain_action if sustain_action else ''}#{'&amp;silver_action=' + silver_action if silver_action else ''}" 
+                                           t-attf-class="badge rounded-pill px-3 py-2 text-decoration-none {{ 'bg-light text-dark border' if silver_level != 'gold' else '' }}"
+                                           t-attf-style="font-size: 0.8rem; {{ 'background-color: #FFD700; color: #212529;' if silver_level == 'gold' else '' }}">🥇 Oro (<t t-esc="silver_counts.get('gold', 0)"/>)</a>
+                                        <a t-attf-href="/directorio?silver_level=silver&amp;search=#{search or ''}&amp;category=#{selected_category or ''}&amp;ppg=#{ppg}#{'&amp;sustain_action=' + sustain_action if sustain_action else ''}#{'&amp;silver_action=' + silver_action if silver_action else ''}" 
+                                           t-attf-class="badge rounded-pill px-3 py-2 text-decoration-none {{ 'bg-light text-dark border' if silver_level != 'silver' else '' }}"
+                                           t-attf-style="font-size: 0.8rem; {{ 'background-color: #C0C0C0; color: #212529;' if silver_level == 'silver' else '' }}">🥈 Plata (<t t-esc="silver_counts.get('silver', 0)"/>)</a>
+                                        <a t-attf-href="/directorio?silver_level=bronze&amp;search=#{search or ''}&amp;category=#{selected_category or ''}&amp;ppg=#{ppg}#{'&amp;sustain_action=' + sustain_action if sustain_action else ''}#{'&amp;silver_action=' + silver_action if silver_action else ''}" 
+                                           t-attf-class="badge rounded-pill px-3 py-2 text-decoration-none {{ 'bg-light text-dark border' if silver_level != 'bronze' else '' }}"
+                                           t-attf-style="font-size: 0.8rem; {{ 'background-color: #CD7F32; color: #fff;' if silver_level == 'bronze' else '' }}">🥉 Bronce (<t t-esc="silver_counts.get('bronze', 0)"/>)</a>
+                                        <a t-attf-href="/directorio?search=#{search or ''}&amp;category=#{selected_category or ''}&amp;ppg=#{ppg}#{'&amp;sustain_action=' + sustain_action if sustain_action else ''}#{'&amp;silver_action=' + silver_action if silver_action else ''}" 
+                                           t-attf-class="badge rounded-pill px-3 py-2 text-decoration-none {{ 'bg-light text-dark border' if silver_level else '' }}"
+                                           t-attf-style="font-size: 0.8rem; {{ 'background-color: #0d6efd; color: #fff;' if not silver_level else '' }}">Todos</a>
+                                    </div>
+                                    <div t-if="silver_level" class="mt-2">
+                                        <small class="text-muted d-block mb-1">Filtrando por:</small>
+                                        <span class="badge bg-primary d-inline-flex align-items-center">
+                                            <t t-esc="{'gold': '🥇 Oro', 'silver': '🥈 Plata', 'bronze': '🥉 Bronce'}.get(silver_level, silver_level)"/>
+                                            <a t-attf-href="/directorio?search=#{search or ''}&amp;category=#{selected_category or ''}&amp;ppg=#{ppg}#{'&amp;sustain_action=' + sustain_action if sustain_action else ''}#{'&amp;silver_action=' + silver_action if silver_action else ''}" class="text-white ms-2 text-decoration-none fw-bold">×</a>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Category Data for JavaScript -->
+                            <script>
+                                window.directoryCategories = <t t-out="categories_json"/>;
+                                window.selectedCategoryGrandparent = <t t-out="selected_category_grandparent or 'null'"/>;
+                                window.selectedCategoryParent = <t t-out="selected_category_parent or 'null'"/>;
+                                window.selectedCategory = <t t-out="selected_category or 'null'"/>;
+                            </script>
+                        </aside>
+                        
+                        <div class="col-lg-9">
+                            <!-- GRID VIEW -->
+                            <div t-if="view_type == 'grid'" id="entries_grid" class="row g-3">
+                                <t t-foreach="entries" t-as="entry">
+                                    <div class="col-6 col-md-6 col-xl-4">
+                                        <div class="card h-100 border-0 shadow-sm directory-card position-relative">
+                                            <!-- Zone Badge Centrado -->
+                                            <span t-att-class="'position-absolute top-0 start-50 translate-middle-x mt-2 badge rounded-pill bg-primary text-white' if entry.zone == 'guanarteme' else 'position-absolute top-0 start-50 translate-middle-x mt-2 badge rounded-pill bg-success text-white' if entry.zone == 'tamaraceite' else 'position-absolute top-0 start-50 translate-middle-x mt-2 badge rounded-pill bg-info text-white' if entry.zone == 'lomolosfrailes' else 'position-absolute top-0 start-50 translate-middle-x mt-2 badge rounded-pill bg-secondary text-white'"
+                                                  style="z-index: 2; font-size: 0.75rem; padding: 0.4em 0.8em; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"
+                                                  t-esc="dict({'canarias': 'Canarias', 'guanarteme': 'Guanarteme', 'tamaraceite': 'Tamaraceite', 'lomolosfrailes': 'Lomo los Frailes', 'lomo_los_frailes': 'Lomo los Frailes', 'lomo los frailes': 'Lomo los Frailes'}).get(entry.zone, entry.zone)"/>
+                                            
+                                            <div class="card-img-top d-flex align-items-center justify-content-center bg-white" style="height: 180px; border-bottom: 1px solid #f0f0f0;">
+                                                <!-- Logo Container -->
+                                                <div class="logo-container d-flex align-items-center justify-content-center w-100 h-100 p-3">
+                                                    <!-- Logo de la compañía -->
+                                                    <img t-att-src="'/directorio/img/' + str(entry.id)"
+                                                         class="directory-logo"
+                                                         style="max-height: 140px; max-width: 100%; object-fit: contain; transition: transform 0.3s ease;"
+                                                         loading="lazy"
+                                                         onmouseover="this.style.transform='scale(1.05)';"
+                                                         onmouseout="this.style.transform='scale(1)';"/>
+                                                </div>
+                                            </div>
+
+                                            <div class="card-body">
+                                                <h5 class="card-title mb-1 fs-6" t-esc="entry.get_display_name()"/>
+                                                <p class="card-text text-muted small mb-2" t-esc="entry.short_description or ''"/>
+                                                <!-- Hierarchical Category Badges -->
+                                                <div t-if="entry.category_ids" class="mb-2 category-badges">
+                                                    <t t-foreach="entry.get_category_badge_groups()" t-as="badge_group">
+                                                        <t t-foreach="badge_group" t-as="badge">
+                                                            <a t-att-href="'/directorio/categoria/' + str(badge['id'])"
+                                                               t-attf-class="badge {{'bg-primary text-white' if badge['level'] == 1 else 'bg-info text-white' if badge['level'] == 2 else 'bg-success text-white'}} me-1 small fw-normal text-decoration-none">
+                                                                <t t-esc="badge['name']"/>
+                                                            </a>
+                                                        </t>
+                                                    </t>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="card-footer bg-transparent border-0 pt-0 pb-3">
+                                                <!-- FIX: Buscar website relacionado y usar su domain -->
+                                                <t t-set="company_website" t-value="request.env['website'].sudo().search([('company_id', '=', entry.company_id.id)], limit=1)"/>
+                                                <t t-set="microsite_url" t-value="company_website.domain if company_website and company_website.domain else entry.website_url"/>
+                                                
+                                                <a t-att-href="microsite_url or '#'" 
+                                                   t-att-class="'btn btn-primary btn-sm w-100' if microsite_url else 'btn btn-outline-secondary btn-sm w-100 disabled'"
+                                                   t-att-target="'_blank' if microsite_url else False">
+                                                    <i class="fa fa-globe me-1"/>
+                                                    <t t-esc="'Visitar Web' if microsite_url else 'Web no disponible'"/>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                            
+                            <!-- LIST VIEW -->
+                            <div t-if="view_type == 'list'" id="entries_list" class="list-group list-group-flush">
+                                <t t-foreach="entries" t-as="entry">
+                                    <div class="list-group-item d-flex align-items-center gap-3 py-3">
+                                        <!-- Logo/Image - Usar logo_web de compañía -->
+                                        <div class="flex-shrink-0 position-relative" style="width: 80px; height: 80px;">
+                                            <img t-att-src="'/directorio/img/' + str(entry.id)" 
+                                                 class="img-fluid rounded position-absolute top-0 start-0" 
+                                                 style="max-height: 80px; max-width: 80px; object-fit: contain; z-index: 2;" 
+                                                 loading="lazy" 
+                                                 onload="this.nextElementSibling.style.display='none';"
+                                                 onerror="this.style.display='none';"/>
+                                            <div class="bg-light rounded d-flex align-items-center justify-content-center position-absolute top-0 start-0"
+                                                 style="width: 80px; height: 80px; z-index: 1;">
+                                                <i class="fa fa-building fa-2x text-muted"/>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Info -->
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex align-items-center gap-2 mb-1">
+                                                <h5 class="mb-0 fs-6" t-esc="entry.get_display_name()"/>
+                                                <span class="badge rounded-pill"
+                                                      t-att-class="'bg-primary text-white' if entry.zone == 'guanarteme' else 'bg-success text-white' if entry.zone == 'tamaraceite' else 'bg-info text-white' if entry.zone == 'lomolosfrailes' else 'bg-secondary text-white'"
+                                                      style="font-size: 0.75rem; padding: 0.4em 0.8em; box-shadow: 0 1px 3px rgba(0,0,0,0.15);"
+                                                      t-esc="dict({'canarias': 'Canarias', 'guanarteme': 'Guanarteme', 'tamaraceite': 'Tamaraceite', 'lomolosfrailes': 'Lomo los Frailes', 'lomo_los_frailes': 'Lomo los Frailes', 'lomo los frailes': 'Lomo los Frailes'}).get(entry.zone, entry.zone)"/>
+                                            </div>
+                                            <p class="text-muted small mb-1" t-esc="entry.short_description or ''"/>
+                                            <!-- Category badges -->
+                                            <div t-if="entry.category_ids" class="category-badges">
+                                                <t t-foreach="entry.get_category_badge_groups()" t-as="badge_group">
+                                                    <t t-foreach="badge_group" t-as="badge">
+                                                        <span t-attf-class="badge {{'bg-primary text-white' if badge['level'] == 1 else 'bg-info text-white' if badge['level'] == 2 else 'bg-success text-white'}} me-1 small"
+                                                              t-esc="badge['name']"/>
+                                                    </t>
+                                                </t>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Action - FIX: usar website.domain -->
+                                        <div class="flex-shrink-0">
+                                            <t t-set="company_website_list" t-value="request.env['website'].sudo().search([('company_id', '=', entry.company_id.id)], limit=1)"/>
+                                            <t t-set="microsite_url_list" t-value="company_website_list.domain if company_website_list and company_website_list.domain else entry.website_url"/>
+                                            
+                                            <a t-att-href="microsite_url_list or '#'" 
+                                               t-att-class="'btn btn-outline-primary btn-sm' if microsite_url_list else 'btn btn-outline-secondary btn-sm disabled'"
+                                               t-att-target="'_blank' if microsite_url_list else False">
+                                                <i class="fa fa-globe me-1"/>Visitar
+                                            </a>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                            
+                            <div t-if="not entries" class="text-center py-5">
+                                <i class="fa fa-inbox fa-4x text-muted mb-3"/>
+                                <h4 class="text-muted">No hay empresas disponibles</h4>
+                            </div>
+                            
+                            <!-- Pagination -->
+                            <nav t-if="pager and pager.get('page_count', 0) > 1 and pager.get('pages')" class="d-flex justify-content-center mt-4 mb-5" aria-label="Navegación de páginas">
+                                <ul class="pagination pagination-sm">
+                                    <!-- Previous -->
+                                    <li t-attf-class="page-item {{ 'disabled' if pager.get('page', {}).get('num', 1) == 1 else '' }}">
+                                        <a t-if="pager.get('page', {}).get('num', 1) > 1" t-att-href="pager.get('page_previous', {}).get('url', '#')" class="page-link">
+                                            <i class="fa fa-chevron-left"/>
+                                        </a>
+                                        <span t-else="" class="page-link">
+                                            <i class="fa fa-chevron-left"/>
+                                        </span>
+                                    </li>
+                                    
+                                    <!-- Page numbers -->
+                                    <t t-foreach="pager.get('pages', [])" t-as="page_num">
+                                        <li t-attf-class="page-item {{ 'active' if page_num['is_current'] else '' }}">
+                                            <t t-if="page_num['num'] == '…'">
+                                                <span class="page-link" style="pointer-events: none;">…</span>
+                                            </t>
+                                            <t t-elif="page_num['is_current']">
+                                                <span class="page-link" t-esc="page_num['num']"/>
+                                            </t>
+                                            <t t-else="">
+                                                <a t-att-href="page_num['url']" class="page-link" t-esc="page_num['num']"/>
+                                            </t>
+                                        </li>
+                                    </t>
+                                    
+                                    <!-- Next -->
+                                    <li t-attf-class="page-item {{ 'disabled' if pager.get('page', {}).get('num', 1) == pager.get('page_count', 0) else '' }}">
+                                        <a t-if="pager.get('page', {}).get('num', 1) != pager.get('page_count', 0)" t-att-href="pager.get('page_next', {}).get('url', '#')" class="page-link">
+                                            <i class="fa fa-chevron-right"/>
+                                        </a>
+                                        <span t-else="" class="page-link">
+                                            <i class="fa fa-chevron-right"/>
+                                        </span>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Custom Searchable Select -->
+            <script>
+<![CDATA[
+(function() {
+    'use strict';
+    
+    // Initialize all custom searchable selects (solo nivel 1 para categorías)
+    function initAllCustomSelects() {
+        document.querySelectorAll('.directory-custom-select:not([data-enhanced="true"])').forEach(function(select) {
+            // Solo inicializar custom select para zonas y catLevel1
+            if (select.id === 'zoneSelect' || select.id === 'catLevel1') {
+                initCustomSelect(select);
+            }
+        });
+    }
+    
+    function initCustomSelect(select) {
+        var isZoneSelect = select.id === 'zoneSelect';
+        var isCategorySelect = select.id === 'catLevel1';
+        var form = select.closest('form');
+        
+        // Mark as enhanced
+        select.dataset.enhanced = 'true';
+        
+        // Create wrapper - needs relative positioning for absolute dropdown
+        var wrapper = document.createElement('div');
+        wrapper.className = 'custom-searchable-select';
+        // Zone select has higher z-index than category select
+        var zIndex = isZoneSelect ? '100000' : '9999';
+        wrapper.style.cssText = 'position:relative;display:block;z-index:' + zIndex + ';';
+        wrapper.dataset.selectType = isZoneSelect ? 'zone' : 'category';
+        
+        // Ensure wrapper parent has visible overflow
+        var parentContainer = select.closest('.card-body');
+        if (parentContainer) {
+            parentContainer.style.overflow = 'visible';
+        }
+        
+        // Create toggle button
+        var toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'form-select text-start';
+        var selectedOption = select.options[select.selectedIndex];
+        var selectedText = selectedOption ? selectedOption.text : (isZoneSelect ? 'Seleccione zona...' : 'Todas las categorías');
+        toggle.innerHTML = '<span class="selected-text">' + selectedText + '</span>';
+        toggle.style.cssText = 'position:relative;width:100%;background:#fff;';
+        
+        // Create dropdown - use absolute positioning relative to wrapper
+        var dropdown = document.createElement('div');
+        dropdown.className = 'custom-select-dropdown';
+        dropdown.style.cssText = 'position:absolute;z-index:99999;background:#fff;border:1px solid #ced4da;border-radius:0.375rem;width:100%;max-height:350px;overflow:hidden;display:none;box-shadow:0 0.5rem 1rem rgba(0,0,0,0.25);top:100%;left:0;margin-top:2px;';
+        
+        // Create search input
+        var searchContainer = document.createElement('div');
+        searchContainer.className = 'p-2 border-bottom';
+        var placeholder = isZoneSelect ? 'Buscar zona...' : 'Buscar categoría...';
+        searchContainer.innerHTML = '<input type="text" class="form-control form-control-sm" placeholder="' + placeholder + '" autocomplete="off">';
+        var searchInput = searchContainer.querySelector('input');
+        
+        // Create options list
+        var list = document.createElement('div');
+        list.className = 'custom-select-options';
+        list.style.cssText = 'max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch;';
+        
+        // Build options
+        Array.from(select.options).forEach(function(opt, index) {
+            var item = document.createElement('div');
+            item.className = 'custom-select-option';
+            if (index === 0) item.classList.add('text-muted');
+            item.textContent = opt.text;
+            item.dataset.value = opt.value;
+            item.dataset.url = opt.dataset.url || '';
+            item.style.cssText = 'padding:10px 16px;cursor:pointer;transition:background 0.15s;font-size:14px;border-bottom:1px solid #f0f0f0;';
+            item.addEventListener('mouseenter', function() { item.style.background = '#e9ecef'; });
+            item.addEventListener('mouseleave', function() { item.style.background = 'transparent'; });
+            item.addEventListener('click', function(e) {
+                e.stopPropagation();
+                
+                // Update select value
+                select.value = opt.value;
+                
+                // Update toggle text
+                toggle.querySelector('.selected-text').textContent = opt.text;
+                
+                // Close dropdown
+                dropdown.style.display = 'none';
+                
+                // Handle zone navigation or form submit
+                if (isZoneSelect && opt.dataset.url) {
+                    // Navigate to zone URL
+                    window.location.href = opt.dataset.url;
+                } else if (select.classList.contains('directory-cat-select')) {
+                    // Trigger change event for category cascade
+                    // Update selected attribute on options to match native behavior
+                    Array.from(select.options).forEach(function(opt) {
+                        opt.selected = (opt.value === select.value);
+                    });
+                    // Dispatch the change event synchronously
+                    var changeEvent = new Event('change', { bubbles: true, cancelable: true });
+                    select.dispatchEvent(changeEvent);
+                } else if (form) {
+                    // Submit form for categories
+                    form.submit();
+                }
+            });
+            list.appendChild(item);
+        });
+        
+        // Search functionality
+        searchInput.addEventListener('input', function() {
+            var term = this.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            list.querySelectorAll('.custom-select-option').forEach(function(item) {
+                var text = item.textContent.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                item.style.display = text.includes(term) ? 'block' : 'none';
+            });
+        });
+        
+        // Position dropdown - for absolute positioning relative to wrapper
+        function positionDropdown() {
+            // With absolute positioning, the dropdown is already positioned
+            // relative to the wrapper. We just need to check if it overflows
+            // the viewport and adjust if necessary.
+            var rect = toggle.getBoundingClientRect();
+            var viewportHeight = window.innerHeight;
+            var dropdownHeight = Math.min(250, list.scrollHeight + 50); // approximate height
+            
+            // Check if dropdown would go below viewport
+            var spaceBelow = viewportHeight - rect.bottom;
+            
+            if (spaceBelow < dropdownHeight && rect.top > dropdownHeight) {
+                // Show above the toggle
+                dropdown.style.top = 'auto';
+                dropdown.style.bottom = '100%';
+                dropdown.style.marginTop = '0';
+                dropdown.style.marginBottom = '2px';
+            } else {
+                // Show below the toggle (default)
+                dropdown.style.top = '100%';
+                dropdown.style.bottom = 'auto';
+                dropdown.style.marginTop = '2px';
+                dropdown.style.marginBottom = '0';
+            }
+        }
+        
+        // Toggle dropdown
+        toggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var isOpen = dropdown.style.display === 'block';
+            // Close all other dropdowns
+            document.querySelectorAll('.custom-select-dropdown').forEach(function(d) { 
+                if (d !== dropdown) d.style.display = 'none'; 
+            });
+            if (!isOpen) {
+                positionDropdown();
+                dropdown.style.display = 'block';
+                searchInput.focus();
+            }
+        });
+        
+        // Reposition on resize only (scroll not needed with absolute positioning)
+        window.addEventListener('resize', function() {
+            if (dropdown.style.display === 'block') {
+                positionDropdown();
+            }
+        }, { passive: true });
+        
+        // Close on outside click
+        document.addEventListener('click', function(e) {
+            if (!dropdown.contains(e.target) && e.target !== toggle) {
+                dropdown.style.display = 'none';
+            }
+        });
+        
+        // Prevent closing when clicking inside dropdown
+        dropdown.addEventListener('click', function(e) {
+            if (e.target !== searchInput) e.stopPropagation();
+        });
+        
+        // Assemble - append dropdown to wrapper for absolute positioning
+        dropdown.appendChild(searchContainer);
+        dropdown.appendChild(list);
+        wrapper.appendChild(dropdown);
+        
+        wrapper.appendChild(toggle);
+        
+        // Replace select
+        select.style.display = 'none';
+        select.parentNode.insertBefore(wrapper, select);
+        wrapper.appendChild(select);
+    }
+    
+    // Initialize on DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            // IMPORTANT: Initialize category cascade FIRST (before custom selects)
+            // so event listeners are attached to the original select elements
+            initCategoryCascade();
+            initAllCustomSelects();
+            initAsyncSearch();
+        });
+    } else {
+        initCategoryCascade();
+        initAllCustomSelects();
+        initAsyncSearch();
+    }
+    
+    // Async Search Functionality
+    function initAsyncSearch() {
+        var searchForm = document.getElementById('directorySearchForm');
+        var searchInput = document.getElementById('directorySearchInput');
+        var searchLoading = document.getElementById('searchLoading');
+        var resultsContainer = document.getElementById('entries_grid') || document.getElementById('entries_list');
+        
+        if (!searchForm || !searchInput || !resultsContainer) {
+            console.log('[Directory] Async search elements not found');
+            return;
+        }
+        
+        var searchTimeout;
+        var minSearchLength = 3;
+        var searchDelay = 400;
+        
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            var query = this.value.trim();
+            
+            if (query.length >= minSearchLength) {
+                searchTimeout = setTimeout(function() {
+                    performAjaxSearch(query);
+                }, searchDelay);
+            } else if (query.length === 0) {
+                window.location.reload();
+            }
+        });
+        
+        searchForm.addEventListener('submit', function(e) {
+            var query = searchInput.value.trim();
+            if (query.length >= minSearchLength) {
+                e.preventDefault();
+                performAjaxSearch(query);
+            }
+        });
+        
+        function performAjaxSearch(query) {
+            if (searchLoading) searchLoading.style.display = 'block';
+            
+            var xhr = new XMLHttpRequest();
+            var viewType = document.querySelector('#entries_grid') ? 'grid' : 'list';
+            var silverLevel = document.getElementById('directorySearchSilverLevel') ? document.getElementById('directorySearchSilverLevel').value : '';
+            var sustainAction = document.getElementById('directorySearchSustainAction') ? document.getElementById('directorySearchSustainAction').value : '';
+            var silverAction = document.getElementById('directorySearchSilverAction') ? document.getElementById('directorySearchSilverAction').value : '';
+            var url = '/directorio/ajax/search?search=' + encodeURIComponent(query) + '&view=' + viewType;
+            if (silverLevel) {
+                url += '&silver_level=' + encodeURIComponent(silverLevel);
+            }
+            if (sustainAction) {
+                url += '&sustain_action=' + encodeURIComponent(sustainAction);
+            }
+            if (silverAction) {
+                url += '&silver_action=' + encodeURIComponent(silverAction);
+            }
+            
+            xhr.open('GET', url, true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            
+            xhr.onload = function() {
+                if (searchLoading) searchLoading.style.display = 'none';
+                if (xhr.status === 200) {
+                    resultsContainer.innerHTML = xhr.responseText;
+                }
+            };
+            
+            xhr.onerror = function() {
+                if (searchLoading) searchLoading.style.display = 'none';
+            };
+            
+            xhr.send();
+        }
+    }
+    
+    // Robust global clear functions (do NOT depend on initCategoryCascade locals)
+    window.clearSearchFilter = function() {
+        console.log('[Directory] Clearing search filter');
+        var searchInput = document.getElementById('directorySearchInput');
+        if (searchInput) {
+            searchInput.value = '';
+            searchInput.dispatchEvent(new Event('input'));
+        }
+    };
+    
+    window.clearCategoryFilter = function() {
+        console.log('[Directory] Clearing category filter');
+        var level1Select = document.getElementById('catLevel1');
+        var level2Select = document.getElementById('catLevel2');
+        var level3Select = document.getElementById('catLevel3');
+        var level2Container = document.getElementById('catLevel2Container');
+        var level3Container = document.getElementById('catLevel3Container');
+        
+        if (level1Select) level1Select.value = '';
+        if (level2Select) level2Select.value = '';
+        if (level3Select) level3Select.value = '';
+        
+        if (level2Container) {
+            level2Container.style.opacity = '0';
+            setTimeout(function() { level2Container.style.display = 'none'; }, 300);
+        }
+        if (level3Container) {
+            level3Container.style.opacity = '0';
+            setTimeout(function() { level3Container.style.display = 'none'; }, 300);
+        }
+        
+        var customToggle = document.querySelector('.custom-searchable-select[data-select-type="category"] .selected-text');
+        if (customToggle) customToggle.textContent = 'Todas las categorías';
+        
+        var badgeSection = document.getElementById('activeCategoryBadge');
+        if (badgeSection) badgeSection.style.display = 'none';
+        
+        // Trigger reload preserving filter params
+        var searchInput = document.getElementById('directorySearchInput');
+        if (searchInput && !searchInput.value.trim()) {
+            var url = '/directorio?';
+            var sl = document.getElementById('directorySearchSilverLevel') ? document.getElementById('directorySearchSilverLevel').value : '';
+            var sa = document.getElementById('directorySearchSustainAction') ? document.getElementById('directorySearchSustainAction').value : '';
+            var sia = document.getElementById('directorySearchSilverAction') ? document.getElementById('directorySearchSilverAction').value : '';
+            var params = [];
+            if (sl) params.push('silver_level=' + sl);
+            if (sa) params.push('sustain_action=' + sa);
+            if (sia) params.push('silver_action=' + sia);
+            window.location.href = params.length ? url + params.join('&') : '/directorio';
+        } else {
+            window.clearSearchFilter();
+        }
+    };
+    
+    // Category Cascade Functionality with AJAX (Async)
+    function initCategoryCascade(attempt) {
+        attempt = attempt || 1;
+        var catData = window.directoryCategories || [];
+        var level1Select = document.getElementById('catLevel1');
+        var level2Select = document.getElementById('catLevel2');
+        var level3Select = document.getElementById('catLevel3');
+        var level2Container = document.getElementById('catLevel2Container');
+        var level3Container = document.getElementById('catLevel3Container');
+        var form = document.getElementById('categoryFilterForm');
+        var loader = document.getElementById('categoryLoader');
+        var progress = document.getElementById('categoryProgress');
+        var resultsContainer = document.getElementById('entries_grid') || document.getElementById('entries_list');
+        
+        if (!level1Select || !catData.length) {
+            if (attempt < 10) {
+                console.log('[Directory] No cat data or level1 select, retrying in 100ms (attempt ' + attempt + ')');
+                setTimeout(function() { initCategoryCascade(attempt + 1); }, 100);
+                return;
+            }
+            console.log('[Directory] No cat data or level1 select after 10 attempts, giving up');
+            return;
+        }
+        
+        if (window._directoryCategoryCascadeInitialized) {
+            console.log('[Directory] Category cascade already initialized, skipping');
+            return;
+        }
+        window._directoryCategoryCascadeInitialized = true;
+        
+        console.log('[Directory] Initializing category cascade with', catData.length, 'categories');
+        
+        // Helper to get current select value (handles both native and custom selects)
+        function getSelectValue(select) {
+            return select ? select.value : '';
+        }
+        
+        // Helper to set select value programmatically
+        function setSelectValue(select, value) {
+            if (!select) return;
+            select.value = value;
+            // Update selected attribute on options
+            Array.from(select.options).forEach(function(opt) {
+                opt.selected = (opt.value === String(value));
+            });
+        }
+        
+        // Get selected values from server
+        var selectedGrandparent = window.selectedCategoryGrandparent;
+        var selectedParent = window.selectedCategoryParent;
+        var selectedCat = window.selectedCategory;
+        
+        // Initialize level 2 if grandparent is selected
+        if (selectedGrandparent) {
+            var grandparent = catData.find(function(c) { return c.id === selectedGrandparent; });
+            if (grandparent && grandparent.children.length) {
+                populateSelect(level2Select, grandparent.children, 'Seleccione subcategoría...');
+                showContainer(level2Container);
+                if (selectedParent) {
+                    setSelectValue(level2Select, selectedParent);
+                }
+            }
+        }
+        
+        // Initialize level 3 if parent is selected
+        if (selectedParent) {
+            var grandparent = catData.find(function(c) { return c.id === selectedGrandparent; });
+            if (grandparent) {
+                var parent = grandparent.children.find(function(c) { return c.id === selectedParent; });
+                if (parent && parent.children.length) {
+                    populateSelect(level3Select, parent.children, 'Seleccione especialidad...');
+                    showContainer(level3Container);
+                    updateHint(2, parent.name);
+                    if (selectedCat) {
+                        setSelectValue(level3Select, selectedCat);
+                    }
+                }
+            }
+        }
+        
+        // Prevent form submit (we use AJAX)
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                console.log('[Directory] Form submit prevented, using AJAX');
+            });
+        }
+        
+        // Attach change listeners DIRECTLY to each select to avoid bubbling issues
+        function attachSelectChange(select, handler) {
+            if (!select) return;
+            select.addEventListener('change', function(e) {
+                console.log('[Directory] Direct change event on', select.id, 'value:', select.value);
+                handler(select.value);
+            });
+        }
+        attachSelectChange(level1Select, handleLevel1Change);
+        attachSelectChange(level2Select, handleLevel2Change);
+        attachSelectChange(level3Select, handleLevel3Change);
+        
+        // Also keep form delegation as fallback
+        if (form) {
+            form.addEventListener('change', function(e) {
+                var target = e.target;
+                if (target && (target.id === 'catLevel1' || target.id === 'catLevel2' || target.id === 'catLevel3')) {
+                    console.log('[Directory] Delegated change event on', target.id, 'value:', target.value);
+                }
+            });
+        }
+        
+        // Update sidebar filter badges
+        function updateSidebarFilterBadge(categoryName, categoryId) {
+            var badgeSection = document.getElementById('activeCategoryBadge');
+            if (!badgeSection) return;
+            
+            if (categoryName && categoryId) {
+                // Show the section
+                badgeSection.style.display = 'block';
+                // Update the badge text
+                var badge = badgeSection.querySelector('.badge.bg-primary, .badge.bg-success');
+                if (badge) {
+                    badge.innerHTML = '<i class="fa fa-folder-open me-1"></i>' + categoryName;
+                }
+            } else {
+                // Hide the section
+                badgeSection.style.display = 'none';
+            }
+        }
+        
+        // Global functions are defined outside initCategoryCascade for robustness
+        // (see window.clearCategoryFilter and window.clearSearchFilter below)
+        
+        function handleLevel1Change(value) {
+            var grandparentId = parseInt(value) || null;
+            console.log('[Directory] Level 1 changed to:', grandparentId);
+            
+            // Hide lower levels first
+            hideContainer(level2Container);
+            hideContainer(level3Container);
+            
+            if (!grandparentId) {
+                // Clear filter - use current state
+                showLoader();
+                performCategoryAjaxSearch(null, 1, currentFilterState.viewType, currentFilterState.ppg);
+                return;
+            }
+            
+            var grandparent = catData.find(function(c) { return c.id === grandparentId; });
+            console.log('[Directory] Found grandparent:', grandparent ? grandparent.name : 'null', 'children:', grandparent ? grandparent.children.length : 0);
+            
+            // ALWAYS do AJAX search immediately for selected category
+            console.log('[Directory] Doing AJAX search for level 1');
+            showLoader();
+            performCategoryAjaxSearch(grandparentId, 1, currentFilterState.viewType, currentFilterState.ppg);
+            
+            // Update sidebar badge
+            if (grandparent) {
+                updateSidebarFilterBadge(grandparent.name, grandparentId);
+            }
+            
+            // Also show children if they exist (for further refinement)
+            if (grandparent && grandparent.children.length) {
+                console.log('[Directory] Also showing level 2 with', grandparent.children.length, 'children');
+                populateSelect(level2Select, grandparent.children, 'Seleccione subcategoría...');
+                showContainer(level2Container);
+                updateHint(1, grandparent.name);
+            }
+        }
+        
+        function handleLevel2Change(value) {
+            var parentId = parseInt(value) || null;
+            console.log('[Directory] Level 2 changed to:', parentId);
+            
+            // Hide level 3
+            hideContainer(level3Container);
+            
+            if (!parentId) {
+                // Go back to level 1 value
+                var grandparentId = parseInt(getSelectValue(level1Select)) || null;
+                if (grandparentId) {
+                    showLoader();
+                    performCategoryAjaxSearch(grandparentId, 1, currentFilterState.viewType, currentFilterState.ppg);
+                }
+                return;
+            }
+            
+            var grandparentId = parseInt(getSelectValue(level1Select)) || null;
+            var grandparent = catData.find(function(c) { return c.id === grandparentId; });
+            if (!grandparent) return;
+            
+            var parent = grandparent.children.find(function(c) { return c.id === parentId; });
+            
+            // ALWAYS do AJAX search immediately for selected category
+            console.log('[Directory] Doing AJAX search for level 2');
+            showLoader();
+            performCategoryAjaxSearch(parentId, 1, currentFilterState.viewType, currentFilterState.ppg);
+            
+            // Update sidebar badge
+            if (parent) {
+                updateSidebarFilterBadge(parent.name, parentId);
+            }
+            
+            // Also show children if they exist (for further refinement)
+            if (parent && parent.children.length) {
+                console.log('[Directory] Also showing level 3 with', parent.children.length, 'children');
+                populateSelect(level3Select, parent.children, 'Seleccione especialidad...');
+                showContainer(level3Container);
+                updateHint(2, parent.name);
+            }
+        }
+        
+        function handleLevel3Change(value) {
+            var catId = parseInt(value) || null;
+            console.log('[Directory] Level 3 changed to:', catId);
+            if (catId) {
+                showLoader();
+                performCategoryAjaxSearch(catId, 1, currentFilterState.viewType, currentFilterState.ppg);
+                
+                // Find category name and update sidebar badge
+                var grandparentId = parseInt(getSelectValue(level1Select)) || null;
+                var grandparent = catData.find(function(c) { return c.id === grandparentId; });
+                if (grandparent) {
+                    var parentId = parseInt(getSelectValue(level2Select)) || null;
+                    var parent = grandparent.children.find(function(c) { return c.id === parentId; });
+                    if (parent) {
+                        var cat = parent.children.find(function(c) { return c.id === catId; });
+                        if (cat) {
+                            updateSidebarFilterBadge(cat.name, catId);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Store current filter state
+        var currentFilterState = {
+            categoryId: getCurrentCategoryId(),
+            viewType: 'grid',
+            ppg: 21,
+            page: 1
+        };
+        
+        // Prevent duplicate AJAX requests
+        var isAjaxLoading = false;
+        
+        // Helper to get current results container (grid or list)
+        function getResultsContainer() {
+            return document.getElementById('entries_grid') || document.getElementById('entries_list');
+        }
+        
+        // Attach pagination handlers on initial load
+        attachPaginationHandlers();
+        
+        // AJAX function for category search
+        function performCategoryAjaxSearch(categoryId, page, viewType, ppg) {
+            // Prevent duplicate requests
+            if (isAjaxLoading) {
+                console.log('[Directory] AJAX already in progress, skipping duplicate request');
+                return;
+            }
+            
+            // Use provided values or fall back to current state
+            categoryId = categoryId !== undefined ? categoryId : currentFilterState.categoryId;
+            page = page !== undefined ? page : currentFilterState.page;
+            viewType = viewType !== undefined ? viewType : currentFilterState.viewType;
+            ppg = ppg !== undefined ? ppg : currentFilterState.ppg;
+            
+            // Update current state
+            currentFilterState.categoryId = categoryId;
+            currentFilterState.page = page;
+            currentFilterState.viewType = viewType;
+            currentFilterState.ppg = ppg;
+            
+            isAjaxLoading = true;
+            console.log('[Directory] performCategoryAjaxSearch called:', {categoryId, page, viewType, ppg});
+            
+            var xhr = new XMLHttpRequest();
+            var silverLevel = document.getElementById('directorySearchSilverLevel') ? document.getElementById('directorySearchSilverLevel').value : '';
+            var sustainAction = document.getElementById('directorySearchSustainAction') ? document.getElementById('directorySearchSustainAction').value : '';
+            var silverAction = document.getElementById('directorySearchSilverAction') ? document.getElementById('directorySearchSilverAction').value : '';
+            var url = '/directorio/ajax/search?view=' + viewType + '&ppg=' + ppg;
+            if (categoryId) {
+                url += '&category=' + categoryId;
+            }
+            if (page > 1) {
+                url += '&page=' + page;
+            }
+            if (silverLevel) {
+                url += '&silver_level=' + encodeURIComponent(silverLevel);
+            }
+            if (sustainAction) {
+                url += '&sustain_action=' + encodeURIComponent(sustainAction);
+            }
+            if (silverAction) {
+                url += '&silver_action=' + encodeURIComponent(silverAction);
+            }
+            console.log('[Directory] AJAX URL:', url);
+            
+            xhr.open('GET', url, true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            
+            xhr.onload = function() {
+                hideLoader();
+                isAjaxLoading = false;
+                console.log('[Directory] AJAX response status:', xhr.status);
+                if (xhr.status === 200) {
+                    // Get current container (may have changed after view type switch)
+                    var container = getResultsContainer();
+                    console.log('[Directory] Updating results container:', container ? container.id : 'null');
+                    if (container) {
+                        // First, remove ALL pagination elements (both AJAX and original) to avoid duplicates
+                        var allPagsBefore = document.querySelectorAll('nav[aria-label="Navegación de páginas"]');
+                        console.log('[Directory] Removing ALL paginations before update:', allPagsBefore.length);
+                        allPagsBefore.forEach(function(nav) {
+                            console.log('[Directory] Removing pagination:', nav.className);
+                            nav.remove();
+                        });
+                        // Now update the container
+                        container.innerHTML = xhr.responseText;
+                        console.log('[Directory] Results updated successfully');
+                    } else {
+                        console.error('[Directory] resultsContainer not found!');
+                    }
+                    // Hide original pagination (from initial page load)
+                    document.querySelectorAll('nav[aria-label="Navegación de páginas"]').forEach(function(nav) {
+                        if (!nav.classList.contains('ajax-pagination')) {
+                            nav.style.display = 'none';
+                        }
+                    });
+                    // Re-attach pagination handlers
+                    console.log('[Directory] Attaching pagination handlers');
+                    attachPaginationHandlers();
+                    // Update view type buttons
+                    updateViewTypeButtons(viewType);
+                    // Update items per page buttons
+                    updateItemsPerPageButtons(ppg);
+                    // Scroll to top of results
+                    container = getResultsContainer();
+                    if (container) {
+                        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                    // Update URL without reloading
+                    if (window.history && window.history.pushState) {
+                        var newUrl = '/directorio';
+                        var params = [];
+                        if (categoryId) params.push('category=' + categoryId);
+                        if (page > 1) params.push('page=' + page);
+                        if (viewType !== 'grid') params.push('view=' + viewType);
+                        if (ppg !== 21) params.push('ppg=' + ppg);
+                        var sl = document.getElementById('directorySearchSilverLevel') ? document.getElementById('directorySearchSilverLevel').value : '';
+                        var sa = document.getElementById('directorySearchSustainAction') ? document.getElementById('directorySearchSustainAction').value : '';
+                        var sia = document.getElementById('directorySearchSilverAction') ? document.getElementById('directorySearchSilverAction').value : '';
+                        if (sl) params.push('silver_level=' + sl);
+                        if (sa) params.push('sustain_action=' + sa);
+                        if (sia) params.push('silver_action=' + sia);
+                        if (params.length) newUrl += '?' + params.join('&');
+                        window.history.pushState({ categoryFilter: true }, document.title, newUrl);
+                    }
+                } else {
+                    console.error('[Directory] AJAX error:', xhr.statusText);
+                    window.location.href = url;
+                }
+            };
+            
+            xhr.onerror = function() {
+                hideLoader();
+                isAjaxLoading = false;
+                console.error('[Directory] AJAX network error');
+                window.location.href = url;
+            };
+            
+            xhr.send();
+        }
+        
+        // Attach handlers to pagination links
+        function attachPaginationHandlers() {
+            var pageLinks = document.querySelectorAll('.ajax-page-link');
+            console.log('[Directory] Attaching handlers to', pageLinks.length, 'pagination links');
+            pageLinks.forEach(function(link, idx) {
+                // Remove existing listeners to avoid duplicates
+                link.removeEventListener('click', handlePageClick);
+                link.addEventListener('click', handlePageClick);
+            });
+        }
+        
+        function handlePageClick(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var href = this.getAttribute('href');
+            console.log('[Directory] Pagination clicked, href:', href);
+            // Try to find page number in URL path first (/page/X), then in query string (?page=X)
+            var pageMatch = href.match(/\/page\/(\d+)/) || href.match(/[?&]page=(\d+)/);
+            var page = pageMatch ? parseInt(pageMatch[1]) : 1;
+            console.log('[Directory] Going to page:', page);
+            showLoader();
+            performCategoryAjaxSearch(currentFilterState.categoryId, page, currentFilterState.viewType, currentFilterState.ppg);
+        }
+        
+        // Global function to change items per page
+        window.changeItemsPerPage = function(ppg) {
+            console.log('[Directory] Changing items per page to:', ppg);
+            showLoader();
+            performCategoryAjaxSearch(currentFilterState.categoryId, 1, currentFilterState.viewType, ppg);
+        };
+        
+        // Global function to change view type
+        window.changeViewType = function(viewType) {
+            console.log('[Directory] Changing view type to:', viewType);
+            showLoader();
+            performCategoryAjaxSearch(currentFilterState.categoryId, 1, viewType, currentFilterState.ppg);
+        };
+        
+        // Update view type button styles
+        function updateViewTypeButtons(viewType) {
+            var gridBtn = document.querySelector('button[onclick="changeViewType(\'grid\')"]');
+            var listBtn = document.querySelector('button[onclick="changeViewType(\'list\')"]');
+            if (gridBtn) {
+                gridBtn.className = viewType === 'grid' ? 'btn btn-sm btn-primary active' : 'btn btn-sm btn-outline-secondary';
+            }
+            if (listBtn) {
+                listBtn.className = viewType === 'list' ? 'btn btn-sm btn-primary active' : 'btn btn-sm btn-outline-secondary';
+            }
+        }
+        
+        // Update items per page button styles
+        function updateItemsPerPageButtons(ppg) {
+            var buttons = document.querySelectorAll('button[onclick^="changeItemsPerPage"]');
+            buttons.forEach(function(btn) {
+                var match = btn.getAttribute('onclick').match(/changeItemsPerPage\((\d+)\)/);
+                if (match) {
+                    var btnPpg = parseInt(match[1]);
+                    btn.className = btnPpg === ppg ? 'btn btn-sm btn-primary active' : 'btn btn-sm btn-outline-secondary';
+                }
+            });
+        }
+        
+        // Get current category ID from URL or select
+        function getCurrentCategoryId() {
+            var urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('category');
+        }
+        
+        // Update hint text for category selection
+        function updateHint(level, categoryName) {
+            // Optional: show feedback about selected category
+            console.log('[Directory] Selected level ' + level + ': ' + categoryName);
+        }
+        
+        function showLoader() {
+            if (loader) loader.style.display = 'inline-block';
+            if (progress) progress.style.display = 'block';
+            // Disable selects
+            [level1Select, level2Select, level3Select].forEach(function(s) {
+                if (s) s.disabled = true;
+            });
+        }
+        
+        function hideLoader() {
+            if (loader) loader.style.display = 'none';
+            if (progress) progress.style.display = 'none';
+            // Enable selects
+            [level1Select, level2Select, level3Select].forEach(function(s) {
+                if (s) s.disabled = false;
+            });
+        }
+        
+        function showContainer(container) {
+            if (!container) return;
+            console.log('[Directory] Showing container:', container.id);
+            // Cancel any pending hide operation
+            if (container._hideTimeout) {
+                clearTimeout(container._hideTimeout);
+                container._hideTimeout = null;
+            }
+            container.style.display = 'block';
+            container.style.opacity = '1';
+        }
+        
+        function hideContainer(container) {
+            if (!container) return;
+            console.log('[Directory] Hiding container:', container.id);
+            container.style.opacity = '0';
+            // Store timeout reference so it can be cancelled
+            container._hideTimeout = setTimeout(function() {
+                container.style.display = 'none';
+                container._hideTimeout = null;
+            }, 300);
+        }
+        
+        function populateSelect(select, items, placeholder) {
+            // Clear existing options except first
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
+            // Add new options
+            items.forEach(function(item) {
+                var option = document.createElement('option');
+                option.value = item.id;
+                option.textContent = item.name;
+                select.appendChild(option);
+            });
+        }
+    }
+})();
+]]>
+            </script>
+            
+            <style>
+                .shop-directory-header { background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important; }
+                .directory-card { transition: all 0.3s ease; border-radius: 12px; overflow: hidden; }
+                .directory-card:hover { transform: translateY(-5px); box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important; }
+                /* Logo Styles */
+                .directory-logo { 
+                    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+                    border-radius: 8px;
+                }
+                .directory-card:hover .directory-logo {
+                    transform: scale(1.05);
+                }
+                .fallback-logo {
+                    animation: fadeIn 0.3s ease;
+                }
+                .fallback-icon {
+                    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+                    font-size: 2rem;
+                }
+                /* Card Footer Button */
+                .directory-card .card-footer .btn {
+                    border-radius: 25px;
+                    font-weight: 500;
+                    letter-spacing: 0.3px;
+                    transition: all 0.3s ease;
+                }
+                .directory-card .card-footer .btn:hover:not(.disabled) {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+                }
+                /* Category Cascade Transitions */
+                .category-level-transition {
+                    transition: opacity 0.3s ease, transform 0.3s ease;
+                    transform: translateY(-10px);
+                }
+                .category-level-transition[style*="display:block"] {
+                    transform: translateY(0);
+                }
+                
+                /* Category Card Loading State */
+                #categoryFilterCard.loading {
+                    opacity: 0.7;
+                    pointer-events: none;
+                }
+                
+                /* Category Filter Typography */
+                .category-filter-hint {
+                    font-family: inherit;
+                    font-size: 0.75rem;
+                    color: #6c757d;
+                }
+                .category-filter-label {
+                    font-family: inherit;
+                    font-weight: 500;
+                    font-size: 0.875rem;
+                }
+                
+                /* Custom Select Styles - Allow dropdown overflow */
+                #zoneFilterForm, #categoryFilterForm { overflow: visible !important; }
+                .card-body:has(#zoneSelect), .card-body:has(#categoryFilterForm) { overflow: visible !important; position: static !important; }
+                #categoryFilterCard, #zoneFilterCard { overflow: visible !important; }
+                .card:has(#zoneSelect), .card:has(#categoryFilterForm) { overflow: visible !important; }
+                /* Zone dropdown has higher z-index than category dropdown */
+                .custom-searchable-select { position: relative; display: block; }
+                .custom-searchable-select[data-select-type="zone"] { z-index: 100000 !important; }
+                .custom-searchable-select[data-select-type="category"] { z-index: 9999 !important; }
+                .custom-searchable-select[data-select-type="zone"] .custom-select-dropdown { z-index: 100001 !important; }
+                .custom-searchable-select[data-select-type="category"] .custom-select-dropdown { z-index: 10000 !important; }
+                .custom-select-dropdown { 
+                    z-index: 99999 !important; 
+                    background: #fff !important; 
+                    border-radius: 8px !important;
+                    box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important;
+                }
+                .custom-select-dropdown[style*="block"] { animation: fadeIn 0.15s ease; }
+                .custom-select-options { max-height: 220px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+                .custom-select-option { padding: 10px 16px; cursor: pointer; transition: all 0.15s; border-bottom: 1px solid #f5f5f5; }
+                .custom-select-option:hover { background-color: #f8f9fa !important; }
+                .custom-select-option.selected { background-color: #0d6efd !important; color: #fff !important; }
+                @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+            </style>
+        </t>
+    </template>
+    
+    <!-- Template AJAX para resultados de búsqueda -->
+    <template id="directory_search_results" name="Directorio - Resultados AJAX">
+        <!-- Active Filters Badge -->
+        <div id="activeFilters" class="mb-3">
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <t t-if="search">
+                    <span class="badge bg-info d-inline-flex align-items-center">
+                        <i class="fa fa-search me-1"/>
+                        <t t-esc="search"/>
+                        <button type="button" class="btn-close btn-close-white ms-2" style="font-size: 0.5rem;" onclick="clearSearchFilter()"/>
+                    </span>
+                </t>
+                <t t-if="category_id">
+                    <t t-set="cat_obj" t-value="request.env['business.category'].sudo().browse(int(category_id))"/>
+                    <span t-if="cat_obj.exists()" class="badge bg-primary d-inline-flex align-items-center">
+                        <i class="fa fa-folder me-1"/>
+                        <t t-esc="cat_obj.name"/>
+                        <button type="button" class="btn-close btn-close-white ms-2" style="font-size: 0.5rem;" onclick="clearCategoryFilter()"/>
+                    </span>
+                </t>
+                <t t-if="sustain_action">
+                    <span class="badge bg-success d-inline-flex align-items-center">
+                        <i class="fa fa-leaf me-1"/>
+                        <t t-esc="{'energy': 'Ahorro energético', 'waste': 'Gestión de residuos', 'eco': 'Productos ecológicos'}.get(sustain_action, sustain_action)"/>
+                        <a t-attf-href="/directorio?search=#{search or ''}&amp;category=#{category_id or ''}&amp;ppg=#{ppg}#{'&amp;silver_level=' + silver_level if silver_level else ''}#{'&amp;silver_action=' + silver_action if silver_action else ''}" class="text-white ms-2 text-decoration-none fw-bold" style="font-size:0.7rem">×</a>
+                    </span>
+                </t>
+                <t t-if="silver_action">
+                    <span class="badge bg-primary d-inline-flex align-items-center">
+                        <i class="fa fa-users me-1"/>
+                        <t t-esc="{'accessible': 'Local accesible', 'personalized': 'Atención personalizada', 'adapted': 'Productos adaptados'}.get(silver_action, silver_action)"/>
+                        <a t-attf-href="/directorio?search=#{search or ''}&amp;category=#{category_id or ''}&amp;ppg=#{ppg}#{'&amp;silver_level=' + silver_level if silver_level else ''}#{'&amp;sustain_action=' + sustain_action if sustain_action else ''}" class="text-white ms-2 text-decoration-none fw-bold" style="font-size:0.7rem">×</a>
+                    </span>
+                </t>
+                <t t-if="silver_level">
+                    <span class="badge bg-warning text-dark d-inline-flex align-items-center">
+                        <i class="fa fa-certificate me-1"/>
+                        <t t-esc="{'gold': 'Oro', 'silver': 'Plata', 'bronze': 'Bronce'}.get(silver_level, silver_level)"/>
+                        <a t-attf-href="/directorio?search=#{search or ''}&amp;category=#{category_id or ''}&amp;ppg=#{ppg}#{'&amp;sustain_action=' + sustain_action if sustain_action else ''}#{'&amp;silver_action=' + silver_action if silver_action else ''}" class="text-dark ms-2 text-decoration-none fw-bold" style="font-size:0.7rem">×</a>
+                    </span>
+                </t>
+                <span class="text-muted small ms-auto">
+                    <t t-esc="entries_count"/> resultado(s)
+                </span>
+            </div>
+        </div>
+        
+        <t t-if="entries_count == 0">
+            <div class="text-center py-5">
+                <i class="fa fa-search fa-4x text-muted mb-3"/>
+                <h4 class="text-muted">No se encontraron resultados</h4>
+                <p class="text-muted" t-if="search">Intenta con otro término de búsqueda</p>
+            </div>
+        </t>
+        <t t-else="">
+            <!-- Grid View AJAX -->
+            <div t-if="view_type == 'grid'" class="row g-3">
+                <t t-foreach="entries" t-as="entry">
+                    <div class="col-6 col-md-6 col-xl-4">
+                        <div class="card h-100 border-0 shadow-sm directory-card position-relative">
+                            <!-- Zone Badge Centrado -->
+                            <span t-att-class="'position-absolute top-0 start-50 translate-middle-x mt-2 badge rounded-pill bg-primary text-white' if entry.zone == 'guanarteme' else 'position-absolute top-0 start-50 translate-middle-x mt-2 badge rounded-pill bg-success text-white' if entry.zone == 'tamaraceite' else 'position-absolute top-0 start-50 translate-middle-x mt-2 badge rounded-pill bg-info text-white' if entry.zone == 'lomolosfrailes' else 'position-absolute top-0 start-50 translate-middle-x mt-2 badge rounded-pill bg-secondary text-white'"
+                                  style="z-index: 2; font-size: 0.75rem; padding: 0.4em 0.8em; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"
+                                  t-esc="dict({'canarias': 'Canarias', 'guanarteme': 'Guanarteme', 'tamaraceite': 'Tamaraceite', 'lomolosfrailes': 'Lomo los Frailes', 'lomo_los_frailes': 'Lomo los Frailes', 'lomo los frailes': 'Lomo los Frailes'}).get(entry.zone, entry.zone)"/>
+                            
+                            <div class="card-img-top d-flex align-items-center justify-content-center bg-white" style="height: 180px; border-bottom: 1px solid #f0f0f0;">
+                                <!-- Logo Container -->
+                                <div class="logo-container d-flex align-items-center justify-content-center w-100 h-100 p-3">
+                                    <img t-att-src="'/directorio/img/' + str(entry.id)"
+                                         class="directory-logo"
+                                         style="max-height: 140px; max-width: 100%; object-fit: contain; transition: transform 0.3s ease;"
+                                         loading="lazy"
+                                         onmouseover="this.style.transform='scale(1.05)';"
+                                         onmouseout="this.style.transform='scale(1)';"/>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title mb-1 fs-6" t-esc="entry.get_display_name()"/>
+                                <p class="card-text text-muted small mb-2" t-esc="entry.short_description or ''"/>
+                                <!-- Category Badges -->
+                                <div t-if="entry.category_ids" class="mb-2 category-badges">
+                                    <t t-foreach="entry.get_category_badge_groups()" t-as="badge_group">
+                                        <t t-foreach="badge_group" t-as="badge">
+                                            <span t-attf-class="badge {{'bg-primary text-white' if badge['level'] == 1 else 'bg-info text-white' if badge['level'] == 2 else 'bg-success text-white'}} me-1 small fw-normal"
+                                                  t-esc="badge['name']"/>
+                                        </t>
+                                    </t>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent border-0 pt-0 pb-3">
+                                <!-- FIX: usar website_url directo -->
+                                <!-- FIX: usar website.domain -->
+                                <t t-set="company_website_ajax" t-value="request.env['website'].sudo().search([('company_id', '=', entry.company_id.id)], limit=1)"/>
+                                <t t-set="microsite_url_ajax" t-value="company_website_ajax.domain if company_website_ajax and company_website_ajax.domain else entry.website_url"/>
+                                
+                                <a t-att-href="microsite_url_ajax or '#'" 
+                                   t-att-class="'btn btn-outline-primary btn-sm w-100' if microsite_url_ajax else 'btn btn-outline-secondary btn-sm w-100 disabled'"
+                                   t-att-target="'_blank' if microsite_url_ajax else False">
+                                    <i class="fa fa-globe me-1"/>Visitar Web
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+            
+            <!-- List View AJAX -->
+            <div t-if="view_type == 'list'" class="list-group list-group-flush">
+                <t t-foreach="entries" t-as="entry">
+                    <div class="list-group-item d-flex align-items-center gap-3 py-3">
+                        <!-- Logo/Image -->
+                        <div class="flex-shrink-0 position-relative" style="width: 80px; height: 80px;">
+                            <img t-att-src="'/directorio/img/' + str(entry.id)" 
+                                 class="img-fluid rounded position-absolute top-0 start-0" 
+                                 style="max-height: 80px; max-width: 80px; object-fit: contain; z-index: 2;" 
+                                 loading="lazy" 
+                                 onload="this.nextElementSibling.style.display='none';"
+                                 onerror="this.style.display='none';"/>
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center position-absolute top-0 start-0"
+                                 style="width: 80px; height: 80px; z-index: 1;">
+                                <i class="fa fa-building fa-2x text-muted"/>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <h5 class="mb-0 fs-6" t-esc="entry.get_display_name()"/>
+                                <span t-att-class="'badge rounded-pill bg-primary text-white' if entry.zone == 'guanarteme' else 'badge rounded-pill bg-success text-white' if entry.zone == 'tamaraceite' else 'badge rounded-pill bg-info text-white' if entry.zone == 'lomolosfrailes' else 'badge rounded-pill bg-secondary text-white'"
+                                      style="font-size: 0.75rem; padding: 0.4em 0.8em; box-shadow: 0 1px 3px rgba(0,0,0,0.15);"
+                                      t-esc="dict({'canarias': 'Canarias', 'guanarteme': 'Guanarteme', 'tamaraceite': 'Tamaraceite', 'lomolosfrailes': 'Lomo los Frailes', 'lomo_los_frailes': 'Lomo los Frailes', 'lomo los frailes': 'Lomo los Frailes'}).get(entry.zone, entry.zone)"/>
+                            </div>
+                            <p class="text-muted small mb-1" t-esc="entry.short_description or ''"/>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <!-- FIX: usar website.domain -->
+                            <t t-set="company_website_ajax_list" t-value="request.env['website'].sudo().search([('company_id', '=', entry.company_id.id)], limit=1)"/>
+                            <t t-set="microsite_url_ajax_list" t-value="company_website_ajax_list.domain if company_website_ajax_list and company_website_ajax_list.domain else entry.website_url"/>
+                            
+                            <a t-att-href="microsite_url_ajax_list or '#'" 
+                               t-att-class="'btn btn-outline-primary btn-sm' if microsite_url_ajax_list else 'btn btn-outline-secondary btn-sm disabled'"
+                               t-att-target="'_blank' if microsite_url_ajax_list else False">
+                                <i class="fa fa-globe me-1"/>Visitar
+                            </a>
+                        </div>
+                    </div>
+                </t>
+            </div>
+            
+            <!-- Pagination AJAX -->
+            <nav t-if="pager and pager.get('page_count', 0) > 1 and pager.get('pages')" class="d-flex justify-content-center mt-4 mb-5 ajax-pagination" aria-label="Navegación de páginas">
+                <ul class="pagination pagination-sm">
+                    <li t-attf-class="page-item {{ 'disabled' if pager.get('page', {}).get('num', 1) == 1 else '' }}">
+                        <a t-if="pager.get('page', {}).get('num', 1) > 1" 
+                           t-att-href="pager.get('page_previous', {}).get('url', '#')" 
+                           class="page-link ajax-page-link">
+                            <i class="fa fa-chevron-left"/>
+                        </a>
+                        <span t-else="" class="page-link">
+                            <i class="fa fa-chevron-left"/>
+                        </span>
+                    </li>
+                    <t t-foreach="pager.get('pages', [])" t-as="page_num">
+                        <li t-attf-class="page-item {{ 'active' if page_num.get('is_current') else '' }}">
+                            <t t-if="page_num.get('num') == '…'">
+                                <span class="page-link" style="pointer-events: none;">…</span>
+                            </t>
+                            <t t-elif="page_num.get('is_current')">
+                                <span class="page-link" t-esc="page_num['num']"/>
+                            </t>
+                            <t t-else="">
+                                <a t-att-href="page_num.get('url', '#')" 
+                                   class="page-link ajax-page-link" 
+                                   t-esc="page_num.get('num', '')"/>
+                            </t>
+                        </li>
+                    </t>
+                    <li t-attf-class="page-item {{ 'disabled' if pager.get('page', {}).get('num', 1) == pager.get('page_count', 0) else '' }}">
+                        <a t-if="pager.get('page', {}).get('num', 1) != pager.get('page_count', 0)" 
+                           t-att-href="pager.get('page_next', {}).get('url', '#')" 
+                           class="page-link ajax-page-link">
+                            <i class="fa fa-chevron-right"/>
+                        </a>
+                        <span t-else="" class="page-link">
+                            <i class="fa fa-chevron-right"/>
+                        </span>
+                    </li>
+                </ul>
+            </nav>
+        </t>
+    </template>
+</odoo>

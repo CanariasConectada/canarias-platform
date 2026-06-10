@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Template para ocultar el selector antiguo y mostrar el nuevo -->
+    <template id="shop_ppg_fix" inherit_id="website_sale.products" name="Shop PPG Fix" priority="999">
+        <!-- Ocultar el selector antiguo -->
+        <xpath expr="//div[hasclass('o_wsale_products_header_limit')]" position="attributes">
+            <attribute name="style">display: none !important;</attribute>
+        </xpath>
+        
+        <!-- Añadir nuevo selector después del header -->
+        <xpath expr="//header[@id='o_wsale_products_header']" position="after">
+            <div class="o_wsale_ppg_wrapper" style="margin-bottom: 1rem;">
+                <div class="d-flex align-items-center justify-content-end gap-2 py-2 px-3 bg-light rounded">
+                    <span class="text-muted small">Mostrar:</span>
+                    <div class="btn-group">
+                        <a t-att-href="keep(ppg=12, page=1)" class="btn btn-sm btn-outline-secondary">12</a>
+                        <a t-att-href="keep(ppg=24, page=1)" class="btn btn-sm btn-outline-secondary">24</a>
+                        <a t-att-href="keep(ppg=48, page=1)" class="btn btn-sm btn-outline-secondary">48</a>
+                        <a t-att-href="keep(ppg=96, page=1)" class="btn btn-sm btn-outline-secondary">96</a>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

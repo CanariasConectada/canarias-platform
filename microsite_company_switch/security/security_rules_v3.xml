@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+        REGLAS DE SEGURIDAD V3 PARA RES.PARTNER (Contactos)
+        Fecha: 2026-03-25
+        
+        PRINCIPIO: Solo ver contactos de la compañía ACTUALMENTE seleccionada
+        
+        Cambios respecto a v2:
+        - NO usar company_ids (todas las compañías del usuario)
+        - NO mostrar My Company (ID=1) a menos que sea la seleccionada
+        - Usar company_id (singular) = compañía seleccionada actualmente
+        - Usuario normal: compañía seleccionada + propio contacto
+        - Admin: solo compañía seleccionada (usa switcher para cambiar)
+    -->
+
+    <!-- 
+        REGLA 1 (v3): Usuarios Normales - Compañía seleccionada + Propio Contacto
+        Grupo: Role / User (group_user)
+        
+        Permite ver:
+        1. Contactos de la compañía ACTUALMENTE seleccionada (company_id)
+        2. Su propio contacto de usuario (user.partner_id.id)
+        
+        NO permite ver:
+        - Contactos de otras compañías asignadas al usuario
+        - My Company (ID=1) a menos que sea la seleccionada
+    -->
+    <record id="rule_partner_user_v3" model="ir.rule">
+        <field name="name">Partner: User sees Selected Company + Own Contact</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="domain_force">[
+            '|',
+                ('company_id', '=', company_id),  <!-- Solo compañía seleccionada -->
+                ('id', '=', user.partner_id.id)   <!-- O su propio contacto -->
+        ]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- 
+        REGLA 2 (v3): Administradores - Solo Compañía Seleccionada
+        Grupo: Role / Administrator (group_system)
+        
+        IMPORTANTE: NO hay bypass [(1, '=', 1)]. El admin usa el switcher
+        para cambiar de compañía y ve SOLO la compañía seleccionada.
+        
+        Permite ver:
+        1. Contactos de la compañía ACTUALMENTE seleccionada (company_id)
+        
+        NO permite ver:
+        - Contactos de otras compañías
+        - My Company (ID=1) a menos que sea la seleccionada
+        - Todos los contactos con bypass
+    -->
+    <record id="rule_partner_admin_v3" model="ir.rule">
+        <field name="name">Partner: Admin sees Only Selected Company</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="domain_force">[
+            ('company_id', '=', company_id)  <!-- Solo compañía seleccionada -->
+        ]</field>
+        <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- 
+        REGLA 3 (v3): OdooBot - Acceso al sistema
+        Grupo: Role / User (group_user)
+        Asegura que el usuario sistema (OdooBot, ID: 2) siempre sea visible
+        para operaciones del sistema.
+    -->
+    <record id="rule_partner_odoo_bot_v3" model="ir.rule">
+        <field name="name">Partner: OdooBot Access v3</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="domain_force">[('id', '=', 2)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+</odoo>

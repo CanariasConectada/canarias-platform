@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ======================================== -->
+    <!-- VISTAS DEL MODELO: memoria.viva.evento -->
+    <!-- ======================================== -->
+
+    <!-- VISTA TREE -->
+    <record id="view_memoria_viva_evento_list" model="ir.ui.view">
+        <field name="name">memoria.viva.evento.list</field>
+        <field name="model">memoria.viva.evento</field>
+        <field name="arch" type="xml">
+            <list string="Eventos">
+                <field name="name"/>
+                <field name="mes"/>
+                <field name="fecha_especifica"/>
+                <field name="historia_id"/>
+                <field name="website_primario_id" optional="show"/>
+                <field name="state" widget="badge" decoration-success="state == 'activo'" decoration-muted="state == 'finalizado'" decoration-danger="state == 'cancelado'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- VISTA FORM -->
+    <record id="view_memoria_viva_evento_form" model="ir.ui.view">
+        <field name="name">memoria.viva.evento.form</field>
+        <field name="model">memoria.viva.evento</field>
+        <field name="arch" type="xml">
+            <form string="Evento">
+                <header>
+                    <field name="state" widget="statusbar" options="{'clickable': '1'}"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Nombre del evento..."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="historia_id"/>
+                            <field name="mes"/>
+                            <field name="fecha_especifica"/>
+                        </group>
+                        <group>
+                            <field name="lugar_name" readonly="1"/>
+                            <field name="website_primario_id" readonly="1"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <group string="Descripción">
+                        <field name="descripcion" placeholder="Describe el evento..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- VISTA SEARCH -->
+    <record id="view_memoria_viva_evento_search" model="ir.ui.view">
+        <field name="name">memoria.viva.evento.search</field>
+        <field name="model">memoria.viva.evento</field>
+        <field name="arch" type="xml">
+            <search string="Eventos">
+                <field name="name"/>
+                <field name="descripcion"/>
+                <field name="historia_id"/>
+                <field name="mes"/>
+                
+                <filter string="Activos" name="filter_activo" domain="[('state','=','activo')]"/>
+                <filter string="Finalizados" name="filter_finalizado" domain="[('state','=','finalizado')]"/>
+                <filter string="Cancelados" name="filter_cancelado" domain="[('state','=','cancelado')]"/>
+                
+                <separator/>
+                
+                <filter string="Enero" name="filter_enero" domain="[('mes','=','1')]"/>
+                <filter string="Febrero" name="filter_febrero" domain="[('mes','=','2')]"/>
+                <filter string="Marzo" name="filter_marzo" domain="[('mes','=','3')]"/>
+                <filter string="Abril" name="filter_abril" domain="[('mes','=','4')]"/>
+                <filter string="Mayo" name="filter_mayo" domain="[('mes','=','5')]"/>
+                <filter string="Junio" name="filter_junio" domain="[('mes','=','6')]"/>
+                <filter string="Julio" name="filter_julio" domain="[('mes','=','7')]"/>
+                <filter string="Agosto" name="filter_agosto" domain="[('mes','=','8')]"/>
+                <filter string="Septiembre" name="filter_septiembre" domain="[('mes','=','9')]"/>
+                <filter string="Octubre" name="filter_octubre" domain="[('mes','=','10')]"/>
+                <filter string="Noviembre" name="filter_noviembre" domain="[('mes','=','11')]"/>
+                <filter string="Diciembre" name="filter_diciembre" domain="[('mes','=','12')]"/>
+                
+                <group>
+                    <filter string="Mes" name="group_mes" context="{'group_by': 'mes'}"/>
+                    <filter string="Lugar" name="group_lugar" context="{'group_by': 'historia_id'}"/>
+                    <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Microsite" name="group_website" context="{'group_by': 'website_primario_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ACTION -->
+    <record id="action_memoria_viva_evento" model="ir.actions.act_window">
+        <field name="name">Eventos</field>
+        <field name="res_model">memoria.viva.evento</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_memoria_viva_evento_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crea el primer evento
+            </p>
+        </field>
+    </record>
+
+</odoo>

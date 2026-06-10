@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ============================================================
+         MOSTRAR CATEGORÍA DEL PRODUCTO EN LAS CARDS DEL GRID
+         ============================================================ -->
+    
+    <!-- Heredar el template de producto para agregar la categoría -->
+    <!-- Template para agregar categoría en la card del producto -->
+    <template id="shop_product_category_pill" inherit_id="website_sale.products_item" name="Product Category Pill" priority="100">
+        <!-- Insertar al final del div de información del producto -->
+        <xpath expr="//div[hasclass('o_wsale_product_information_text')]" position="inside">
+            <!-- Category Pill - Mostrar la primera categoría pública del producto -->
+            <t t-if="product.public_categ_ids">
+                <div class="o_wsale_category_pill mt-1 mb-1 text-start">
+                    <a t-att-href="'/shop/category/' + slug(product.public_categ_ids[0])" class="text-decoration-none">
+                        <span class="badge rounded-pill bg-info text-white small fw-normal" style="font-size: 0.7rem;">
+                            <i class="fa fa-folder-open me-1"></i>
+                            <t t-esc="product.public_categ_ids[0].name"/>
+                        </span>
+                    </a>
+                </div>
+            </t>
+        </xpath>
+    </template>
+    
+    <!-- Estilos para el pill de categoría -->
+    <template id="shop_product_category_styles" inherit_id="website_sale.products" name="Product Category Styles">
+        <xpath expr="//div[@id='oe_structure_website_sale_products_1']" position="after">
+            <style>
+                /* ===== PILLS DE CATEGORÍA RESPONSIVE ===== */
+                .o_wsale_category_pill {
+                    max-width: 100%;
+                    overflow: hidden;
+                }
+                .o_wsale_category_pill .badge {
+                    max-width: 100%;
+                    display: inline-block;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    font-size: 0.7rem;
+                    transition: all 0.2s ease;
+                }
+                .o_wsale_category_pill a {
+                    text-decoration: none;
+                }
+                .o_wsale_category_pill a:hover .badge {
+                    background-color: #0d6efd !important;
+                    color: #fff !important;
+                }
+                @media (max-width: 575.98px) {
+                    .o_wsale_category_pill .badge {
+                        font-size: 0.6rem;
+                        padding: 0.2em 0.5em;
+                    }
+                }
+                
+                /* En vista lista, mostrar categoría más prominente */
+                #o_wsale_products_grid.view-mode-list .o_wsale_category_pill .badge {
+                    font-size: 0.8rem;
+                    padding: 0.4em 0.8em;
+                }
+            </style>
+        </xpath>
+    </template>
+</odoo>

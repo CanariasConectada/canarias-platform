@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Herencia del formulario de compañía para añadir zona comercial -->
+    <record id="view_company_form_inherit_zone" model="ir.ui.view">
+        <field name="name">res.company.form.inherit.zone</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <label for="zone_id" string="Zona"/>
+                <div class="o_row">
+                    <field name="zone_id" 
+                           string="Zona"
+                           options="{'no_create': False, 'no_open': False, 'no_quick_create': False}"
+                           context="{'default_name': 'Nueva Zona'}"/>
+                    <button name="%(zones_company.action_zone)d" 
+                            type="action" 
+                            string="Gestionar Zonas" 
+                            icon="fa-external-link"
+                            class="btn-link"
+                            title="Ir a la gestión completa de zonas"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vista de lista de compañías con columna de zona -->
+    <record id="view_company_tree_inherit_zone" model="ir.ui.view">
+        <field name="name">res.company.tree.inherit.zone</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="zone_id" string="Zona" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

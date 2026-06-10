@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Herencia de la vista list de survey.user_input -->
+    <record id="view_survey_user_input_tree_inherit_silver" model="ir.ui.view">
+        <field name="name">survey.user_input.tree.inherit.silver</field>
+        <field name="model">survey.user_input</field>
+        <field name="inherit_id" ref="survey.survey_user_input_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="create">1</attribute>
+                <attribute name="decoration-muted">test_entry == True</attribute>
+                <attribute name="decoration-info">certification_level == 'bronze'</attribute>
+                <attribute name="decoration-primary">certification_level == 'silver'</attribute>
+                <attribute name="decoration-warning">certification_level == 'gold'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='state']" position="before">
+                <button name="action_continue_sustainability_evaluation" type="object" icon="fa-play" title="Continuar evaluación"
+                        invisible="state != 'in_progress' or not context.get('is_sustainability')"/>
+            </xpath>
+            <xpath expr="//field[@name='survey_id']" position="after">
+                <field name="is_manually_overridden" optional="hide" invisible="not context.get('is_sustainability')"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Herencia de la vista form de survey.user_input -->
+    <!-- Nota: el page de Auditoría ya lo añade silver_economy. Solo se añade desde sustainability si es necesario. -->
+    <record id="view_survey_user_input_form_inherit_silver" model="ir.ui.view">
+        <field name="name">survey.user_input.form.inherit.silver</field>
+        <field name="model">survey.user_input</field>
+        <field name="inherit_id" ref="survey.survey_user_input_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Sin adiciones de campos: la vista base de survey ya incluye company_id, certification_level, etc. -->
+            <!-- silver_economy añade el page de Auditoría desde su módulo. -->
+        </field>
+    </record>
+
+    <!--
+        Vista form para interceptar el botón "Nuevo" nativo en Mis Evaluaciones.
+        Cuando el usuario hace clic en "Nuevo" desde el contexto Sostenibilidad,
+        en lugar de mostrar el formulario completo de survey.user_input,
+        mostramos un panel limpio con un botón para iniciar la evaluación.
+    -->
+    <record id="view_survey_user_input_form_sust_start" model="ir.ui.view">
+        <field name="name">survey.user_input.form.silver.start</field>
+        <field name="model">survey.user_input</field>
+        <field name="inherit_id" ref="survey.survey_user_input_view_form"/>
+        <field name="mode">extension</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <!-- Panel de inicio: solo visible cuando es registro nuevo y contexto Sostenibilidad -->
+            <xpath expr="//sheet" position="before">
+                <div class="alert alert-info text-center p-5 mb-0"
+                     invisible="not context.get('is_sustainability') or id">
+                    <h3 class="mb-3">📝 Nueva evaluación Sostenibilidad</h3>
+                    <p class="lead">
+                        Inicie una nueva evaluación para su empresa.
+                    </p>
+                    <p class="text-muted">
+                        Al hacer clic en el botón se validarán los plazos de espera
+                        y se inició el cuestionario en una nueva pestaña.
+                    </p>
+                    <button name="action_start_sustainability_from_form"
+                            type="object"
+                            string="Iniciar evaluación"
+                            class="btn btn-primary btn-lg mt-3"/>
+                </div>
+            </xpath>
+            <!-- Ocultar el contenido normal del formulario SOLO cuando es registro nuevo en contexto Silver -->
+            <xpath expr="//sheet" position="attributes">
+                <attribute name="invisible">context.get('is_sustainability') and not id</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

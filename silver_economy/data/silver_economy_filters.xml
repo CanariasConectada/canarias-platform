@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Filtros predefinidos para res.company en Ajustes > Compañías -->
+        <record id="filter_company_silver_bronze" model="ir.filters">
+            <field name="name">Silver Economy - Bronce</field>
+            <field name="model_id">res.company</field>
+            <field name="domain">[('silver_certification_level', '=', 'bronze')]</field>
+            <field name="user_ids" eval="False"/>
+        </record>
+
+        <record id="filter_company_silver_silver" model="ir.filters">
+            <field name="name">Silver Economy - Plata</field>
+            <field name="model_id">res.company</field>
+            <field name="domain">[('silver_certification_level', '=', 'silver')]</field>
+            <field name="user_ids" eval="False"/>
+        </record>
+
+        <record id="filter_company_silver_gold" model="ir.filters">
+            <field name="name">Silver Economy - Oro</field>
+            <field name="model_id">res.company</field>
+            <field name="domain">[('silver_certification_level', '=', 'gold')]</field>
+            <field name="user_ids" eval="False"/>
+        </record>
+
+        <record id="filter_company_silver_none" model="ir.filters">
+            <field name="name">Sin sello Silver Economy</field>
+            <field name="model_id">res.company</field>
+            <field name="domain">[('silver_certification_level', '=', 'none')]</field>
+            <field name="user_ids" eval="False"/>
+        </record>
+
+        <record id="filter_company_silver_expired" model="ir.filters">
+            <field name="name">Sello Silver expirado</field>
+            <field name="model_id">res.company</field>
+            <field name="domain">[('silver_expiry_date', '&lt;', context_today().strftime('%Y-%m-%d'))]</field>
+            <field name="user_ids" eval="False"/>
+        </record>
+    </data>
+</odoo>

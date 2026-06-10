@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista formulario de configuración -->
+    <record id="view_lugares_interes_settings_form" model="ir.ui.view">
+        <field name="name">lugares.interes.settings.form</field>
+        <field name="model">lugares.interes.settings</field>
+        <field name="arch" type="xml">
+            <form string="Configuración de Lugares de Interés">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Configuración de Lugares de Interés</h1>
+                    </div>
+                    
+                    <!-- Formulario Web -->
+                    <group string="Formulario Web">
+                        <group>
+                            <field name="show_tipo"/>
+                            <field name="show_categoria"/>
+                            <field name="show_subcategoria"/>
+                            <field name="show_descripcion_larga"/>
+                            <field name="show_coordenadas"/>
+                        </group>
+                        <group>
+                            <field name="show_mapa"/>
+                            <field name="show_nombre_publicador"/>
+                            <field name="show_only_firstname"/>
+                        </group>
+                    </group>
+                    
+                    <!-- Likes -->
+                    <group string="Sistema de Likes">
+                        <field name="likes_cookie_days"/>
+                    </group>
+                    
+                    <!-- Filtros del Sidebar -->
+                    <group string="Filtros del Sidebar">
+                        <field name="show_reset_filters" widget="boolean_toggle"/>
+                    </group>
+                    
+                    <!-- Anuncio Promocional -->
+                    <group string="Anuncio Promocional">
+                        <field name="anuncio_activo"/>
+                        <field name="anuncio_titulo" invisible="not anuncio_activo"/>
+                        <field name="anuncio_texto" invisible="not anuncio_activo"/>
+                        <field name="anuncio_color" invisible="not anuncio_activo"/>
+                    </group>
+                    
+                    <!-- Comentarios -->
+                    <group string="Sistema de Comentarios">
+                        <field name="permitir_comentarios"/>
+                        <field name="comentarios_publicos" invisible="not permitir_comentarios" widget="boolean_toggle"/>
+                        <field name="comentarios_por_pagina" invisible="not permitir_comentarios"/>
+                    </group>
+                    
+                    <!-- Palabras Prohibidas - Botón de acción -->
+                    <group string="Moderación - Palabras Prohibidas" invisible="not permitir_comentarios">
+                        <p class="text-muted">Administra las palabras que requieren moderación automática en los comentarios.</p>
+                        <button name="%(action_lugares_interes_palabra_prohibida)d" 
+                                type="action" 
+                                string="Gestionar Palabras Prohibidas" 
+                                class="btn btn-outline-secondary"
+                                icon="fa-list"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Acción para abrir configuración -->
+    <record id="action_lugares_interes_settings" model="ir.actions.act_window">
+        <field name="name">Configuración</field>
+        <field name="res_model">lugares.interes.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+    </record>
+    
+    <!-- Nota: El menú de configuración se define en lugares_interes_menus.xml
+         bajo el submenú Configuración para mejor organización -->
+</odoo>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_partner_review_palabra_prohibida_list" model="ir.ui.view">
+        <field name="name">partner.review.palabra.prohibida.list</field>
+        <field name="model">partner.review.palabra.prohibida</field>
+        <field name="arch" type="xml">
+            <list string="Palabras Prohibidas">
+                <field name="name"/>
+                <field name="active" decoration-success="active == True" decoration-danger="active == False"/>
+                <button name="action_desactivar" type="object" string="Desactivar" class="btn-outline-danger" invisible="active == False"/>
+                <button name="action_activar" type="object" string="Activar" class="btn-outline-success" invisible="active == True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_partner_review_palabra_prohibida_form" model="ir.ui.view">
+        <field name="name">partner.review.palabra.prohibida.form</field>
+        <field name="model">partner.review.palabra.prohibida</field>
+        <field name="arch" type="xml">
+            <form string="Palabra Prohibida">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_partner_review_palabra_prohibida_search" model="ir.ui.view">
+        <field name="name">partner.review.palabra.prohibida.search</field>
+        <field name="model">partner.review.palabra.prohibida</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <filter string="Activas" name="activas" domain="[('active', '=', True)]"/>
+                <filter string="Inactivas" name="inactivas" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_partner_review_palabra_prohibida" model="ir.actions.act_window">
+        <field name="name">Palabras Prohibidas</field>
+        <field name="res_model">partner.review.palabra.prohibida</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

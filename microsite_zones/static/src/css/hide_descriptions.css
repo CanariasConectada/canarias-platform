@@ -1,0 +1,57 @@
+/* OCULTAR DESCRIPCIONES EN LISTA DE PRODUCTOS - MICROSITE ZONES */
+
+/* Selectores principales */
+.oe_subdescription_wrapper,
+.oe_subdescription,
+div.oe_subdescription,
+div.oe_subdescription_wrapper {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+}
+
+/* En el grid de productos */
+.o_wsale_product_grid .oe_subdescription_wrapper,
+.o_wsale_product_grid .oe_subdescription,
+.o_wsale_product_grid .text-muted.small,
+.o_wsale_product_grid div.text-muted {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* En el grid específico */
+#products_grid .oe_subdescription_wrapper,
+#products_grid .oe_subdescription,
+#products_grid .text-muted.small {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* En los items de producto */
+.o_wsale_products_item .oe_subdescription,
+.o_wsale_products_item .text-muted,
+.o_wsale_products_item .text-muted.small {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* En la información del producto */
+.o_wsale_product_information .oe_subdescription,
+.o_wsale_product_information .text-muted.small {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Cualquier elemento con data-oe-field="description_sale" */
+[data-oe-field="description_sale"],
+div[data-oe-field="description_sale"] {
+    display: none !important;
+    visibility: hidden !important;
+}

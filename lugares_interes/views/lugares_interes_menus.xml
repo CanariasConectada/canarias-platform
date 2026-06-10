@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================ -->
+    <!-- MENÚ PRINCIPAL MEMORIA VIVA                                  -->
+    <!-- ============================================================ -->
+    
+    <!-- Menú raíz - Posición media en el menú principal de Odoo -->
+    <menuitem id="menu_lugares_interes_root"
+              name="Lugares de Interés"
+              sequence="40"/>
+
+    <!-- ============================================================ -->
+    <!-- SUBMENÚ: CONTENIDO                                           -->
+    <!-- ============================================================ -->
+    <menuitem id="menu_lugares_interes_contenido"
+              name="Contenido"
+              parent="menu_lugares_interes_root"
+              sequence="10"/>
+
+    <!-- Lugares -->
+    <menuitem id="menu_lugares_interes_historias"
+              name="Lugares"
+              parent="menu_lugares_interes_contenido"
+              action="action_lugares_interes_historia"
+              sequence="10"/>
+
+    <!-- Eventos -->
+    <menuitem id="menu_lugares_interes_evento"
+              name="Eventos"
+              parent="menu_lugares_interes_contenido"
+              action="action_lugares_interes_evento"
+              sequence="20"/>
+
+    <!-- Anuncios -->
+    <menuitem id="menu_lugares_interes_anuncio"
+              name="Anuncios"
+              parent="menu_lugares_interes_contenido"
+              action="action_lugares_interes_anuncio"
+              sequence="30"
+              groups="base.group_system,lugares_interes.group_lugares_interes_anuncios_manager,lugares_interes.group_lugares_interes_anuncios_editor"/>
+
+    <!-- Comentarios (también en Contenido para fácil acceso) -->
+    <menuitem id="menu_lugares_interes_comentarios_contenido"
+              name="Comentarios"
+              parent="menu_lugares_interes_contenido"
+              action="action_lugares_interes_comentario"
+              sequence="25"/>
+
+    <!-- ============================================================ -->
+    <!-- SUBMENÚ: CLASIFICACIÓN                                       -->
+    <!-- ============================================================ -->
+    <menuitem id="menu_lugares_interes_clasificacion"
+              name="Clasificación"
+              parent="menu_lugares_interes_root"
+              sequence="20"/>
+
+    <!-- Tipos -->
+    <menuitem id="menu_lugares_interes_tipo"
+              name="Tipos"
+              parent="menu_lugares_interes_clasificacion"
+              action="action_lugares_interes_tipo"
+              sequence="10"/>
+
+    <!-- Categorías -->
+    <menuitem id="menu_lugares_interes_categoria"
+              name="Categorías"
+              parent="menu_lugares_interes_clasificacion"
+              action="action_lugares_interes_categoria"
+              sequence="20"/>
+
+    <!-- Subcategorías -->
+    <menuitem id="menu_lugares_interes_subcategoria"
+              name="Subcategorías"
+              parent="menu_lugares_interes_clasificacion"
+              action="action_lugares_interes_subcategoria"
+              sequence="30"/>
+
+    <!-- Tags -->
+    <menuitem id="menu_lugares_interes_tags"
+              name="Tags"
+              parent="menu_lugares_interes_clasificacion"
+              sequence="40"/>
+
+    <!-- Tags - Público Objetivo -->
+    <menuitem id="menu_lugares_interes_publico_objetivo"
+              name="Público Objetivo"
+              parent="menu_lugares_interes_tags"
+              action="action_lugares_interes_publico_objetivo"
+              sequence="10"/>
+
+    <!-- Tags - Momento del Día -->
+    <menuitem id="menu_lugares_interes_momento_dia"
+              name="Momento del Día"
+              parent="menu_lugares_interes_tags"
+              action="action_lugares_interes_momento_dia"
+              sequence="20"/>
+
+    <!-- Tags - Ambientes -->
+    <menuitem id="menu_lugares_interes_ambiente"
+              name="Ambientes"
+              parent="menu_lugares_interes_tags"
+              action="action_lugares_interes_ambiente"
+              sequence="30"/>
+
+    <!-- Tags - Experiencias -->
+    <menuitem id="menu_lugares_interes_experiencia"
+              name="Experiencias"
+              parent="menu_lugares_interes_tags"
+              action="action_lugares_interes_experiencia"
+              sequence="40"/>
+
+    <!-- Tags - Fiestas/Eventos -->
+    <menuitem id="menu_lugares_interes_fiesta_evento"
+              name="Fiestas/Eventos"
+              parent="menu_lugares_interes_tags"
+              action="action_lugares_interes_fiesta_evento"
+              sequence="50"/>
+
+    <!-- ============================================================ -->
+    <!-- SUBMENÚ: MODERACIÓN                                          -->
+    <!-- ============================================================ -->
+    <menuitem id="menu_lugares_interes_moderacion"
+              name="Moderación"
+              parent="menu_lugares_interes_root"
+              sequence="30"
+              groups="lugares_interes.group_lugares_interes_approver,lugares_interes.group_lugares_interes_moderator"/>
+
+    <!-- Comentarios -->
+    <menuitem id="menu_lugares_interes_comentarios"
+              name="Comentarios"
+              parent="menu_lugares_interes_moderacion"
+              action="action_lugares_interes_comentario"
+              sequence="10"
+              groups="lugares_interes.group_lugares_interes_approver,lugares_interes.group_lugares_interes_moderator"/>
+
+    <!-- Palabras Prohibidas -->
+    <menuitem id="menu_lugares_interes_palabra_prohibida"
+              name="Palabras Prohibidas"
+              parent="menu_lugares_interes_moderacion"
+              action="action_lugares_interes_palabra_prohibida"
+              sequence="20"
+              groups="lugares_interes.group_lugares_interes_approver,lugares_interes.group_lugares_interes_moderator"/>
+
+    <!-- ============================================================ -->
+    <!-- SUBMENÚ: CONFIGURACIÓN                                       -->
+    <!-- ============================================================ -->
+    <menuitem id="menu_lugares_interes_config"
+              name="Configuración"
+              parent="menu_lugares_interes_root"
+              sequence="100"/>
+
+    <!-- Ajustes Generales -->
+    <menuitem id="menu_lugares_interes_settings"
+              name="Ajustes Generales"
+              parent="menu_lugares_interes_config"
+              action="action_lugares_interes_settings"
+              sequence="10"/>
+
+</odoo>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- 
+        REGLAS DE SEGURIDAD PARA RES.PARTNER (Contactos)
+        
+        Objetivo:
+        - Usuarios normales: Ven contactos de su compañía (sin usuarios internos) + su propio contacto
+        - Administradores: Ven todos los contactos de la compañía seleccionada (incluyendo usuarios)
+        
+        El código Python en ir_rule.py establece company_ids a la compañía seleccionada en el switcher.
+    -->
+
+    <!-- 
+        REGLA 1: Usuarios Internos - Contactos Comerciales
+        Grupo: Role / User (group_user)
+        Permite ver contactos de la compañía seleccionada que NO son usuarios internos (partner_share != False)
+    -->
+    <record id="rule_partner_user_commercial" model="ir.rule">
+        <field name="name">Partner: User sees Commercial Contacts Only</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="domain_force">[
+            ('company_id', 'in', company_ids),
+            ('partner_share', '!=', False)
+        ]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- 
+        REGLA 2: Usuarios Internos - Propio Contacto
+        Grupo: Role / User (group_user)
+        Permite a cada usuario ver y editar su propio contacto asociado
+    -->
+    <record id="rule_partner_user_own_contact" model="ir.rule">
+        <field name="name">Partner: User sees Own Contact</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="domain_force">[
+            ('id', '=', user.partner_id.id)
+        ]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- 
+        REGLA 3: Administradores - Acceso a Compañía Seleccionada
+        Grupos: Access Rights (group_erp_manager), Administrator (group_system)
+        Permite ver TODOS los contactos de la compañía seleccionada (incluyendo usuarios)
+    -->
+    <record id="rule_partner_admin_company" model="ir.rule">
+        <field name="name">Partner: Admin sees All Contacts in Selected Company</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="domain_force">[
+            ('company_id', 'in', company_ids)
+        ]</field>
+        <field name="groups" eval="[
+            (4, ref('base.group_erp_manager')),
+            (4, ref('base.group_system'))
+        ]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- 
+        REGLA 4: Administradores - Contactos Sin Compañía
+        Grupos: Access Rights, Administrator
+        Permite ver contactos sin compañía asignada (para gestión)
+    -->
+    <record id="rule_partner_admin_no_company" model="ir.rule">
+        <field name="name">Partner: Admin sees Contacts without Company</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="domain_force">[
+            ('company_id', '=', False)
+        ]</field>
+        <field name="groups" eval="[
+            (4, ref('base.group_erp_manager')),
+            (4, ref('base.group_system'))
+        ]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+</odoo>

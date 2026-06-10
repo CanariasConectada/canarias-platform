@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ========================================
+         REGLAS PARA GRUPOS PÚBLICO/PORTAL/USER
+         ======================================== -->
+    <record id="rule_partner_review_comment_public" model="ir.rule">
+        <field name="name">Comentarios públicos solo aprobados</field>
+        <field name="model_id" ref="model_partner_review_comment"/>
+        <field name="domain_force">[('estado', '=', 'aprobado')]</field>
+        <field name="groups" eval="[(4, ref('base.group_public'))]"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <record id="rule_partner_review_comment_portal" model="ir.rule">
+        <field name="name">Comentarios portal solo aprobados</field>
+        <field name="model_id" ref="model_partner_review_comment"/>
+        <field name="domain_force">[('estado', '=', 'aprobado')]</field>
+        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <record id="rule_partner_review_comment_own" model="ir.rule">
+        <field name="name">Usuarios ven sus propios comentarios</field>
+        <field name="model_id" ref="model_partner_review_comment"/>
+        <field name="domain_force">['|', ('autor_id', '=', user.id), ('estado', '=', 'aprobado')]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <record id="rule_partner_review_rating_public" model="ir.rule">
+        <field name="name">Ratings públicos solo lectura</field>
+        <field name="model_id" ref="model_partner_review_rating"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('base.group_public'))]"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="0"/>
+        <field name="perm_create" eval="0"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <!-- ========================================
+         AISLAMIENTO POR MICROSITE / COMPANY
+         ======================================== -->
+    <record id="rule_partner_review_comment_microsite" model="ir.rule">
+        <field name="name">Comentarios: solo del microsite asignado (Moderador)</field>
+        <field name="model_id" ref="model_partner_review_comment"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_partner_reviews_moderator'))]"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <record id="rule_partner_review_rating_microsite" model="ir.rule">
+        <field name="name">Valoraciones: solo del microsite asignado (Moderador)</field>
+        <field name="model_id" ref="model_partner_review_rating"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_partner_reviews_moderator'))]"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="0"/>
+    </record>
+
+    <!-- ========================================
+         ADMINISTRADOR GLOBAL: SIN RESTRICCIONES
+         ======================================== -->
+    <record id="rule_partner_review_comment_manager" model="ir.rule">
+        <field name="name">Comentarios: acceso total (Manager)</field>
+        <field name="model_id" ref="model_partner_review_comment"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_partner_reviews_manager'))]"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+
+    <record id="rule_partner_review_rating_manager" model="ir.rule">
+        <field name="name">Valoraciones: acceso total (Manager)</field>
+        <field name="model_id" ref="model_partner_review_rating"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_partner_reviews_manager'))]"/>
+        <field name="perm_read" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+    </record>
+</odoo>

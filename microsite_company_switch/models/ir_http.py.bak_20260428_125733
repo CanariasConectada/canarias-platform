@@ -1,0 +1,87 @@
+# -*- coding: utf-8 -*-
+import logging
+from odoo import models
+from odoo.http import request
+
+_logger = logging.getLogger(__name__)
+
+
+class IrHttp(models.AbstractModel):
+    _name = 'ir.http'
+    _inherit = 'ir.http'
+
+    def session_info(self):
+        """
+        Sobrescribir current_company basado en cookie cids.
+        El switcher de compañía actualiza la cookie, NO user.company_id.
+        """
+        result = super(IrHttp, self).session_info()
+        
+        try:
+            user = self.env.user
+            if not user or user._is_public():
+                return result
+                
+            # No aplicar a administradores (system o manager)
+            if user.has_group('base.group_system') or user.has_group('base.group_erp_manager'):
+                return result
+            
+            if 'user_companies' not in result:
+                return result
+            
+            cookie_cids = request.httprequest.cookies.get('cids', '')
+            if not cookie_cids:
+                return result
+            
+            selected_id = int(str(cookie_cids).split('-')[0].strip())
+            user_company_ids = user.company_ids.ids
+            
+            if selected_id not in user_company_ids:
+                _logger.warning(f"[MCS] Compañía {selected_id} no permitida para {user.name}")
+                return result
+            
+            if result['user_companies'].get('current_company') != selected_id:
+                result['user_companies']['current_company'] = selected_id
+                _logger.debug(f"[MCS] current_company={selected_id} (cookie)")
+            
+            if 'user_context' not in result:
+                result['user_context'] = {}
+            result['user_context']['allowed_company_ids'] = user_company_ids
+                
+        except Exception as e:
+            _logger.error(f"[MCS] Error en session_info: {e}")
+        
+        return result
+
+    @classmethod
+    def _pre_dispatch(cls, rule, args):
+        cls._apply_company_isolation()
+        super(IrHttp, cls)._pre_dispatch(rule, args)
+    
+    @classmethod
+    def _apply_company_isolation(cls):
+        """
+        DESACTIVADO: No aplicar aislamiento automático basado en cookie.
+        
+        El switcher de compañía de Odoo maneja el cambio de compañía normalmente.
+        Este método ahora es un passthrough para evitar redirecciones forzadas
+        a otros websites cuando el usuario cambia de compañía.
+        
+        MODO DEBUG ACTIVADO - Rastreando redirecciones
+        """
+        _logger.info("[MCS-DEBUG] _apply_company_isolation() llamado - PASSTHROUGH (desactivado)")
+        
+        # DEBUG: Registrar información del request
+        try:
+            if request and request.httprequest:
+                _logger.info(f"[MCS-DEBUG] Host: {request.httprequest.host}")
+                _logger.info(f"[MCS-DEBUG] Path: {request.httprequest.path}")
+                _logger.info(f"[MCS-DEBUG] Cookie cids: {request.httprequest.cookies.get('cids', 'NO SET')}")
+                if request.env and request.env.user:
+                    _logger.info(f"[MCS-DEBUG] Usuario: {request.env.user.name} (ID: {request.env.user.id})")
+                    _logger.info(f"[MCS-DEBUG] Compañía actual: {request.env.user.company_id.name} (ID: {request.env.user.company_id.id})")
+        except Exception as e:
+            _logger.error(f"[MCS-DEBUG] Error en debug: {e}")
+        
+        # Passthrough - dejar que Odoo maneje el contexto de compañía nativamente
+        return

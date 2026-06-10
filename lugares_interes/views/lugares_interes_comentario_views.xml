@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_lugares_interes_comentario_tree" model="ir.ui.view">
+        <field name="name">lugares.interes.comentario.tree</field>
+        <field name="model">lugares.interes.comentario</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="create_date"/>
+                <field name="lugar_id"/>
+                <field name="autor_nombre"/>
+                <field name="contenido_resumido"/>
+                <field name="estado"/>
+                <field name="contiene_palabras_prohibidas"/>
+                <field name="es_respuesta"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_lugares_interes_comentario_form" model="ir.ui.view">
+        <field name="name">lugares.interes.comentario.form</field>
+        <field name="model">lugares.interes.comentario</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_aprobar" type="object" string="Aprobar" invisible="estado == 'aprobado'"/>
+                    <button name="action_rechazar" type="object" string="Rechazar" invisible="estado == 'rechazado'"/>
+                    <field name="estado" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="lugar_id"/>
+                        <field name="autor_id"/>
+                        <field name="contenido"/>
+                        <field name="estado"/>
+                        <field name="parent_id"/>
+                        <field name="contiene_palabras_prohibidas"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_lugares_interes_comentario_search" model="ir.ui.view">
+        <field name="name">lugares.interes.comentario.search</field>
+        <field name="model">lugares.interes.comentario</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="contenido"/>
+                <field name="autor_nombre"/>
+                <field name="lugar_id"/>
+                <filter name="pendientes" domain="[('estado', '=', 'pendiente')]"/>
+                <filter name="aprobados" domain="[('estado', '=', 'aprobado')]"/>
+                <filter name="rechazados" domain="[('estado', '=', 'rechazado')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_lugares_interes_comentario" model="ir.actions.act_window">
+        <field name="name">Comentarios</field>
+        <field name="res_model">lugares.interes.comentario</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_lugares_interes_comentario_search"/>
+        <field name="context">{'search_default_pendientes': 1}</field>
+    </record>
+</odoo>

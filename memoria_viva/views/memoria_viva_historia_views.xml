@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_memoria_viva_historia_list" model="ir.ui.view">
+        <field name="name">memoria.viva.historia.list</field>
+        <field name="model">memoria.viva.historia</field>
+        <field name="arch" type="xml">
+            <list string="Lugares">
+                <field name="name"/>
+                <field name="partner_id" optional="show"/>
+                <field name="create_date" optional="show"/>
+                <field name="tipo_id" optional="show"/>
+                <field name="categoria_id" optional="hide"/>
+                <field name="website_primario_id"/>
+                <field name="state" widget="badge" decoration-info="state == 'borrador'" decoration-warning="state == 'pendiente'" decoration-success="state == 'aprobado'" decoration-danger="state == 'rechazado'"/>
+                <field name="score_google" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_memoria_viva_historia_form" model="ir.ui.view">
+        <field name="name">memoria.viva.historia.form</field>
+        <field name="model">memoria.viva.historia</field>
+        <field name="arch" type="xml">
+            <form string="Lugar">
+                <header>
+                    <field name="state" widget="statusbar" options="{'clickable': '1'}"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Nombre del lugar..."/>
+                        </h1>
+                        <h3 class="text-muted">
+                            <field name="slug" placeholder="Se genera automáticamente desde el nombre, pero puedes editarlo"/>
+                        </h3>
+                    </div>
+                    
+                    <group>
+                        <group>
+                            <field name="tipo_id"/>
+                            <field name="categoria_id" domain="[('tipo_id', '=', tipo_id)]"/>
+                            <field name="subcategoria_id" domain="[('categoria_id', '=', categoria_id)]"/>
+                            <field name="zona"/>
+                        </group>
+                        <group>
+                            <field name="website_primario_id"/>
+                            <field name="website_ids" widget="many2many_tags"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- PESTAÑA: GENERAL -->
+                        <page string="General">
+                            <group>
+                                <group string="Ubicación">
+                                    <field name="direccion"/>
+                                    <field name="latitude"/>
+                                    <field name="longitude"/>
+                                </group>
+                                <group string="Clasificación">
+                                    <field name="publico_ids" widget="many2many_tags"/>
+                                    <field name="momento_ids" widget="many2many_tags"/>
+                                    <field name="ambiente_ids" widget="many2many_tags"/>
+                                    <field name="experiencia_ids" widget="many2many_tags"/>
+                                </group>
+                            </group>
+                            <group string="Imagen Destacada">
+                                <field name="image_main" widget="image" class="oe_avatar" options="{'preview_image': 'image_main'}"/>
+                            </group>
+                            <group string="Versiones Optimizadas">
+                                <div class="text-muted">
+                                    Las versiones Grid (600x600) y Detail (1600x1200) se generan automáticamente al guardar la imagen principal.
+                                </div>
+                            </group>
+                            <group string="Año de la Fotografía">
+                                <field name="anio_foto"/>
+                            </group>
+                        </page>
+
+                        <!-- PESTAÑA: DESCRIPCIONES -->
+                        <page string="Descripciones">
+                            <group>
+                                <field name="description" placeholder="Descripción corta para listados..."/>
+                            </group>
+                            <group>
+                                <field name="descripcion_larga" placeholder="Descripción completa del lugar..."/>
+                            </group>
+                        </page>
+
+                        <!-- PESTAÑA: CONTACTO -->
+                        <page string="Contacto y Redes">
+                            <group>
+                                <group string="Contacto">
+                                    <field name="telefono"/>
+                                    <field name="whatsapp"/>
+                                    <field name="website_url" widget="url"/>
+                                </group>
+                                <group string="Redes Sociales">
+                                    <field name="instagram"/>
+                                    <field name="tiktok"/>
+                                    <field name="hashtags"/>
+                                    <field name="num_posts_instagram"/>
+                                    <field name="viralidad_tiktok"/>
+                                </group>
+                            </group>
+                            <group string="Spots Instagrameables">
+                                <field name="spots_instagram" placeholder="Describe los mejores spots para fotos..."/>
+                            </group>
+                        </page>
+
+                        <!-- PESTAÑA: HORARIOS -->
+                        <page string="Horarios">
+                            <group>
+                                <group>
+                                    <field name="horario_lu_vi"/>
+                                    <field name="horario_sab"/>
+                                    <field name="horario_dom"/>
+                                </group>
+                                <group>
+                                    <field name="horario_especial"/>
+                                    <field name="horario_pico_info"/>
+                                </group>
+                            </group>
+                            <group string="Duración">
+                                <field name="duracion_media" string="Duración media visita (minutos)"/>
+                            </group>
+                        </page>
+
+                        <!-- PESTAÑA: PRECIOS -->
+                        <page string="Precios">
+                            <group>
+                                <group>
+                                    <field name="precio_entrada"/>
+                                    <field name="precio_consumicion"/>
+                                    <field name="precio_menu"/>
+                                </group>
+                                <group>
+                                    <field name="precio_real_nota"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- PESTAÑA: SCORES -->
+                        <page string="Scores y Reviews">
+                            <group>
+                                <group string="Reviews Externas">
+                                    <field name="score_google"/>
+                                    <field name="score_tripadvisor"/>
+                                    <field name="reviews_resumen"/>
+                                </group>
+                                <group string="Scores Temáticos (0-10)">
+                                    <field name="score_joven"/>
+                                    <field name="score_familiar"/>
+                                    <field name="score_turistico"/>
+                                    <field name="score_relax"/>
+                                    <field name="score_foto"/>
+                                    <field name="score_deporte"/>
+                                    <field name="score_cultura"/>
+                                    <field name="score_noche"/>
+                                    <field name="score_gastronomia"/>
+                                    <field name="score_instagram"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- PESTAÑA: GALERÍA -->
+                        <page string="Galería">
+                            <field name="image_ids">
+                                <list string="Imágenes" editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="image" widget="image" options="{'size': [90, 90]}"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- PESTAÑA: ACCESIBILIDAD -->
+                        <page string="Accesibilidad">
+                            <group>
+                                <field name="acces_silla_ruedas"/>
+                                <field name="acces_mayores"/>
+                                <field name="acces_ninos"/>
+                            </group>
+                        </page>
+
+                        <!-- PESTAÑA: EVENTOS -->
+                        <page string="Eventos">
+                            <group>
+                                <field name="fiesta_evento_ids" widget="many2many_tags"/>
+                                <field name="frecuencia_evento"/>
+                                <field name="fechas_clave"/>
+                            </group>
+                            <group string="Eventos Programados">
+                                <field name="evento_ids"/>
+                            </group>
+                        </page>
+
+                        <!-- PESTAÑA: CONEXIONES -->
+                        <page string="Conexiones">
+                            <group>
+                                <group>
+                                    <field name="conecta_con"/>
+                                    <field name="lineas_guagua"/>
+                                    <field name="transporte_publico"/>
+                                </group>
+                                <group string="Información Local">
+                                    <field name="rutina_local"/>
+                                    <field name="rumors"/>
+                                    <field name="tags_busqueda"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- PESTAÑA: INFO INTERNA -->
+                        <page string="Info Interna" groups="base.group_system,memoria_viva.group_memoria_viva_approver">
+                            <group>
+                                <group string="Usuario que Publicó">
+                                    <field name="partner_id"/>
+                                    <field name="create_date"/>
+                                    <field name="dni_remitente"/>
+                                </group>
+                                <group string="Datos del Formulario (Backup)">
+                                    <field name="publicador_nombre" readonly="1"/>
+                                    <field name="publicador_telefono" readonly="1"/>
+                                    <field name="publicador_email" readonly="1"/>
+                                </group>
+                            </group>
+                            <group string="Gestión">
+                                <field name="user_id"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_memoria_viva_historia_search" model="ir.ui.view">
+        <field name="name">memoria.viva.historia.search</field>
+        <field name="model">memoria.viva.historia</field>
+        <field name="arch" type="xml">
+            <search string="Lugares">
+                <field name="name"/>
+                <field name="description"/>
+                <field name="direccion"/>
+                <field name="tipo_id"/>
+                <field name="categoria_id"/>
+                <field name="zona"/>
+                <field name="website_primario_id"/>
+                <field name="tags_busqueda"/>
+                
+                <filter string="Borradores" name="filter_borrador" domain="[('state','=','borrador')]"/>
+                <filter string="Pendientes" name="filter_pendiente" domain="[('state','=','pendiente')]"/>
+                <filter string="Aprobadas" name="filter_aprobado" domain="[('state','=','aprobado')]"/>
+                <filter string="Rechazadas" name="filter_rechazado" domain="[('state','=','rechazado')]"/>
+                <filter string="Publicadas" name="filter_publicado" domain="[('state','=','aprobado')]"/>
+                
+                <separator/>
+                
+                <filter string="Accesible silla ruedas" name="filter_acces_silla" domain="[('acces_silla_ruedas','=',True)]"/>
+                <filter string="Accesible niños" name="filter_acces_ninos" domain="[('acces_ninos','=',True)]"/>
+                <filter string="Accesible mayores" name="filter_acces_mayores" domain="[('acces_mayores','=',True)]"/>
+                
+                <group>
+                    <filter string="Tipo" name="group_tipo" context="{'group_by': 'tipo_id'}"/>
+                    <filter string="Categoría" name="group_categoria" context="{'group_by': 'categoria_id'}"/>
+                    <filter string="Zona" name="group_zona" context="{'group_by': 'zona'}"/>
+                    <filter string="Microsite" name="group_website" context="{'group_by': 'website_primario_id'}"/>
+                    <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_memoria_viva_historia" model="ir.actions.act_window">
+        <field name="name">Lugares</field>
+        <field name="res_model">memoria.viva.historia</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_memoria_viva_historia_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crea el primer lugar
+            </p>
+        </field>
+    </record>
+</odoo>

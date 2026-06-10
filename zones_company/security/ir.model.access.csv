@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_zone_admin,zone.admin,model_zone,base.group_system,1,1,1,1
+access_zone_erp_manager,zone.erp_manager,model_zone,base.group_erp_manager,1,1,1,1
+access_zone_user,zone.user,model_zone,base.group_user,1,0,0,0

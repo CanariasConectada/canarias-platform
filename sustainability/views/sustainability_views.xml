@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Action Server: Iniciar nueva evaluación Sostenibilidad -->
+    <record id="action_start_sustainability_evaluation_server" model="ir.actions.server">
+        <field name="name">Nueva evaluación Sostenibilidad</field>
+        <field name="model_id" ref="survey.model_survey_user_input"/>
+        <field name="state">code</field>
+        <field name="code">
+action = model.action_start_new_sustainability_evaluation()
+        </field>
+        <field name="binding_model_id" ref="survey.model_survey_user_input"/>
+        <field name="binding_type">action</field>
+    </record>
+
+    <!-- Acción para abrir evaluaciones Sostenibilidad -->
+    <record id="action_sust_evaluations" model="ir.actions.act_window">
+        <field name="name">Evaluaciones Sostenibilidad</field>
+        <field name="res_model">survey.user_input</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('survey_id.is_sustainability', '=', True), ('test_entry', '=', False)]</field>
+        <field name="context">{'is_sustainability': True, 'search_default_group_by_survey': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Bienvenido a Sostenibilidad
+            </p>
+            <p>
+                Aún no has realizado ninguna evaluación para tu empresa.
+                Haz clic en <b>Nuevo</b> para iniciar tu primera evaluación
+                y descubrir si tu comercio califica para el sello Sostenibilidad.
+            </p>
+        </field>
+    </record>
+
+    <!-- Acción para abrir encuestas Sostenibilidad -->
+    <record id="action_sust_surveys" model="ir.actions.act_window">
+        <field name="name">Cuestionarios Sostenibilidad</field>
+        <field name="res_model">survey.survey</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="domain">[('is_sustainability', '=', True)]</field>
+        <field name="context">{'default_is_sustainability': True}</field>
+    </record>
+
+    <!-- Menú principal -->
+    <menuitem id="menu_sustainability_root"
+              name="Sostenibilidad"
+              web_icon="sustainability,static/description/icon.png"
+              groups="base.group_user"
+              sequence="50"/>
+
+    <menuitem id="menu_sust_evaluations"
+              name="Mis Evaluaciones"
+              parent="menu_sustainability_root"
+              action="action_sust_evaluations"
+              sequence="10"/>
+
+    <menuitem id="menu_sust_surveys"
+              name="Cuestionarios"
+              parent="menu_sustainability_root"
+              action="action_sust_surveys"
+              groups="base.group_system"
+              sequence="20"/>
+
+    <!-- Action: Formaciones (página pública /sostenibilidad) -->
+    <record id="action_sust_formaciones" model="ir.actions.act_url">
+        <field name="name">Formaciones</field>
+        <field name="type">ir.actions.act_url</field>
+        <field name="target">self</field>
+        <field name="url">/sostenibilidad</field>
+    </record>
+
+    <menuitem id="menu_sust_formaciones"
+              name="Formaciones"
+              parent="menu_sustainability_root"
+              action="action_sust_formaciones"
+              sequence="30"/>
+
+    <!-- Action: Instrucciones (página pública /sostenibilidad/instructions) -->
+    <record id="action_sust_instructions" model="ir.actions.act_url">
+        <field name="name">Instrucciones</field>
+        <field name="type">ir.actions.act_url</field>
+        <field name="target">self</field>
+        <field name="url">/sostenibilidad/instructions</field>
+    </record>
+
+    <menuitem id="menu_sust_instructions"
+              name="Instrucciones"
+              parent="menu_sustainability_root"
+              action="action_sust_instructions"
+              sequence="40"/>
+
+    <!-- Plantillas de mensajes de error/cooldown -->
+    <template id="sust_no_company" name="Sostenibilidad - Sin empresa">
+        <t t-call="website.layout">
+            <div class="container py-5">
+                <div class="alert alert-warning">
+                    <h4>No tiene empresa asignada</h4>
+                    <p>Debe tener una empresa asignada en su perfil de usuario para realizar la evaluación Sostenibilidad.</p>
+                    <a href="javascript:window.close()" class="btn btn-primary">Volver a Mis Evaluaciones</a>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="sust_cooldown" name="Sostenibilidad - Cooldown">
+        <t t-call="website.layout">
+            <div class="container py-5">
+                <div class="alert alert-info">
+                    <h4>Evaluación no disponible</h4>
+                    <p>Ya ha realizado una evaluación recientemente.</p>
+                    <p>Podrá realizar una nueva evaluación a partir del: <strong t-esc="next_date"/></p>
+                    <a href="javascript:window.close()" class="btn btn-primary">Volver a Mis Evaluaciones</a>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="sust_error" name="Sostenibilidad - Error">
+        <t t-call="website.layout">
+            <div class="container py-5">
+                <div class="alert alert-danger">
+                    <h4>Error al iniciar evaluación</h4>
+                    <p t-esc="error"/>
+                    <a href="javascript:window.close()" class="btn btn-primary">Volver a Mis Evaluaciones</a>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Ocultar botón 'Volver a hacer / Retry' en encuestas Sostenibilidad -->
+    <template id="survey_button_retake_inherit_silver" inherit_id="survey.survey_button_retake">
+        <xpath expr="//div[@class='d-print-none']" position="attributes">
+            <attribute name="t-if">not survey.is_sustainability and not answer.is_session_answer and not (survey.certification and answer.scoring_success)</attribute>
+        </xpath>
+    </template>
+
+    <!-- Herencia de la template de finalización de survey para mostrar sello Silver -->
+    <template id="survey_fill_form_done_inherit_silver" inherit_id="survey.survey_fill_form_done">
+        <xpath expr="//div[@class='o_survey_finished mt32 mb32']" position="inside">
+            <t t-if="survey.is_sustainability and answer.certification_level != 'none'">
+                <div class="alert alert-success mt-3 text-center">
+                    <h3 class="mb-3">🎉 ¡Felicidades! Tu empresa ha obtenido el sello Sostenibilidad</h3>
+                    <div class="d-flex justify-content-center align-items-center gap-3">
+                        <div t-if="answer.certification_level == 'bronze'" class="badge bg-warning text-dark p-3 fs-4">🥉 BRONCE</div>
+                        <div t-if="answer.certification_level == 'silver'" class="badge bg-secondary p-3 fs-4">🥈 PLATA</div>
+                        <div t-if="answer.certification_level == 'gold'" class="badge bg-warning p-3 fs-4">🥇 ORO</div>
+                    </div>
+                    <p class="mt-3">
+                        Puntuación: <strong t-esc="answer.scoring_total"/> / <t t-esc="survey.sustain_max_score or 80"/> puntos
+                        (<t t-esc="answer.scoring_percentage"/>%)
+                    </p>
+                    <p class="text-muted">
+                        El sello es válido hasta: <strong t-esc="answer.expiry_date"/>
+                    </p>
+                </div>
+            </t>
+            <t t-if="survey.is_sustainability and answer.certification_level == 'none'">
+                <div class="alert alert-info mt-3 text-center">
+                    <h4>Resultado de la evaluación</h4>
+                    <p>
+                        Puntuación: <strong t-esc="answer.scoring_total"/> / <t t-esc="survey.sustain_max_score or 80"/> puntos
+                        (<t t-esc="answer.scoring_percentage"/>%)
+                    </p>
+                    <p>En esta ocasión no has alcanzado el nivel mínimo para obtener el sello Sostenibilidad.</p>
+                    <p class="text-muted">Podrás volver a intentarlo a partir del: <strong t-esc="answer.next_attempt_date"/></p>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- ============================================ -->
+    <!-- F: Recomendaciones visibles en impresión web -->
+    <!-- ============================================ -->
+
+    <!-- ============================================ -->
+    <!-- F: Campos de timing en formulario de survey -->
+    <!-- ============================================ -->
+
+    <record id="survey_survey_view_form_sustain_timing" model="ir.ui.view">
+        <field name="name">survey.survey.form.silver.timing</field>
+        <field name="model">survey.survey</field>
+        <field name="inherit_id" ref="survey.survey_survey_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Sostenibilidad" name="sustainability" invisible="not is_sustainability" groups="base.group_system">
+                    <group>
+                        <group string="Configuración">
+                            <field name="is_sustainability"/>
+                        </group>
+                        <group string="Umbrales de puntuación">
+                            <field name="sustain_max_score"/>
+                            <field name="sustain_bronze_min"/>
+                            <field name="sustain_silver_min"/>
+                            <field name="sustain_gold_min"/>
+                        </group>
+                        <group string="Tiempos">
+                            <field name="sustain_cooldown_months"/>
+                            <field name="sustain_validity_years"/>
+                            <field name="sustain_renewal_reminder_days"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Herencia para simple_choice: mostrar recomendación como texto fijo en modo print/readonly -->
+    <template id="question_simple_choice_sust_print" inherit_id="survey.question_simple_choice">
+        <xpath expr="//div[@t-if='question.comments_allowed and not question.comment_count_as_answer']" position="replace">
+            <div t-if="question.comments_allowed and not question.comment_count_as_answer"
+                 class="mb-2 o_survey_comment_container mt-3">
+                <!-- Frontend público Sostenibilidad: recomendación como texto visible -->
+                <!-- En backend preview (test_entry=True) se conserva el textarea nativo -->
+                <t t-if="survey.is_sustainability and not answer.test_entry">
+                    <div class="alert alert-light border mt-2 p-2">
+                        <i class="fa fa-lightbulb-o text-warning me-2"/>
+                        <strong>Recomendación:</strong>
+                        <span t-field="question.comments_message"/>
+                    </div>
+                </t>
+                <!-- Comportamiento nativo para backend preview u otras encuestas -->
+                <t t-else="">
+                    <textarea type="text" class="col form-control o_survey_comment o_survey_question_text_box bg-transparent rounded-0 p-0"
+                        t-att-placeholder="question.comments_message or default_comments_message if not survey_form_readonly else ''"><t t-esc="comment_line.value_char_box if comment_line else ''"/></textarea>
+                </t>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Herencia para multiple_choice: mismo tratamiento -->
+    <template id="question_multiple_choice_sust_print" inherit_id="survey.question_multiple_choice">
+        <xpath expr="//div[@t-if='question.comments_allowed and not question.comment_count_as_answer']" position="replace">
+            <div t-if="question.comments_allowed and not question.comment_count_as_answer"
+                 class="mb-2 o_survey_comment_container mt-3">
+                <!-- Frontend público Sostenibilidad: recomendación como texto visible -->
+                <!-- En backend preview (test_entry=True) se conserva el textarea nativo -->
+                <t t-if="survey.is_sustainability and not answer.test_entry">
+                    <div class="alert alert-light border mt-2 p-2">
+                        <i class="fa fa-lightbulb-o text-warning me-2"/>
+                        <strong>Recomendación:</strong>
+                        <span t-field="question.comments_message"/>
+                    </div>
+                </t>
+                <!-- Comportamiento nativo para backend preview u otras encuestas -->
+                <t t-else="">
+                    <textarea type="text" class="col form-control o_survey_comment o_survey_question_text_box bg-transparent rounded-0 p-0"
+                        t-att-placeholder="question.comments_message or default_comments_message if not survey_form_readonly else ''"><t t-esc="comment_line.value_char_box if comment_line else ''"/></textarea>
+                </t>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- ============================================ -->
+    <!-- F: Resumen de recomendaciones en pantalla de finalización -->
+    <!-- ============================================ -->
+
+    <template id="survey_fill_form_done_sust_recommendations" inherit_id="survey.survey_fill_form_done">
+        <xpath expr="//div[@class='o_survey_finished mt32 mb32']" position="inside">
+            <t t-if="survey.is_sustainability and answer">
+                <t t-set="weak_lines" t-value="answer.user_input_line_ids.filtered(lambda l: l.question_id.comments_allowed and l.answer_score &lt; 2 and l.question_id.comments_message)"/>
+                <t t-if="weak_lines">
+                    <div class="alert alert-info mt-4">
+                        <h4 class="alert-heading">
+                            <i class="fa fa-lightbulb-o text-warning me-2"/>
+                            Recomendaciones para mejorar
+                        </h4>
+                        <p class="mb-3">Basado en tus respuestas, estas son las áreas donde puedes enfocarte:</p>
+                        <div class="row">
+                            <t t-foreach="weak_lines" t-as="line">
+                                <div class="col-12 col-md-6 mb-3">
+                                    <div class="card h-100 border-start border-warning border-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title text-muted mb-2">
+                                                <t t-esc="line.question_id.title"/>
+                                            </h6>
+                                            <p class="card-text small mb-1">
+                                                <strong>Tu respuesta:</strong>
+                                                <t t-if="line.answer_score == 0">No</t>
+                                                <t t-if="line.answer_score == 1">Parcialmente</t>
+                                            </p>
+                                            <p class="card-text small text-secondary fst-italic">
+                                                <i class="fa fa-arrow-right text-warning me-1"/>
+                                                <t t-esc="line.question_id.comments_message"/>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- ============================================ -->
+<!-- F: Botón Salir/Cerrar en página de finalización -->
+    <template id="survey_fill_form_done_sust_close" inherit_id="survey.survey_fill_form_done">
+        <xpath expr="//div[contains(@class, 'o_survey_finished')]//div[contains(@class, 'd-flex') and contains(@class, 'gap-3')]" position="inside">
+            <t t-if="survey.is_sustainability and not survey.is_silver_economy">
+                <a role="button" class="btn btn-outline-secondary btn-lg" href="javascript:window.close()">
+                    <i class="fa fa-times"/> Cerrar
+                </a>
+            </t>
+        </xpath>
+    </template>
+</odoo>

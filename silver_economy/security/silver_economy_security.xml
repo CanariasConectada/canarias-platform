@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- Privilegio para Silver Economy -->
+        <record model="res.groups.privilege" id="res_groups_privilege_silver_economy">
+            <field name="name">Silver Economy</field>
+            <field name="sequence">25</field>
+            <field name="category_id" ref="base.module_category_marketing"/>
+        </record>
+
+        <!-- Grupo: Usuario Silver Economy (usuarios internos que pueden evaluar) -->
+        <record id="group_silver_user" model="res.groups">
+            <field name="name">Usuario Silver Economy</field>
+            <field name="sequence">10</field>
+            <field name="privilege_id" ref="res_groups_privilege_silver_economy"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <!-- Grupo: Administrador Silver Economy -->
+        <record id="group_silver_manager" model="res.groups">
+            <field name="name">Administrador Silver Economy</field>
+            <field name="sequence">20</field>
+            <field name="privilege_id" ref="res_groups_privilege_silver_economy"/>
+            <field name="implied_ids" eval="[(4, ref('group_silver_user')), (4, ref('survey.group_survey_user'))]"/>
+            <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+    </data>
+
+    <data noupdate="1">
+        <!-- REGLAS DE ACCESO -->
+        
+        <!-- Usuario normal: solo ve respuestas de sus empresas -->
+        <record id="survey_user_input_rule_silver_user" model="ir.rule">
+            <field name="name">Silver: usuario solo ve respuestas de sus empresas</field>
+            <field name="model_id" ref="survey.model_survey_user_input"/>
+            <field name="domain_force">[
+                ('survey_id.is_silver_economy', '=', True),
+                ('company_id', 'in', user.company_ids.ids),
+                ('test_entry', '=', False),
+            ]</field>
+            <field name="groups" eval="[(4, ref('group_silver_user'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <!-- Administrador: ve todas las respuestas Silver -->
+        <record id="survey_user_input_rule_silver_manager" model="ir.rule">
+            <field name="name">Silver: administrador ve todas las respuestas Silver</field>
+            <field name="model_id" ref="survey.model_survey_user_input"/>
+            <field name="domain_force">[('survey_id.is_silver_economy', '=', True), ('test_entry', '=', False)]</field>
+            <field name="groups" eval="[(4, ref('group_silver_manager'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <!-- Regla para survey.survey: usuarios solo ven encuestas Silver Economy publicadas -->
+        <record id="survey_survey_rule_silver_user" model="ir.rule">
+            <field name="name">Silver: usuario ve encuestas Silver activas</field>
+            <field name="model_id" ref="survey.model_survey_survey"/>
+            <field name="domain_force">[('is_silver_economy', '=', True), ('active', '=', True)]</field>
+            <field name="groups" eval="[(4, ref('group_silver_user'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <!-- Reglas para base.group_user (todos los usuarios internos) -->
+        <record id="survey_user_input_rule_internal_user" model="ir.rule">
+            <field name="name">Silver: usuario interno solo ve respuestas de sus empresas</field>
+            <field name="model_id" ref="survey.model_survey_user_input"/>
+            <field name="domain_force">[
+                ('survey_id.is_silver_economy', '=', True),
+                ('company_id', 'in', user.company_ids.ids),
+                ('test_entry', '=', False),
+            ]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <record id="survey_survey_rule_internal_user" model="ir.rule">
+            <field name="name">Silver: usuario interno ve encuestas Silver activas</field>
+            <field name="model_id" ref="survey.model_survey_survey"/>
+            <field name="domain_force">[('is_silver_economy', '=', True), ('active', '=', True)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+    </data>
+</odoo>

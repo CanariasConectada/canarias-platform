@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         ACCESO A MODELOS — GESTOR DE COMERCIO (Nivel 3)
+         CRUD completo en modelos relevantes.
+         El aislamiento por empresa lo garantizan las ir.rules.
+         ══════════════════════════════════════════════════════════════════ -->
+
+    <record id="access_res_partner_manager" model="ir.model.access">
+        <field name="name">Gestor: contactos CRUD</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="group_id" ref="zca_platform.group_zca_comercio_manager"/>
+        <field name="perm_read"   eval="True"/>
+        <field name="perm_write"  eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <record id="access_res_users_manager" model="ir.model.access">
+        <field name="name">Gestor: usuarios lectura/escritura (para gestionar básicos)</field>
+        <field name="model_id" ref="base.model_res_users"/>
+        <field name="group_id" ref="zca_platform.group_zca_comercio_manager"/>
+        <field name="perm_read"   eval="True"/>
+        <field name="perm_write"  eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         ACCESO A MODELOS — USUARIO BÁSICO (Nivel 4)
+         Solo lectura por defecto. El Gestor puede ampliar permisos
+         asignándole grupos adicionales desde Ajustes > Usuarios.
+         ══════════════════════════════════════════════════════════════════ -->
+
+    <record id="access_res_partner_basic" model="ir.model.access">
+        <field name="name">Básico: contactos lectura</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="group_id" ref="zca_platform.group_zca_comercio_basic"/>
+        <field name="perm_read"   eval="True"/>
+        <field name="perm_write"  eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+</odoo>

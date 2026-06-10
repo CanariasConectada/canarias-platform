@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+    Menús del directorio para los microsites.
+     
+    Menús del directorio solo para los 4 websites autorizados:
+    - Canarias Conectada (ID: 228)
+    - Zona Comercial Guanarteme (ID: 229)
+    - Lomo Los Frailes (ID: 230)
+    - Tamaraceite (ID: 231)
+    -->
+    
+    <!-- Menú del directorio para Canarias Conectada (ID: 228) -->
+    <record id="menu_directory_canarias" model="website.menu">
+        <field name="name">Directorio</field>
+        <field name="url">/directorio</field>
+        <field name="parent_id" search="[
+            ('parent_id', '=', False),
+            ('website_id', '=', 228)
+        ]" model="website.menu"/>
+        <field name="website_id">228</field>
+        <field name="sequence">20</field>
+    </record>
+    
+    <!-- Menú del directorio para Guanarteme (ID: 229) -->
+    <record id="menu_directory_guanarteme" model="website.menu">
+        <field name="name">Directorio</field>
+        <field name="url">/directorio</field>
+        <field name="parent_id" search="[
+            ('parent_id', '=', False),
+            ('website_id', '=', 229)
+        ]" model="website.menu"/>
+        <field name="website_id">229</field>
+        <field name="sequence">20</field>
+    </record>
+    
+    <!-- Menú del directorio para Lomo Los Frailes (ID: 230) -->
+    <record id="menu_directory_frailes" model="website.menu">
+        <field name="name">Directorio</field>
+        <field name="url">/directorio</field>
+        <field name="parent_id" search="[
+            ('parent_id', '=', False),
+            ('website_id', '=', 230)
+        ]" model="website.menu"/>
+        <field name="website_id">230</field>
+        <field name="sequence">20</field>
+    </record>
+    
+    <!-- Menú del directorio para Tamaraceite (ID: 231) -->
+    <record id="menu_directory_tamaraceite" model="website.menu">
+        <field name="name">Directorio</field>
+        <field name="url">/directorio</field>
+        <field name="parent_id" search="[
+            ('parent_id', '=', False),
+            ('website_id', '=', 231)
+        ]" model="website.menu"/>
+        <field name="website_id">231</field>
+        <field name="sequence">20</field>
+    </record>
+</odoo>

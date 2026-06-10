@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 
+        Datos iniciales para asignar zonas a los websites de los microsites.
+        Se usa código Python para buscar las zonas por código en lugar de XML IDs.
+    -->
+
+    <function model="website" name="_setup_microsite_zones"/>
+
+</odoo>

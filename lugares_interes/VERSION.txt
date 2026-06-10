@@ -1,0 +1,16 @@
+Version: 19.0.2.2.0
+Date: 2025-04-15
+Tag: v2.2.0-campos-obligatorios
+
+Changes:
+- Campos obligatorios en website: categoria_id y registro_telefono
+- Validación backend en controller (api_submit)
+- Validación JavaScript en formulario
+- Labels con asterisco rojo (*) para indicar obligatoriedad
+- Menú Lugares de Interés agregado en theme_corporate_multi (solo website 229)
+- Fix: Eliminada vista duplicada lugares_interes_list que bloqueaba actualizaciones
+
+Backups:
+- /home/odoo/backup/lugares_interes_20260414_234337/ (módulo completo)
+- /home/odoo/backup/lugares_interes_20260414_234513_obligatorios/ (archivos mod)
+- /home/odoo/backup/theme_corporate_multi_20260414_234521/ (tema)

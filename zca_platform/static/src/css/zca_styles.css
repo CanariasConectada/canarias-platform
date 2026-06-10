@@ -1,0 +1,1070 @@
+/* ================================================================
+   ZCA Platform — Stylesheet
+   Variables, Directorio, Microsite
+   ================================================================ */
+
+/* ----------------------------------------------------------------
+   CSS Variables
+   ---------------------------------------------------------------- */
+:root {
+    --zca-primary:       #714B67;
+    --zca-secondary:     #4a3347;
+    --zca-accent:        #9b6d91;
+    --zca-light:         #f5f0f4;
+    --zca-dark:          #2c1f2a;
+    --zca-text:          #333333;
+    --zca-text-muted:    #777777;
+    --zca-white:         #ffffff;
+    --zca-border:        #e0d5de;
+    --zca-shadow:        0 2px 12px rgba(113,75,103,0.12);
+    --zca-shadow-hover:  0 8px 32px rgba(113,75,103,0.22);
+    --zca-radius:        12px;
+    --zca-radius-sm:     6px;
+    --zca-transition:    0.25s ease;
+    --zca-font:          'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+}
+
+
+/* ================================================================
+   BOTONES COMPARTIDOS
+   ================================================================ */
+.zca-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 22px;
+    border-radius: var(--zca-radius-sm);
+    font-size: 0.92rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: background var(--zca-transition), color var(--zca-transition),
+                border-color var(--zca-transition), transform var(--zca-transition);
+}
+.zca-btn--primary {
+    background: var(--zca-primary);
+    color: var(--zca-white);
+}
+.zca-btn--primary:hover {
+    background: var(--zca-secondary);
+    color: var(--zca-white);
+    transform: translateY(-2px);
+}
+.zca-btn--outline {
+    background: transparent;
+    color: var(--zca-primary);
+    border-color: var(--zca-primary);
+}
+.zca-btn--outline:hover {
+    background: var(--zca-primary);
+    color: var(--zca-white);
+}
+.zca-btn--full {
+    width: 100%;
+    justify-content: center;
+}
+.zca-btn--hero {
+    background: var(--zca-white);
+    color: var(--zca-primary);
+    font-size: 1rem;
+    padding: 14px 32px;
+}
+.zca-btn--hero:hover {
+    background: var(--zca-primary);
+    color: var(--zca-white);
+}
+.zca-btn--hero-outline {
+    background: transparent;
+    color: var(--zca-white);
+    border-color: var(--zca-white);
+    font-size: 1rem;
+    padding: 14px 32px;
+}
+.zca-btn--hero-outline:hover {
+    background: var(--zca-white);
+    color: var(--zca-primary);
+}
+.zca-btn--cta {
+    background: var(--zca-white);
+    color: var(--zca-primary);
+    font-size: 1.05rem;
+    padding: 14px 36px;
+    border-radius: 30px;
+}
+.zca-btn--cta:hover {
+    background: var(--zca-secondary);
+    color: var(--zca-white);
+}
+
+
+/* ================================================================
+   DIRECTORIO — HERO
+   ================================================================ */
+.zca-dir-hero {
+    background: linear-gradient(135deg, var(--zca-secondary) 0%, var(--zca-primary) 100%);
+    color: var(--zca-white);
+    padding: 80px 0 60px;
+    text-align: center;
+}
+.zca-dir-hero__title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+}
+.zca-dir-hero__subtitle {
+    font-size: 1.1rem;
+    opacity: 0.85;
+    margin-bottom: 32px;
+}
+.zca-dir-hero__search {
+    max-width: 600px;
+    margin: 0 auto;
+}
+.zca-search-bar {
+    display: flex;
+    border-radius: 50px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+.zca-search-bar__input {
+    flex: 1;
+    padding: 16px 24px;
+    border: none;
+    font-size: 1rem;
+    outline: none;
+    color: var(--zca-text);
+}
+.zca-search-bar__btn {
+    background: var(--zca-secondary);
+    color: var(--zca-white);
+    border: none;
+    padding: 0 28px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background var(--zca-transition);
+}
+.zca-search-bar__btn:hover {
+    background: var(--zca-dark);
+}
+
+
+/* ================================================================
+   DIRECTORIO — FILTROS
+   ================================================================ */
+.zca-dir-filters {
+    background: var(--zca-white);
+    border-bottom: 1px solid var(--zca-border);
+    padding: 20px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.zca-filters-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+}
+.zca-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 160px;
+    flex: 1;
+}
+.zca-filter-group--search {
+    flex: 2;
+    min-width: 220px;
+}
+.zca-filter-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--zca-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.zca-select,
+.zca-input {
+    padding: 9px 14px;
+    border: 1.5px solid var(--zca-border);
+    border-radius: var(--zca-radius-sm);
+    font-size: 0.9rem;
+    color: var(--zca-text);
+    background: var(--zca-white);
+    outline: none;
+    transition: border-color var(--zca-transition), box-shadow var(--zca-transition);
+    width: 100%;
+}
+.zca-select:focus,
+.zca-input:focus {
+    border-color: var(--zca-primary);
+    box-shadow: 0 0 0 3px rgba(113,75,103,0.12);
+}
+.zca-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23714B67' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+    cursor: pointer;
+}
+
+
+/* ================================================================
+   DIRECTORIO — TOOLBAR (stats + toggle)
+   ================================================================ */
+.zca-dir-toolbar {
+    padding: 16px 0;
+    background: var(--zca-light);
+    border-bottom: 1px solid var(--zca-border);
+}
+.zca-dir-toolbar .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.zca-dir-count {
+    font-size: 0.95rem;
+    color: var(--zca-text-muted);
+}
+.zca-dir-count strong {
+    color: var(--zca-primary);
+    font-size: 1.1rem;
+}
+.zca-dir-toolbar__right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.zca-ppg-selector {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--zca-text-muted);
+}
+.zca-ppg-btn {
+    padding: 4px 10px;
+    border: 1.5px solid var(--zca-border);
+    border-radius: var(--zca-radius-sm);
+    font-size: 0.82rem;
+    text-decoration: none;
+    color: var(--zca-text-muted);
+    transition: all var(--zca-transition);
+}
+.zca-ppg-btn.active,
+.zca-ppg-btn:hover {
+    border-color: var(--zca-primary);
+    color: var(--zca-primary);
+    background: var(--zca-light);
+}
+.zca-view-toggle {
+    display: flex;
+    border: 1.5px solid var(--zca-border);
+    border-radius: var(--zca-radius-sm);
+    overflow: hidden;
+}
+.zca-view-btn {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    color: var(--zca-text-muted);
+    text-decoration: none;
+    transition: all var(--zca-transition);
+}
+.zca-view-btn.active,
+.zca-view-btn:hover {
+    background: var(--zca-primary);
+    color: var(--zca-white);
+}
+
+
+/* ================================================================
+   DIRECTORIO — GRID DE CARDS
+   ================================================================ */
+.zca-dir-content {
+    padding: 40px 0 60px;
+    background: var(--zca-light);
+    min-height: 400px;
+}
+
+/* 4 cols desktop → 2 tablet → 1 móvil */
+.zca-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+@media (max-width: 1200px) {
+    .zca-cards-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+@media (max-width: 900px) {
+    .zca-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 576px) {
+    .zca-cards-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Vista lista */
+.zca-cards-grid--list {
+    grid-template-columns: 1fr;
+}
+.zca-cards-grid--list .zca-card {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+}
+.zca-cards-grid--list .zca-card__img-wrap {
+    width: 160px;
+    min-width: 160px;
+    height: auto;
+    border-radius: var(--zca-radius) 0 0 var(--zca-radius);
+}
+.zca-cards-grid--list .zca-card__body {
+    flex: 1;
+}
+
+
+/* ================================================================
+   DIRECTORIO — CARD
+   ================================================================ */
+.zca-card {
+    background: var(--zca-white);
+    border-radius: var(--zca-radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--zca-shadow);
+    transition: transform var(--zca-transition), box-shadow var(--zca-transition);
+    position: relative;
+}
+.zca-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--zca-shadow-hover);
+}
+.zca-card__img-wrap {
+    position: relative;
+    height: 180px;
+    overflow: hidden;
+    background: var(--zca-light);
+}
+.zca-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.35s ease;
+}
+.zca-card:hover .zca-card__img {
+    transform: scale(1.05);
+}
+.zca-card__img-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--zca-light) 0%, #e8dce6 100%);
+    color: var(--zca-accent);
+    font-size: 2.5rem;
+}
+.zca-card__zona-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: var(--zca-primary);
+    color: var(--zca-white);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.zca-card__body {
+    padding: 16px 18px 12px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.zca-card__name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--zca-dark);
+    margin: 0;
+    line-height: 1.3;
+}
+.zca-card__cat {
+    font-size: 0.8rem;
+    color: var(--zca-primary);
+    font-weight: 600;
+}
+.zca-card__desc {
+    font-size: 0.85rem;
+    color: var(--zca-text-muted);
+    margin: 0;
+    line-height: 1.5;
+    flex: 1;
+}
+.zca-card__services {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.zca-service-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--zca-light);
+    color: var(--zca-primary);
+    font-size: 0.85rem;
+    cursor: default;
+    transition: background var(--zca-transition);
+}
+.zca-service-icon--whatsapp {
+    background: #e8f5e9;
+    color: #25d366;
+}
+.zca-card__social {
+    display: flex;
+    gap: 8px;
+}
+.zca-social-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--zca-light);
+    color: var(--zca-primary);
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: background var(--zca-transition), color var(--zca-transition);
+}
+.zca-social-link:hover {
+    background: var(--zca-primary);
+    color: var(--zca-white);
+}
+.zca-card__footer {
+    padding: 12px 18px 16px;
+    border-top: 1px solid var(--zca-border);
+}
+.zca-card__no-web {
+    font-size: 0.82rem;
+    color: var(--zca-text-muted);
+    text-align: center;
+    display: block;
+}
+
+
+/* ================================================================
+   DIRECTORIO — ESTADO VACÍO
+   ================================================================ */
+.zca-empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--zca-text-muted);
+}
+.zca-empty-state .fa {
+    color: var(--zca-border);
+    margin-bottom: 20px;
+}
+.zca-empty-state h3 {
+    font-size: 1.3rem;
+    color: var(--zca-secondary);
+    margin-bottom: 10px;
+}
+
+
+/* ================================================================
+   DIRECTORIO — PAGINACIÓN
+   ================================================================ */
+.zca-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin-top: 48px;
+    flex-wrap: wrap;
+}
+.zca-page-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    height: 38px;
+    padding: 0 10px;
+    border: 1.5px solid var(--zca-border);
+    border-radius: var(--zca-radius-sm);
+    font-size: 0.9rem;
+    color: var(--zca-text);
+    text-decoration: none;
+    transition: all var(--zca-transition);
+    background: var(--zca-white);
+    cursor: pointer;
+}
+.zca-page-btn:hover {
+    border-color: var(--zca-primary);
+    color: var(--zca-primary);
+    background: var(--zca-light);
+}
+.zca-page-btn.active {
+    background: var(--zca-primary);
+    border-color: var(--zca-primary);
+    color: var(--zca-white);
+    font-weight: 700;
+}
+.zca-page-btn--ellipsis {
+    border: none;
+    background: transparent;
+    color: var(--zca-text-muted);
+    cursor: default;
+}
+.zca-page-info {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 0.85rem;
+    color: var(--zca-text-muted);
+}
+
+
+/* ================================================================
+   MICROSITE — HERO
+   ================================================================ */
+.zca-ms-hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: var(--zca-secondary);
+    overflow: hidden;
+}
+.zca-ms-hero__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(44,31,42,0.72) 0%,
+        rgba(113,75,103,0.55) 100%
+    );
+}
+.zca-ms-hero__content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    color: var(--zca-white);
+    padding: 120px 20px 100px;
+}
+.zca-ms-hero__logo-wrap {
+    margin-bottom: 24px;
+}
+.zca-ms-hero__logo {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid rgba(255,255,255,0.5);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.zca-ms-hero__title {
+    font-size: 3.5rem;
+    font-weight: 900;
+    margin-bottom: 16px;
+    letter-spacing: -1px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    line-height: 1.15;
+}
+.zca-ms-hero__subtitle {
+    font-size: 1.3rem;
+    opacity: 0.88;
+    margin-bottom: 40px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.zca-ms-hero__ctas {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+}
+.zca-ms-hero__zona {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(4px);
+    padding: 6px 18px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+.zca-ms-hero__scroll {
+    position: absolute;
+    bottom: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,0.7);
+    font-size: 1.3rem;
+    text-decoration: none;
+    animation: zca-bounce 1.6s ease-in-out infinite;
+    z-index: 1;
+}
+@keyframes zca-bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50%       { transform: translateX(-50%) translateY(8px); }
+}
+@media (max-width: 768px) {
+    .zca-ms-hero__title { font-size: 2.2rem; }
+    .zca-ms-hero__subtitle { font-size: 1rem; }
+}
+
+
+/* ================================================================
+   MICROSITE — FEATURES BAR
+   ================================================================ */
+.zca-ms-features {
+    background: var(--zca-white);
+    border-bottom: 1px solid var(--zca-border);
+    padding: 32px 0;
+}
+.zca-ms-features__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+@media (max-width: 900px) {
+    .zca-ms-features__grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 576px) {
+    .zca-ms-features__grid { grid-template-columns: 1fr; }
+}
+.zca-ms-feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px;
+    border-radius: var(--zca-radius);
+    transition: background var(--zca-transition);
+}
+.zca-ms-feature:hover {
+    background: var(--zca-light);
+}
+.zca-ms-feature__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    border-radius: 12px;
+    background: var(--zca-light);
+    color: var(--zca-primary);
+    font-size: 1.3rem;
+}
+.zca-ms-feature__icon--wa {
+    background: #e8f5e9;
+    color: #25d366;
+}
+.zca-ms-feature__title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--zca-secondary);
+    margin: 0 0 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.zca-ms-feature__text,
+.zca-ms-feature__link {
+    font-size: 0.9rem;
+    color: var(--zca-text-muted);
+    margin: 0;
+    text-decoration: none;
+}
+.zca-ms-feature__link:hover {
+    color: var(--zca-primary);
+}
+
+
+/* ================================================================
+   MICROSITE — SECCIÓN 1
+   ================================================================ */
+.zca-ms-sec1 {
+    padding: 80px 0;
+    background: var(--zca-white);
+}
+.zca-ms-sec1__inner {
+    max-width: 800px;
+    margin: 0 auto;
+}
+.zca-ms-sec1__inner--with-img {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    max-width: 100%;
+    align-items: center;
+}
+.zca-ms-sec1__text {
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: var(--zca-text);
+}
+.zca-ms-sec1__img-wrap {
+    border-radius: var(--zca-radius);
+    overflow: hidden;
+}
+.zca-ms-sec1__img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+@media (max-width: 768px) {
+    .zca-ms-sec1__inner--with-img {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* ================================================================
+   MICROSITE — HISTORIA
+   ================================================================ */
+.zca-ms-historia {
+    padding: 80px 0;
+    background: var(--zca-light);
+}
+.zca-ms-section-header {
+    text-align: center;
+    margin-bottom: 48px;
+}
+.zca-ms-section-header--light .zca-ms-section-title {
+    color: var(--zca-white);
+}
+.zca-ms-section-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--zca-secondary);
+    margin-bottom: 16px;
+}
+.zca-ms-section-divider {
+    width: 60px;
+    height: 4px;
+    background: var(--zca-primary);
+    border-radius: 2px;
+    margin: 0 auto;
+}
+.zca-ms-section-divider--light {
+    background: rgba(255,255,255,0.6);
+}
+.zca-ms-historia__body {
+    max-width: 780px;
+    margin: 0 auto;
+    text-align: center;
+}
+.zca-ms-historia__text-wrap {
+    overflow: hidden;
+    max-height: 200px;
+    transition: max-height 0.5s ease;
+}
+.zca-ms-historia__text-wrap.expanded {
+    max-height: 2000px;
+}
+.zca-ms-historia__text {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--zca-text);
+    white-space: pre-line;
+    margin-bottom: 24px;
+}
+.zca-read-more {
+    margin-top: 8px;
+}
+
+
+/* ================================================================
+   MICROSITE — SERVICIO (fondo imagen)
+   ================================================================ */
+.zca-ms-servicio {
+    position: relative;
+    padding: 100px 0;
+    background-size: cover;
+    background-position: center;
+    background-color: var(--zca-secondary);
+}
+.zca-ms-servicio__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(44,31,42,0.78);
+}
+.zca-ms-servicio__content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    color: var(--zca-white);
+}
+.zca-ms-servicio__text {
+    max-width: 700px;
+    margin: 0 auto;
+    font-size: 1.05rem;
+    line-height: 1.8;
+    opacity: 0.92;
+    white-space: pre-line;
+}
+
+
+/* ================================================================
+   MICROSITE — CTA ZONAS
+   ================================================================ */
+.zca-ms-cta {
+    padding: 80px 0;
+    background: linear-gradient(135deg, var(--zca-primary) 0%, var(--zca-secondary) 100%);
+    color: var(--zca-white);
+}
+.zca-ms-cta__inner {
+    text-align: center;
+}
+.zca-ms-cta__title {
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+}
+.zca-ms-cta__subtitle {
+    font-size: 1.05rem;
+    opacity: 0.85;
+    margin-bottom: 36px;
+}
+
+
+/* ================================================================
+   MICROSITE — CONTACTO
+   ================================================================ */
+.zca-ms-contacto {
+    padding: 80px 0;
+    background: var(--zca-white);
+}
+.zca-ms-contacto__grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 60px;
+    margin-top: 12px;
+}
+@media (max-width: 900px) {
+    .zca-ms-contacto__grid {
+        grid-template-columns: 1fr;
+    }
+}
+.zca-ms-contacto__info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.zca-contact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 0.95rem;
+    color: var(--zca-text);
+}
+.zca-contact-item .fa {
+    color: var(--zca-primary);
+    font-size: 1rem;
+    margin-top: 3px;
+    min-width: 18px;
+}
+.zca-contact-item a {
+    color: var(--zca-text);
+    text-decoration: none;
+}
+.zca-contact-item a:hover {
+    color: var(--zca-primary);
+}
+.zca-ms-social {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+}
+.zca-ms-social__link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--zca-light);
+    color: var(--zca-primary);
+    font-size: 1rem;
+    text-decoration: none;
+    transition: all var(--zca-transition);
+}
+.zca-ms-social__link:hover {
+    background: var(--zca-primary);
+    color: var(--zca-white);
+}
+
+/* Formulario */
+.zca-contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+.zca-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+@media (max-width: 576px) {
+    .zca-form-row { grid-template-columns: 1fr; }
+}
+.zca-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.zca-form-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--zca-secondary);
+}
+.zca-form-control {
+    padding: 12px 16px;
+    border: 1.5px solid var(--zca-border);
+    border-radius: var(--zca-radius-sm);
+    font-size: 0.95rem;
+    color: var(--zca-text);
+    outline: none;
+    transition: border-color var(--zca-transition), box-shadow var(--zca-transition);
+    background: var(--zca-white);
+    font-family: var(--zca-font);
+    width: 100%;
+    box-sizing: border-box;
+}
+.zca-form-control:focus {
+    border-color: var(--zca-primary);
+    box-shadow: 0 0 0 3px rgba(113,75,103,0.1);
+}
+.zca-form-control--textarea {
+    resize: vertical;
+    min-height: 140px;
+}
+.zca-form-feedback {
+    font-size: 0.9rem;
+    min-height: 24px;
+}
+.zca-form-feedback.success { color: #2e7d32; }
+.zca-form-feedback.error   { color: #c62828; }
+
+
+/* ================================================================
+   MICROSITE — FOOTER
+   ================================================================ */
+.zca-ms-footer {
+    background: var(--zca-dark);
+    color: rgba(255,255,255,0.75);
+    padding: 40px 0;
+}
+.zca-ms-footer__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+.zca-ms-footer__logo {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--zca-white);
+    letter-spacing: -0.5px;
+}
+.zca-ms-footer__tagline {
+    font-size: 0.8rem;
+    margin-top: 4px;
+    opacity: 0.6;
+}
+.zca-ms-footer__links {
+    display: flex;
+    gap: 24px;
+}
+.zca-ms-footer__links a {
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color var(--zca-transition);
+}
+.zca-ms-footer__links a:hover {
+    color: var(--zca-white);
+}
+.zca-ms-footer__legal {
+    font-size: 0.8rem;
+    text-align: right;
+}
+.zca-ms-footer__legal-links {
+    display: flex;
+    gap: 16px;
+    margin-top: 6px;
+}
+.zca-ms-footer__legal-links a {
+    color: rgba(255,255,255,0.55);
+    text-decoration: none;
+    transition: color var(--zca-transition);
+}
+.zca-ms-footer__legal-links a:hover {
+    color: var(--zca-white);
+}
+@media (max-width: 768px) {
+    .zca-ms-footer__inner {
+        flex-direction: column;
+        text-align: center;
+    }
+    .zca-ms-footer__legal {
+        text-align: center;
+    }
+    .zca-ms-footer__legal-links {
+        justify-content: center;
+    }
+}
+
+
+/* ================================================================
+   LOADING OVERLAY (AJAX)
+   ================================================================ */
+.zca-loading {
+    position: relative;
+    min-height: 200px;
+}
+.zca-loading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(245,240,244,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+.zca-spinner {
+    display: none;
+    text-align: center;
+    padding: 40px;
+    color: var(--zca-primary);
+    font-size: 1.5rem;
+}
+.zca-spinner.active {
+    display: block;
+}

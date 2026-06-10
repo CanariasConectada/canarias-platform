@@ -1,0 +1,92 @@
+# Documentación de Lugares de Interés
+
+## Índice de Documentación
+
+Bienvenido a la documentación completa del módulo **Lugares de Interés**.
+
+### 📁 Estructura de Documentación
+
+```
+docs/
+├── README.md                              # Este archivo - Índice principal
+└── lugares_interes/                          # Documentación del módulo
+    ├── api/                               # Documentación de API
+    │   └── ENDPOINTS.md                   # Referencia de endpoints REST
+    ├── backend/                           # Documentación del backend
+    │   └── MODELOS.md                     # Documentación de modelos
+    ├── deployment/                        # Documentación de deployment
+    │   └── BACKUP.md                      # Procedimientos de backup
+    ├── frontend/                          # Documentación del frontend
+    │   └── ESTILOS.md                     # Guía de estilos CSS
+    ├── guias/                             # Guías de usuario y desarrollador
+    │   └── INDICE_RUTAS.md                # Índice de rutas del módulo
+    ├── tests/                             # Documentación de tests
+    │   └── INDICE.md                      # Índice de tests disponibles
+    └── historial/                         # Documentación histórica
+        ├── README.md                      # Índice de archivos históricos
+        ├── MEMORIA_VIVA_RESUMEN_COMPLETO.md
+        └── TEST_RESULTS.md
+```
+
+### 📁 Estructura de Scripts
+
+```
+scripts/
+├── README.md                              # Índice de scripts
+├── deployment/                            # Scripts de deployment
+│   └── apply_fixes.sh                     # Aplicar correcciones
+├── tests/                                 # Scripts de testing
+│   ├── test_comentarios_frontend.py       # Tests frontend
+│   ├── test_orm.py                        # Tests ORM
+│   └── test_xmlrpc.py                     # Tests XML-RPC
+├── utilidades/                            # Scripts de utilidad
+│   └── registrar_modelos.py               # Registro manual de modelos
+└── historial/                             # Scripts históricos
+    ├── README.md                          # Índice de scripts históricos
+    ├── fix_condition.py
+    ├── fix_structure.py
+    ├── fix_template_structure.py
+    └── fix_view.py
+```
+
+---
+
+## 🚀 Inicio Rápido
+
+### Para Usuarios
+- Ver guías en `lugares_interes/guias/`
+
+### Para Desarrolladores
+- **API REST**: [lugares_interes/api/ENDPOINTS.md](lugares_interes/api/ENDPOINTS.md)
+- **Modelos**: [lugares_interes/backend/MODELOS.md](lugares_interes/backend/MODELOS.md)
+- **Tests**: [lugares_interes/tests/INDICE.md](lugares_interes/tests/INDICE.md)
+
+### Para Administradores
+- **Backup**: [lugares_interes/deployment/BACKUP.md](lugares_interes/deployment/BACKUP.md)
+
+---
+
+## 📊 Estado del Proyecto
+
+- **Versión**: 19.0.1.3.0
+- **Tests**: 18/18 pasando (100%)
+- **Última actualización**: 6 de abril de 2026
+- **Backup disponible**: `/home/odoo/backup/pre_mejoras_comentarios/`
+
+---
+
+## 🔗 Enlaces Rápidos
+
+| Recurso | Ruta |
+|---------|------|
+| Código fuente | `/home/odoo/addons/lugares_interes/` |
+| Tests | `/home/odoo/addons/lugares_interes/tests/` |
+| Scripts | `/home/odoo/addons/lugares_interes/scripts/` |
+| Documentación | `/home/odoo/addons/lugares_interes/docs/` |
+| Backup | `/home/odoo/backup/pre_mejoras_comentarios/` |
+
+---
+
+## 📞 Soporte
+
+Para reportar problemas o solicitar mejoras, contactar al equipo de desarrollo.

@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================
+         TEMPLATE DEL MICROSITE DE CADA COMERCIO
+         Llamado desde el website del comercio (subdominio propio)
+         Variables esperadas: comercio (res.partner record)
+         ============================================================ -->
+    <template id="microsite_home" name="Microsite Comercio ZCA">
+        <t t-call="website.layout">
+            <t t-set="title" t-value="comercio.name + ' - ZCA Platform'"/>
+
+            <!-- ====================================================
+                 1. HERO: imagen de fondo fullscreen
+                 ==================================================== -->
+            <section class="zca-ms-hero"
+                     t-att-style="'background-image: url(%s);' % (comercio.x_zca_hero_imagen_url or comercio.x_zca_portada_imagen_url or '/zca_platform/static/src/img/hero-default.jpg') if (comercio.x_zca_hero_imagen_url or comercio.x_zca_portada_imagen_url) else ''">
+                <div class="zca-ms-hero__overlay"/>
+                <div class="container zca-ms-hero__content">
+                    <!-- Logo del comercio -->
+                    <t t-if="comercio.image_128">
+                        <div class="zca-ms-hero__logo-wrap">
+                            <img t-attf-src="/directorio/img/#{comercio.id}"
+                                 t-att-alt="comercio.name"
+                                 class="zca-ms-hero__logo"/>
+                        </div>
+                    </t>
+                    <h1 class="zca-ms-hero__title" t-out="comercio.name"/>
+                    <p class="zca-ms-hero__subtitle">
+                        <t t-out="comercio.x_zca_descripcion_corta or comercio.x_zca_tipo or ''"/>
+                    </p>
+                    <div class="zca-ms-hero__ctas">
+                        <a href="#zca-contacto" class="zca-btn zca-btn--hero">
+                            Contactar
+                        </a>
+                        <a href="/directorio" class="zca-btn zca-btn--hero-outline">
+                            Ver Directorio
+                        </a>
+                    </div>
+                    <!-- Zona badge -->
+                    <t t-if="comercio.x_zca_zona">
+                        <div class="zca-ms-hero__zona">
+                            <i class="fa fa-map-marker"/>
+                            <t t-out="{'guanarteme': 'Guanarteme', 'lomolosfrailes': 'Lomo Los Frailes', 'tamaraceite': 'Tamaraceite'}.get(comercio.x_zca_zona, comercio.x_zca_zona)"/>
+                        </div>
+                    </t>
+                </div>
+                <!-- Scroll indicator -->
+                <a href="#zca-features" class="zca-ms-hero__scroll">
+                    <i class="fa fa-chevron-down"/>
+                </a>
+            </section>
+
+            <!-- ====================================================
+                 2. FEATURES BAR: horario, entrega, parking
+                 ==================================================== -->
+            <section class="zca-ms-features" id="zca-features">
+                <div class="container">
+                    <div class="zca-ms-features__grid">
+                        <!-- Horario -->
+                        <div class="zca-ms-feature">
+                            <div class="zca-ms-feature__icon">
+                                <i class="fa fa-clock-o"/>
+                            </div>
+                            <div class="zca-ms-feature__body">
+                                <h4 class="zca-ms-feature__title">Horario</h4>
+                                <p class="zca-ms-feature__text">
+                                    <t t-out="comercio.x_zca_horario_texto or 'Consulta horario'"/>
+                                </p>
+                            </div>
+                        </div>
+                        <!-- Entrega -->
+                        <div class="zca-ms-feature">
+                            <div class="zca-ms-feature__icon">
+                                <i class="fa fa-motorcycle"/>
+                            </div>
+                            <div class="zca-ms-feature__body">
+                                <h4 class="zca-ms-feature__title">Entrega</h4>
+                                <p class="zca-ms-feature__text">
+                                    <t t-out="comercio.x_zca_entrega or 'Sin información'"/>
+                                </p>
+                            </div>
+                        </div>
+                        <!-- Parking -->
+                        <div class="zca-ms-feature">
+                            <div class="zca-ms-feature__icon">
+                                <i class="fa fa-car"/>
+                            </div>
+                            <div class="zca-ms-feature__body">
+                                <h4 class="zca-ms-feature__title">Parking</h4>
+                                <p class="zca-ms-feature__text">
+                                    <t t-out="comercio.x_zca_parking or 'Sin información'"/>
+                                </p>
+                            </div>
+                        </div>
+                        <!-- Contacto rápido -->
+                        <t t-if="comercio.x_zca_whatsapp">
+                            <div class="zca-ms-feature">
+                                <div class="zca-ms-feature__icon zca-ms-feature__icon--wa">
+                                    <i class="fa fa-whatsapp"/>
+                                </div>
+                                <div class="zca-ms-feature__body">
+                                    <h4 class="zca-ms-feature__title">WhatsApp</h4>
+                                    <a t-att-href="'https://wa.me/' + comercio.x_zca_whatsapp.replace(' ','').replace('+','')"
+                                       class="zca-ms-feature__link"
+                                       target="_blank" rel="noopener">
+                                        <t t-out="comercio.x_zca_whatsapp"/>
+                                    </a>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ====================================================
+                 3. SECCIÓN 1: texto + imagen (opcional)
+                 ==================================================== -->
+            <t t-if="comercio.x_zca_sec1_texto">
+                <section class="zca-ms-sec1">
+                    <div class="container">
+                        <div t-att-class="'zca-ms-sec1__inner' + (' zca-ms-sec1__inner--with-img' if comercio.x_zca_sec1_imagen_url else '')">
+                            <div class="zca-ms-sec1__text">
+                                <p t-out="comercio.x_zca_sec1_texto"/>
+                            </div>
+                            <t t-if="comercio.x_zca_sec1_imagen_url">
+                                <div class="zca-ms-sec1__img-wrap">
+                                    <img t-att-src="comercio.x_zca_sec1_imagen_url"
+                                         t-att-alt="comercio.name"
+                                         class="zca-ms-sec1__img"
+                                         loading="lazy"/>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </section>
+            </t>
+
+            <!-- ====================================================
+                 4. HISTORIA: título + texto expandible
+                 ==================================================== -->
+            <t t-if="comercio.x_zca_historia_texto">
+                <section class="zca-ms-historia" id="zca-historia">
+                    <div class="container">
+                        <div class="zca-ms-section-header">
+                            <h2 class="zca-ms-section-title">
+                                <t t-out="comercio.x_zca_historia_titulo or 'Nuestra Historia'"/>
+                            </h2>
+                            <div class="zca-ms-section-divider"/>
+                        </div>
+                        <div class="zca-ms-historia__body">
+                            <div class="zca-ms-historia__text-wrap">
+                                <p class="zca-ms-historia__text" id="historia-text">
+                                    <t t-out="comercio.x_zca_historia_texto"/>
+                                </p>
+                            </div>
+                            <!-- Botón Leer más (JS toggle) -->
+                            <t t-if="comercio.x_zca_historia_texto and len(comercio.x_zca_historia_texto) > 300">
+                                <button class="zca-btn zca-btn--outline zca-read-more"
+                                        data-target="historia-text">
+                                    Leer más <i class="fa fa-chevron-down"/>
+                                </button>
+                            </t>
+                        </div>
+                    </div>
+                </section>
+            </t>
+
+            <!-- ====================================================
+                 5. SERVICIO: título + texto + imagen de fondo
+                 ==================================================== -->
+            <t t-if="comercio.x_zca_servicio_texto">
+                <section class="zca-ms-servicio"
+                         t-att-style="'background-image: url(%s);' % comercio.x_zca_sec2_imagen_url if comercio.x_zca_sec2_imagen_url else ''"
+                         id="zca-servicio">
+                    <div class="zca-ms-servicio__overlay"/>
+                    <div class="container zca-ms-servicio__content">
+                        <div class="zca-ms-section-header zca-ms-section-header--light">
+                            <h2 class="zca-ms-section-title">
+                                <t t-out="comercio.x_zca_servicio_titulo or 'Nuestro Servicio'"/>
+                            </h2>
+                            <div class="zca-ms-section-divider zca-ms-section-divider--light"/>
+                        </div>
+                        <p class="zca-ms-servicio__text" t-out="comercio.x_zca_servicio_texto"/>
+                    </div>
+                </section>
+            </t>
+
+            <!-- ====================================================
+                 6. CTA ZONAS
+                 ==================================================== -->
+            <section class="zca-ms-cta">
+                <div class="container zca-ms-cta__inner">
+                    <h2 class="zca-ms-cta__title">
+                        CIENTOS DE COMERCIOS EN TU ZONA
+                    </h2>
+                    <p class="zca-ms-cta__subtitle">
+                        Descubre todos los comercios locales agrupados por zonas
+                    </p>
+                    <a href="/directorio" class="zca-btn zca-btn--cta">
+                        <i class="fa fa-map-marker"/> Ver Directorio Completo
+                    </a>
+                </div>
+            </section>
+
+            <!-- ====================================================
+                 7. CONTACTO
+                 ==================================================== -->
+            <section class="zca-ms-contacto" id="zca-contacto">
+                <div class="container">
+                    <div class="zca-ms-section-header">
+                        <h2 class="zca-ms-section-title">Contacto</h2>
+                        <div class="zca-ms-section-divider"/>
+                    </div>
+                    <div class="zca-ms-contacto__grid">
+                        <!-- Datos de contacto -->
+                        <div class="zca-ms-contacto__info">
+                            <t t-if="comercio.street or comercio.city">
+                                <div class="zca-contact-item">
+                                    <i class="fa fa-map-marker"/>
+                                    <div>
+                                        <t t-if="comercio.street"><span t-out="comercio.street"/><br/></t>
+                                        <t t-if="comercio.city"><span t-out="comercio.city"/></t>
+                                        <t t-if="comercio.zip">, <span t-out="comercio.zip"/></t>
+                                    </div>
+                                </div>
+                            </t>
+                            <t t-if="comercio.phone or comercio.mobile">
+                                <div class="zca-contact-item">
+                                    <i class="fa fa-phone"/>
+                                    <div>
+                                        <t t-if="comercio.phone">
+                                            <a t-att-href="'tel:' + comercio.phone" t-out="comercio.phone"/>
+                                        </t>
+                                        <t t-if="comercio.mobile">
+                                            <br/><a t-att-href="'tel:' + comercio.mobile" t-out="comercio.mobile"/>
+                                        </t>
+                                    </div>
+                                </div>
+                            </t>
+                            <t t-if="comercio.email">
+                                <div class="zca-contact-item">
+                                    <i class="fa fa-envelope"/>
+                                    <a t-att-href="'mailto:' + comercio.email" t-out="comercio.email"/>
+                                </div>
+                            </t>
+                            <t t-if="comercio.x_zca_whatsapp">
+                                <div class="zca-contact-item">
+                                    <i class="fa fa-whatsapp"/>
+                                    <a t-att-href="'https://wa.me/' + comercio.x_zca_whatsapp.replace(' ','').replace('+','')"
+                                       target="_blank" rel="noopener">
+                                        WhatsApp: <t t-out="comercio.x_zca_whatsapp"/>
+                                    </a>
+                                </div>
+                            </t>
+                            <!-- Redes sociales -->
+                            <div class="zca-ms-social">
+                                <t t-if="comercio.x_zca_instagram">
+                                    <a t-att-href="'https://instagram.com/' + comercio.x_zca_instagram.lstrip('@')"
+                                       class="zca-ms-social__link"
+                                       target="_blank" rel="noopener">
+                                        <i class="fa fa-instagram"/>
+                                    </a>
+                                </t>
+                                <t t-if="comercio.x_zca_tiktok">
+                                    <a t-att-href="'https://tiktok.com/@' + comercio.x_zca_tiktok.lstrip('@')"
+                                       class="zca-ms-social__link"
+                                       target="_blank" rel="noopener">
+                                        <i class="fa fa-music"/>
+                                    </a>
+                                </t>
+                                <t t-if="comercio.website">
+                                    <a t-att-href="comercio.website"
+                                       class="zca-ms-social__link"
+                                       target="_blank" rel="noopener">
+                                        <i class="fa fa-globe"/>
+                                    </a>
+                                </t>
+                            </div>
+                        </div>
+
+                        <!-- Formulario de contacto -->
+                        <div class="zca-ms-contacto__form">
+                            <form class="zca-contact-form" id="zca-contact-form" method="post"
+                                  t-attf-action="/web/dataset/call_kw">
+                                <div class="zca-form-row">
+                                    <div class="zca-form-group">
+                                        <label for="contact-name">Nombre *</label>
+                                        <input type="text" id="contact-name" name="name"
+                                               class="zca-form-control" required="required"
+                                               placeholder="Tu nombre"/>
+                                    </div>
+                                    <div class="zca-form-group">
+                                        <label for="contact-email">Email *</label>
+                                        <input type="email" id="contact-email" name="email"
+                                               class="zca-form-control" required="required"
+                                               placeholder="tu@email.com"/>
+                                    </div>
+                                </div>
+                                <div class="zca-form-group">
+                                    <label for="contact-phone">Teléfono</label>
+                                    <input type="tel" id="contact-phone" name="phone"
+                                           class="zca-form-control"
+                                           placeholder="+34 600 000 000"/>
+                                </div>
+                                <div class="zca-form-group">
+                                    <label for="contact-message">Mensaje *</label>
+                                    <textarea id="contact-message" name="message"
+                                              class="zca-form-control zca-form-control--textarea"
+                                              required="required" rows="5"
+                                              placeholder="¿En qué podemos ayudarte?"/>
+                                </div>
+                                <!-- Partner id oculto para el JS -->
+                                <input type="hidden" name="partner_id" t-att-value="comercio.id"/>
+                                <button type="submit" class="zca-btn zca-btn--primary">
+                                    <i class="fa fa-paper-plane"/> Enviar mensaje
+                                </button>
+                                <div class="zca-form-feedback" id="zca-form-feedback"/>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ====================================================
+                 FOOTER ZCA
+                 ==================================================== -->
+            <footer class="zca-ms-footer">
+                <div class="container zca-ms-footer__inner">
+                    <div class="zca-ms-footer__brand">
+                        <span class="zca-ms-footer__logo">ZCA Platform</span>
+                        <p class="zca-ms-footer__tagline">Zonas Comerciales Abiertas</p>
+                    </div>
+                    <div class="zca-ms-footer__links">
+                        <a href="/directorio">Directorio</a>
+                        <a href="/web/login">Acceso</a>
+                    </div>
+                    <div class="zca-ms-footer__legal">
+                        <p>
+                            © <t t-out="2024"/> <t t-out="comercio.name"/>.
+                            Todos los derechos reservados.
+                        </p>
+                        <div class="zca-ms-footer__legal-links">
+                            <a href="/page/aviso-legal">Aviso Legal</a>
+                            <a href="/page/privacidad">Privacidad</a>
+                            <a href="/page/cookies">Cookies</a>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+
+        </t>
+    </template>
+
+</odoo>

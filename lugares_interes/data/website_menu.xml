@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menú Lugares de Interés solo para website de Guanarteme (ID: 229) -->
+    <record id="menu_lugares_interes_website" model="website.menu">
+        <field name="name">Lugares de Interés</field>
+        <field name="url">/lugares-de-interes#entries_grid</field>
+        <field name="parent_id" search="[('parent_id', '=', False), ('website_id', '=', 229)]"/>
+        <field name="website_id">229</field>
+        <field name="sequence">100</field>
+    </record>
+</odoo>

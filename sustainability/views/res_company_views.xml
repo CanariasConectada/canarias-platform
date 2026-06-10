@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Herencia de la vista form de res.company -->
+    <record id="view_company_form_inherit_sustainability" model="ir.ui.view">
+        <field name="name">res.company.form.inherit.sustainability</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_sustainability_evaluations"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-award">
+                    <field name="sustain_evaluation_count" widget="statinfo" string="Evaluaciones Sostenibilidad"/>
+                </button>
+            </xpath>
+            <xpath expr="//group[@name='social_media']" position="after">
+                <group string="Sostenibilidad" name="sustainability">
+                    <field name="sustain_certification_level" readonly="1"/>
+                    <field name="sustain_certification_date" readonly="1"/>
+                    <field name="sustain_expiry_date" readonly="1"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Herencia de la vista list de res.company -->
+    <record id="view_company_tree_inherit_sustainability" model="ir.ui.view">
+        <field name="name">res.company.tree.inherit.sustainability</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="decoration-info">sustain_certification_level == 'bronze'</attribute>
+                <attribute name="decoration-primary">sustain_certification_level == 'silver'</attribute>
+                <attribute name="decoration-warning">sustain_certification_level == 'gold'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="sustain_certification_level" optional="show"/>
+                <field name="sustain_expiry_date" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

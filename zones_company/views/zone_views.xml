@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de Lista (Tree) - Editable directamente -->
+    <record id="view_zone_tree" model="ir.ui.view">
+        <field name="name">zone.tree</field>
+        <field name="model">zone</field>
+        <field name="arch" type="xml">
+            <list editable="bottom" create="1" delete="1">
+                <field name="sequence" widget="handle"/>
+                <field name="name" string="Zona"/>
+                <field name="code" string="Código"/>
+                <field name="description" string="Descripción" optional="show"/>
+                <field name="company_count" string="Nº Empresas"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Vista de Formulario - Completa para edición detallada -->
+    <record id="view_zone_form" model="ir.ui.view">
+        <field name="name">zone.form</field>
+        <field name="model">zone</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archivado" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name" string="Zona"/>
+                        <h1>
+                            <field name="name" placeholder="Nombre de la zona"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Información General">
+                            <field name="code" string="Código"/>
+                            <field name="active" invisible="1"/>
+                            <field name="description" string="Descripción"/>
+                        </group>
+                        <group string="Estadísticas">
+                            <field name="company_count" string="Nº de Empresas"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Empresas Asignadas" name="companies">
+                            <field name="company_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista de Búsqueda -->
+    <record id="view_zone_search" model="ir.ui.view">
+        <field name="name">zone.search</field>
+        <field name="model">zone</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Zonas">
+                <field name="name" string="Zona"/>
+                <field name="code" string="Código"/>
+                <separator/>
+                <filter string="Con Empresas" name="with_companies" domain="[('company_count', '>', 0)]"/>
+                <filter string="Sin Empresas" name="without_companies" domain="[('company_count', '=', 0)]"/>
+                <separator/>
+                <filter string="Archivados" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Acción de Ventana -->
+    <record id="action_zone" model="ir.actions.act_window">
+        <field name="name">Zonas</field>
+        <field name="res_model">zone</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_zone_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crea tu primera Zona
+            </p>
+            <p>
+                Las zonas te permiten organizar tus empresas geográficamente.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menú bajo Usuarios y Compañías para fácil acceso -->
+    <menuitem id="menu_zone_root"
+              name="Zonas"
+              parent="base.menu_users"
+              action="action_zone"
+              sequence="5"
+              groups="base.group_system,base.group_erp_manager"/>
+
+    <!-- También mantener acceso en Configuración Técnica para admins -->
+    <menuitem id="menu_zone_config"
+              name="Zonas"
+              parent="base.menu_custom"
+              action="action_zone"
+              sequence="10"/>
+</odoo>

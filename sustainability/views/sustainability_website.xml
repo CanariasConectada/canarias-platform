@@ -1,0 +1,935 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================ -->
+    <!-- F5 - WEB INTEGRATION: Badges Sostenibilidad en web pública   -->
+    <!-- ============================================================ -->
+
+    <!-- Template reutilizable: badge Sostenibilidad para una entry -->
+    <template id="directory_sust_badge">
+        <t t-if="entry.company_id.sustain_certification_level and entry.company_id.sustain_certification_level != 'none'">
+            <t t-set="sust_level" t-value="entry.company_id.sustain_certification_level"/>
+            <t t-set="sust_expired" t-value="entry.company_id.sustain_expiry_date and entry.company_id.sustain_expiry_date &lt; datetime.date.today()"/>
+            <span t-if="not sust_expired"
+                  t-att-class="'badge rounded-pill ms-1 ' + {
+                      'bronze': '',
+                      'silver': '',
+                      'gold': ''
+                  }.get(sust_level, '')"
+                  t-att-style="'font-size: 0.55rem; padding: 0.15em 0.4em; ' + {
+                      'bronze': 'background-color: #CD7F32 !important; color: #fff !important;',
+                      'silver': 'background-color: #C0C0C0 !important; color: #212529 !important;',
+                      'gold': 'background-color: #FFD700 !important; color: #212529 !important;'
+                  }.get(sust_level, 'background-color: #6c757d; color: #fff;')"
+                  t-att-title="'Certificado Sostenibilidad - ' + {'bronze': 'Bronce', 'silver': 'Plata', 'gold': 'Oro'}.get(sust_level, '')">
+                <i class="fa fa-certificate me-1"/>Sostenibilidad
+            </span>
+        </t>
+    </template>
+
+    <!-- Grid View (carga inicial) -->
+    <template id="directory_grid_badge_sust" inherit_id="website_directory.directory_index">
+        <xpath expr="//div[@class='card h-100 border-0 shadow-sm directory-card position-relative']//h5[@class='card-title mb-1 fs-6']" position="after">
+            <t t-call="sustainability.directory_sust_badge"/>
+        </xpath>
+    </template>
+
+    <!-- List View (carga inicial) -->
+    <template id="directory_list_badge_sust" inherit_id="website_directory.directory_index">
+        <xpath expr="//div[@class='list-group-item d-flex align-items-center gap-3 py-3']//h5[@class='mb-0 fs-6']" position="after">
+            <t t-call="sustainability.directory_sust_badge"/>
+        </xpath>
+    </template>
+
+    <!-- Grid View (AJAX) -->
+    <template id="directory_search_grid_badge_sust" inherit_id="website_directory.directory_search_results">
+        <xpath expr="//div[@class='card h-100 border-0 shadow-sm directory-card position-relative']//h5[@class='card-title mb-1 fs-6']" position="after">
+            <t t-call="sustainability.directory_sust_badge"/>
+        </xpath>
+    </template>
+
+    <!-- List View (AJAX) -->
+    <template id="directory_search_list_badge_sust" inherit_id="website_directory.directory_search_results">
+        <xpath expr="//div[@class='list-group-item d-flex align-items-center gap-3 py-3']//h5[@class='mb-0 fs-6']" position="after">
+            <t t-call="sustainability.directory_sust_badge"/>
+        </xpath>
+    </template>
+
+    <!-- Ocultar card en páginas de survey -->
+    <template id="survey_page_fill_suppress_sust" inherit_id="survey.survey_page_fill">
+        <xpath expr="//t[@t-call='survey.layout']" position="before">
+            <t t-set="suppress_sust_card" t-value="True"/>
+        </xpath>
+    </template>
+
+    <template id="sust_microsite_header_section" inherit_id="website.layout" name="Sostenibilidad - Footer Section">
+        <xpath expr="//footer[@id='bottom']" position="before">
+            <t t-set="company" t-value="website.company_id"/>
+            <t t-set="sust_level" t-value="company.sustain_certification_level"/>
+            <t t-set="sust_expired" t-value="company.sustain_expiry_date and company.sustain_expiry_date &lt; datetime.date.today()"/>
+            <t t-set="has_sust" t-value="sust_level and sust_level != 'none' and not sust_expired"/>
+            <t t-set="is_homepage" t-value="request.httprequest.path == (website.homepage_url or '/')"/>
+            <t t-set="is_error_page" t-value="request.httprequest.path.startswith('/website/error') or request.httprequest.path in ['/404', '/500']"/>
+
+            <!-- Placeholder para futuro modulo Sostenibilidad -->
+            <t t-set="has_sustain" t-value="False"/>
+
+            <section t-if="is_homepage and not is_error_page and (has_sust or has_sustain) and not suppress_sust_card"
+                     class="s_three_columns o_cc o_cc2 pt32 pb32 o_colored_level"
+                     data-snippet="s_three_columns" data-name="Columnas">
+                <div class="container">
+                    <t t-set="cert_score" t-value="company.sustain_cert_score"/>
+                    <t t-set="positive_items" t-value="company._get_sustainability_positive_items()"/>
+                    <t t-set="bar_color" t-value="{'gold': '#FFD700', 'silver': '#C0C0C0', 'bronze': '#CD7F32'}.get(sust_level, '#6c757d')"/>
+
+                    <!-- Parte superior: 2 columnas -->
+                    <div class="row align-items-center mb-5" t-if="has_sust">
+                        <!-- Columna izquierda: imagen del sello -->
+                        <div class="col-lg-6 text-center mb-4 mb-lg-0">
+                            <img src="/sustainability/static/src/img/sello_sostenible-removebg-preview.png"
+                                 alt="Sostenibilidad"
+                                 class="img-fluid"
+                                 style="max-width: 280px; height: auto; object-fit: contain;"
+                                 loading="lazy"/>
+                        </div>
+
+                        <!-- Columna derecha: badge + porcentaje vertical, título, texto -->
+                        <div class="col-lg-6">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <span t-att-class="'badge rounded-pill px-4 py-2 fw-bold'"
+                                      t-attf-style="background-color: #{bar_color}; color: #{'#212529' if sust_level in ('gold', 'silver') else '#fff'}; font-size: 1rem;"
+                                      t-esc="{'bronze': '🥉 Bronce', 'silver': '🥈 Plata', 'gold': '🥇 Oro'}.get(sust_level, '')"/>
+                                <div t-attf-style="width: 3px; height: 60px; background-color: #{bar_color}; margin: 0 20px; opacity: 0.6;"></div>
+                                <div class="display-3 fw-bold" t-attf-style="color: #{bar_color}; line-height: 1;">
+                                    <t t-esc="int(cert_score)"/>%
+                                </div>
+                            </div>
+
+                            <h3 class="fw-bold text-center mb-3" style="font-size: 1.5rem; color: #333;">Negocio Comprometido</h3>
+
+                            <p class="text-center text-muted" style="font-size: 0.95rem; line-height: 1.6;">
+                                Este negocio ha sido evaluado y reconocido con el sello de Sostenibilidad,
+                                por su compromiso con prácticas responsables en:<br/>
+                                <strong>Accesibilidad</strong><br/>
+                                <strong>Atención personalizada</strong><br/>
+                                <strong>Servicio y adaptación al colectivo</strong>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Parte inferior: Acciones sostenibles (dinámicas) -->
+                    <div class="row" t-if="has_sust and positive_items">
+                        <div class="col-12">
+                            <h4 class="fw-bold mb-3 text-center" style="font-size: 1.25rem; color: #333;">Acciones sostenibles de este negocio</h4>
+                            <div class="d-flex flex-column align-items-center">
+                                <div t-foreach="positive_items" t-as="item" class="d-flex align-items-center mb-2">
+                                    <i t-att-class="'fa %s me-2' % item['icon']"
+                                       t-attf-style="color: #{bar_color}; font-size: 1.1rem;"/>
+                                    <span style="font-size: 1rem;" t-esc="item['label']"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sostenible placeholder (futuro) -->
+                    <div class="row" t-if="has_sustain">
+                        <div class="col-12 text-center mt-4">
+                            <p class="text-muted">Comercio Sostenible — placeholder para futuro módulo</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </xpath>
+    </template>
+
+    <!-- ============================================================ -->
+    <!-- PÁGINA PÚBLICA: Sostenibilidad / Formaciones                 -->
+    <!-- ============================================================ -->
+    <template id="sust_economy_page" name="Sostenibilidad - Formaciones">
+        <t t-call="website.layout">
+            <!-- Hero Section -->
+            <div class="sust-hero">
+                <h1 class="display-3 fw-bold text-white">Sostenibilidad en Canarias</h1>
+                <img src="/sustainability/static/src/img/sostenibilidad/sello-sostenible-sin.webp"
+                     alt="Sello Sostenible" class="img-fluid mt-3" style="max-height: 120px;"/>
+            </div>
+
+            <main class="container-fluid my-5">
+                <!-- Sección 1: ¿Qué es la sostenibilidad? -->
+                <div class="row mt-5">
+                    <div class="col-12 mb-5">
+                        <section class="bg-white p-5 rounded shadow-sm">
+                            <h2 class="sust-green text-center mb-4">¿Qué es la sostenibilidad?</h2>
+                            <p class="fs-5">
+                                Sumérgete en el fascinante mundo de la sostenibilidad. Aquí descubrirás qué significa realmente este
+                                concepto vital, cómo impacta nuestro día a día y el futuro del planeta, y por qué es especialmente
+                                relevante en un archipiélago como Canarias.
+                            </p>
+                            <div class="collapse" id="collapseSostenibilidadTexto">
+                                <p class="fs-5 mt-2">
+                                    Prepárate para entender los cimientos de un desarrollo más consciente y equitativo. La sostenibilidad es
+                                    mucho más que una palabra de moda; es una forma de entender nuestra relación con el mundo, basada en el
+                                    equilibrio entre lo que tomamos y lo que dejamos para los que vienen detrás. Significa vivir, producir y
+                                    consumir de manera que respetemos los límites del planeta, sin agotar sus recursos ni dañar
+                                    irreversiblemente los ecosistemas. En un momento en que el cambio climático, la pérdida de biodiversidad
+                                    y las desigualdades sociales son cada vez más evidentes, pensar en sostenibilidad ya no es una opción,
+                                    sino una necesidad urgente. Pero ¿cómo se traduce esto en nuestra vida diaria, en las decisiones que
+                                    tomamos o en la manera en que trabajamos y nos movemos? Eso es lo que merece la pena explorar.
+                                </p>
+                            </div>
+                            <button class="btn btn-success rounded-circle mt-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSostenibilidadTexto" aria-expanded="false" aria-controls="collapseSostenibilidadTexto">
+                                <i class="bi bi-chevron-down"/>
+                            </button>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Sección 2: Reconocimiento a tu Compromiso Sostenible -->
+                <div class="row">
+                    <div class="col-12 mb-5">
+                        <section class="bg-white p-4 rounded shadow-sm">
+                            <h2 class="sust-green text-center mb-3">Reconocimiento a tu Compromiso Sostenible</h2>
+                            <p class="fs-5 text-center mb-4">
+                                Las empresas que demuestren su compromiso con la sostenibilidad superando nuestro formulario de evaluación,
+                                recibirán un distintivo digital. Este sello podrá ser exhibido en su página web y otros materiales,
+                                destacando sus buenas prácticas.
+                            </p>
+                            <div class="row justify-content-center text-center">
+                                <div class="col-md-8 col-sm-10 mb-3">
+                                    <img src="/sustainability/static/src/img/sostenibilidad/sello-sostenible-sin.webp" alt="Sello de Sostenibilidad" class="img-fluid mb-2 sust-seal-img"/>
+                                    <h5>Sello Sostenible</h5>
+                                    <p class="small">Otorgado a empresas que inician su camino en la sostenibilidad con acciones fundamentales.</p>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Sección 3: ¿Qué es el Desarrollo Sostenible? -->
+                <div class="row">
+                    <div class="col-12 mb-5">
+                        <section class="py-3">
+                            <h2 class="sust-green text-center mb-4 pt-3">¿Qué es el Desarrollo Sostenible?</h2>
+                            <div class="sust-timeline">
+                                <div class="sust-timeline-item">
+                                    <div class="sust-timeline-icon">
+                                        <i class="bi bi-clipboard-check"/>
+                                    </div>
+                                    <div class="sust-timeline-content">
+                                        <h5>Definición - Comisión Mundial sobre Medio Ambiente y Desarrollo</h5>
+                                        <p>El concepto de desarrollo sostenible busca satisfacer las necesidades de las generaciones presentes
+                                            sin comprometer la capacidad de las generaciones futuras para satisfacer sus propias necesidades. Esta
+                                            definición fue establecida en 1987 por la Comisión Mundial sobre Medio Ambiente y Desarrollo.</p>
+                                    </div>
+                                </div>
+                                <div class="sust-timeline-item">
+                                    <div class="sust-timeline-icon">
+                                        <i class="bi bi-file-earmark-text"/>
+                                    </div>
+                                    <div class="sust-timeline-content">
+                                        <h5>Tratado de Maastricht (1992)</h5>
+                                        <p>Históricamente, la promoción del desarrollo sostenible fue uno de los objetivos incluidos en el
+                                            Tratado de Maastricht de 1992.</p>
+                                    </div>
+                                </div>
+                                <div class="sust-timeline-item">
+                                    <div class="sust-timeline-icon">
+                                        <i class="bi bi-globe2"/>
+                                    </div>
+                                    <div class="sust-timeline-content">
+                                        <h5>Cumbre de Río (1992)</h5>
+                                        <p>La Cumbre de Río o Cumbre de la Tierra en 1992 fue un punto culminante para definir un modelo de
+                                            desarrollo sostenible, y sus acuerdos se concretaron, entre otros, en la ejecución de la Agenda 21
+                                            Local.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Sección 4: Los 17 Objetivos de Desarrollo Sostenible -->
+                <div class="row">
+                    <div class="col-12 mb-5">
+                        <section class="bg-white p-5 rounded shadow-sm">
+                            <h2 class="sust-green text-center mb-4">Los 17 Objetivos de Desarrollo Sostenible</h2>
+                            <div class="sust-ods-grid">
+                                <div class="sust-ods-item" data-bs-toggle="modal" data-bs-target="#odsModal1">
+                                    <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-01.webp" alt="ODS 1: Fin de la pobreza" class="img-fluid"/>
+                                </div>
+                                <div class="sust-ods-item" data-bs-toggle="modal" data-bs-target="#odsModal2">
+                                    <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-02.webp" alt="ODS 2: Hambre Cero" class="img-fluid"/>
+                                </div>
+                                <div class="sust-ods-item" data-bs-toggle="modal" data-bs-target="#odsModal3">
+                                    <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-03.webp" alt="ODS 3: Salud y bienestar" class="img-fluid"/>
+                                </div>
+                                <div class="sust-ods-item" data-bs-toggle="modal" data-bs-target="#odsModal4">
+                                    <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-04.webp" alt="ODS 4: Educación de calidad" class="img-fluid"/>
+                                </div>
+                                <div class="sust-ods-item" data-bs-toggle="modal" data-bs-target="#odsModal5">
+                                    <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-05.webp" alt="ODS 5: Igualdad de género" class="img-fluid"/>
+                                </div>
+                                <div class="sust-ods-item" data-bs-toggle="modal" data-bs-target="#odsModal6">
+                                    <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-06.webp" alt="ODS 6: Agua limpia y saneamiento" class="img-fluid"/>
+                                </div>
+                                <div class="sust-ods-item" data-bs-toggle="modal" data-bs-target="#odsModal7">
+                                    <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-07.webp" alt="ODS 7: Energía asequible y no contaminante" class="img-fluid"/>
+                                </div>
+                                <div class="sust-ods-item" data-bs-toggle="modal" data-bs-target="#odsModal8">
+                                    <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-08.webp" alt="ODS 8: Trabajo decente y crecimiento económico" class="img-fluid"/>
+                                </div>
+                                <div class="sust-ods-item" data-bs-toggle="modal" data-bs-target="#odsModal9">
+                                    <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-09.webp" alt="ODS 9: Industria, innovación e infraestructura" class="img-fluid"/>
+                                </div>
+                                <div class="sust-ods-item" data-bs-toggle="modal" data-bs-target="#odsModal10">
+                                    <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-10.webp" alt="ODS 10: Reducción de las desigualdades" class="img-fluid"/>
+                                </div>
+                                <div class="sust-ods-item" data-bs-toggle="modal" data-bs-target="#odsModal11">
+                                    <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-11.webp" alt="ODS 11: Ciudades y comunidades sostenibles" class="img-fluid"/>
+                                </div>
+                                <div class="sust-ods-item" data-bs-toggle="modal" data-bs-target="#odsModal12">
+                                    <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-12.webp" alt="ODS 12: Producción y consumo responsables" class="img-fluid"/>
+                                </div>
+                                <div class="sust-ods-item" data-bs-toggle="modal" data-bs-target="#odsModal13">
+                                    <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-13.webp" alt="ODS 13: Acción por el clima" class="img-fluid"/>
+                                </div>
+                                <div class="sust-ods-item" data-bs-toggle="modal" data-bs-target="#odsModal14">
+                                    <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-14.webp" alt="ODS 14: Vida submarina" class="img-fluid"/>
+                                </div>
+                                <div class="sust-ods-item" data-bs-toggle="modal" data-bs-target="#odsModal15">
+                                    <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-15.webp" alt="ODS 15: Vida de ecosistemas terrestres" class="img-fluid"/>
+                                </div>
+                                <div class="sust-ods-item" data-bs-toggle="modal" data-bs-target="#odsModal16">
+                                    <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-16.webp" alt="ODS 16: Paz, justicia e instituciones sólidas" class="img-fluid"/>
+                                </div>
+                                <div class="sust-ods-item" data-bs-toggle="modal" data-bs-target="#odsModal17">
+                                    <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-17.webp" alt="ODS 17: Alianzas para lograr los objetivos" class="img-fluid"/>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Modales ODS -->
+                <div class="modal fade" id="odsModal1" tabindex="-1" aria-labelledby="odsModal1Label" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header sust-ods-modal-header" style="background: #e5243b; color: #fff;">
+                                <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-01.webp" alt="Icono ODS 1" class="modal-ods-icon"/>
+                                <h5 class="modal-title" id="odsModal1Label">ODS 1: Fin de la pobreza</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"/>
+                            </div>
+                            <div class="modal-body">Poner fin a la pobreza en todas sus formas en todo el mundo.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="odsModal2" tabindex="-1" aria-labelledby="odsModal2Label" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header sust-ods-modal-header" style="background: #dda63a; color: #fff;">
+                                <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-02.webp" alt="Icono ODS 2" class="modal-ods-icon"/>
+                                <h5 class="modal-title" id="odsModal2Label">ODS 2: Hambre Cero</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"/>
+                            </div>
+                            <div class="modal-body">Poner fin al hambre, lograr la seguridad alimentaria y la mejora de la nutrición y promover la agricultura sostenible.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="odsModal3" tabindex="-1" aria-labelledby="odsModal3Label" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header sust-ods-modal-header" style="background: #4c9f38; color: #fff;">
+                                <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-03.webp" alt="Icono ODS 3" class="modal-ods-icon"/>
+                                <h5 class="modal-title" id="odsModal3Label">ODS 3: Salud y bienestar</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"/>
+                            </div>
+                            <div class="modal-body">Garantizar una vida sana y promover el bienestar para todos en todas las edades.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="odsModal4" tabindex="-1" aria-labelledby="odsModal4Label" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header sust-ods-modal-header" style="background: #c5192d; color: #fff;">
+                                <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-04.webp" alt="Icono ODS 4" class="modal-ods-icon"/>
+                                <h5 class="modal-title" id="odsModal4Label">ODS 4: Educación de calidad</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"/>
+                            </div>
+                            <div class="modal-body">Garantizar una educación inclusiva, equitativa y de calidad y promover oportunidades de aprendizaje durante toda la vida para todos.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="odsModal5" tabindex="-1" aria-labelledby="odsModal5Label" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header sust-ods-modal-header" style="background: #ff3a21; color: #fff;">
+                                <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-05.webp" alt="Icono ODS 5" class="modal-ods-icon"/>
+                                <h5 class="modal-title" id="odsModal5Label">ODS 5: Igualdad de género</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"/>
+                            </div>
+                            <div class="modal-body">Lograr la igualdad de género y empoderar a todas las mujeres y las niñas.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="odsModal6" tabindex="-1" aria-labelledby="odsModal6Label" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header sust-ods-modal-header" style="background: #26bde2; color: #fff;">
+                                <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-06.webp" alt="Icono ODS 6" class="modal-ods-icon"/>
+                                <h5 class="modal-title" id="odsModal6Label">ODS 6: Agua limpia y saneamiento</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"/>
+                            </div>
+                            <div class="modal-body">Garantizar la disponibilidad de agua y su gestión sostenible y el saneamiento para todos.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="odsModal7" tabindex="-1" aria-labelledby="odsModal7Label" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header sust-ods-modal-header" style="background: #fcc30b; color: #212529;">
+                                <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-07.webp" alt="Icono ODS 7" class="modal-ods-icon"/>
+                                <h5 class="modal-title" id="odsModal7Label">ODS 7: Energía asequible y no contaminante</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"/>
+                            </div>
+                            <div class="modal-body">Garantizar el acceso a una energía asequible, segura, sostenible y moderna para todos.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="odsModal8" tabindex="-1" aria-labelledby="odsModal8Label" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header sust-ods-modal-header" style="background: #a21942; color: #fff;">
+                                <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-08.webp" alt="Icono ODS 8" class="modal-ods-icon"/>
+                                <h5 class="modal-title" id="odsModal8Label">ODS 8: Trabajo decente y crecimiento económico</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"/>
+                            </div>
+                            <div class="modal-body">Promover el crecimiento económico sostenido, inclusivo y sostenible, el empleo pleno y productivo y el trabajo decente para todos.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="odsModal9" tabindex="-1" aria-labelledby="odsModal9Label" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header sust-ods-modal-header" style="background: #fd6925; color: #fff;">
+                                <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-09.webp" alt="Icono ODS 9" class="modal-ods-icon"/>
+                                <h5 class="modal-title" id="odsModal9Label">ODS 9: Industria, innovación e infraestructura</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"/>
+                            </div>
+                            <div class="modal-body">Construir infraestructuras resilientes, promover la industrialización inclusiva y sostenible y fomentar la innovación.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="odsModal10" tabindex="-1" aria-labelledby="odsModal10Label" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header sust-ods-modal-header" style="background: #dd1367; color: #fff;">
+                                <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-10.webp" alt="Icono ODS 10" class="modal-ods-icon"/>
+                                <h5 class="modal-title" id="odsModal10Label">ODS 10: Reducción de las desigualdades</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"/>
+                            </div>
+                            <div class="modal-body">Reducir la desigualdad en y entre los países.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="odsModal11" tabindex="-1" aria-labelledby="odsModal11Label" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header sust-ods-modal-header" style="background: #fd9d24; color: #fff;">
+                                <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-11.webp" alt="Icono ODS 11" class="modal-ods-icon"/>
+                                <h5 class="modal-title" id="odsModal11Label">ODS 11: Ciudades y comunidades sostenibles</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"/>
+                            </div>
+                            <div class="modal-body">Lograr que las ciudades y los asentamientos humanos sean inclusivos, seguros, resilientes y sostenibles.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="odsModal12" tabindex="-1" aria-labelledby="odsModal12Label" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header sust-ods-modal-header" style="background: #bf8b2e; color: #fff;">
+                                <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-12.webp" alt="Icono ODS 12" class="modal-ods-icon"/>
+                                <h5 class="modal-title" id="odsModal12Label">ODS 12: Producción y consumo responsables</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"/>
+                            </div>
+                            <div class="modal-body">Garantizar modalidades de consumo y producción sostenibles.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="odsModal13" tabindex="-1" aria-labelledby="odsModal13Label" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header sust-ods-modal-header" style="background: #3f7e44; color: #fff;">
+                                <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-13.webp" alt="Icono ODS 13" class="modal-ods-icon"/>
+                                <h5 class="modal-title" id="odsModal13Label">ODS 13: Acción por el clima</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"/>
+                            </div>
+                            <div class="modal-body">Adoptar medidas urgentes para combatir el cambio climático y sus efectos.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="odsModal14" tabindex="-1" aria-labelledby="odsModal14Label" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header sust-ods-modal-header" style="background: #0a97d9; color: #fff;">
+                                <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-14.webp" alt="Icono ODS 14" class="modal-ods-icon"/>
+                                <h5 class="modal-title" id="odsModal14Label">ODS 14: Vida submarina</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"/>
+                            </div>
+                            <div class="modal-body">Conservar y utilizar en forma sostenible los océanos, los mares y los recursos marinos para el desarrollo sostenible.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="odsModal15" tabindex="-1" aria-labelledby="odsModal15Label" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header sust-ods-modal-header" style="background: #56c02b; color: #fff;">
+                                <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-15.webp" alt="Icono ODS 15" class="modal-ods-icon"/>
+                                <h5 class="modal-title" id="odsModal15Label">ODS 15: Vida de ecosistemas terrestres</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"/>
+                            </div>
+                            <div class="modal-body">Proteger, restablecer y promover el uso sostenible de los ecosistemas terrestres, gestionar los bosques de forma sostenible, luchar contra la desertificación, detener e invertir la degradación de las tierras y poner freno a la pérdida de la diversidad biológica.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="odsModal16" tabindex="-1" aria-labelledby="odsModal16Label" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header sust-ods-modal-header" style="background: #00689d; color: #fff;">
+                                <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-16.webp" alt="Icono ODS 16" class="modal-ods-icon"/>
+                                <h5 class="modal-title" id="odsModal16Label">ODS 16: Paz, justicia e instituciones sólidas</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"/>
+                            </div>
+                            <div class="modal-body">Promover sociedades pacíficas e inclusivas para el desarrollo sostenible, facilitar el acceso a la justicia para todos y crear instituciones eficaces, responsables e inclusivas a todos los niveles.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="odsModal17" tabindex="-1" aria-labelledby="odsModal17Label" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header sust-ods-modal-header" style="background: #19486a; color: #fff;">
+                                <img src="/sustainability/static/src/img/sostenibilidad/S-WEB-Goal-17.webp" alt="Icono ODS 17" class="modal-ods-icon"/>
+                                <h5 class="modal-title" id="odsModal17Label">ODS 17: Alianzas para lograr los objetivos</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"/>
+                            </div>
+                            <div class="modal-body">Fortalecer los medios de ejecución y revitalizar la Alianza Mundial para el Desarrollo Sostenible.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 5: Carousel contexto canario -->
+                <div class="row">
+                    <div class="col-12 mb-5">
+                        <section class="bg-white p-5 rounded shadow-sm">
+                            <div id="sustCarousel" class="carousel carousel-dark slide" data-bs-ride="carousel" data-bs-interval="3000">
+                                <div class="carousel-indicators">
+                                    <button type="button" data-bs-target="#sustCarousel" data-bs-slide-to="0" class="active" aria-label="Slide 1" aria-current="true"/>
+                                    <button type="button" data-bs-target="#sustCarousel" data-bs-slide-to="1" aria-label="Slide 2"/>
+                                    <button type="button" data-bs-target="#sustCarousel" data-bs-slide-to="2" aria-label="Slide 3"/>
+                                    <button type="button" data-bs-target="#sustCarousel" data-bs-slide-to="3" aria-label="Slide 4"/>
+                                </div>
+                                <div class="carousel-inner rounded">
+                                    <div class="carousel-item active">
+                                        <img src="/sustainability/static/src/img/sostenibilidad/ecosistema.webp" class="d-block w-100" alt="Ecosistema" style="max-height: 500px; object-fit: cover;"/>
+                                        <div class="carousel-caption d-none d-md-block sust-carousel-caption">
+                                            <h5>Ecosistema</h5>
+                                            <p>Canarias tiene un contexto ambiental frágil. El ecosistema marino y terrestre es de importancia clave en la economía canaria.</p>
+                                        </div>
+                                    </div>
+                                    <div class="carousel-item">
+                                        <img src="/sustainability/static/src/img/sostenibilidad/insularidad.webp" class="d-block w-100" alt="Insularidad" style="max-height: 500px; object-fit: cover;"/>
+                                        <div class="carousel-caption d-none d-md-block sust-carousel-caption">
+                                            <h5>Insularidad</h5>
+                                            <p>La implementación de la Estrategia Canaria de Economía Circular (ECEC) debe tener en cuenta la insularidad, dando a los Cabildos un papel protagonista.</p>
+                                        </div>
+                                    </div>
+                                    <div class="carousel-item">
+                                        <img src="/sustainability/static/src/img/sostenibilidad/economia.webp" class="d-block w-100" alt="Economía Terciarizada" style="max-height: 500px; object-fit: cover;"/>
+                                        <div class="carousel-caption d-none d-md-block sust-carousel-caption">
+                                            <h5>Economía Terciarizada</h5>
+                                            <p>La estructura económica de Canarias está terciarizada, con un peso principal del turismo, aunque los sectores primario, industrial y construcción son significativos.</p>
+                                        </div>
+                                    </div>
+                                    <div class="carousel-item">
+                                        <img src="/sustainability/static/src/img/sostenibilidad/retossociales.webp" class="d-block w-100" alt="Retos Sociales" style="max-height: 500px; object-fit: cover;"/>
+                                        <div class="carousel-caption d-none d-md-block sust-carousel-caption">
+                                            <h5>Retos Sociales</h5>
+                                            <p>Existe el reto específico en Canarias de ser la comunidad autónoma con más población en riesgo de exclusión social.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#sustCarousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"/>
+                                    <span class="visually-hidden">Atrás</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#sustCarousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"/>
+                                    <span class="visually-hidden">Adelante</span>
+                                </button>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Sección 6: Eje Estratégico -->
+                <div class="row">
+                    <div class="col-12 mb-5">
+                        <section class="bg-white p-5 rounded shadow-sm">
+                            <div class="container px-4 py-5">
+                                <div class="row row-cols-1 row-cols-md-2 align-items-md-center g-5 py-5">
+                                    <div class="col d-flex flex-column align-items-start gap-2">
+                                        <h2 class="fw-bold text-body-emphasis"><span class="sust-green" style="font-size: xx-large;">Eje Estratégico para el Tejido Empresarial</span></h2>
+                                        <p class="text-body-secondary">La Agenda Canaria de Desarrollo Sostenible (ACDS 2030) busca guiar el nuevo desarrollo en Canarias, involucrando a todos los sectores. La Estrategia Canaria de Economía Circular (ECEC) forma parte de esta agenda para aplicar los ODS en la región. Las microempresas están empezando a entender la importancia de los ODS, pero su falta de inversión dificulta la transición a la Economía Circular. Este módulo tratará sobre la importancia de la sostenibilidad y su comunicación para los negocios locales en Canarias.</p>
+                                    </div>
+                                    <div class="col">
+                                        <div class="row row-cols-1 row-cols-sm-2 g-4">
+                                            <div class="col d-flex flex-column gap-2">
+                                                <div class="sust-feature-icon">
+                                                    <i class="bi bi-bullseye"/>
+                                                </div>
+                                                <h4 class="fw-semibold mb-0 text-body-emphasis">Pilar esencial</h4>
+                                                <p class="text-body-secondary">La sostenibilidad es ahora muy importante en la economía y la sociedad. Ha cambiado de un papel secundario a uno central.</p>
+                                            </div>
+                                            <div class="col d-flex flex-column gap-2">
+                                                <div class="sust-feature-icon">
+                                                    <i class="bi bi-arrow-repeat"/>
+                                                </div>
+                                                <h4 class="fw-semibold mb-0 text-body-emphasis">Transformación Económica</h4>
+                                                <p class="text-body-secondary">La sostenibilidad es clave para transformar la economía y generar riqueza sin aumentar el consumo de recursos.</p>
+                                            </div>
+                                            <div class="col d-flex flex-column gap-2">
+                                                <div class="sust-feature-icon">
+                                                    <i class="bi bi-lightbulb"/>
+                                                </div>
+                                                <h4 class="fw-semibold mb-0 text-body-emphasis">Cambio de paradigma</h4>
+                                                <p class="text-body-secondary">Los Objetivos de Desarrollo Sostenible y la Agenda 2030 muestran un nuevo enfoque sobre el desarrollo sostenible. Este enfoque es más amplio, complejo e interconectado.</p>
+                                            </div>
+                                            <div class="col d-flex flex-column gap-2">
+                                                <div class="sust-feature-icon">
+                                                    <i class="bi bi-shop"/>
+                                                </div>
+                                                <h4 class="fw-semibold mb-0 text-body-emphasis">Oportunidad Empresarial</h4>
+                                                <p class="text-body-secondary">La Confederación Canaria de Empresarios (CCE) ve los ODS como una oportunidad. Promueve que las organizaciones canarias apliquen iniciativas para reducir los impactos negativos.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Sección 7: Apoyos necesarios -->
+                <div class="row">
+                    <div class="col-12 mb-5">
+                        <section class="bg-white p-5 rounded shadow-sm">
+                            <h2 class="sust-green text-center mb-4">Apoyos necesarios para los comercios locales</h2>
+                            <div class="sust-timeline">
+                                <div class="sust-timeline-item">
+                                    <div class="sust-timeline-icon">
+                                        <i class="bi bi-wrench-adjustable"/>
+                                    </div>
+                                    <div class="sust-timeline-content">
+                                        <h5>Recursos y herramientas</h5>
+                                        <p>Asignar recursos técnicos y económicos. Poner a disposición de las empresas instrumentos sencillos y prácticos. Difusión de recursos y herramientas adaptados a diferentes sectores y tamaños de empresa. Elaboración de guías y catálogos.</p>
+                                    </div>
+                                </div>
+                                <div class="sust-timeline-item">
+                                    <div class="sust-timeline-icon">
+                                        <i class="bi bi-telephone-fill"/>
+                                    </div>
+                                    <div class="sust-timeline-content">
+                                        <h5>Asesoramiento y acompañamiento</h5>
+                                        <p>Desarrollar programas para asesorar y acompañar a pymes en diseño e implantación de ODS y sostenibilidad. Apoyar a empresas de consultoría especializadas.</p>
+                                    </div>
+                                </div>
+                                <div class="sust-timeline-item">
+                                    <div class="sust-timeline-icon">
+                                        <i class="bi bi-currency-euro"/>
+                                    </div>
+                                    <div class="sust-timeline-content">
+                                        <h5>Financiación</h5>
+                                        <p>Poner a disposición de las empresas instrumentos que permitan realizar las inversiones y esfuerzos para avanzar. Líneas de apoyo específicas (ej: emprendimiento en EC, ecodiseño). Incentivar la I+D+i en EC.</p>
+                                    </div>
+                                </div>
+                                <div class="sust-timeline-item">
+                                    <div class="sust-timeline-icon">
+                                        <i class="bi bi-person-arms-up"/>
+                                    </div>
+                                    <div class="sust-timeline-content">
+                                        <h5>Formación y capacitación</h5>
+                                        <p>Ampliar y mejorar la oferta de programas formativos especializados. Incluir conceptos de EC en programas de formación para el empleo y emprendedores.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Sección 8: Comunicación y Beneficios -->
+                <div class="row">
+                    <div class="col-12 mb-5">
+                        <section class="bg-white p-5 rounded shadow-sm">
+                            <div class="container px-4 py-5">
+                                <h2 class="pb-2 border-bottom sust-green text-center">Comunicación de la sostenibilidad</h2>
+                                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 py-5 sust-columnas">
+                                    <div class="col d-flex align-items-start sust-columna">
+                                        <div>
+                                            <h3 class="fw-bold mb-0 fs-4 text-body-emphasis">Importancia</h3>
+                                            <p>La comunicación clara y activa sobre sostenibilidad mejora la reputación y la imagen de marca.</p>
+                                        </div>
+                                    </div>
+                                    <div class="col d-flex align-items-start sust-columna">
+                                        <div>
+                                            <h3 class="fw-bold mb-0 fs-4 text-body-emphasis">Audiencias</h3>
+                                            <p>La comunicación debe incluir a la plantilla, clientes, proveedores, aliados y la sociedad sobre la Agenda 2030 y los ODS.</p>
+                                        </div>
+                                    </div>
+                                    <div class="col d-flex align-items-start sust-columna">
+                                        <div>
+                                            <h3 class="fw-bold mb-0 fs-4 text-body-emphasis">Transparencia</h3>
+                                            <p>Integrar los ODS en los informes corporativos ayuda a comunicar la contribución y atender las necesidades de las partes interesadas.</p>
+                                        </div>
+                                    </div>
+                                    <div class="col d-flex align-items-start sust-columna">
+                                        <div>
+                                            <h3 class="fw-bold mb-0 fs-4 text-body-emphasis">Sensibilización interna</h3>
+                                            <p>Es necesario extender el conocimiento en todos los niveles para lograr un compromiso efectivo.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <h2 class="pb-2 border-bottom sust-green text-center">Beneficios para los comercios locales</h2>
+                                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 py-5 sust-columnas">
+                                    <div class="col d-flex align-items-start sust-columna">
+                                        <div>
+                                            <h3 class="fw-bold mb-0 fs-4 text-body-emphasis">Mejora Competitiva</h3>
+                                            <p>Ayuda a identificar futuras oportunidades de negocio, y además permite adelantarse a las exigencias de ciertas normativas.</p>
+                                        </div>
+                                    </div>
+                                    <div class="col d-flex align-items-start sust-columna">
+                                        <div>
+                                            <h3 class="fw-bold mb-0 fs-4 text-body-emphasis">Ventaja competitiva y captación de clientes</h3>
+                                            <p>Trabajar con los ODS ayuda a acceder a grandes empresas y a consumidores interesados en la sostenibilidad.</p>
+                                        </div>
+                                    </div>
+                                    <div class="col d-flex align-items-start sust-columna">
+                                        <div>
+                                            <h3 class="fw-bold mb-0 fs-4 text-body-emphasis">Mejora de la reputación e imagen</h3>
+                                            <p>La comunicación transparente fortalece la reputación y la imagen de la marca. Proyecta en los clientes una imagen de preocupación.</p>
+                                        </div>
+                                    </div>
+                                    <div class="col d-flex align-items-start sust-columna">
+                                        <div>
+                                            <h3 class="fw-bold mb-0 fs-4 text-body-emphasis">Reducción de costes</h3>
+                                            <p>Reduce costes, es más barato por energía no consumida y su gestión sostenible es una inversión que mejora la productividad a largo plazo.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Sección 9: Desafíos y Oportunidades -->
+                <div class="row">
+                    <div class="col-12 mb-5">
+                        <section class="bg-white p-5 rounded shadow-sm">
+                            <h2 class="sust-green text-center mb-4">Desafíos, oportunidades y apoyos para los comercios locales</h2>
+                            <div class="sust-accordion-layout">
+                                <div class="sust-accordion-image">
+                                    <img src="/sustainability/static/src/img/sostenibilidad/cubos.webp" alt="Cubos de reciclaje" class="img-fluid"/>
+                                </div>
+                                <div class="sust-accordion-content">
+                                    <div class="accordion" id="sustAccordionChallenges">
+                                        <h5 class="fw-bold mb-3 text-muted">Desafíos</h5>
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sustCollapseOne" aria-expanded="false" aria-controls="sustCollapseOne">
+                                                    Recursos limitados
+                                                </button>
+                                            </h2>
+                                            <div id="sustCollapseOne" class="accordion-collapse collapse" data-bs-parent="#sustAccordionChallenges">
+                                                <div class="accordion-body">Menos recursos económicos, técnicos y de personal.</div>
+                                            </div>
+                                        </div>
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sustCollapseTwo" aria-expanded="false" aria-controls="sustCollapseTwo">
+                                                    Falta de conocimiento
+                                                </button>
+                                            </h2>
+                                            <div id="sustCollapseTwo" class="accordion-collapse collapse" data-bs-parent="#sustAccordionChallenges">
+                                                <div class="accordion-body">Bajo nivel de conocimiento de la Agenda ODS.</div>
+                                            </div>
+                                        </div>
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sustCollapseThree" aria-expanded="false" aria-controls="sustCollapseThree">
+                                                    Complejidad normativa
+                                                </button>
+                                            </h2>
+                                            <div id="sustCollapseThree" class="accordion-collapse collapse" data-bs-parent="#sustAccordionChallenges">
+                                                <div class="accordion-body">Marco normativo muy complejo para empresas pequeñas.</div>
+                                            </div>
+                                        </div>
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sustCollapseFour" aria-expanded="false" aria-controls="sustCollapseFour">
+                                                    Contexto actual
+                                                </button>
+                                            </h2>
+                                            <div id="sustCollapseFour" class="accordion-collapse collapse" data-bs-parent="#sustAccordionChallenges">
+                                                <div class="accordion-body">Coyunturas externas desvían recursos de la sostenibilidad.</div>
+                                            </div>
+                                        </div>
+
+                                        <h5 class="fw-bold mb-3 mt-4 text-muted">Oportunidades</h5>
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sustCollapseFive" aria-expanded="false" aria-controls="sustCollapseFive">
+                                                    Demanda creciente
+                                                </button>
+                                            </h2>
+                                            <div id="sustCollapseFive" class="accordion-collapse collapse" data-bs-parent="#sustAccordionChallenges">
+                                                <div class="accordion-body">Los consumidores incluyen cada vez más criterios de sostenibilidad en sus compras.</div>
+                                            </div>
+                                        </div>
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sustCollapseSix" aria-expanded="false" aria-controls="sustCollapseSix">
+                                                    Diferenciación
+                                                </button>
+                                            </h2>
+                                            <div id="sustCollapseSix" class="accordion-collapse collapse" data-bs-parent="#sustAccordionChallenges">
+                                                <div class="accordion-body">Contribuir a la sostenibilidad es un diferenciador positivo estratégico.</div>
+                                            </div>
+                                        </div>
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sustCollapseSeven" aria-expanded="false" aria-controls="sustCollapseSeven">
+                                                    Financiación
+                                                </button>
+                                            </h2>
+                                            <div id="sustCollapseSeven" class="accordion-collapse collapse" data-bs-parent="#sustAccordionChallenges">
+                                                <div class="accordion-body">Posible acceso a fondos europeos (Next Generation) y líneas de financiación pública o privada orientadas a la sostenibilidad.</div>
+                                            </div>
+                                        </div>
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sustCollapseEight" aria-expanded="false" aria-controls="sustCollapseEight">
+                                                    Innovación
+                                                </button>
+                                            </h2>
+                                            <div id="sustCollapseEight" class="accordion-collapse collapse" data-bs-parent="#sustAccordionChallenges">
+                                                <div class="accordion-body">La sostenibilidad y la transformación digital son fuentes de innovación. La Economía Circular debe ser un eje central de la estrategia de I+D+i de Canarias (S3).</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Sección 10: Recursos y Desafíos Ambientales -->
+                <div class="row">
+                    <div class="col-12 mb-5">
+                        <section class="bg-white p-5 rounded shadow-sm">
+                            <h2 class="sust-green text-center mb-4">Recursos y Desafíos Ambientales en Canarias</h2>
+                            <div class="row justify-content-center g-4 mt-3">
+                                <div class="col-12 col-md-6 col-lg-5">
+                                    <div class="card h-100 border-0 shadow-sm">
+                                        <img src="/sustainability/static/src/img/sostenibilidad/solar.webp" class="card-img-top" alt="Paneles solares" style="max-height: 250px; object-fit: cover;"/>
+                                        <div class="card-body d-flex flex-column">
+                                            <p class="card-text">Canarias tiene recursos renovables que ayudan a mejorar la generación de energía, especialmente la eólica y fotovoltaica. La Estrategia Energética Canarias 2025 se centra en aumentar el uso de energías renovables y reducir el consumo de energía. La declaración de emergencia climática en 2019 señala un mayor enfoque en las energías sostenibles.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6 col-lg-5">
+                                    <div class="card h-100 border-0 shadow-sm">
+                                        <img src="/sustainability/static/src/img/sostenibilidad/cubos.webp" class="card-img-top" alt="Cubos de reciclaje" style="max-height: 250px; object-fit: cover;"/>
+                                        <div class="card-body d-flex flex-column">
+                                            <p class="card-text">La gestión de residuos es un reto, como el PIRCAN. Los palets que llegan a Canarias a menudo van a la economía sumergida. Se busca políticas de residuos cero y promover la Economía Circular. El impacto ambiental es significativo en un territorio escaso, frágil y con mucha presión humana, haciendo esencial una gestión sostenible de recursos.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Sección 11: Descarga los PDF -->
+                <div class="row">
+                    <div class="col-12 mb-5">
+                        <section class="bg-white p-5 rounded shadow-sm">
+                            <h2 class="sust-green text-center mb-3">Descarga los PDF de nuestros módulos</h2>
+                            <p class="lead text-center mb-4">Accede a material de apoyo y profundiza en los temas tratados.</p>
+                            <div class="text-center sust-downloads">
+                                <a href="/sustainability/static/src/files/Modulo_1_Introduccion_a_la_Sostenibilidad_y_los_ODS_en_el_Contexto.pdf" download="download" class="sust-download-link">
+                                    <i class="bi bi-download me-2"/>Módulo 1: Introducción a la Sostenibilidad y los ODS
+                                </a>
+                                <a href="/sustainability/static/src/files/Modulo-2-Economia-Circular-Una-Nueva-Forma-de-Hacer-Negocio.pdf" download="download" class="sust-download-link">
+                                    <i class="bi bi-download me-2"/>Módulo 2: Economía Circular
+                                </a>
+                                <a href="/sustainability/static/src/files/Modulo_3_Gestion_Sostenible_de_Residuos_Reducir_Reutilizar_Reciclar.pdf" download="download" class="sust-download-link">
+                                    <i class="bi bi-download me-2"/>Módulo 3: Gestión Sostenible de Residuos
+                                </a>
+                                <a href="/sustainability/static/src/files/Modulo_4_Eficiencia_Energetica_y_Energias_Renovables_Ahorro_y_Autosuficiencia.pdf" download="download" class="sust-download-link">
+                                    <i class="bi bi-download me-2"/>Módulo 4: Eficiencia Energética y Energías Renovables
+                                </a>
+                                <a href="/sustainability/static/src/files/Modulo_5_Integracion_de_la_Sostenibilidad_Estrategia_Comunicacion.pdf" download="download" class="sust-download-link">
+                                    <i class="bi bi-download me-2"/>Módulo 5: Integración de la Sostenibilidad
+                                </a>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Alerta de cuestionario disponible -->
+                <div class="row justify-content-center mb-5">
+                    <div class="col-lg-8">
+                        <div t-if="survey" class="alert alert-info">
+                            <h4 class="alert-heading">Cuestionario disponible</h4>
+                            <p>
+                                Actualmente hay un cuestionario de evaluación activo.
+                                Accede a través de tu panel de <strong>Sostenibilidad &gt; Mis Evaluaciones</strong>.
+                            </p>
+                        </div>
+                        <div t-if="not survey" class="alert alert-warning">
+                            <h4 class="alert-heading">No hay cuestionarios activos</h4>
+                            <p>En este momento no hay ningún cuestionario de evaluación activo.</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </t>
+    </template>
+
+    <!-- ============================================================ -->
+    <!-- Página pública: Instrucciones del examen                     -->
+    <!-- ============================================================ -->
+    <template id="sust_instructions_page" name="Sostenibilidad - Instrucciones">
+        <t t-call="website.layout">
+            <div class="container py-5">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <h1 class="fw-bold mb-4 text-center">Instrucciones del Examen</h1>
+                        <div t-if="survey" class="card border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <h2 class="h4 mb-3" t-esc="survey.title"/>
+                                <div t-if="survey.description" t-out="survey.description"/>
+                                <div t-if="not survey.description" class="text-muted">
+                                    <p>No hay instrucciones definidas para este cuestionario.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div t-if="not survey" class="alert alert-warning text-center">
+                            <h4 class="alert-heading">No hay cuestionarios activos</h4>
+                            <p>En este momento no hay ningún cuestionario de evaluación activo.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

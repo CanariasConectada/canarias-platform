@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="demo_tipo_1" model="lugares.interes.tipo">
+            <field name="name">Naturaleza</field>
+        </record>
+        <record id="demo_tipo_2" model="lugares.interes.tipo">
+            <field name="name">Cultura</field>
+        </record>
+        <record id="demo_tipo_3" model="lugares.interes.tipo">
+            <field name="name">Deporte</field>
+        </record>
+        <record id="demo_tipo_4" model="lugares.interes.tipo">
+            <field name="name">Espacio público</field>
+        </record>
+        <record id="demo_tipo_5" model="lugares.interes.tipo">
+            <field name="name">Ocio</field>
+        </record>
+        <record id="demo_tipo_6" model="lugares.interes.tipo">
+            <field name="name">Servicios</field>
+        </record>
+        <record id="demo_categoria_1" model="lugares.interes.categoria">
+            <field name="name">Playas</field>
+            <field name="tipo_id" ref="demo_tipo_1"/>
+        </record>
+        <record id="demo_categoria_2" model="lugares.interes.categoria">
+            <field name="name">Miradores</field>
+            <field name="tipo_id" ref="demo_tipo_1"/>
+        </record>
+        <record id="demo_categoria_3" model="lugares.interes.categoria">
+            <field name="name">Edificios históricos</field>
+            <field name="tipo_id" ref="demo_tipo_2"/>
+        </record>
+        <record id="demo_categoria_4" model="lugares.interes.categoria">
+            <field name="name">Instalaciones deportivas</field>
+            <field name="tipo_id" ref="demo_tipo_3"/>
+        </record>
+        <record id="demo_categoria_5" model="lugares.interes.categoria">
+            <field name="name">Parques</field>
+            <field name="tipo_id" ref="demo_tipo_4"/>
+        </record>
+        <record id="demo_categoria_6" model="lugares.interes.categoria">
+            <field name="name">Teatros</field>
+            <field name="tipo_id" ref="demo_tipo_2"/>
+        </record>
+        <record id="demo_categoria_7" model="lugares.interes.categoria">
+            <field name="name">Iglesias</field>
+            <field name="tipo_id" ref="demo_tipo_2"/>
+        </record>
+        <record id="demo_categoria_8" model="lugares.interes.categoria">
+            <field name="name">Plazas</field>
+            <field name="tipo_id" ref="demo_tipo_4"/>
+        </record>
+        <record id="demo_categoria_9" model="lugares.interes.categoria">
+            <field name="name">Gastronomía</field>
+            <field name="tipo_id" ref="demo_tipo_5"/>
+        </record>
+        <record id="demo_categoria_10" model="lugares.interes.categoria">
+            <field name="name">Bares/Vida nocturna</field>
+            <field name="tipo_id" ref="demo_tipo_5"/>
+        </record>
+        <record id="demo_categoria_11" model="lugares.interes.categoria">
+            <field name="name">Tiendas deportivas</field>
+            <field name="tipo_id" ref="demo_tipo_6"/>
+        </record>
+        <record id="demo_categoria_12" model="lugares.interes.categoria">
+            <field name="name">Centros comerciales</field>
+            <field name="tipo_id" ref="demo_tipo_6"/>
+        </record>
+        <record id="demo_categoria_13" model="lugares.interes.categoria">
+            <field name="name">Museos</field>
+            <field name="tipo_id" ref="demo_tipo_2"/>
+        </record>
+        <record id="demo_categoria_14" model="lugares.interes.categoria">
+            <field name="name">Paseos</field>
+            <field name="tipo_id" ref="demo_tipo_4"/>
+        </record>
+        <record id="demo_subcategoria_1" model="lugares.interes.subcategoria">
+            <field name="name">Playa urbana</field>
+            <field name="categoria_id" ref="demo_categoria_1"/>
+        </record>
+        <record id="demo_subcategoria_2" model="lugares.interes.subcategoria">
+            <field name="name">Playa semisalvaje</field>
+            <field name="categoria_id" ref="demo_categoria_1"/>
+        </record>
+        <record id="demo_subcategoria_3" model="lugares.interes.subcategoria">
+            <field name="name">Mirador con vistas</field>
+            <field name="categoria_id" ref="demo_categoria_2"/>
+        </record>
+        <record id="demo_subcategoria_4" model="lugares.interes.subcategoria">
+            <field name="name">Auditorio/Cultura</field>
+            <field name="categoria_id" ref="demo_categoria_3"/>
+        </record>
+        <record id="demo_subcategoria_5" model="lugares.interes.subcategoria">
+            <field name="name">Gimnasio/Centro fitness</field>
+            <field name="categoria_id" ref="demo_categoria_4"/>
+        </record>
+        <record id="demo_subcategoria_6" model="lugares.interes.subcategoria">
+            <field name="name">Plaza histórica</field>
+            <field name="categoria_id" ref="demo_categoria_5"/>
+        </record>
+        <record id="demo_subcategoria_7" model="lugares.interes.subcategoria">
+            <field name="name">Playa tranquila</field>
+            <field name="categoria_id" ref="demo_categoria_1"/>
+        </record>
+        <record id="demo_subcategoria_8" model="lugares.interes.subcategoria">
+            <field name="name">Teatro</field>
+            <field name="categoria_id" ref="demo_categoria_6"/>
+        </record>
+        <record id="demo_subcategoria_9" model="lugares.interes.subcategoria">
+            <field name="name">Catedral histórica</field>
+            <field name="categoria_id" ref="demo_categoria_7"/>
+        </record>
+        <record id="demo_subcategoria_10" model="lugares.interes.subcategoria">
+            <field name="name">Estadio de fútbol</field>
+            <field name="categoria_id" ref="demo_categoria_4"/>
+        </record>
+        <record id="demo_subcategoria_11" model="lugares.interes.subcategoria">
+            <field name="name">Pabellón multiuso</field>
+            <field name="categoria_id" ref="demo_categoria_4"/>
+        </record>
+        <record id="demo_subcategoria_12" model="lugares.interes.subcategoria">
+            <field name="name">Plaza central</field>
+            <field name="categoria_id" ref="demo_categoria_8"/>
+        </record>
+        <record id="demo_subcategoria_13" model="lugares.interes.subcategoria">
+            <field name="name">Restaurante</field>
+            <field name="categoria_id" ref="demo_categoria_9"/>
+        </record>
+        <record id="demo_subcategoria_14" model="lugares.interes.subcategoria">
+            <field name="name">Iglesia local</field>
+            <field name="categoria_id" ref="demo_categoria_7"/>
+        </record>
+        <record id="demo_subcategoria_15" model="lugares.interes.subcategoria">
+            <field name="name">Bar en azotea</field>
+            <field name="categoria_id" ref="demo_categoria_10"/>
+        </record>
+        <record id="demo_subcategoria_16" model="lugares.interes.subcategoria">
+            <field name="name">Parque temático</field>
+            <field name="categoria_id" ref="demo_categoria_5"/>
+        </record>
+        <record id="demo_subcategoria_17" model="lugares.interes.subcategoria">
+            <field name="name">Tienda deportes</field>
+            <field name="categoria_id" ref="demo_categoria_11"/>
+        </record>
+        <record id="demo_subcategoria_18" model="lugares.interes.subcategoria">
+            <field name="name">Centro comercial</field>
+            <field name="categoria_id" ref="demo_categoria_12"/>
+        </record>
+        <record id="demo_subcategoria_19" model="lugares.interes.subcategoria">
+            <field name="name">Museo arqueológico</field>
+            <field name="categoria_id" ref="demo_categoria_13"/>
+        </record>
+        <record id="demo_subcategoria_20" model="lugares.interes.subcategoria">
+            <field name="name">Paseo marítimo</field>
+            <field name="categoria_id" ref="demo_categoria_14"/>
+        </record>
+        <record id="demo_lugar_1" model="lugares.interes.historia">
+            <field name="name">Playa de Las Canteras</field>
+            <field name="slug">playa-las-canteras</field>
+            <field name="direccion">Paseo de Las Canteras</field>
+            <field name="description">Mejor playa urbana de Las Palmas con 3.1km de arena fina</field>
+            <field name="latitude">28.1355</field>
+            <field name="longitude">-15.5981</field>
+            <field name="telefono">N/A</field>
+            <field name="whatsapp">N/A</field>
+            <field name="instagram">@laspalmasgrancanaria</field>
+            <field name="tiktok">@laspalmas.travel</field>
+            <field name="website_url">https://www.barcelona.com</field>
+            <field name="tipo_id" ref="demo_tipo_1"/>
+            <field name="categoria_id" ref="demo_categoria_1"/>
+            <field name="subcategoria_id" ref="demo_subcategoria_1"/>
+            <field name="state">aprobado</field>
+        </record>
+        <record id="demo_lugar_2" model="lugares.interes.historia">
+            <field name="name">Playa El Confital</field>
+            <field name="slug">playa-el-confital</field>
+            <field name="direccion">El Confital La Isleta</field>
+            <field name="description">Playa menos concurrida hacia La Isleta con olas más fuertes</field>
+            <field name="latitude">28.148</field>
+            <field name="longitude">-15.605</field>
+            <field name="telefono">N/A</field>
+            <field name="whatsapp">N/A</field>
+            <field name="instagram">@confitalsurfspot</field>
+            <field name="tiktok">@confitalbeach</field>
+            <field name="website_url">N/A</field>
+            <field name="tipo_id" ref="demo_tipo_1"/>
+            <field name="categoria_id" ref="demo_categoria_1"/>
+            <field name="subcategoria_id" ref="demo_subcategoria_2"/>
+            <field name="state">aprobado</field>
+        </record>
+        <record id="demo_lugar_3" model="lugares.interes.historia">
+            <field name="name">Mirador Las Coloradas</field>
+            <field name="slug">mirador-las-coloradas</field>
+            <field name="direccion">Las Coloradas norte</field>
+            <field name="description">Dos áreas de mirador próximas con vistas al Confital y Teide</field>
+            <field name="latitude">28.165</field>
+            <field name="longitude">-15.585</field>
+            <field name="telefono">N/A</field>
+            <field name="whatsapp">N/A</field>
+            <field name="instagram">@lascoloradasmirador</field>
+            <field name="tiktok">N/A</field>
+            <field name="website_url">N/A</field>
+            <field name="tipo_id" ref="demo_tipo_1"/>
+            <field name="categoria_id" ref="demo_categoria_2"/>
+            <field name="subcategoria_id" ref="demo_subcategoria_3"/>
+            <field name="state">aprobado</field>
+        </record>
+        <record id="demo_lugar_4" model="lugares.interes.historia">
+            <field name="name">Auditorio Alfredo Kraus</field>
+            <field name="slug">auditorio-alfredo-kraus</field>
+            <field name="direccion">Final Playa Las Canteras</field>
+            <field name="description">Icónico auditorio con conciertos teatro y eventos</field>
+            <field name="latitude">28.1265</field>
+            <field name="longitude">-15.593</field>
+            <field name="telefono">928 31 34 60</field>
+            <field name="whatsapp">+34 928 31 34 60</field>
+            <field name="instagram">@auditoriokraus</field>
+            <field name="tiktok">N/A</field>
+            <field name="website_url">https://www.auditoriokraus.com</field>
+            <field name="tipo_id" ref="demo_tipo_2"/>
+            <field name="categoria_id" ref="demo_categoria_3"/>
+            <field name="subcategoria_id" ref="demo_subcategoria_4"/>
+            <field name="state">aprobado</field>
+        </record>
+        <record id="demo_lugar_5" model="lugares.interes.historia">
+            <field name="name">Centro Deportivo Tamaraceite</field>
+            <field name="slug">centro-deportivo-tamaraceite</field>
+            <field name="direccion">C/ José Antonio Gutiérrez Mellado esq Juan Pulido</field>
+            <field name="description">Centro deportivo municipal con gimnasio piscina fitness</field>
+            <field name="latitude">28.095</field>
+            <field name="longitude">-15.575</field>
+            <field name="telefono">928 916 811</field>
+            <field name="whatsapp">+34 928 916 811</field>
+            <field name="instagram">@cdtamaraceite</field>
+            <field name="tiktok">N/A</field>
+            <field name="website_url">https://cdtamaraceite.com</field>
+            <field name="tipo_id" ref="demo_tipo_3"/>
+            <field name="categoria_id" ref="demo_categoria_4"/>
+            <field name="subcategoria_id" ref="demo_subcategoria_5"/>
+            <field name="state">aprobado</field>
+        </record>
+        <record id="demo_lugar_6" model="lugares.interes.historia">
+            <field name="name">Parque Santa Catalina</field>
+            <field name="slug">parque-santa-catalina</field>
+            <field name="direccion">Centro histórico Vegueta</field>
+            <field name="description">Plaza porticada histórica punto central turístico</field>
+            <field name="latitude">28.1295</field>
+            <field name="longitude">-15.6053</field>
+            <field name="telefono">928 36 29 60</field>
+            <field name="whatsapp">N/A</field>
+            <field name="instagram">@santacatalinaplaza</field>
+            <field name="tiktok">N/A</field>
+            <field name="website_url">N/A</field>
+            <field name="tipo_id" ref="demo_tipo_4"/>
+            <field name="categoria_id" ref="demo_categoria_5"/>
+            <field name="subcategoria_id" ref="demo_subcategoria_6"/>
+            <field name="state">aprobado</field>
+        </record>
+        <record id="demo_lugar_7" model="lugares.interes.historia">
+            <field name="name">Playa Las Alcaravaneras</field>
+            <field name="slug">playa-las-alcaravaneras</field>
+            <field name="direccion">Muelle Deportivo Las Palmas</field>
+            <field name="description">Playa tranquila zona puerto 800m arena fina</field>
+            <field name="latitude">28.122</field>
+            <field name="longitude">-15.575</field>
+            <field name="telefono">928 36 15 47</field>
+            <field name="whatsapp">N/A</field>
+            <field name="instagram">@alcaravaneras</field>
+            <field name="tiktok">N/A</field>
+            <field name="website_url">N/A</field>
+            <field name="tipo_id" ref="demo_tipo_1"/>
+            <field name="categoria_id" ref="demo_categoria_1"/>
+            <field name="subcategoria_id" ref="demo_subcategoria_7"/>
+            <field name="state">aprobado</field>
+        </record>
+        <record id="demo_lugar_8" model="lugares.interes.historia">
+            <field name="name">Teatro Cuyás</field>
+            <field name="slug">teatro-cuyas</field>
+            <field name="direccion">Calle Vegueta</field>
+            <field name="description">Teatro histórico con 943 butacas programación anual</field>
+            <field name="latitude">28.131</field>
+            <field name="longitude">-15.6065</field>
+            <field name="telefono">928 38 19 10</field>
+            <field name="whatsapp">+34 928 38 19 10</field>
+            <field name="instagram">@teatrocuyas</field>
+            <field name="tiktok">N/A</field>
+            <field name="website_url">https://teatrocuyas.com/</field>
+            <field name="tipo_id" ref="demo_tipo_2"/>
+            <field name="categoria_id" ref="demo_categoria_6"/>
+            <field name="subcategoria_id" ref="demo_subcategoria_8"/>
+            <field name="state">aprobado</field>
+        </record>
+        <record id="demo_lugar_9" model="lugares.interes.historia">
+            <field name="name">Catedral Santa Ana</field>
+            <field name="slug">catedral-santa-ana</field>
+            <field name="direccion">Vegueta</field>
+            <field name="description">Primera iglesia construida archipiélago canario</field>
+            <field name="latitude">28.131</field>
+            <field name="longitude">-15.6068</field>
+            <field name="telefono">928 31 63 89</field>
+            <field name="whatsapp">N/A</field>
+            <field name="instagram">@catedral.laspalmas</field>
+            <field name="tiktok">N/A</field>
+            <field name="website_url">https://www.catedraldelaspalmas.com</field>
+            <field name="tipo_id" ref="demo_tipo_2"/>
+            <field name="categoria_id" ref="demo_categoria_7"/>
+            <field name="subcategoria_id" ref="demo_subcategoria_9"/>
+            <field name="state">aprobado</field>
+        </record>
+        <record id="demo_lugar_10" model="lugares.interes.historia">
+            <field name="name">Estadio Gran Canaria</field>
+            <field name="slug">estadio-gran-canaria</field>
+            <field name="direccion">Carretera del Rincón</field>
+            <field name="description">Estadio del UD Las Palmas capacidad 32.000</field>
+            <field name="latitude">28.092</field>
+            <field name="longitude">-15.555</field>
+            <field name="telefono">928 31 00 00</field>
+            <field name="whatsapp">+34 928 31 00 00</field>
+            <field name="instagram">@udlaspalmas</field>
+            <field name="tiktok">@udlaspalmas</field>
+            <field name="website_url">https://www.udlaspalmas.es</field>
+            <field name="tipo_id" ref="demo_tipo_3"/>
+            <field name="categoria_id" ref="demo_categoria_4"/>
+            <field name="subcategoria_id" ref="demo_subcategoria_10"/>
+            <field name="state">aprobado</field>
+        </record>
+    </data>
+</odoo>

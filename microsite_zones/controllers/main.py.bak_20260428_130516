@@ -1,0 +1,1316 @@
+import itertools
+import logging
+import random
+from datetime import datetime
+
+from odoo import http, fields
+from odoo.http import request
+from odoo.fields import Domain
+from odoo.tools import SQL, lazy
+from odoo.addons.website_sale.controllers.main import WebsiteSale
+
+from .login_debug import debug_logger
+
+_logger = logging.getLogger(__name__)
+
+
+def _shuffle_products(products):
+    """
+    Ordena los productos aleatoriamente.
+    Retorna un nuevo recordset con los productos en orden aleatorio.
+    """
+    if not products:
+        return products
+    
+    try:
+        # Convertir a lista de IDs
+        product_ids = list(products.ids)
+        # Mezclar aleatoriamente
+        random.shuffle(product_ids)
+        # Crear nuevo recordset con el orden mezclado
+        return request.env['product.template'].browse(product_ids)
+    except Exception as e:
+        _logger.warning(f"[ZONES SHUFFLE] Error al mezclar: {e}")
+        return products
+
+
+class WebsiteSaleZones(WebsiteSale):
+    """
+    Controlador que extiende WebsiteSale para aplicar filtros de zona
+    en las páginas de la tienda.
+    
+    IMPORTANTE: Este controlador IGNORA el campo website_id de los productos
+    y filtra únicamente por company_id según la zona asignada al website.
+    """
+
+    # ========================================================================
+    # SOLUCIÓN LOGIN-COMPANY
+    # ========================================================================
+    # SOLUCIÓN A: Ruta /web/set_company con cookie cids
+    # STATUS: Implementada con debug detallado
+    # NOTAS: Usa cookie cids para establecer compañía activa tras login
+    # 
+    # SOLUCIÓN B: Redirigir a /odoo?cids=<id> + parche frontend
+    # STATUS: No implementada (reservada para prueba si A falla)
+    # 
+    # SOLUCIÓN C: En ir.http dispatch, update_context con allowed_company_ids
+    # STATUS: No implementada (reservada para prueba si A y B fallan)
+    # ========================================================================
+
+    # TEMPORARILY DISABLED - Testing native company switcher
+    # @http.route('/web/set_company', type='http', auth='user', website=False, sitemap=False)
+    def _disabled_web_set_company(self, company_id=None, redirect=None, **kwargs):
+        """
+        [SOLUCIÓN A] Establece la compañía activa para el usuario mediante cookie cids.
+        
+        Esta ruta se usa después del login para asegurar que el usuario entre
+        al backend con la compañía del microsite activa.
+        """
+        debug_logger.info("=" * 60)
+        debug_logger.info("INICIO web_set_company", 
+                         company_id=company_id, 
+                         redirect=redirect,
+                         user_id=request.env.user.id,
+                         user_name=request.env.user.name)
+        
+        if not company_id:
+            debug_logger.warning("No se proporcionó company_id, redirigiendo sin cambios",
+                                redirect=redirect or '/odoo')
+            return request.redirect(redirect or '/odoo')
+        
+        try:
+            company_id = int(company_id)
+            debug_logger.info(f"Company ID convertido a entero: {company_id}")
+        except (ValueError, TypeError) as e:
+            debug_logger.error(f"Error convirtiendo company_id: {e}", 
+                              company_id_raw=company_id)
+            return request.redirect(redirect or '/odoo')
+        
+        # Verificar que el usuario tiene permiso para esta compañía
+        user = request.env.user
+        user_company_ids = user.company_ids.ids
+        
+        debug_logger.info("Verificando permisos de usuario",
+                         user_id=user.id,
+                         user_name=user.name,
+                         user_company_ids=user_company_ids,
+                         requested_company_id=company_id)
+        
+        if company_id not in user_company_ids:
+            debug_logger.error("PERMISO DENEGADO",
+                              user_id=user.id,
+                              user_name=user.name,
+                              requested_company_id=company_id,
+                              user_company_ids=user_company_ids)
+            return request.redirect(redirect or '/odoo')
+        
+        debug_logger.info("Permiso verificado OK, construyendo cookie cids")
+        
+        # Construir el valor de la cookie: la compañía solicitada debe ser la primera
+        company_ids_list = list(user_company_ids)
+        if company_id in company_ids_list:
+            company_ids_list.remove(company_id)
+        company_ids_ordered = [company_id] + company_ids_list
+        # IMPORTANTE: Odoo usa GUIONES (-) como separador, no comas
+        company_ids_str = '-'.join(str(cid) for cid in company_ids_ordered)
+        
+        debug_logger.info("Cookie cids construida",
+                         company_ids_ordered=company_ids_ordered,
+                         cids_value=company_ids_str)
+        
+        # Preparar respuesta con redirect
+        final_redirect = redirect or '/odoo'
+        
+        # EVITAR LOOP: Si el redirect ya es un /web/set_company, ir a /odoo directamente
+        if final_redirect and '/web/set_company' in final_redirect:
+            debug_logger.warning("[LOOP DETECTADO] Redirect ya contiene /web/set_company, forzando /odoo",
+                                original_redirect=final_redirect)
+            final_redirect = '/odoo'
+        
+        response = request.redirect(final_redirect)
+        
+        # Establecer la cookie cids
+        # max_age=90 días (formato usado por Odoo)
+        response.set_cookie(
+            'cids', 
+            company_ids_str, 
+            max_age=90 * 24 * 60 * 60,  # 90 días en segundos
+            httponly=False,  # Debe ser accesible desde JavaScript
+            path='/'
+        )
+        
+        debug_logger.info("Cookie establecida y redirigiendo",
+                         cids=company_ids_str,
+                         final_redirect=final_redirect)
+        debug_logger.info("FIN web_set_company")
+        debug_logger.info("=" * 60)
+        
+        return response
+
+    # NOTE: _login_redirect se maneja en login.py (LoginCompanyController)
+    # Este método está comentado para evitar conflictos de MRO
+    # def _login_redirect(self, uid, redirect=None):
+    #     ...
+
+    def _shop_lookup_products(self, options, post, search, website):
+        """
+        Sobreescribe para buscar productos por zona, ignorando website_id.
+        
+        Lógica de filtrado:
+        1. Canarias Conectada (por dominio): muestra TODOS los productos publicados
+        2. Microsite con zona (Guanarteme, Tamaraceite, Lomo Los Frailes): muestra productos de esa zona
+        3. Microsite individual sin zona: muestra solo sus propios productos
+        """
+        _logger.info(f"[ZONES DEBUG] _shop_lookup_products llamado - website: {website.name}, options: {options}")
+        
+        # CASO 1: Canarias Conectada - mostrar TODOS los productos
+        if website.is_canarias_conectada:
+            _logger.info(f"[ZONES] Website: {website.name} - Canarias Conectada, mostrando todos los productos")
+            
+            domain = [
+                ('sale_ok', '=', True),
+                ('is_published', '=', True),
+            ]
+            
+            # Agregar búsqueda por texto
+            if search:
+                search_domain_parts = []
+                for srch in search.split(" "):
+                    word_domains = [
+                        ('name', 'ilike', srch),
+                        ('default_code', 'ilike', srch),
+                    ]
+                    # OR entre name y default_code
+                    word_domain = ['|'] + word_domains
+                    search_domain_parts.append(word_domain)
+                
+                # Combinar todas las palabras con AND
+                if search_domain_parts:
+                    # Aplanar la lista de dominios de búsqueda
+                    flat_search_domain = []
+                    for part in search_domain_parts:
+                        flat_search_domain.extend(part)
+                    # Combinar dominio base AND dominio de búsqueda
+                    domain = ['&'] * len(search_domain_parts) + domain + flat_search_domain
+            
+            # Agregar categoría
+            category = options.get('category')
+            _logger.info(f"[ZONES DEBUG] Canarias Conectada - category from options: {category} (type: {type(category)})")
+            if category:
+                try:
+                    category_id = int(category) if not hasattr(category, 'id') else category.id
+                    domain.append(('public_categ_ids', 'child_of', category_id))
+                    _logger.info(f"[ZONES DEBUG] Canarias Conectada - filtrando por categoria ID: {category_id}")
+                except (ValueError, TypeError) as e:
+                    _logger.error(f"[ZONES DEBUG] Error convirtiendo categoria: {e}, valor: {category}")
+            
+            # Agregar filtros de atributos
+            attribute_value_dict = options.get('attribute_value_dict', {})
+            if attribute_value_dict:
+                attr_domains = request.env['product.template']._get_attribute_value_domain(attribute_value_dict)
+                for attr_domain in attr_domains:
+                    domain.extend(attr_domain)
+            
+            ProductTemplate = request.env['product.template'].sudo().with_context(
+                bin_size=True,
+                website_id=None,
+            )
+            order, is_shuffle = self._get_search_order_with_shuffle(post)
+            
+            _logger.info(f"[ZONES DEBUG] Canarias Conectada dominio final: {domain}")
+            
+            search_result = ProductTemplate.search(domain, order=order)
+            
+            # Si es shuffle, aplicar orden aleatorio consistente
+            if is_shuffle:
+                search_result = self._apply_shuffle_order(search_result)
+            
+            product_count = len(search_result)
+            
+            _logger.info(f"[ZONES] Website: {website.name}, Total productos encontrados: {product_count}")
+            return None, product_count, search_result
+        
+        # CASO 2: Microsite con zona específica - mostrar productos de esa zona
+        if website.zone_id:
+            company_ids = website._get_zone_company_ids()
+            
+            if not company_ids:
+                _logger.info(f"[ZONES] Website: {website.name} - No hay compañías en la zona")
+                return None, 0, request.env['product.template']
+            
+            _logger.info(f"[ZONES] Website: {website.name}, Zona: {website.zone_id.name}, "
+                         f"Compañías en zona: {len(company_ids)}")
+            
+            domain = [
+                ('sale_ok', '=', True),
+                ('is_published', '=', True),
+                ('company_id', 'in', company_ids),
+            ]
+            
+            # Agregar búsqueda por texto
+            if search:
+                search_domain_parts = []
+                for srch in search.split(" "):
+                    word_domains = [
+                        ('name', 'ilike', srch),
+                        ('default_code', 'ilike', srch),
+                    ]
+                    # OR entre name y default_code
+                    word_domain = ['|'] + word_domains
+                    search_domain_parts.append(word_domain)
+                
+                # Combinar todas las palabras con AND
+                if search_domain_parts:
+                    # Aplanar la lista de dominios de búsqueda
+                    flat_search_domain = []
+                    for part in search_domain_parts:
+                        flat_search_domain.extend(part)
+                    # Combinar dominio base AND dominio de búsqueda
+                    domain = ['&'] * len(search_domain_parts) + domain + flat_search_domain
+            
+            # Agregar categoría
+            category = options.get('category')
+            if category:
+                domain.append(('public_categ_ids', 'child_of', int(category)))
+            
+            # Agregar filtros de atributos
+            attribute_value_dict = options.get('attribute_value_dict', {})
+            if attribute_value_dict:
+                attr_domains = request.env['product.template']._get_attribute_value_domain(attribute_value_dict)
+                for attr_domain in attr_domains:
+                    domain.extend(attr_domain)
+            
+            ProductTemplate = request.env['product.template'].sudo().with_context(
+                bin_size=True,
+                website_id=None,
+            )
+            order, is_shuffle = self._get_search_order_with_shuffle(post)
+            
+            _logger.info(f"[ZONES DEBUG] Dominio de búsqueda: {domain}")
+            
+            search_result = ProductTemplate.search(domain, order=order)
+            
+            # Si es shuffle, aplicar orden aleatorio consistente
+            if is_shuffle:
+                search_result = self._apply_shuffle_order(search_result)
+            
+            product_count = len(search_result)
+            
+            _logger.info(f"[ZONES] Website: {website.name}, Productos encontrados: {product_count}")
+            return None, product_count, search_result
+        
+        # CASO 3: Microsite individual sin zona - mostrar solo sus propios productos
+        # El comportamiento por defecto de Odoo ya filtra por website_id, así que
+        # llamamos al método padre para que maneje esto normalmente
+        _logger.info(f"[ZONES DEBUG] Website: {website.name} (ID: {website.id}) - CASO 3: Microsite individual")
+        _logger.info(f"[ZONES DEBUG] Search recibido: '{search}'")
+        _logger.info(f"[ZONES DEBUG] Website company_id: {website.company_id.id}")
+        
+        # Debug: Ver qué productos deberían aparecer
+        debug_products = request.env['product.template'].sudo().search([
+            ('sale_ok', '=', True),
+            ('is_published', '=', True),
+            ('company_id', '=', website.company_id.id),
+        ])
+        _logger.info(f"[ZONES DEBUG] Productos con company_id={website.company_id.id}: {len(debug_products)}")
+        if search:
+            debug_search = debug_products.filtered(lambda p: search.lower() in (p.name or '').lower())
+            _logger.info(f"[ZONES DEBUG] Productos filtrados por nombre '{search}': {len(debug_search)}")
+        
+        # Llamar al método padre
+        fuzzy_search_term, product_count, search_result = super()._shop_lookup_products(options, post, search, website)
+        
+        # Aplicar shuffle si es necesario
+        order, is_shuffle = self._get_search_order_with_shuffle(post)
+        if is_shuffle and search_result:
+            search_result = self._apply_shuffle_order(search_result)
+        
+        # FILTRO POR CATEGORÍA: Aplicar si hay categoría seleccionada
+        if options.get('category'):
+            category_id = options.get('category')
+            try:
+                category_id = int(category_id)
+                filtered_by_category = search_result.filtered(
+                    lambda p: category_id in p.public_categ_ids.ids
+                )
+                _logger.info(f"[ZONES] Filtro categoria {category_id}: {len(search_result)} -> {len(filtered_by_category)} productos")
+                search_result = filtered_by_category
+                product_count = len(search_result)
+            except (ValueError, TypeError) as e:
+                _logger.error(f"[ZONES] Error convirtiendo categoria: {e}")
+        
+        return fuzzy_search_term, product_count, search_result
+        
+        # Microsite con zona específica (Guanarteme, Tamaraceite, Lomo Los Frailes)
+        if not company_ids:
+            _logger.info(f"[ZONES] Website: {website.name} - No hay compañías en la zona")
+            return None, 0, request.env['product.template']
+        
+        _logger.info(f"[ZONES] Website: {website.name}, Zona: {website.zone_id.name}, "
+                     f"Compañías en zona: {len(company_ids)}")
+        
+        # Construir dominio de búsqueda (usando formato lista, NO Domain objeto)
+        domain = [
+            ('sale_ok', '=', True),
+            ('is_published', '=', True),
+            ('company_id', 'in', company_ids),
+        ]
+        
+        # Agregar búsqueda por texto
+        if search:
+            search_domains = []
+            for srch in search.split(" "):
+                search_domains.extend([
+                    ('name', 'ilike', srch),
+                    ('default_code', 'ilike', srch),
+                ])
+            if search_domains:
+                domain = ['|'] * (len(search_domains) - 1) + domain + search_domains
+        
+        # Agregar categoría
+        category = options.get('category')
+        if category:
+            domain.append(('public_categ_ids', 'child_of', int(category)))
+        
+        # Agregar filtros de atributos
+        attribute_value_dict = options.get('attribute_value_dict', {})
+        if attribute_value_dict:
+            attr_domains = request.env['product.template']._get_attribute_value_domain(attribute_value_dict)
+            for attr_domain in attr_domains:
+                domain.extend(attr_domain)
+        
+        # Buscar productos - usar sudo() y sin contexto de website para ignorar website_id
+        ProductTemplate = request.env['product.template'].sudo().with_context(
+            bin_size=True,
+            website_id=None,  # Ignorar filtro de website
+        )
+        order = self._get_search_order(post)
+        
+        # Usar search directo en lugar de _search para evitar filtros automáticos
+        search_result = ProductTemplate.search(domain, order=order)
+        
+        # Precargar company_id para que esté disponible en el template
+        if search_result:
+            search_result = search_result.with_company(False).with_context(prefetch_fields=True)
+        
+        product_count = len(search_result)
+        
+        _logger.info(f"[ZONES] Website: {website.name}, Zona: {website.zone_id.name}, "
+                     f"Productos encontrados: {product_count}")
+        
+        return None, product_count, search_result
+
+    def _get_or_create_shuffle_seed(self):
+        """
+        Obtiene el seed de la cookie o genera uno nuevo si no existe.
+        El seed se guarda en request.shuffle_seed para uso posterior.
+        
+        Returns:
+            int: El seed para el shuffle
+        """
+        import random
+        
+        # Verificar si ya tenemos un seed en este request
+        if hasattr(request, 'shuffle_seed') and request.shuffle_seed:
+            return request.shuffle_seed
+        
+        # Intentar obtener de la cookie
+        seed_str = request.httprequest.cookies.get('shop_seed')
+        if seed_str:
+            try:
+                seed = int(seed_str)
+                request.shuffle_seed = seed
+                _logger.info(f"[SHUFFLE] Seed obtenido de cookie: {seed}")
+                return seed
+            except (ValueError, TypeError):
+                pass
+        
+        # Generar nuevo seed
+        seed = random.randint(1, 1000000)
+        request.shuffle_seed = seed
+        request.shuffle_seed_is_new = True  # Marcar que es nuevo para setear cookie después
+        _logger.info(f"[SHUFFLE] Nuevo seed generado: {seed}")
+        
+        return seed
+    
+    def _get_search_order_with_shuffle(self, post):
+        """
+        Versión extendida de _get_search_order que soporta orden aleatorio (shuffle).
+        
+        Returns:
+            tuple: (order_string, is_shuffle)
+                - order_string: el orden SQL a usar
+                - is_shuffle: True si se debe aplicar shuffle, False en caso contrario
+        """
+        # Verificar si se solicitó shuffle explícitamente
+        if post.get('order') == 'shuffle':
+            _logger.info("[SHUFFLE] Orden shuffle solicitado explícitamente")
+            return 'id ASC', True
+        
+        # Si no hay orden especificado, usar shuffle por defecto
+        if not post.get('order'):
+            _logger.info("[SHUFFLE] Sin orden especificado, usando shuffle por defecto")
+            return 'id ASC', True
+        
+        # Comportamiento normal para otros ordenes
+        order = self._get_search_order(post)
+        return order, False
+    
+    def _apply_shuffle_order(self, products):
+        """
+        Aplica orden aleatorio consistente a los productos basado en el seed.
+        
+        Args:
+            products: recordset de product.template
+            
+        Returns:
+            recordset: productos ordenados aleatoriamente
+        """
+        import random
+        
+        if not products:
+            return products
+        
+        # Obtener o crear seed
+        seed = self._get_or_create_shuffle_seed()
+        
+        _logger.info(f"[SHUFFLE] Aplicando orden aleatorio con seed={seed} a {len(products)} productos")
+        
+        # Convertir a lista para ordenar
+        product_list = list(products)
+        
+        # Crear RNG con seed
+        rng = random.Random(seed)
+        
+        # Mezclar usando el RNG con seed
+        rng.shuffle(product_list)
+        
+        # Convertir de vuelta a recordset manteniendo el orden
+        if product_list:
+            # Usar browse con los IDs en el orden mezclado
+            shuffled_ids = [p.id for p in product_list]
+            # browse() mantiene el orden de los IDs pasados
+            return products.browse(shuffled_ids)
+        
+        return products
+
+    def _get_shop_domain(self, search, category, attribute_value_dict, search_in_description=True):
+        """Sobreescribe para aplicar filtro de zona en el dominio."""
+        website = request.website
+        
+        # Si es Canarias Conectada o no tiene zona, usar comportamiento normal
+        if not website.zone_id or website.is_canarias_conectada:
+            return super()._get_shop_domain(search, category, attribute_value_dict, search_in_description)
+        
+        # Para microsites con zona, el dominio ya se maneja en _shop_lookup_products
+        # Pero retornamos un dominio válido para otras operaciones (como precios min/max)
+        company_ids = website._get_zone_company_ids()
+        
+        if not company_ids:
+            # Retornar dominio que no encuentre nada
+            return [('id', '=', 0)]
+        
+        # Construir dominio base usando listas (formato compatible)
+        domain = [
+            ('sale_ok', '=', True),
+            ('is_published', '=', True),
+            ('company_id', 'in', company_ids),
+        ]
+        
+        # Agregar búsqueda
+        if search:
+            search_domains = []
+            for srch in search.split(" "):
+                subdomains = [
+                    [('name', 'ilike', srch)],
+                    [('default_code', 'ilike', srch)],
+                ]
+                if search_in_description:
+                    subdomains.extend([
+                        [('website_description', 'ilike', srch)],
+                        [('description_sale', 'ilike', srch)],
+                    ])
+                # Combinar subdominios con OR
+                if len(subdomains) > 1:
+                    search_domain = ['|'] * (len(subdomains) - 1)
+                    for sd in subdomains:
+                        search_domain.extend(sd)
+                else:
+                    search_domain = subdomains[0] if subdomains else []
+                if search_domain:
+                    search_domains.append(search_domain)
+            
+            # Agregar búsquedas al dominio principal
+            if search_domains:
+                if len(search_domains) > 1:
+                    or_domain = ['|'] * (len(search_domains) - 1)
+                    for sd in search_domains:
+                        or_domain.extend(sd)
+                else:
+                    or_domain = search_domains[0]
+                # Combinar con dominio principal
+                domain = ['&'] * (len([d for d in [or_domain] if d])) + domain + or_domain
+        
+        # Agregar categoría
+        if category:
+            domain.append(('public_categ_ids', 'child_of', int(category)))
+        
+        # Agregar atributos
+        if attribute_value_dict:
+            attr_domains = request.env['product.template']._get_attribute_value_domain(attribute_value_dict)
+            for attr_domain in attr_domains:
+                domain.extend(attr_domain)
+        
+        return domain
+
+    @staticmethod
+    def _validate_and_get_category(category):
+        """ Sobrescribe para permitir categorías en zonas comerciales sin restricción de website."""
+        ProductCategory = request.env['product.public.category']
+        
+        # Si no hay categoría, retornar vacío
+        if not category:
+            return ProductCategory
+        
+        # Si ya es un recordset, retornarlo
+        if isinstance(category, ProductCategory.__class__):
+            return category
+        
+        # Intentar convertir a entero y buscar
+        try:
+            category_id = int(category)
+            category_obj = ProductCategory.sudo().browse(category_id)
+            if category_obj.exists():
+                _logger.info(f"[ZONES] Categoría validada: {category_obj.name} (ID: {category_id})")
+                return category_obj
+        except (ValueError, TypeError):
+            pass
+        
+        # Si no se encuentra, retornar vacío (no lanzar 404)
+        _logger.warning(f"[ZONES] Categoría no encontrada: {category}, retornando vacío")
+        return ProductCategory
+
+    @http.route([
+        '/shop',
+        '/shop/page/<int:page>',
+        '/shop/category/<model("product.public.category"):category>',
+        '/shop/category/<model("product.public.category"):category>/page/<int:page>',
+    ], type='http', auth="public", website=True)
+    def shop(self, page=0, category=None, search='', min_price=0.0, max_price=0.0, **post):
+        """
+        Sobreescribe shop para aplicar filtros de zona en categorías.
+        """
+        _logger.info(f"[ZONES SHOP] === shop() llamado === category={category}, query_string={request.httprequest.query_string}")
+        
+        # Leer categoría de query string si no viene como parámetro
+        if category is None:
+            category = request.httprequest.args.get('category')
+        _logger.info(f"[ZONES SHOP] category final: {category}")
+        
+        from odoo.addons.website_sale.controllers.main import SHOP_PATH, TableCompute
+        from odoo.addons.website.controllers.main import QueryURL
+        from datetime import datetime
+        import itertools
+        
+        if not request.website.has_ecommerce_access():
+            return request.redirect(f'/web/login?redirect={request.httprequest.path}')
+        
+        is_category_in_query = category and isinstance(category, str)
+        _logger.info(f"[ZONES SHOP DEBUG] ===== INICIO =====")
+        _logger.info(f"[ZONES SHOP DEBUG] category type: {type(category)}, value: {category}")
+        _logger.info(f"[ZONES SHOP DEBUG] zone_id: {request.website.zone_id}")
+        _logger.info(f"[ZONES SHOP DEBUG] is_category_in_query: {is_category_in_query}")
+        
+        # Si estamos en una zona, manejar la categoría de forma permisiva
+        if is_category_in_query and request.website.zone_id:
+            _logger.info(f"[ZONES SHOP DEBUG] Zona detectada, manejando categoría de forma permisiva")
+            try:
+                category_id = int(category)
+                category_obj = request.env['product.public.category'].sudo().browse(category_id)
+                if category_obj.exists():
+                    category = category_obj
+                    _logger.info(f"[ZONES SHOP DEBUG] Categoría encontrada: {category.name}")
+                else:
+                    category = None
+                    _logger.warning(f"[ZONES SHOP DEBUG] Categoría ID {category_id} no existe")
+            except (ValueError, TypeError):
+                category = None
+                _logger.warning(f"[ZONES SHOP DEBUG] No se pudo convertir categoría: {category}")
+        else:
+            # Validar categoría normalmente (no zona)
+            category = self._validate_and_get_category(category)
+        
+        # Redirigir solo si NO estamos en una zona comercial
+        if is_category_in_query and not request.website.zone_id:
+            _logger.info(f"[ZONES SHOP DEBUG] Redirigiendo (no es zona)")
+            query = self._get_filtered_query_string(
+                request.httprequest.query_string.decode(), keys_to_remove=['category']
+            )
+            return request.redirect(f'{self._get_shop_path(category, page)}?{query}', code=301)
+        
+        _logger.info(f"[ZONES SHOP DEBUG] Continuando - category: {category}, zone_id: {request.website.zone_id}, is_category_in_query: {is_category_in_query}")
+        
+        try:
+            min_price = float(min_price)
+        except ValueError:
+            min_price = 0
+        try:
+            max_price = float(max_price)
+        except ValueError:
+            max_price = 0
+        
+        website = request.env['website'].get_current_website()
+        website_domain = website.website_domain()
+        
+        # Leer ppg de la URL primero, luego del sitio web, luego valor por defecto
+        request_args = request.httprequest.args
+        ppg = request_args.get('ppg', type=int) or website.shop_ppg or 21
+        ppr = website.shop_ppr or 4
+        gap = website.shop_gap or "16px"
+        
+        attribute_values = request_args.getlist('attribute_values')
+        attribute_value_dict = self._get_attribute_value_dict(attribute_values)
+        attribute_ids = set(attribute_value_dict.keys())
+        attribute_value_ids = set(itertools.chain.from_iterable(attribute_value_dict.values()))
+        if attribute_values:
+            request.session['attribute_values'] = attribute_values
+        else:
+            request.session.pop('attribute_values', None)
+        
+        filter_by_tags_enabled = website.is_view_active('website_sale.filter_products_tags')
+        if filter_by_tags_enabled:
+            tags = post.get('tags', '')
+            if tags:
+                post['tags'] = tags
+                tags = {self.env['ir.http']._unslug(tag)[1] for tag in tags.split(',')}
+            else:
+                post['tags'] = None
+                tags = {}
+        else:
+            tags = {}
+        
+        url = self._get_shop_path(category)
+        keep = QueryURL(
+            url, **self._shop_get_query_url_kwargs(search, min_price, max_price, **post)
+        )
+        
+        # Check if we need to refresh the cached pricelist
+        from odoo.addons.website_sale.models.website import (
+            PRICELIST_SELECTED_SESSION_CACHE_KEY,
+            PRICELIST_SESSION_CACHE_KEY,
+        )
+        now = datetime.timestamp(datetime.now())
+        if 'website_sale_pricelist_time' in request.session:
+            pricelist_save_time = request.session['website_sale_pricelist_time']
+            if pricelist_save_time < now - 60*60:
+                request.session.pop(PRICELIST_SESSION_CACHE_KEY, None)
+                request.session['website_sale_pricelist_time'] = now
+        
+        filter_by_price_enabled = website.is_view_active('website_sale.filter_products_price')
+        if filter_by_price_enabled:
+            from odoo.tools import float_round
+            company_currency = website.company_id.sudo().currency_id
+            conversion_rate = request.env['res.currency']._get_conversion_rate(
+                company_currency, website.currency_id, request.website.company_id, fields.Date.today())
+        else:
+            conversion_rate = 1
+        
+        if search:
+            post['search'] = search
+        
+        options = self._get_search_options(
+            category=category,
+            attribute_value_dict=attribute_value_dict,
+            min_price=min_price,
+            max_price=max_price,
+            conversion_rate=conversion_rate,
+            display_currency=website.currency_id,
+            **post
+        )
+        fuzzy_search_term, product_count, search_product = self._shop_lookup_products(
+            options, post, search, website
+        )
+        
+        filter_by_price_enabled = website.is_view_active('website_sale.filter_products_price')
+        if filter_by_price_enabled:
+            Product = request.env['product.template'].with_context(bin_size=True)
+            search_term = fuzzy_search_term if fuzzy_search_term else search
+            domain = self._get_shop_domain(search_term, category, attribute_value_dict)
+            
+            query = Product._search(domain)
+            sql = query.select(
+                SQL(
+                    "COALESCE(MIN(list_price), 0) * %(conversion_rate)s, COALESCE(MAX(list_price), 0) * %(conversion_rate)s",
+                    conversion_rate=conversion_rate,
+                )
+            )
+            available_min_price, available_max_price = request.env.execute_query(sql)[0]
+            
+            if min_price or max_price:
+                if min_price:
+                    min_price = min_price if min_price <= available_max_price else available_min_price
+                    post['min_price'] = min_price
+                if max_price:
+                    max_price = max_price if max_price >= available_min_price else available_max_price
+                    post['max_price'] = max_price
+        
+        ProductTag = request.env['product.tag']
+        if filter_by_tags_enabled and search_product:
+            all_tags = ProductTag.search_fetch(Domain.AND([
+                Domain('visible_to_customers', '=', True),
+                Domain.OR([
+                    Domain('product_template_ids.is_published', '=', True),
+                    Domain('product_ids.is_published', '=', True),
+                ]),
+                website_domain,
+            ]))
+        else:
+            all_tags = ProductTag
+        
+        # ============================================================
+        # CATEGORÍAS: Filtradas por zona si aplica
+        # ============================================================
+        
+        Category = request.env['product.public.category']
+        
+        # Obtener categorías activas según el tipo de website
+        if website.zone_id:
+            # WEBSITE CON ZONA (Guanarteme, Tamaraceite, Lomo): 
+            # Solo categorías con productos publicados de la zona
+            zone_company_ids = website._get_zone_company_ids()
+            
+            # Buscar productos publicados de la zona
+            zone_products = request.env['product.template'].sudo().search([
+                ('is_published', '=', True),
+                ('company_id', 'in', zone_company_ids),
+            ])
+            
+            # Obtener categorías de esos productos (incluyendo padres)
+            active_category_ids = set()
+            for product in zone_products:
+                for cat in product.public_categ_ids:
+                    active_category_ids.add(cat.id)
+                    # Incluir todos los padres de la categoría
+                    parent = cat.parent_id
+                    while parent:
+                        active_category_ids.add(parent.id)
+                        parent = parent.parent_id
+            
+            _logger.info(f"[ZONES SHOP] Zona {website.zone_id.name}: {len(zone_products)} productos, "
+                        f"{len(active_category_ids)} categorías activas")
+            
+            # Dominio para categorías padre que tienen productos en la zona
+            categs_domain = Domain('parent_id', '=', False) & website_domain
+            if active_category_ids:
+                categs_domain &= Domain('id', 'in', list(active_category_ids))
+            else:
+                # Si no hay categorías activas, no mostrar ninguna
+                categs_domain &= Domain('id', '=', False)
+            
+            # Para búsqueda, intersectar con categorías encontradas
+            if search:
+                search_cats = Category.search(
+                    Domain('product_tmpl_ids', 'in', search_product.ids) & website_domain
+                ).parents_and_self
+                search_cat_ids = set(search_cats.ids) & active_category_ids
+                categs_domain = Domain('parent_id', '=', False) & website_domain & Domain('id', 'in', list(search_cat_ids))
+                search_categories = Category.browse(list(search_cat_ids))
+            else:
+                search_categories = Category.browse(list(active_category_ids))
+            
+        elif website.is_canarias_conectada:
+            # CANARIAS CONECTADA: todas las categorías con productos publicados
+            categs_domain = Domain('parent_id', '=', False) & website_domain
+            
+            if not self.env.user._is_internal():
+                categs_domain &= Domain('has_published_products', '=', True)
+            
+            if search:
+                search_categories = Category.search(
+                    Domain('product_tmpl_ids', 'in', search_product.ids) & website_domain
+                ).parents_and_self
+                categs_domain &= Domain('id', 'in', search_categories.ids)
+            else:
+                search_categories = Category
+        else:
+            # MICROSITE INDIVIDUAL: comportamiento normal
+            categs_domain = Domain('parent_id', '=', False) & website_domain
+            if not self.env.user._is_internal():
+                categs_domain &= Domain('has_published_products', '=', True)
+            
+            if search:
+                search_categories = Category.search(
+                    Domain('product_tmpl_ids', 'in', search_product.ids) & website_domain
+                ).parents_and_self
+                categs_domain &= Domain('id', 'in', search_categories.ids)
+            else:
+                search_categories = Category
+        
+        # Obtener categorías filtradas (solo padres para filmstrip/sidebar)
+        categs = Category.search_fetch(categs_domain)
+        
+        # Obtener TODAS las categorías activas (para sidebar y modal)
+        if website.zone_id and active_category_ids:
+            all_categories_domain = Domain('id', 'in', list(active_category_ids)) & website_domain
+            all_categories = Category.search_fetch(all_categories_domain)
+        elif website.zone_id:
+            all_categories = Category.browse([])
+        else:
+            all_categories = categs
+        
+        _logger.info(f"[ZONES SHOP] Website: {website.name}, Zone: {website.zone_id.name if website.zone_id else 'None'}, "
+                    f"Categorías padre: {len(categs)}, Total categorías: {len(all_categories)}")
+        
+        # ============================================================
+        # UNIFICAR category_entries CON categs
+        # ============================================================
+        
+        if category:
+            # Si hay categoría seleccionada, mostrar hijos de esa categoría
+            category_entries = not search and category.child_id or category.child_id.filtered(lambda c: c.id in search_categories.ids)
+            if not category_entries:
+                parent = category.parent_id
+                category_entries = not search and parent.child_id or parent.child_id.filtered(lambda c: c.id in search_categories.ids)
+        else:
+            # Sin categoría seleccionada: mostrar categorías padre
+            category_entries = categs
+        
+        # ============================================================
+        # Products pager y resto de valores
+        # ============================================================
+        
+        pager = website.pager(url=url, total=product_count, page=page, step=ppg, scope=5, url_args=post)
+        offset = pager['offset']
+        products = search_product[offset:offset + ppg]
+        products.fetch()
+        
+        variants = request.env['product.product'].sudo().browse(product._get_first_possible_variant_id() for product in products)
+        variants.fetch()
+        product_variants = dict(zip(products, variants))
+        
+        ProductAttribute = request.env['product.attribute']
+        if products:
+            attributes_grouped = request.env['product.template.attribute.line']._read_group(
+                domain=[
+                    ('product_tmpl_id', 'in', search_product.ids),
+                    ('attribute_id.visibility', '=', 'visible'),
+                ],
+                groupby=['attribute_id'],
+                order='attribute_id'
+            )
+            attribute_ids = [attribute.id for attribute, in attributes_grouped]
+            attributes = ProductAttribute.browse(attribute_ids)
+        else:
+            attributes = ProductAttribute.browse(attribute_ids).sorted()
+        
+        if website.is_view_active('website_sale.products_list_view'):
+            layout_mode = 'list'
+        else:
+            layout_mode = 'grid'
+        
+        products_prices = products._get_sales_prices(website)
+        product_query_params = self._get_product_query_params(**post)
+        
+        grouped_attributes_values = request.env['product.attribute.value'].browse(
+            attribute_value_ids
+        ).sorted().grouped('attribute_id')
+        
+        from odoo.tools import float_round
+        values = {
+            'auto_assign_ribbons': self.env['product.ribbon'].sudo().search([('assign', '!=', 'manual')]),
+            'search': fuzzy_search_term or search,
+            'original_search': fuzzy_search_term and search,
+            'order': post.get('order', ''),
+            'category': category,
+            'attrib_values': attribute_value_dict,
+            'attrib_set': attribute_value_ids,
+            'pager': pager,
+            'products': products,
+            'product_variants': product_variants,
+            'search_product': search_product,
+            'search_count': product_count,
+            'bins': TableCompute().process(products, ppg, ppr),
+            'ppg': ppg,
+            'ppr': ppr,
+            'gap': gap,
+            'categories': all_categories,  # Todas las categorías para sidebar/modal
+            'categs_parent': categs,  # Solo categorías padre para compatibilidad
+            'category_entries': category_entries,
+            'attributes': attributes,
+            'keep': keep,
+            'search_categories_ids': search_categories.ids,
+            'layout_mode': layout_mode,
+            'get_product_prices': lambda product: products_prices[product.id],
+            'float_round': float_round,
+            'shop_path': SHOP_PATH,
+            'product_query_params': product_query_params,
+            'grouped_attributes_values': grouped_attributes_values,
+            'previewed_attribute_values': lazy(
+                lambda: products._get_previewed_attribute_values(category, product_query_params),
+            ),
+        }
+        if filter_by_price_enabled:
+            values['min_price'] = min_price or available_min_price
+            values['max_price'] = max_price or available_max_price
+            values['available_min_price'] = float_round(available_min_price, 2)
+            values['available_max_price'] = float_round(available_max_price, 2)
+        if filter_by_tags_enabled:
+            values.update({'all_tags': all_tags, 'tags': tags})
+        if category:
+            values['main_object'] = category
+        values.update(self._get_additional_shop_values(values, **post))
+        
+        # Renderizar la respuesta
+        response = request.render("website_sale.products", values)
+        
+        # Si se generó un nuevo seed de shuffle, guardarlo en cookie
+        if hasattr(request, 'shuffle_seed_is_new') and request.shuffle_seed_is_new:
+            seed = request.shuffle_seed
+            response.set_cookie(
+                'shop_seed',
+                str(seed),
+                max_age=86400,  # 24 horas
+                httponly=False,
+                path='/',
+                samesite='Lax'
+            )
+            _logger.info(f"[SHUFFLE] Cookie shop_seed seteada con seed={seed}")
+        
+        return response
+
+    @http.route([
+        '/shop/<string:product_slug>-<int:product_id>',
+    ], type='http', auth="public", website=True)
+    def product_zone(self, product_slug, product_id, category=None, pricelist=None, **kwargs):
+        """
+        Ruta para productos en microsites de zonas.
+        Permite ver productos aunque tengan website_id diferente.
+        """
+        website = request.website
+        
+        # Verificar acceso a e-commerce
+        if not website.has_ecommerce_access():
+            return request.redirect(f'/web/login?redirect={request.httprequest.path}')
+        
+        # Buscar el producto con sudo para evitar restricciones de website_id
+        product = request.env['product.template'].sudo().browse(product_id)
+        
+        if not product.exists() or not product.is_published:
+            return request.redirect('/shop')
+        
+        # Si el website tiene zona asignada, verificar que el producto pertenezca a la zona
+        if website.zone_id and not website.is_canarias_conectada:
+            company_ids = website._get_zone_company_ids()
+            if product.company_id.id not in company_ids:
+                return request.redirect('/shop')
+        
+        # Manejar pricelist si se proporciona
+        if pricelist is not None:
+            try:
+                pricelist_id = int(pricelist)
+                if not self._apply_selectable_pricelist(pricelist_id):
+                    return request.redirect(self._get_shop_path(category))
+            except ValueError:
+                pass
+        
+        # Validar categoría si se proporciona
+        is_category_in_query = category and isinstance(category, str)
+        category = self._validate_and_get_category(category)
+        query = self._get_filtered_query_string(
+            request.httprequest.query_string.decode(), keys_to_remove=['category']
+        )
+        
+        # Si la categoría no coincide con el producto, redirigir
+        if category and not product.filtered_domain([('public_categ_ids', 'child_of', category.id)]):
+            return request.redirect(f'{product._get_product_url()}?{query}', code=301)
+        
+        if is_category_in_query:
+            return request.redirect(f'{product._get_product_url(category)}?{query}', code=301)
+        
+        # Si estamos en zona o Canarias Conectada, redirigir al microsite de la empresa
+        # PERO solo si NO estamos ya en el microsite correcto
+        if website.zone_id or website.is_canarias_conectada:
+            if product.company_id and product.company_id.website_id:
+                # Construir URL del producto en el microsite de la empresa
+                microsite_url = product.company_id.website_id.domain
+                if microsite_url:
+                    # Asegurar que la URL termine sin slash
+                    microsite_url = microsite_url.rstrip('/')
+                    # Obtener host actual
+                    current_host = request.httprequest.host
+                    # Extraer host del microsite (quitar https://)
+                    microsite_host = microsite_url.replace('https://', '').replace('http://', '')
+                    # Solo redirigir si estamos en un host diferente al microsite
+                    if current_host != microsite_host:
+                        # Construir URL del producto
+                        product_path = f'/shop/{product_slug}-{product_id}'
+                        redirect_url = microsite_url + product_path
+                        _logger.info(f"[ZONES] Redirigiendo producto {product_id} de {current_host} a microsite: {redirect_url}")
+                        return request.redirect(redirect_url, code=302)
+                    else:
+                        _logger.info(f"[ZONES] Ya estamos en el microsite correcto ({current_host}), mostrando producto")
+        
+        # Renderizar la página del producto (solo para microsites individuales)
+        return request.render(
+            'website_sale.product',
+            self._prepare_product_values(product, category, **kwargs)
+        )
+
+    def _prepare_product_values(self, product, category, **kwargs):
+        """
+        Sobreescribe para usar sudo() cuando accedemos a productos de otras compañías
+        en contexto de zonas (Guanarteme, Tamaraceite, Canarias Conectada, etc.)
+        o cuando el producto pertenece a una compañía no permitida para el usuario.
+        """
+        website = request.website
+        
+        # Determinar si necesitamos usar sudo()
+        # 1. Si es un website de zona o Canarias Conectada
+        # 2. Si el producto pertenece a una compañía que el usuario no tiene permitida
+        need_sudo = False
+        
+        if website.zone_id or website.is_canarias_conectada:
+            need_sudo = True
+        elif product and product.company_id:
+            # Verificar si el usuario tiene acceso a la compañía del producto
+            user_company_ids = request.env.user.company_ids.ids
+            if product.company_id.id not in user_company_ids:
+                need_sudo = True
+                _logger.info(
+                    f"[ZONES] Usando sudo para producto {product.id} de compañía "
+                    f"{product.company_id.id} (usuario no tiene acceso a esta compañía)"
+                )
+        
+        if need_sudo:
+            # Asegurar que el producto se maneje con sudo para acceder a variantes
+            if product and not product.env.su:
+                product = product.sudo()
+            
+            # Llamar al método padre con el producto en sudo
+            values = super()._prepare_product_values(product, category, **kwargs)
+            
+            # Asegurar que product_variant también tenga sudo
+            if values.get('product_variant'):
+                values['product_variant'] = values['product_variant'].sudo()
+            
+            return values
+        
+        # Comportamiento normal para microsites individuales
+        return super()._prepare_product_values(product, category, **kwargs)
+
+    @http.route('/microsite_zones/company_name', type='jsonrpc', auth='public', website=True)
+    def get_company_name(self, company_id, **kwargs):
+        """Retorna el nombre de la compañía dado su ID."""
+        if not company_id:
+            return {'name': 'Tienda'}
+        
+        company = request.env['res.company'].sudo().browse(int(company_id))
+        if company.exists():
+            return {'name': company.display_name or company.name or 'Tienda'}
+        return {'name': 'Tienda'}
+
+    @http.route(['/shop/product/is_add_to_cart_allowed'], type='jsonrpc', auth="public", website=True, readonly=True)
+    def is_add_to_cart_allowed(self, product_id, **kwargs):
+        """
+        Sobrescribe para usar sudo() cuando estamos en una zona o Canarias Conectada.
+        """
+        website = request.website
+        
+        if website.zone_id or website.is_canarias_conectada:
+            _logger.debug(f"[ZONES MAIN] Usando sudo para is_add_to_cart_allowed en {website.name}")
+            product = request.env['product.product'].sudo().browse(product_id)
+            return product._is_add_to_cart_allowed()
+        
+        return super().is_add_to_cart_allowed(product_id, **kwargs)
+
+    # ------------------------------------------------------
+    # Login - Asignar compañía activa según el website
+    # ------------------------------------------------------
+
+    @http.route('/web/set_company', type='http', auth='user', website=False, sitemap=False)
+    def web_set_company(self, company_id=None, redirect=None, **kwargs):
+        """
+        Establece la compañía activa para el usuario mediante cookie cids.
+        
+        Esta ruta se usa después del login para asegurar que el usuario entre
+        al backend con la compañía del microsite activa.
+        """
+        _logger.info(f"[ZONES LOGIN] web_set_company llamado: company_id={company_id}, redirect={redirect}")
+        
+        if not company_id:
+            _logger.warning("[ZONES LOGIN] No se proporcionó company_id")
+            return request.redirect(redirect or '/odoo')
+        
+        try:
+            company_id = int(company_id)
+        except (ValueError, TypeError):
+            _logger.warning(f"[ZONES LOGIN] company_id inválido: {company_id}")
+            return request.redirect(redirect or '/odoo')
+        
+        # Verificar que el usuario tiene permiso para esta compañía
+        user = request.env.user
+        user_company_ids = list(user.company_ids.ids)
+        
+        _logger.info(f"[ZONES LOGIN] Usuario: {user.name}, Compañías: {user_company_ids}, Solicitada: {company_id}")
+        
+        if company_id not in user_company_ids:
+            _logger.warning(
+                f"[ZONES LOGIN] Usuario {user.name} (id={user.id}) intentó acceder "
+                f"a compañía {company_id} sin permisos"
+            )
+            return request.redirect(redirect or '/odoo')
+        
+        # Establecer la cookie cids (formato usado por el frontend Odoo)
+        # La cookie cids contiene los IDs de compañías SELECCIONADAS separados por guiones
+        # Para que solo aparezca seleccionada la compañía del microsite en el switcher,
+        # solo incluimos esa compañía en la cookie (no todas las del usuario)
+        company_ids_str = str(company_id)
+        
+        _logger.info(f"[ZONES LOGIN] Estableciendo cookie cids={company_ids_str}")
+        
+        # Crear respuesta de redirect
+        final_redirect = redirect or '/odoo'
+        response = request.redirect(final_redirect)
+        
+        # Establecer la cookie con las mismas opciones que usa Odoo
+        # Intentar con diferentes configuraciones para asegurar que funcione
+        
+        # 1. Cookie para el dominio actual (sin especificar dominio explícito)
+        response.set_cookie(
+            'cids',
+            company_ids_str,
+            max_age=90 * 24 * 60 * 60,  # 90 días
+            httponly=False,
+            path='/',
+            samesite='Lax'
+        )
+        
+        # 2. Cookie con el dominio explícito para cubrir subdominios
+        hostname = request.httprequest.host.split(':')[0]  # quitar puerto si existe
+        if hostname and '.' in hostname:
+            response.set_cookie(
+                'cids',
+                company_ids_str,
+                max_age=90 * 24 * 60 * 60,
+                httponly=False,
+                path='/',
+                domain=f'.{hostname}' if not hostname.startswith('.') else hostname,
+                samesite='Lax'
+            )
+        
+        # También establecer en la sesión (solo la compañía del microsite)
+        request.session['cids'] = [company_id]
+        
+        # Log de las cookies recibidas del cliente
+        cookies_received = dict(request.httprequest.cookies)
+        _logger.info(f"[ZONES LOGIN] Cookies recibidas del cliente: {cookies_received}")
+        _logger.info(f"[ZONES LOGIN] Headers de respuesta: {dict(response.headers)}")
+        
+        _logger.info(
+            f"[ZONES LOGIN] Compañía activa establecida a {company_id} para usuario "
+            f"{user.name} (id={user.id}), redirigiendo a {final_redirect}"
+        )
+        
+        return response
+
+    # def _login_redirect(self, uid, redirect=None):
+    #     """
+    #     DESACTIVADO (2026-04-01): El core de Odoo maneja la redirección correctamente.
+    #     
+    #     El método _login_redirect del core (odoo/addons/web/controllers/home.py):
+    #     - Establece cookie cids con la compañía del website
+    #     - Verifica si el usuario es interno (is_user_internal)
+    #     - Redirige internos a /odoo y externos a /web/login_successful
+    #     
+    #     La redirección a /web/set_company causaba loops porque:
+    #     - Se acumulaban parámetros redirect en la URL
+    #     - El usuario debía intentar login 3-5 veces para entrar
+    #     
+    #     Documentación: docs/core_modifications/2026-04-01_fix_redireccion_login/
+    #     """
+    #     return super()._login_redirect(uid, redirect=redirect)
+
+    @http.route('/shop/shuffle', type='http', auth='public', website=True, sitemap=False)
+    def shop_shuffle(self, **kwargs):
+        """
+        Endpoint AJAX para generar/mezclar el orden aleatorio de productos.
+        Genera un seed aleatorio y lo guarda en la cookie 'shop_seed'.
+        """
+        import random
+        import time
+        
+        # Generar seed aleatorio
+        seed = random.randint(1, 1000000)
+        
+        _logger.info(f"[SHOP SHUFFLE] Generando nuevo seed: {seed}")
+        
+        # Obtener la URL de redirección (volver a /shop)
+        redirect_url = '/shop'
+        if kwargs.get('category'):
+            redirect_url += '/category/' + kwargs.get('category')
+        
+        # Mantener otros parámetros de la URL
+        params = []
+        for key in ['search', 'attrib', 'tag', 'order']:
+            if kwargs.get(key):
+                params.append(f"{key}={kwargs.get(key)}")
+        if params:
+            redirect_url += '?' + '&'.join(params)
+        
+        # Crear respuesta de redirect
+        response = request.redirect(redirect_url, 303)
+        
+        # Guardar el seed en cookie (válida por 24 horas)
+        response.set_cookie(
+            'shop_seed',
+            str(seed),
+            max_age=86400,  # 24 horas
+            httponly=False,
+            path='/',
+            samesite='Lax'
+        )
+        
+        _logger.info(f"[SHOP SHUFFLE] Seed {seed} guardado en cookie, redirigiendo a {redirect_url}")
+        
+        return response
+
+    @http.route('/web/session/logout', type='http', auth='none', readonly=True)
+    def logout(self, redirect='/odoo'):
+        """
+        Sobrescribe el logout para borrar la cookie cids al cerrar sesión.
+        Esto asegura que al volver a hacer login, no se mantenga la compañía anterior.
+        """
+        _logger.info(f"[ZONES LOGOUT] Cerrando sesión, borrando cookie cids")
+        
+        # Hacer logout de la sesión primero
+        request.session.logout(keep_db=True)
+        
+        # Crear respuesta de redirect
+        response = request.redirect(redirect, 303)
+        
+        # Borrar la cookie cids estableciendo max_age=0
+        response.set_cookie(
+            'cids',
+            '',
+            max_age=0,
+            httponly=False,
+            path='/',
+            samesite='Lax'
+        )
+        
+        # También intentar borrar con dominio explícito si aplica
+        hostname = request.httprequest.host.split(':')[0] if request.httprequest.host else None
+        if hostname and '.' in hostname:
+            response.set_cookie(
+                'cids',
+                '',
+                max_age=0,
+                httponly=False,
+                path='/',
+                domain=f'.{hostname}' if not hostname.startswith('.') else hostname,
+                samesite='Lax'
+            )
+        
+        _logger.info(f"[ZONES LOGOUT] Cookie cids borrada, redirigiendo a {redirect}")
+        
+        return response

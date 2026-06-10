@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- TEMPLATE: SEARCHABLE CATEGORY SELECT (Sidebar) -->
+    <template id="microsite_searchable_categories" inherit_id="website_sale.products_categories_list" 
+              name="Microsite Searchable Categories" priority="97">
+        <xpath expr="//ul[hasclass('nav', 'd-flex', 'flex-column', 'mb-3')]" position="replace">
+            <t t-if="not website.zone_id and not website.is_canarias_conectada">
+                <form action="/shop" method="get" class="mb-3">
+                    <label class="form-label small text-muted mb-2">
+                        <i class="fa fa-filter me-1"/> Filtrar por categoría
+                    </label>
+                    <select name="category" class="form-select microsite-cat-select" id="micrositeCategorySelect">
+                        <option value="" t-att-selected="not category">
+                            <t t-if="search">Todas las categorías</t>
+                            <t t-else="">Todas las categorías</t>
+                        </option>
+                        <t t-foreach="categories" t-as="c">
+                            <option t-att-value="c.id" t-att-selected="category and category.id == c.id">
+                                <t t-esc="c.name"/>
+                            </option>
+                        </t>
+                    </select>
+                </form>
+            </t>
+            <t t-else="">
+                <ul class="nav d-flex flex-column mb-3">
+                    <li class="nav-item mb-1">
+                        <a t-att-href="keep(shop_path)" t-attf-class="{{not category and 'text-decoration-underline'}} p-0">
+                            All Products
+                        </a>
+                    </li>
+                    <t t-foreach="categories" t-as="c">
+                        <t t-call="website_sale.categories_recursive"/>
+                    </t>
+                </ul>
+            </t>
+        </xpath>
+    </template>
+    
+    <!-- TEMPLATE: SEARCHABLE ASSETS -->
+    <template id="microsite_searchable_assets" inherit_id="website_sale.products" 
+              name="Microsite Searchable Assets" priority="98">
+        <xpath expr="." position="inside">
+            <t t-if="not website.zone_id and not website.is_canarias_conectada">
+                <style type="text/css">
+                    .microsite-searchable-wrapper { position: relative !important; display: block !important; width: 100% !important; }
+                    .microsite-searchable-toggle { width: 100% !important; text-align: left !important; background: #fff !important; border: 1px solid #ced4da !important; border-radius: 0.375rem !important; padding: 0.5rem 2rem 0.5rem 0.75rem !important; position: relative !important; }
+                    .microsite-searchable-toggle::after { content: ''; position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); border: 5px solid transparent; border-top-color: #6c757d; }
+                    .microsite-searchable-dropdown { background: #fff !important; border: 1px solid #ced4da !important; border-radius: 0.375rem !important; box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important; max-height: 300px !important; overflow: hidden !important; }
+                    .microsite-searchable-options { max-height: 220px !important; overflow-y: auto !important; }
+                    .microsite-searchable-option { padding: 8px 12px !important; cursor: pointer !important; font-size: 14px !important; border-bottom: 1px solid #f0f0f0 !important; transition: background 0.15s ease !important; }
+                    .microsite-searchable-option:hover { background: #e9ecef !important; }
+                </style>
+                <script type="text/javascript">
+                //<![CDATA[
+                (function() {
+                    'use strict';
+                    var MicrositeSearchable = {
+                        init: function() {
+                            var selects = document.querySelectorAll('.microsite-cat-select:not([data-searchable="true"])');
+                            selects.forEach(function(select) { this.enhanceSelect(select); }.bind(this));
+                        },
+                        enhanceSelect: function(select) {
+                            select.dataset.searchable = 'true';
+                            var form = select.closest('form');
+                            var wrapper = document.createElement('div');
+                            wrapper.className = 'microsite-searchable-wrapper';
+                            wrapper.style.cssText = 'position:relative;display:block;z-index:9999;width:100%;';
+                            var toggle = document.createElement('button');
+                            toggle.type = 'button';
+                            toggle.className = 'form-select text-start microsite-searchable-toggle';
+                            var selectedOption = select.options[select.selectedIndex];
+                            toggle.innerHTML = '<span class="selected-text">' + (selectedOption ? selectedOption.text : 'Seleccione...') + '</span>';
+                            var dropdown = document.createElement('div');
+                            dropdown.className = 'microsite-searchable-dropdown';
+                            dropdown.style.cssText = 'position:absolute;z-index:99999;background:#fff;border:1px solid #ced4da;border-radius:0.375rem;width:100%;max-height:300px;overflow:hidden;display:none;box-shadow:0 0.5rem 1rem rgba(0,0,0,0.15);top:100%;left:0;margin-top:2px;';
+                            var searchContainer = document.createElement('div');
+                            searchContainer.className = 'p-2 border-bottom';
+                            searchContainer.innerHTML = '<input type="text" class="form-control form-control-sm" placeholder="Buscar categoría..." autocomplete="off">';
+                            var searchInput = searchContainer.querySelector('input');
+                            var list = document.createElement('div');
+                            list.className = 'microsite-searchable-options';
+                            list.style.cssText = 'max-height:220px;overflow-y:auto;';
+                            Array.from(select.options).forEach(function(opt, index) {
+                                var item = document.createElement('div');
+                                item.className = 'microsite-searchable-option';
+                                if (index === 0) item.classList.add('text-muted');
+                                item.textContent = opt.text;
+                                item.dataset.value = opt.value;
+                                item.style.cssText = 'padding:8px 12px;cursor:pointer;transition:background 0.15s;font-size:14px;border-bottom:1px solid #f0f0f0;';
+                                item.addEventListener('mouseenter', function() { if (this.style.background !== 'rgb(113, 75, 103)') this.style.background = '#e9ecef'; });
+                                item.addEventListener('mouseleave', function() { if (this.style.background !== 'rgb(113, 75, 103)') this.style.background = 'transparent'; });
+                                item.addEventListener('click', function(e) {
+                                    e.stopPropagation();
+                                    select.value = opt.value;
+                                    toggle.querySelector('.selected-text').textContent = opt.text;
+                                    dropdown.style.display = 'none';
+                                    list.querySelectorAll('.microsite-searchable-option').forEach(function(el) { el.style.background = 'transparent'; el.style.color = 'inherit'; });
+                                    this.style.background = '#714B67';
+                                    this.style.color = '#fff';
+                                    if (form) form.submit();
+                                });
+                                list.appendChild(item);
+                            });
+                            searchInput.addEventListener('input', function() {
+                                var term = this.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                                list.querySelectorAll('.microsite-searchable-option').forEach(function(item) {
+                                    var text = item.textContent.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                                    item.style.display = text.includes(term) ? 'block' : 'none';
+                                });
+                            });
+                            var positionDropdown = function() {
+                                var rect = toggle.getBoundingClientRect();
+                                var viewportHeight = window.innerHeight;
+                                var spaceBelow = viewportHeight - rect.bottom;
+                                var dropdownHeight = 250;
+                                if (spaceBelow < dropdownHeight && rect.top > dropdownHeight) {
+                                    dropdown.style.top = 'auto';
+                                    dropdown.style.bottom = '100%';
+                                    dropdown.style.marginTop = '0';
+                                    dropdown.style.marginBottom = '4px';
+                                } else {
+                                    dropdown.style.top = '100%';
+                                    dropdown.style.bottom = 'auto';
+                                    dropdown.style.marginTop = '2px';
+                                    dropdown.style.marginBottom = '0';
+                                }
+                            };
+                            toggle.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                var isOpen = dropdown.style.display === 'block';
+                                document.querySelectorAll('.microsite-searchable-dropdown').forEach(function(d) { if (d !== dropdown) d.style.display = 'none'; });
+                                if (!isOpen) {
+                                    positionDropdown();
+                                    dropdown.style.display = 'block';
+                                    searchInput.value = '';
+                                    searchInput.focus();
+                                    list.querySelectorAll('.microsite-searchable-option').forEach(function(item) { item.style.display = 'block'; });
+                                } else {
+                                    dropdown.style.display = 'none';
+                                }
+                            });
+                            document.addEventListener('click', function(e) {
+                                if (!dropdown.contains(e.target) && e.target !== toggle) dropdown.style.display = 'none';
+                            });
+                            dropdown.addEventListener('click', function(e) { if (e.target !== searchInput) e.stopPropagation(); });
+                            window.addEventListener('resize', function() { if (dropdown.style.display === 'block') positionDropdown(); }, { passive: true });
+                            dropdown.appendChild(searchContainer);
+                            dropdown.appendChild(list);
+                            wrapper.appendChild(dropdown);
+                            wrapper.appendChild(toggle);
+                            select.style.display = 'none';
+                            select.parentNode.insertBefore(wrapper, select);
+                            wrapper.appendChild(select);
+                        }
+                    };
+                    if (document.readyState === 'loading') {
+                        document.addEventListener('DOMContentLoaded', function() { MicrositeSearchable.init(); });
+                    } else {
+                        MicrositeSearchable.init();
+                    }
+                })();
+                //]]>
+                </script>
+            </t>
+        </xpath>
+    </template>
+</odoo>

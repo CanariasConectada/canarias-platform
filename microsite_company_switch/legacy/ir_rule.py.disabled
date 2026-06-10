@@ -1,0 +1,61 @@
+# -*- coding: utf-8 -*-
+"""
+Aislamiento estricto de contactos (res.partner) por compañía.
+
+- Usuarios normales: Solo ven contactos de su compañía seleccionada
+- Administradores: Ven contactos de su compañía + usuarios del sistema + contactos sin compañía
+"""
+from odoo import models, api
+from odoo.http import request
+from odoo import SUPERUSER_ID
+import logging
+
+_logger = logging.getLogger(__name__)
+
+class IrRule(models.Model):
+    _inherit = 'ir.rule'
+
+    def _is_admin_user(self, user):
+        """Verifica si el usuario es administrador."""
+        if user.id == SUPERUSER_ID:
+            return True
+        if user.has_group('base.group_erp_manager'):
+            return True
+        if user.has_group('base.group_partner_manager'):
+            return True
+        return False
+
+    @api.model
+    def _eval_context(self):
+        """
+        Modifica company_ids para limitar a una sola compañía (la seleccionada en el switcher).
+        Esto aplica el aislamiento estricto para todos los usuarios.
+        """
+        ctx = super()._eval_context()
+        try:
+            user = self.env.user
+            if not user or len(user) != 1 or user._is_public():
+                return ctx
+            
+            cids = user.sudo().company_ids.ids
+            if not cids:
+                return ctx
+            
+            # Obtener compañía seleccionada de la cookie
+            selected = user.company_id.id
+            if request and hasattr(request, 'httprequest') and request.httprequest:
+                cookie = request.httprequest.cookies.get('cids', '')
+                if cookie:
+                    try:
+                        c = int(cookie.split('-')[0])
+                        if c in cids:
+                            selected = c
+                    except:
+                        pass
+            
+            # Limitar company_ids a solo la compañía seleccionada
+            ctx['company_ids'] = [selected]
+            
+        except Exception as e:
+            _logger.error(f"[IR_RULE] Error en _eval_context: {e}")
+        return ctx

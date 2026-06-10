@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_partner_form_inherit_reviews" model="ir.ui.view">
+        <field name="name">res.partner.form.reviews</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="partner_microsite_manager.view_partner_form_inherit_microsite"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='microsite']//field[@name='microsite_use_custom_html']" position="before">
+                <field name="enable_reviews"
+                       string="Habilitar página de reseñas"
+                       help="Si está activado, se habilitará una página de reseñas para este negocio en su microsite. Los clientes podrán dejar valoraciones con estrellas y comentarios."/>
+            </xpath>
+            <xpath expr="//page[@name='microsite']" position="inside">
+                <group invisible="not enable_reviews">
+                    <group string="Estadísticas de Reseñas">
+                        <field name="review_rating_avg" readonly="1"/>
+                        <field name="review_rating_count" readonly="1"/>
+                        <field name="review_comment_count" readonly="1"/>
+                    </group>
+                </group>
+                <div class="oe_button_box" name="button_box" invisible="not enable_reviews">
+                    <button class="oe_stat_button" type="action" name="%(action_partner_review_rating)d" icon="fa-star">
+                        <field string="Valoraciones" name="review_rating_count" widget="statinfo"/>
+                    </button>
+                    <button class="oe_stat_button" type="action" name="%(action_partner_review_comment)d" icon="fa-comments">
+                        <field string="Comentarios" name="review_comment_count" widget="statinfo"/>
+                    </button>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

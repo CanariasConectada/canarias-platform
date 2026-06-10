@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Assets para la tienda con soporte async y Select2 -->
+    
+    <!-- Cargar scripts en la página de tienda (/shop) -->
+    <template id="assets_shop_async" inherit_id="website_sale.products">
+        <xpath expr="//div[@id='oe_structure_website_sale_products_1']" position="after">
+            <!-- Scripts para búsqueda asíncrona y Select2 -->
+            <script type="text/javascript" src="/microsite_zones/static/src/js/shop_async_search.js"/>
+            <script type="text/javascript" src="/microsite_zones/static/src/js/shop_select2.js"/>
+        </xpath>
+    </template>
+    
+    <!-- Asegurar que jQuery está disponible antes de nuestros scripts -->
+    <template id="assets_shop_jquery_check" inherit_id="website.layout">
+        <xpath expr="//head" position="inside">
+            <script>
+                // Asegurar que jQuery está disponible globalmente
+                if (typeof window.jQuery === 'undefined' &amp;&amp; typeof odoo !== 'undefined' &amp;&amp; odoo.define) {
+                    odoo.define('jquery_global', function(require) {
+                        'use strict';
+                        var $ = require('web.dom_ready');
+                        if ($ &amp;&amp; typeof $ === 'function') {
+                            window.jQuery = window.$ = $;
+                        }
+                    });
+                }
+            </script>
+        </xpath>
+    </template>
+
+    <!-- Selector de productos por página -->
+    <template id="assets_shop_ppg_selector" inherit_id="website.layout">
+        <xpath expr="//head" position="inside">
+            <script type="text/javascript" src="/microsite_zones/static/src/js/shop_ppg_selector.js"/>
+        </xpath>
+    </template>
+</odoo>

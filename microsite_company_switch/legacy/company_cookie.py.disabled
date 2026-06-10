@@ -1,0 +1,78 @@
+# -*- coding: utf-8 -*-
+"""
+FIX: Actualizar cookie cids al cambiar de compañía
+
+Este controller intercepta la llamada que hace el company switcher
+y asegura que la cookie se actualice correctamente.
+"""
+import logging
+from odoo import http
+from odoo.http import request
+import json
+
+_logger = logging.getLogger(__name__)
+
+
+class CompanyCookieController(http.Controller):
+    """
+    Sobrescribe el endpoint RPC para detectar cambio de compañía.
+    """
+    
+    @http.route('/web/dataset/call_kw', type='jsonrpc', auth='user', methods=['POST'])
+    def call_kw_with_cookie_update(self, model, method, args, kwargs):
+        """
+        Intercepta todas las llamadas RPC y detecta cambios de compañía.
+        
+        Cuando el usuario cambia de compañía en el switcher, Odoo llama:
+        - model: 'res.users'
+        - method: 'write'
+        - args: [[user_id], {'company_id': company_id}]
+        """
+        _logger.info(f"[COOKIE-FIX] call_kw: model={model}, method={method}")
+        
+        # Llamar al método original
+        result = request.env[model].sudo().browse(args[0]).write(args[1])
+        
+        # Detectar si estamos cambiando de compañía del usuario
+        if model == 'res.users' and method == 'write' and args and len(args) >= 2:
+            try:
+                vals = args[1] if len(args) > 1 else {}
+                
+                # Verificar si se está cambiando company_id
+                if vals and 'company_id' in vals:
+                    company_id = vals['company_id']
+                    user_id = args[0][0] if isinstance(args[0], list) else args[0]
+                    
+                    _logger.info(f"[COOKIE-FIX] Usuario {user_id} cambiando a compañía: {company_id}")
+                    
+                    # Verificar que la compañía es válida para el usuario
+                    user = request.env.user
+                    allowed_companies = user._get_company_ids()
+                    
+                    if company_id in allowed_companies:
+                        # Crear lista de compañías: primero la seleccionada, luego las demás
+                        cids_list = [company_id] + [c for c in allowed_companies if c != company_id]
+                        cids_value = '-'.join(map(str, cids_list))
+                        
+                        _logger.info(f"[COOKIE-FIX] Estableciendo cookie cids={cids_value}")
+                        
+                        # Establecer la cookie en la sesión/respuesta
+                        # Usamos request.future_response para JSONRPC
+                        if hasattr(request, 'future_response'):
+                            request.future_response.set_cookie(
+                                'cids',
+                                cids_value,
+                                max_age=31536000,  # 1 año
+                                path='/',
+                                samesite='Lax'
+                            )
+                            _logger.info("[COOKIE-FIX] Cookie establecida via future_response")
+                        else:
+                            _logger.warning("[COOKIE-FIX] No hay future_response disponible")
+                    else:
+                        _logger.warning(f"[COOKIE-FIX] Compañía {company_id} no permitida")
+                        
+            except Exception as e:
+                _logger.error(f"[COOKIE-FIX] Error: {e}", exc_info=True)
+        
+        return result

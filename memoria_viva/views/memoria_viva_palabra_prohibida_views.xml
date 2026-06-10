@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista árbol de palabras prohibidas -->
+    <record id="view_memoria_viva_palabra_prohibida_tree" model="ir.ui.view">
+        <field name="name">memoria.viva.palabra.prohibida.tree</field>
+        <field name="model">memoria.viva.palabra.prohibida</field>
+        <field name="arch" type="xml">
+            <list string="Palabras Prohibidas" editable="bottom">
+                <field name="name"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Vista formulario -->
+    <record id="view_memoria_viva_palabra_prohibida_form" model="ir.ui.view">
+        <field name="name">memoria.viva.palabra.prohibida.form</field>
+        <field name="model">memoria.viva.palabra.prohibida</field>
+        <field name="arch" type="xml">
+            <form string="Palabra Prohibida">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Acción para palabras prohibidas -->
+    <record id="action_memoria_viva_palabra_prohibida" model="ir.actions.act_window">
+        <field name="name">Palabras Prohibidas</field>
+        <field name="res_model">memoria.viva.palabra.prohibida</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Nota: El menú de palabras prohibidas se define en memoria_viva_menus.xml
+         bajo el submenú Moderación para mejor organización -->
+</odoo>

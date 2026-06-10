@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Herencia de la vista form de res.company -->
+    <record id="view_company_form_inherit_silver" model="ir.ui.view">
+        <field name="name">res.company.form.inherit.silver</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_silver_evaluations"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-award">
+                    <field name="silver_evaluation_count" widget="statinfo" string="Evaluaciones Silver"/>
+                </button>
+            </xpath>
+            <xpath expr="//group[@name='social_media']" position="after">
+                <group string="Silver Economy" name="silver_economy">
+                    <field name="silver_certification_level" readonly="1"/>
+                    <field name="silver_certification_date" readonly="1"/>
+                    <field name="silver_expiry_date" readonly="1"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Herencia de la vista list de res.company -->
+    <record id="view_company_tree_inherit_silver" model="ir.ui.view">
+        <field name="name">res.company.tree.inherit.silver</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="decoration-info">silver_certification_level == 'bronze'</attribute>
+                <attribute name="decoration-primary">silver_certification_level == 'silver'</attribute>
+                <attribute name="decoration-warning">silver_certification_level == 'gold'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="silver_certification_level" optional="show"/>
+                <field name="silver_expiry_date" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

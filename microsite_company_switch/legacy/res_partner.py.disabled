@@ -1,0 +1,56 @@
+# -*- coding: utf-8 -*-
+"""
+Aislamiento de contactos por compañía seleccionada
+"""
+from odoo import models, api
+from odoo.http import request
+
+
+class ResPartner(models.Model):
+    _inherit = 'res.partner'
+
+    @api.model
+    def _search(self, args, offset=0, limit=None, order=None, count=False, access_rights_uid=None):
+        """
+        Filtra contactos por la compañía seleccionada en el switcher.
+        El admin (user_id=2) ve todos los contactos.
+        Los demás usuarios ven solo los de su compañía seleccionada.
+        """
+        # Obtener compañía seleccionada
+        selected_company_id = None
+        
+        if self.env.user.id == 2:  # Admin ve todo
+            return super(ResPartner, self)._search(
+                args, offset=offset, limit=limit, order=order, 
+                count=count, access_rights_uid=access_rights_uid
+            )
+        
+        # Para usuarios normales, filtrar por compañía seleccionada
+        try:
+            if request and hasattr(request, 'httprequest') and request.httprequest:
+                cookie = request.httprequest.cookies.get('cids', '')
+                if cookie:
+                    try:
+                        selected_company_id = int(str(cookie).split('-')[0])
+                    except (ValueError, IndexError):
+                        pass
+            
+            # Si no hay cookie, usar compañía del usuario
+            if not selected_company_id:
+                selected_company_id = self.env.user.company_id.id
+            
+            # Verificar que el usuario tiene acceso a esta compañía
+            if selected_company_id not in self.env.user.company_ids.ids:
+                selected_company_id = self.env.user.company_id.id
+            
+        except Exception:
+            selected_company_id = self.env.user.company_id.id
+        
+        # Añadir filtro por compañía
+        if selected_company_id:
+            args = args + [('company_id', '=', selected_company_id)]
+        
+        return super(ResPartner, self)._search(
+            args, offset=offset, limit=limit, order=order,
+            count=count, access_rights_uid=access_rights_uid
+        )

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Herencia del formulario de categoría pública para mostrar zonas -->
+    <record id="view_product_public_category_form_inherit_zone" model="ir.ui.view">
+        <field name="name">product.public.category.form.inherit.zone</field>
+        <field name="model">product.public.category</field>
+        <field name="inherit_id" ref="website_sale.product_public_category_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group" position="inside">
+                <field name="zone_ids" 
+                       widget="many2many_tags"
+                       readonly="1"
+                       groups="base.group_no_one"
+                       help="Zonas a las que pertenecen los productos de esta categoría (calculado automáticamente)"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vista de lista de categorías con columna de zonas -->
+    <record id="view_product_public_category_tree_inherit_zone" model="ir.ui.view">
+        <field name="name">product.public.category.tree.inherit.zone</field>
+        <field name="model">product.public.category</field>
+        <field name="inherit_id" ref="website_sale.product_public_category_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='website_id']" position="after">
+                <field name="zone_ids" 
+                       widget="many2many_tags"
+                       optional="hide"
+                       groups="base.group_no_one"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

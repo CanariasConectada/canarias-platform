@@ -1,0 +1,74 @@
+# -*- coding: utf-8 -*-
+"""
+Microsite Company Switch - Fix para el Company Switcher
+
+PROBLEMA: La cookie 'cids' no se actualiza al cambiar de compañía manualmente.
+
+SOLUCIÓN: 
+- session_info() actualiza current_company basado en user.company_id
+- NO modifica allowed_company_ids globalmente (eso lo hacen las reglas ir.rule)
+- NO afecta la tienda ni el directorio (solo el switcher visual)
+"""
+import logging
+from odoo import models, api
+from odoo.http import request
+from odoo import SUPERUSER_ID
+
+_logger = logging.getLogger(__name__)
+
+
+class IrHttp(models.AbstractModel):
+    _name = 'ir.http'
+    _inherit = 'ir.http'
+
+    @api.model
+    def session_info(self):
+        """
+        SOBRESCRIBE session_info para sincronizar el switcher con user.company_id.
+        
+        Cuando el usuario cambia de compañía manualmente:
+        1. Odoo actualiza user.company_id en la BD
+        2. Pero la cookie 'cids' sigue con el valor antiguo
+        3. El switcher muestra la compañía incorrecta
+        
+        Este fix actualiza current_company para que el switcher muestre 
+        la compañía correcta (user.company_id) en lugar de depender de la cookie.
+        """
+        result = super(IrHttp, self).session_info()
+        
+        if not result.get('user_companies'):
+            return result
+        
+        try:
+            user = request.env.user
+            
+            # Solo aplicar a usuarios internos logueados
+            if not user or user._is_public() or not user._is_internal():
+                return result
+            
+            # Obtener compañía actual del usuario (actualizada por el switcher)
+            current_company_id = user.company_id.id
+            
+            # Verificar si está en las compañías permitidas
+            allowed_companies = result['user_companies'].get('allowed_companies', {})
+            
+            if current_company_id and current_company_id in allowed_companies:
+                # Actualizar current_company para que el switcher muestre la correcta
+                old_company = result['user_companies'].get('current_company')
+                result['user_companies']['current_company'] = current_company_id
+                
+                # Actualizar también user_context.allowed_company_ids
+                # Para que el backend sepa cuál es la compañía activa
+                if 'user_context' in result:
+                    # Mantener todas las compañías permitidas pero poner primero la actual
+                    user_company_ids = user._get_company_ids()
+                    new_allowed = [current_company_id] + [c for c in user_company_ids if c != current_company_id]
+                    result['user_context']['allowed_company_ids'] = new_allowed
+                
+                if old_company != current_company_id:
+                    _logger.info(f"[MCS-SWITCHER] Sincronizado: {old_company} -> {current_company_id} (user={user.name})")
+            
+        except Exception as e:
+            _logger.error(f"[MCS-SWITCHER] Error: {e}", exc_info=True)
+        
+        return result

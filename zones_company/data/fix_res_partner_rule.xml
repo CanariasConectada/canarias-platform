@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="0">
+    <!-- Fix: Remove erroneous group (Contabilidad / Administrador) from portal/public rule -->
+    <record id="base.res_partner_portal_public_rule" model="ir.rule">
+        <field name="groups" eval="[Command.set([ref('base.group_portal'), ref('base.group_public')])]"/>
+    </record>
+</odoo>

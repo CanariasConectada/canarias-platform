@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data noupdate="0">
+<record id="category_lugares_interes" model="ir.module.category">
+<field name="name">Lugares de Interés</field>
+<field name="sequence">50</field>
+</record>
+<record id="privilege_lugares_interes" model="res.groups.privilege">
+<field name="name">Lugares de Interés</field>
+<field name="category_id" ref="category_lugares_interes"/>
+</record>
+<record id="group_lugares_interes_approver" model="res.groups">
+<field name="name">Aprobador</field>
+<field name="privilege_id" ref="privilege_lugares_interes"/>
+<field name="user_ids" eval="[Command.link(ref('base.user_root'))]"/>
+</record>
+<record id="group_lugares_interes_anuncios_manager" model="res.groups">
+<field name="name">Anuncios / Administrador</field>
+<field name="comment">Puede crear, editar, eliminar y gestionar todos los anuncios.</field>
+</record>
+<record id="group_lugares_interes_anuncios_editor" model="res.groups">
+<field name="name">Anuncios / Editor</field>
+<field name="comment">Puede crear y editar anuncios, pero no eliminarlos.</field>
+</record>
+<record id="group_lugares_interes_moderator" model="res.groups">
+<field name="name">Moderador de Comentarios</field>
+<field name="privilege_id" ref="privilege_lugares_interes"/>
+<field name="comment">Puede moderar comentarios, aprobar/rechazar y gestionar palabras prohibidas.</field>
+<field name="user_ids" eval="[Command.link(ref('base.user_root'))]"/>
+</record>
+</data>
+</odoo>

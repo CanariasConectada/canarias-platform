@@ -1,0 +1,61 @@
+// ========================================
+// Partner Reviews - Frontend Styles
+// Basado en memoria_viva, enfoque Bootstrap-first
+// ========================================
+
+.partner-review-stars {
+    font-size: 2rem;
+    color: #ddd;
+    cursor: default;
+    display: inline-block;
+
+    .star {
+        cursor: pointer;
+        transition: color 0.2s;
+        display: inline-block;
+        padding: 0 2px;
+
+        &.active,
+        &:hover {
+            color: #ffc107;
+        }
+    }
+
+    &[data-readonly="1"] .star {
+        cursor: default;
+    }
+}
+
+.partner-review-stars.interactive {
+    .star:hover ~ .star {
+        color: #ddd;
+    }
+}
+
+// Comentarios - estilo memoria_viva
+.comentario-item {
+    .comentario-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .comentario-avatar-sm {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .respuesta-item {
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+    }
+}
+
+// Formulario inline de respuesta
+.respuesta-form-inline {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+}

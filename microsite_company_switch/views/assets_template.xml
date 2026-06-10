@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="layout_microsite_patch" name="Microsite Company Switch Script" inherit_id="web.layout">
+        <xpath expr="//head" position="inside">
+            <script type="module" src="/microsite_company_switch/static/src/company_switch_patch.js"/>
+        </xpath>
+    </template>
+</odoo>

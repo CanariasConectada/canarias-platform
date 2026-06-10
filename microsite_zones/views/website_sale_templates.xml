@@ -1,0 +1,1118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- ============================================ -->
+    <!-- SIDEBAR: ZONAS COMERCIALES + CATEGORÍAS      -->
+    <!-- ============================================ -->
+    
+    <!-- Template para Zonas Comerciales - DESKTOP (Estilo Select2 como Directorio) -->
+    <template id="sidebar_commercial_zones" name="Zonas Comerciales Sidebar">
+        <div class="o_wsale_commercial_zones mb-3">
+            <div class="filter-section">
+                <label class="form-label fw-bold text-uppercase small text-muted">
+                    <i class="fa fa-map-marker text-primary"></i> Zona Comercial
+                </label>
+                <select id="zone-select-shop" class="form-select">
+                    <option value="https://canariasconectada.es/shop" 
+                            t-att-selected="request.website.is_canarias_conectada">
+                        🌐 Canarias Conectada
+                    </option>
+                    <option value="https://guanarteme.canariasconectada.es/shop"
+                            t-att-selected="request.website.zone_id.code == 'GUA'">
+                        🔵 Zona Comercial Guanarteme
+                    </option>
+                    <option value="https://tamaraceite.canariasconectada.es/shop"
+                            t-att-selected="request.website.zone_id.code == 'TAM'">
+                        🟢 Zona Comercial Tamaraceite
+                    </option>
+                    <option value="https://lomolosfrailes.canariasconectada.es/shop"
+                            t-att-selected="request.website.zone_id.code == 'LOM'">
+                        🟡 Zona Comercial Lomo los Frailes
+                    </option>
+                </select>
+            </div>
+        </div>
+    </template>
+
+    <!-- Insertar Zonas en DESKTOP (después de dropzone top) -->
+    <template id="sidebar_zones_desktop" inherit_id="website_sale.products" name="Zonas Sidebar Desktop">
+        <xpath expr="//aside[@id='products_grid_before']//t[@t-call='website_sale.sidebar_dropzone_at_top']" position="after">
+            <t t-call="microsite_zones.sidebar_commercial_zones"/>
+        </xpath>
+    </template>
+
+    <!-- Insertar Zonas en OFFCANVAS MÓVIL -->
+    <template id="sidebar_zones_offcanvas" inherit_id="website_sale.o_wsale_offcanvas" name="Zonas Sidebar Offcanvas">
+        <xpath expr="//div[@id='o_wsale_offcanvas_content']/div[@t-if='opt_wsale_categories']" position="before">
+            <div class="accordion-item d-lg-none">
+                <h2 id="o_wsale_offcanvas_zones_header" class="accordion-header mb-0">
+                    <button class="o_wsale_offcanvas_title accordion-button rounded-0 collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#o_wsale_offcanvas_zones"
+                            aria-expanded="false"
+                            aria-controls="o_wsale_offcanvas_zones">
+                            <b>Zonas Comerciales</b>
+                    </button>
+                </h2>
+                <div id="o_wsale_offcanvas_zones"
+                     class="accordion-collapse collapse"
+                     aria-labelledby="o_wsale_offcanvas_zones_header">
+                    <div class="accordion-body pt-0">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item border-0 ps-0 pb-0">
+                                <a t-att-href="'https://canariasconectada.es/shop'" 
+                                   t-attf-class="p-0 {{request.website.is_canarias_conectada and 'text-decoration-underline'}}">
+                                    Canarias Conectada
+                                </a>
+                            </li>
+                            <li class="list-group-item border-0 ps-0 pb-0">
+                                <a t-att-href="'https://guanarteme.canariasconectada.es/shop'" 
+                                   t-attf-class="p-0 {{request.website.zone_id.code == 'GUA' and 'text-decoration-underline'}}">
+                                    Zona Comercial Guanarteme
+                                </a>
+                            </li>
+                            <li class="list-group-item border-0 ps-0 pb-0">
+                                <a t-att-href="'https://tamaraceite.canariasconectada.es/shop'" 
+                                   t-attf-class="p-0 {{request.website.zone_id.code == 'TAM' and 'text-decoration-underline'}}">
+                                    Zona Comercial Tamaraceite
+                                </a>
+                            </li>
+                            <li class="list-group-item border-0 ps-0 pb-0">
+                                <a t-att-href="'https://lomolosfrailes.canariasconectada.es/shop'" 
+                                   t-attf-class="p-0 {{request.website.zone_id.code == 'LOM' and 'text-decoration-underline'}}">
+                                    Zona Comercial Lomo los Frailes
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Desactivar filmstrip de categorías (top) en webs con zona -->
+    <template id="disable_categories_top_zones" inherit_id="website_sale.products" name="Desactivar categorías top en zonas">
+        <xpath expr="//t[@t-set='opt_wsale_categories_top']" position="replace">
+            <t t-set="opt_wsale_categories_top" t-value="is_view_active('website_sale.products_categories_top') and not request.website.zone_id"/>
+        </xpath>
+    </template>
+
+    <!-- Forzar categorías en sidebar para webs con zona -->
+    <template id="force_categories_sidebar_zones" inherit_id="website_sale.products" name="Forzar categorías sidebar en zonas">
+        <xpath expr="//t[@t-set='opt_wsale_categories']" position="replace">
+            <t t-set="opt_wsale_categories" t-value="is_view_active('website_sale.products_categories') or bool(request.website.zone_id)"/>
+        </xpath>
+    </template>
+
+    <!-- Ocultar toolbar de búsqueda original en zonas (usamos el header estilo directorio) -->
+    <template id="hide_shop_toolbar_zones" inherit_id="website_sale.products" name="Ocultar toolbar en zonas">
+        <xpath expr="//div[contains(@class, 'products_header') and contains(@class, 'btn-toolbar')]" position="attributes">
+            <attribute name="t-if">not request.website.zone_id</attribute>
+        </xpath>
+    </template>
+
+    <!-- Script para limpiar menús duplicados (Directorio, Inicio, Tienda) -->
+    <template id="clean_duplicate_menus_shop" inherit_id="website_sale.products" name="Clean Duplicate Menus">
+        <xpath expr="//div[@id='oe_structure_website_sale_products_1']" position="after">
+            <script>
+                // Limpiar menús duplicados (Directorio, Inicio, Tienda)
+                (function() {
+                    function cleanDuplicateMenus() {
+                        // Rutas a limpiar (mantener solo la primera ocurrencia de cada una)
+                        var pathsToClean = ['/directorio', '/', '/shop'];
+                        
+                        ['#top_menu', '#top_menu_collapse_mobile'].forEach(function(selector) {
+                            var container = document.querySelector(selector);
+                            if (!container) return;
+                            
+                            pathsToClean.forEach(function(path) {
+                                var seen = false;
+                                container.querySelectorAll('a[href="' + path + '"]').forEach(function(link) {
+                                    var li = link.closest('li');
+                                    if (!li) return;
+                                    if (seen) {
+                                        li.style.display = 'none';
+                                    } else {
+                                        seen = true;
+                                    }
+                                });
+                            });
+                        });
+                    }
+                    
+                    if (document.readyState === 'loading') {
+                        document.addEventListener('DOMContentLoaded', cleanDuplicateMenus);
+                    } else {
+                        cleanDuplicateMenus();
+                    }
+                    setTimeout(cleanDuplicateMenus, 500);
+                    setTimeout(cleanDuplicateMenus, 1000);
+                })();
+            </script>
+        </xpath>
+    </template>
+
+    <!-- ============================================ -->
+    <!-- ESTILOS UNIFICADOS TIENDA Y DIRECTORIO       -->
+    <!-- ============================================ -->
+    <template id="shop_directory_unified_styles" inherit_id="website_sale.products" name="Shop Directory Unified Styles">
+        <xpath expr="//div[@id='oe_structure_website_sale_products_1']" position="after">
+            <style type="text/css">
+                /* ===== ESTILOS CARDS DE PRODUCTOS - SIN SOMBRAS ===== */
+                .oe_product_cart {
+                    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+                    border: 1px solid #e9ecef !important;
+                    border-radius: 8px !important;
+                    overflow: hidden !important;
+                    background: #fff !important;
+                    box-shadow: none !important;
+                }
+                .oe_product_cart:hover {
+                    transform: translateY(-4px) !important;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+                }
+                .oe_product_cart .oe_product_image {
+                    position: relative !important;
+                    min-height: 200px !important;
+                    height: 200px !important;
+                    overflow: hidden !important;
+                    background-color: #f8f9fa !important;
+                }
+                /* ===== IMÁGENES DE PRODUCTOS - COVER COMPLETO ===== */
+                .oe_product_cart .oe_product_image {
+                    height: 200px !important;
+                    min-height: 200px !important;
+                    max-height: 200px !important;
+                    overflow: hidden !important;
+                    background: unset !important;
+                    background-color: unset !important;
+                }
+                /* Forzar cover en todas las imágenes del producto */
+                .oe_product_cart .oe_product_image img,
+                .oe_product_cart .oe_product_image .oe_product_image_img,
+                .oe_product_image_img_wrapper,
+                .oe_product_image_img_wrapper img,
+                .oe_product_image_img {
+                    width: 100% !important;
+                    height: 100% !important;
+                    max-height: 200px !important;
+                    object-fit: cover !important;
+                    object-position: center center !important;
+                    transition: transform 0.5s ease !important;
+                    background: unset !important;
+                    background-color: unset !important;
+                    left: auto !important;
+                    top: auto !important;
+                    overflow: visible !important;
+                }
+                /* Enlace de imagen - sin posicionamiento absoluto */
+                .oe_product_cart .oe_product_image_link {
+                    height: 200px !important;
+                    position: static !important;
+                    left: auto !important;
+                    top: auto !important;
+                }
+                /* Wrapper de imagen */
+                .oe_product_cart .oe_product_image_img_wrapper {
+                    height: 200px !important;
+                    overflow: visible !important;
+                }
+                /* Eliminar clase object-fit-contain y forzar cover */
+                .oe_product_cart img[class*="object-fit-contain"] {
+                    object-fit: cover !important;
+                }
+                /* Estilo inline para forzar cover */
+                .oe_product_image_img_wrapper img[style*="object-fit"] {
+                    object-fit: cover !important;
+                }
+            </style>
+            <!-- JavaScript para forzar cover en imágenes de productos -->
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    var productImages = document.querySelectorAll('.oe_product_image_img');
+                    productImages.forEach(function(img) {
+                        img.style.objectFit = 'cover';
+                        img.classList.remove('object-fit-contain');
+                        img.classList.add('object-fit-cover');
+                    });
+                });
+            </script>
+            <style>
+                .oe_product_cart:hover .oe_product_image img {
+                    transform: scale(1.05) !important;
+                }
+                .oe_product_cart .o_wsale_product_information {
+                    padding: 1.25rem !important;
+                }
+                .oe_product_cart .o_wsale_products_item_title {
+                    font-size: 1.1rem !important;
+                    font-weight: 600 !important;
+                    line-height: 1.3 !important;
+                }
+                .oe_product_cart .product_price {
+                    font-weight: 700 !important;
+                    color: #212529 !important;
+                }
+                .o_wsale_products_grid_table .oe_product {
+                    margin-bottom: 1.5rem !important;
+                }
+                
+                /* ===== PILLS DE EMPRESA RESPONSIVE ===== */
+                .o_wsale_company_pill {
+                    max-width: 100%;
+                    overflow: hidden;
+                }
+                .o_wsale_company_pill .badge {
+                    max-width: 100%;
+                    display: inline-block;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    font-size: 0.75rem;
+                }
+                @media (max-width: 575.98px) {
+                    .o_wsale_company_pill .badge {
+                        font-size: 0.65rem;
+                        padding: 0.25em 0.5em;
+                    }
+                }
+                
+                /* ===== PILLS DE CATEGORÍA ===== */
+                .o_wsale_category_pill {
+                    max-width: 100%;
+                    overflow: hidden;
+                }
+                .o_wsale_category_pill .badge {
+                    max-width: 100%;
+                    display: inline-block;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    font-size: 0.7rem;
+                    transition: all 0.2s ease;
+                }
+                .o_wsale_category_pill a:hover .badge {
+                    background-color: #1561F0 !important;
+                }
+                @media (max-width: 575.98px) {
+                    .o_wsale_category_pill .badge {
+                        font-size: 0.6rem;
+                        padding: 0.2em 0.5em;
+                    }
+                }
+                
+                /* ===== GRID MÓVIL: 1 PRODUCTO POR FILA ===== */
+                @media (max-width: 767.98px) {
+                    #o_wsale_products_grid {
+                        --o-wsale-ppr: 1 !important;
+                    }
+                    #o_wsale_products_grid .oe_product {
+                        grid-column: span 12 !important;
+                        width: 100% !important;
+                    }
+                    #o_wsale_products_grid .oe_product .oe_product_cart {
+                        display: flex;
+                        flex-direction: row;
+                        align-items: stretch;
+                    }
+                    #o_wsale_products_grid .oe_product .oe_product_image {
+                        width: 160px;
+                        min-height: 200px;
+                        height: 200px;
+                        flex-shrink: 0;
+                    }
+                    #o_wsale_products_grid .oe_product .oe_product_image img,
+                    #o_wsale_products_grid .oe_product .oe_product_image .oe_product_image_img {
+                        height: 200px !important;
+                        object-fit: cover !important;
+                    }
+                    #o_wsale_products_grid .oe_product .o_wsale_product_information {
+                        flex: 1;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                    }
+                }
+                
+                /* ===== HEADER ESTILO DIRECTORIO (solo zonas) ===== */
+                #oe_structure_website_sale_products_1 {
+                    margin-bottom: 0 !important;
+                }
+                .shop-directory-header {
+                    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+                    padding-top: 100px;
+                    padding-bottom: 100px;
+                    margin-bottom: 1.5rem;
+                }
+                .shop-directory-header h1 {
+                    color: #fff;
+                    font-weight: 700;
+                    letter-spacing: -0.5px;
+                }
+                .shop-directory-header p.lead {
+                    color: rgba(255,255,255,0.7);
+                }
+                .shop-directory-header .form-control {
+                    border: none;
+                    border-radius: 8px 0 0 8px;
+                    padding: 0.75rem 1.25rem;
+                    font-size: 1rem;
+                }
+                .shop-directory-header .form-control:focus {
+                    box-shadow: 0 0 0 0.25rem rgba(21, 97, 240, 0.25);
+                }
+                .shop-directory-header .btn-primary {
+                    border-radius: 0 8px 8px 0;
+                    padding: 0.75rem 1.5rem;
+                    font-weight: 500;
+                    background: #1561F0 !important;
+                    border-color: #1561F0 !important;
+                }
+                
+                /* ===== PALETA APPLE (sin morado Odoo) ===== */
+                /* #131313 negro | #2B2B2B gris oscuro | #86868B gris medio | #1561F0 azul */
+                
+                /* ===== SIDEBAR ESTILO DIRECTORIO - card como /directorio ===== */
+                #products_grid_before .o_wsale_products_grid_before_rail {
+                    background: #fff;
+                    border-radius: 8px;
+                    padding: 1.5rem;
+                    box-shadow: none !important;
+                    border: 1px solid #e9ecef;
+                    height: auto;
+                    min-height: 200px;
+                }
+                #products_grid_before .o_wsale_categories_list_header {
+                    background: linear-gradient(135deg, #1561F0 0%, #1046c9 100%);
+                    color: #fff;
+                    padding: 1rem;
+                    border-radius: 8px 8px 0 0;
+                    margin: -1rem 0 1rem 0;
+                    font-weight: 600;
+                    font-size: 0.95rem;
+                }
+                #products_grid_before .o_wsale_categories_list_header b,
+                #products_grid_before .o_wsale_categories_list_header a {
+                    color: #fff !important;
+                }
+                #products_grid_before .nav-link {
+                    padding: 0.6rem 0.75rem;
+                    border-radius: 6px;
+                    transition: all 0.2s;
+                    color: #2B2B2B;
+                }
+                #products_grid_before .nav-link:hover {
+                    background-color: #e9ecef;
+                    color: #1561F0;
+                }
+                #products_grid_before .nav-link.text-decoration-underline {
+                    background-color: #1561F0;
+                    color: #fff !important;
+                }
+                
+                /* Zonas comerciales en sidebar - card como directorio */
+                .o_wsale_commercial_zones {
+                    background: #fff;
+                    border-radius: 8px;
+                    padding: 1rem;
+                    margin-bottom: 1rem;
+                    box-shadow: none !important;
+                    border: 1px solid #e9ecef;
+                }
+                .o_wsale_commercial_zones h6,
+                .o_wsale_commercial_zones .text-primary,
+                .o_wsale_commercial_zones .form-label .text-primary {
+                    color: #1561F0 !important;
+                }
+                .o_wsale_commercial_zones .form-label {
+                    color: #2B2B2B;
+                }
+                .o_wsale_commercial_zones .nav-link {
+                    color: #2B2B2B;
+                    padding: 0.5rem 0;
+                    border-bottom: 1px solid #e9ecef;
+                }
+                .o_wsale_commercial_zones .nav-link:last-child {
+                    border-bottom: none;
+                }
+                .o_wsale_commercial_zones .nav-link:hover {
+                    color: #1561F0;
+                }
+                
+                /* ===== TOOLBAR PRODUCTOS - igual que directorio (Mostrando X / Mostrar: 12 24) ===== */
+                #o_wsale_products_header {
+                    background: #f8f9fa !important;
+                    padding: 1rem !important;
+                    border-radius: 8px !important;
+                    box-shadow: none !important;
+                    border: none !important;
+                    margin-bottom: 1.5rem !important;
+                    display: flex !important;
+                    flex-wrap: wrap !important;
+                    justify-content: space-between !important;
+                    align-items: center !important;
+                    gap: 0.5rem !important;
+                }
+                #o_wsale_products_header .products_header {
+                    background: transparent !important;
+                    border: none !important;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                    box-shadow: none !important;
+                }
+                #o_wsale_products_header h1.o_wsale_shop_title {
+                    font-size: 1rem;
+                    margin: 0;
+                    color: #495057;
+                }
+                #o_wsale_products_header .form-control {
+                    border-radius: 6px;
+                    border: 1px solid #dee2e6;
+                }
+                #o_wsale_products_header .text-muted {
+                    color: #86868B !important;
+                }
+                
+                /* ===== ESTRUCTURA GRID IGUAL QUE DIRECTORIO (row > col-lg-3 + col-lg-9) ===== */
+                /* Contenedor principal - asegurar row */
+                #o_wsale_container .row:has(#products_grid_before) {
+                    display: flex;
+                    flex-wrap: wrap;
+                }
+                /* Sidebar col-lg-3 */
+                #products_grid_before.col-lg-3 {
+                    flex: 0 0 auto;
+                    width: 25%;
+                    padding-right: 1rem;
+                }
+                /* Contenido col-lg-9 */
+                #products_grid.col-lg-9 {
+                    flex: 0 0 auto;
+                    width: 75%;
+                    padding-left: 1rem;
+                }
+                /* Responsive: en móvil, sidebar arriba y contenido abajo */
+                @media (max-width: 991.98px) {
+                    #products_grid_before.col-lg-3,
+                    #products_grid.col-lg-9 {
+                        width: 100%;
+                        padding: 0;
+                    }
+                }
+                
+                .products_header .btn-outline-secondary {
+                    border-color: #dee2e6;
+                    color: #86868B;
+                }
+                .products_header .btn-outline-secondary:hover,
+                .products_header .btn-outline-secondary.active {
+                    background-color: #1561F0;
+                    border-color: #1561F0;
+                    color: #fff;
+                }
+                
+                /* ===== PAGINACIÓN - misma estructura/estilo que /directorio (solo mt-4, sin caja) ===== */
+                #o_wsale_pager {
+                    margin-top: 1rem;
+                    margin-bottom: 1.5rem;
+                }
+                #o_wsale_pager .pagination {
+                    gap: 0;
+                    margin: 0;
+                }
+                #o_wsale_pager .pagination .page-item {
+                    margin: 0 2px;
+                }
+                #o_wsale_pager .pagination .page-link {
+                    border-radius: 6px;
+                    padding: 0.5rem 0.75rem;
+                    color: #1561F0;
+                    background-color: #fff;
+                    border: 1px solid #dee2e6;
+                    transition: all 0.2s ease;
+                    min-width: 2.5rem;
+                    text-align: center;
+                }
+                #o_wsale_pager .pagination .page-link:hover {
+                    background-color: #f8f9fa;
+                    border-color: #1561F0;
+                    color: #1561F0;
+                }
+                #o_wsale_pager .pagination .page-item.active .page-link {
+                    background: #1561F0;
+                    border-color: #1561F0;
+                    color: #fff;
+                    font-weight: 500;
+                }
+                #o_wsale_pager .pagination .page-item.disabled .page-link {
+                    color: #86868B;
+                    background-color: #f8f9fa;
+                    border-color: #dee2e6;
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                }
+                #o_wsale_pager .pagination .page-item.disabled .page-link:hover {
+                    background-color: #f8f9fa;
+                    border-color: #dee2e6;
+                    color: #86868B;
+                }
+                
+                /* ===== OCULTAR BÚSQUEDA DEL HEADER ===== */
+                .o_wsale_products_header_search_form_container,
+                a[data-bs-target='#o_wsale_search_modal'] {
+                    display: none !important;
+                }
+                
+                /* ===== SELECTOR DE CANTIDAD ===== */
+                .o_wsale_products_header_limit {
+                    margin-left: auto;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+                .o_wsale_products_header_limit .btn-group .btn {
+                    padding: 0.25rem 0.5rem;
+                    font-size: 0.875rem;
+                    min-width: 2.5rem;
+                }
+                
+                /* ===== PAGINACIÓN REDONDA ===== */
+                #o_wsale_pager .pagination .page-link {
+                    border-radius: 50% !important;
+                    width: 2.5rem;
+                    height: 2.5rem;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 0;
+                    margin: 0 3px;
+                }
+                
+                /* ===== OCULTAR OFFCANVAS-BACKDROP ===== */
+                .offcanvas-backdrop {
+                    display: none !important;
+                }
+                
+                /* ===== RESPONSIVE MEJORADO ===== */
+                /* Contenedor principal */
+                #wrap.js_sale {
+                    overflow-x: hidden;
+                }
+                
+                /* Ocultar sidebar en móvil (usar solo modal de filtros) */
+                @media (max-width: 991.98px) {
+                    #products_grid_before {
+                        display: none !important;
+                    }
+                    /* Asegurar que el grid ocupe todo el ancho */
+                    #products_grid.col-lg-9 {
+                        width: 100%;
+                        padding-left: 0;
+                        flex: 0 0 100%;
+                        max-width: 100%;
+                    }
+                }
+                
+                /* Grid de productos responsive */
+                @media (max-width: 991.98px) {
+                    /* Header más compacto */
+                    #o_wsale_products_header {
+                        padding: 0.75rem !important;
+                    }
+                    
+                    /* Selector de cantidad visible pero compacto */
+                    .o_wsale_products_header_limit {
+                        width: 100%;
+                        justify-content: center;
+                        margin-top: 0.5rem;
+                    }
+                    .o_wsale_products_header_limit label {
+                        display: none !important;
+                    }
+                }
+                
+                @media (max-width: 767.98px) {
+                    /* Productos en grid más compacto */
+                    #o_wsale_products_grid {
+                        padding: 0;
+                    }
+                    
+                    /* Toolbar con elementos apilados */
+                    .products_header {
+                        flex-direction: column;
+                        align-items: stretch !important;
+                        gap: 0.5rem;
+                        flex-wrap: wrap !important;
+                    }
+                    .products_header > * {
+                        width: 100%;
+                        margin: 0 !important;
+                    }
+                    
+                    /* Header responsive mejorado */
+                    #o_wsale_products_header {
+                        flex-direction: column !important;
+                        gap: 0.75rem !important;
+                    }
+                    #o_wsale_products_header h1.o_wsale_shop_title {
+                        font-size: 0.9rem;
+                        text-align: center;
+                        width: 100%;
+                    }
+                    
+                    /* Paginación más compacta */
+                    #o_wsale_pager .pagination .page-link {
+                        width: 2rem;
+                        height: 2rem;
+                        font-size: 0.875rem;
+                        margin: 0 2px;
+                    }
+                }
+                
+                @media (max-width: 575.98px) {
+                    /* Móvil pequeño: header y filtros super compactos */
+                    #o_wsale_products_header {
+                        padding: 0.5rem !important;
+                    }
+                    
+                    /* Selector de cantidad con botones más pequeños */
+                    .o_wsale_products_header_limit .btn-group .btn {
+                        padding: 0.2rem 0.4rem;
+                        font-size: 0.75rem;
+                        min-width: 2rem;
+                    }
+                    
+                    /* Botón filtros más visible */
+                    .products_header button[data-bs-target="#shopFiltersModal"] {
+                        width: 100%;
+                        margin-top: 0.5rem;
+                    }
+                }
+                
+                /* ===== OCULTAR SELECTOR ANTIGUO ===== */
+                .ppg-selector {
+                    display: none !important;
+                }
+                
+                /* ===== OCULTAR EN MÓVIL: Botón Filtros offcanvas y Toggle vista ===== */
+                @media (max-width: 991.98px) {
+                    /* Ocultar botón Filtros del offcanvas nativo */
+                    button[data-bs-target="#o_wsale_offcanvas"],
+                    button[title="Filtros"][data-bs-toggle="offcanvas"] {
+                        display: none !important;
+                    }
+                    
+                    /* Ocultar toggle de modo de vista */
+                    .shop-view-mode-toggle {
+                        display: none !important;
+                    }
+                }
+            </style>
+        </xpath>
+    </template>
+
+    <!-- Paginación /shop: misma estructura que /directorio (d-flex justify-content-center mt-4) -->
+    <template id="pager_class_like_directory" inherit_id="website_sale.products" name="Pager class like directory">
+        <xpath expr="//div[@id='o_wsale_pager']" position="attributes">
+            <attribute name="t-attf-class">products_pager d-flex justify-content-center {{ (request.website.zone_id or request.website.is_canarias_conectada) and 'mt-4' or (opt_wsale_design_grid and 'py-4' or 'py-5 pb-4') }}</attribute>
+        </xpath>
+    </template>
+
+    <!-- ============================================ -->
+    <!-- HEADER ESTILO DIRECTORIO PARA ZONAS          -->
+    <!-- ============================================ -->
+    <template id="shop_directory_header" inherit_id="website_sale.products" name="Shop Directory Header">
+        <xpath expr="//div[@id='oe_structure_website_sale_products_1']" position="after">
+            <t t-if="request.website.zone_id or request.website.is_canarias_conectada">
+                <section class="shop-directory-header">
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8 text-center">
+                                <h1 class="display-5 mb-3">
+                                    <t t-if="request.website.is_canarias_conectada">Tienda Canarias Conectada</t>
+                                    <t t-else="">
+                                        <t t-if="request.website.zone_id.code == 'GUA'">Zona Comercial Guanarteme</t>
+                                        <t t-if="request.website.zone_id.code == 'TAM'">Zona Comercial Tamaraceite</t>
+                                        <t t-if="request.website.zone_id.code == 'LOM'">Zona Comercial Lomo los Frailes</t>
+                                    </t>
+                                </h1>
+                                <p class="lead mb-4">Encuentra los mejores productos y servicios</p>
+                                <form action="/shop" method="get" class="input-group input-group-lg">
+                                    <input type="text" name="search" class="form-control" 
+                                           placeholder="Buscar productos..." 
+                                           t-att-value="search"/>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fa fa-search me-2"/>
+                                        <t t-if="not request.httprequest.headers.get('User-Agent', '').lower().startswith('mobile')">
+                                            Buscar
+                                        </t>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- ============================================ -->
+    <!-- CATEGORÍA DEL PRODUCTO EN LA CARD            -->
+    <!-- ============================================ -->
+    <!-- Template para agregar categoría en cards de productos -->
+    <template id="product_card_category" inherit_id="website_sale.product_title" name="Product Card Category" priority="99">
+        <xpath expr="//h1[@t-field='product.name']" position="after">
+            <t t-if="product.public_categ_ids">
+                <div class="o_wsale_category_pill mt-1 mb-2">
+                    <a t-att-href="'/shop/category/' + slug(product.public_categ_ids[0])" class="text-decoration-none">
+                        <span class="badge rounded-pill bg-info text-white small fw-normal">
+                            <i class="fa fa-folder-open me-1"></i>
+                            <t t-esc="product.public_categ_ids[0].name"/>
+                        </span>
+                    </a>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- ============================================ -->
+    <!-- FORMATO TIENDA IGUAL QUE DIRECTORIO          -->
+    <!-- ============================================ -->
+
+    <!-- Sidebar formato directorio: col-lg-3 mb-4 -->
+    <template id="shop_sidebar_like_directory" inherit_id="website_sale.products" name="Shop Sidebar Like Directory" priority="99">
+        <xpath expr="//aside[@id='products_grid_before']" position="attributes">
+            <attribute name="class">col-lg-3 mb-4</attribute>
+        </xpath>
+    </template>
+
+    <!-- Grid de productos formato directorio: col-lg-9 -->
+    <template id="shop_grid_like_directory" inherit_id="website_sale.products" name="Shop Grid Like Directory" priority="99">
+        <xpath expr="//div[@id='products_grid']" position="attributes">
+            <attribute name="class">col-lg-9</attribute>
+        </xpath>
+    </template>
+
+    <!-- ============================================ -->
+    <!-- HEADER TIENDA: QUITAR BÚSQUEDA, AÑADIR SELECTOR CANTIDAD -->
+    <!-- ============================================ -->
+
+    <!-- Añadir nuevo selector de cantidad después del header -->
+    <template id="shop_new_ppg_selector" inherit_id="website_sale.products" name="Shop New PPG Selector" priority="1">
+        <xpath expr="//div[@id='products_grid']" position="inside">
+            <div class="o_wsale_ppg_bar d-flex align-items-center justify-content-end gap-2 py-2 px-3 bg-light rounded mb-3">
+                <label class="text-muted small mb-0">Mostrar:</label>
+                <div class="btn-group" role="group" aria-label="Productos por página">
+                    <a t-att-href="keep(ppg=12, page=1)" t-attf-class="btn btn-sm {{ppg == 12 and 'btn-primary active' or 'btn-outline-secondary'}}">12</a>
+                    <a t-att-href="keep(ppg=24, page=1)" t-attf-class="btn btn-sm {{ppg == 24 and 'btn-primary active' or 'btn-outline-secondary'}}">24</a>
+                    <a t-att-href="keep(ppg=48, page=1)" t-attf-class="btn btn-sm {{ppg == 48 and 'btn-primary active' or 'btn-outline-secondary'}}">48</a>
+                    <a t-att-href="keep(ppg=96, page=1)" t-attf-class="btn btn-sm {{ppg == 96 and 'btn-primary active' or 'btn-outline-secondary'}}">96</a>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Definir variable ppg en el contexto del template -->
+    <template id="shop_set_ppg_var" inherit_id="website_sale.products" name="Shop Set PPG Var" priority="99">
+        <xpath expr="//t[@t-set='head_website_sale']" position="after">
+            <t t-set="ppg" t-value="request.httprequest.args.get('ppg') and int(request.httprequest.args.get('ppg')) or 21"/>
+        </xpath>
+    </template>
+
+    <!-- Añadir selector de cantidad al header de la tienda -->
+    <template id="shop_add_limit_selector" inherit_id="website_sale.products" name="Shop Add Limit Selector" priority="1">
+        <xpath expr="//div[hasclass('products_header')]" position="replace">
+            <div class="products_header btn-toolbar flex-wrap align-items-center justify-content-between gap-1 gap-lg-2 gap-xl-3">
+                <!-- Contenido original preservado -->
+                <t t-if="is_view_active('website_sale.search')">
+                    <t t-set="_has_all_sibligns" t-value="hasPricelistDropdown and is_view_active('website_sale.sort') and wsale_has_filters_btn"/>
+                    <div t-attf-class="o_wsale_products_header_search_form_container {{ _has_all_sibligns and 'd-none d-sm-inline-block'}} col-xl-5 me-auto {{not hasLeftColumn and 'col-xl-6'}}">
+                        <t t-set="search_term">Buscar en</t>
+                        <t t-if="category" t-set="placeholder" t-valuef="{{ search_term }} {{ category.name }}"/>
+                        <t t-call="website_sale.search" placeholder="placeholder" search="original_search or search"/>
+                    </div>
+                    <a t-attf-class="btn o_not_editable {{_has_all_sibligns and 'd-inline-block d-sm-none' or 'd-none'}} me-auto btn-{{navClass}}" data-bs-target="#o_wsale_search_modal" data-bs-toggle="modal" role="button" title="Buscar productos" href="#">
+                        <i class="oi oi-search" role="img"/>
+                    </a>
+                </t>
+                <t t-if="hasPricelistDropdown" t-call="website_sale.pricelist_list"/>
+                <t t-if="is_view_active('website_sale.sort')" t-call="website_sale.sort"/>
+                <button t-if="wsale_has_filters_btn" t-attf-class="btn btn-{{navClass}} position-relative {{not wsale_has_filters_btn_lg and 'd-lg-none'}} {{not is_view_active('website_sale.search') and 'ms-auto'}} text-nowrap" title="Filtros" data-bs-toggle="offcanvas" data-bs-target="#o_wsale_offcanvas">
+                    <i class="oi oi-settings-adjust" role="img"/>
+                    <small t-attf-class="ms-1 {{(hasPricelistDropdown and is_view_active('website_sale.search') and is_view_active('website_sale.sort')) and 'd-none d-md-inline-block'}}">Filtros</small>
+                </button>
+                <!-- Selector de cantidad añadido -->
+                <div class="o_wsale_products_header_limit ms-auto d-flex align-items-center gap-2">
+                    <label class="text-muted small mb-0 d-none d-md-block">Mostrar:</label>
+                    <div class="btn-group" role="group" aria-label="Productos por página">
+                        <a t-att-href="keep(ppg=12, page=1)" t-attf-class="btn btn-sm {{ppg == 12 and 'btn-primary active' or 'btn-outline-secondary'}}">12</a>
+                        <a t-att-href="keep(ppg=24, page=1)" t-attf-class="btn btn-sm {{ppg == 24 and 'btn-primary active' or 'btn-outline-secondary'}}">24</a>
+                        <a t-att-href="keep(ppg=48, page=1)" t-attf-class="btn btn-sm {{ppg == 48 and 'btn-primary active' or 'btn-outline-secondary'}}">48</a>
+                        <a t-att-href="keep(ppg=96, page=1)" t-attf-class="btn btn-sm {{ppg == 96 and 'btn-primary active' or 'btn-outline-secondary'}}">96</a>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- ============================================ -->
+    <!-- DIRECTORIO: USAR MISMOS COLORES QUE TIENDA   -->
+ <!-- ============================================ -->
+    <template id="directory_unified_colors" inherit_id="website_directory.directory_index" name="Directory Unified Colors" priority="99">
+        <xpath expr="//section[contains(@class, 'py-5') and .//div[@id='directory-grid']]" position="before">
+            <style>
+                /* Directorio - mismos colores que tienda */
+                
+                /* Barra "Mostrando X empresas" */
+                #directory-grid-wrapper .d-flex.flex-wrap.justify-content-between.align-items-center.mb-4.p-3.bg-light.rounded {
+                    background-color: #f8f9fa !important;
+                    border-radius: 8px !important;
+                }
+                
+                /* Selector de cantidad en directorio */
+                #directory-grid-wrapper .btn-group[role="group"] .btn {
+                    border-radius: 4px;
+                    margin: 0 2px;
+                }
+                #directory-grid-wrapper .btn-group[role="group"] .btn-primary,
+                #directory-grid-wrapper .btn-group[role="group"] .btn.active {
+                    background-color: #0d6efd;
+                    border-color: #0d6efd;
+                }
+                
+                /* Sidebar filtros */
+                #directory-sidebar .card {
+                    border: none;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                    border-radius: 8px;
+                }
+                #directory-sidebar .card-header {
+                    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%) !important;
+                    border-radius: 8px 8px 0 0 !important;
+                }
+                #directory-sidebar .filter-section label {
+                    color: #495057;
+                    font-weight: 600;
+                }
+                
+                /* Paginación redonda */
+                #directory-pagination .pagination .page-link {
+                    border-radius: 50% !important;
+                    width: 2.5rem;
+                    height: 2.5rem;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 0;
+                    margin: 0 3px;
+                    color: #0d6efd;
+                    border: 1px solid #dee2e6;
+                    background-color: #fff;
+                }
+                #directory-pagination .pagination .page-item.active .page-link {
+                    background-color: #0d6efd;
+                    border-color: #0d6efd;
+                    color: #fff;
+                }
+                #directory-pagination .pagination .page-link:hover {
+                    background-color: #e9ecef;
+                    border-color: #0d6efd;
+                }
+                
+                /* Enlaces y texto */
+                #directory-grid-wrapper a {
+                    color: #0d6efd;
+                }
+                #directory-grid-wrapper .text-muted {
+                    color: #86868B !important;
+                }
+                
+                /* Cards de empresas */
+                .directory-card {
+                    border: 1px solid #e9ecef;
+                    border-radius: 8px;
+                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                }
+                .directory-card:hover {
+                    transform: translateY(-4px);
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+                }
+            </style>
+        </xpath>
+    </template>
+
+<data inherit_id="website_sale.products" name="Shop Header Grid Styles">
+    <xpath expr="//div[@id='oe_structure_website_sale_products_1']" position="after">
+        <style type="text/css">
+            /* ============================================
+               HEADER ESTILO DIRECTORIO (fondo gris)
+               ============================================ */
+            
+            .shop-directory-header {
+                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+                padding: 3rem 0 !important;
+                margin-bottom: 2rem !important;
+                text-align: center !important;
+            }
+            
+            .shop-directory-header h1 {
+                font-size: 2.5rem !important;
+                font-weight: 700 !important;
+                color: #131313 !important;
+                margin-bottom: 1rem !important;
+                text-align: center !important;
+            }
+            
+            .shop-directory-header p.lead {
+                font-size: 1.15rem !important;
+                color: #6c757d !important;
+                margin-bottom: 2rem !important;
+                text-align: center !important;
+            }
+            
+            .shop-directory-header form {
+                max-width: 700px !important;
+                margin: 0 auto !important;
+            }
+            
+            .shop-directory-header .form-control {
+                border: 1px solid #dee2e6 !important;
+                border-radius: 8px 0 0 8px !important;
+                padding: 0.875rem 1.25rem !important;
+                font-size: 1rem !important;
+            }
+            
+            .shop-directory-header .btn-primary {
+                background: #1561F0 !important;
+                border-color: #1561F0 !important;
+                border-radius: 0 8px 8px 0 !important;
+                padding: 0.875rem 1.5rem !important;
+                font-weight: 500 !important;
+            }
+            
+            /* ============================================
+               GRID ANCHO - Sidebar más compacto
+               ============================================ */
+            
+            #products_grid_before.col-lg-3 {
+                width: 20% !important;
+                max-width: 240px !important;
+                padding-right: 1rem !important;
+            }
+            
+            #products_grid.col-lg-9 {
+                width: 80% !important;
+                padding-left: 1rem !important;
+            }
+            
+            @media (min-width: 1400px) {
+                #products_grid_before.col-lg-3 {
+                    width: 18% !important;
+                    max-width: 220px !important;
+                }
+                #products_grid.col-lg-9 {
+                    width: 82% !important;
+                }
+            }
+            
+            @media (max-width: 991.98px) {
+                #products_grid_before.col-lg-3,
+                #products_grid.col-lg-9 {
+                    width: 100% !important;
+                    padding: 0 !important;
+                }
+                
+                .shop-directory-header h1 {
+                    font-size: 1.75rem !important;
+                }
+            }
+        </style>
+    </xpath>
+</data>
+
+
+    <!-- ============================================================
+         CATÁLOGO/DIRECTORIO - SIN FUNCIONALIDAD DE COMPRA
+         Para zonas comerciales y Canarias Conectada
+         ============================================================ -->
+
+    <!-- 1. OCULTAR BOTÓN "AÑADIR AL CARRITO" EN ZONAS Y CANARIAS CONECTADA -->
+    <template id="hide_add_to_cart_zones" inherit_id="website_sale.shop_product_buttons" name="Hide Add to Cart in Zones">
+        <xpath expr="//a[contains(@class, 'a-submit')]" position="attributes">
+            <attribute name="t-if">not (request.website.zone_id or request.website.is_canarias_conectada)</attribute>
+        </xpath>
+    </template>
+
+    <!-- 2. AÑADIR BOTÓN "VER EN TIENDA" EN LUGAR DE COMPRAR -->
+    <template id="product_view_in_store_button" inherit_id="website_sale.products_item" name="View in Store Button" priority="98">
+        <xpath expr="//div[contains(@class, 'o_wsale_product_btn')]" position="after">
+            <t t-if="request.website.zone_id or request.website.is_canarias_conectada">
+                <div class="o_wsale_product_btn mt-2 o_wsale_view_in_store_btn">
+                    <a t-att-href="(product.company_id.website_id and product.company_id.website_id.domain or '') + '/shop/' + product.website_url.split('/')[-1]"
+                       class="btn btn-primary btn-sm w-100" target="_blank">
+                        <i class="fa fa-external-link me-1"/>
+                        <span>Ver en tienda</span>
+                    </a>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- 3. OCULTAR CARRITO EN EL HEADER PARA ZONAS/CANARIAS -->
+    <template id="hide_cart_zones" inherit_id="website_sale.header_cart_link" name="Hide Cart in Zones">
+        <xpath expr="//t[@t-set='show_cart']" position="after">
+            <t t-if="request.website.zone_id or request.website.is_canarias_conectada">
+                <t t-set="show_cart" t-value="False"/>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- 4. OCULTAR BOTONES DE COMPRA EN PÁGINA DE PRODUCTO -->
+    <template id="hide_product_cart_zones" inherit_id="website_sale.product" name="Hide Product Cart in Zones">
+        <xpath expr="//a[@id='add_to_cart']" position="attributes">
+            <attribute name="t-if">not (request.website.zone_id or request.website.is_canarias_conectada)</attribute>
+        </xpath>
+    </template>
+
+    <!-- 5. REEMPLAZAR BOTÓN DE COMPRA CON "VER EN TIENDA" EN PÁGINA DE PRODUCTO -->
+    <template id="product_page_view_in_store" inherit_id="website_sale.product" name="Product Page View in Store" priority="99">
+        <xpath expr="//a[@id='add_to_cart']" position="after">
+            <t t-if="request.website.zone_id or request.website.is_canarias_conectada">
+                <a t-att-href="(product.company_id.website_id and product.company_id.website_id.domain or '') + '/shop/' + product.website_url.split('/')[-1]"
+                   class="btn btn-primary btn-lg w-100 w-md-auto mb-3" target="_blank">
+                    <i class="fa fa-external-link me-2"/>
+                    Ver en tienda de <t t-esc="product.company_id.name"/>
+                </a>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- 6. OCULTAR PRECIO EN PÁGINA DE PRODUCTO PARA ZONAS -->
+    <template id="hide_product_price_zones" inherit_id="website_sale.product_price" name="Hide Product Price in Zones">
+        <xpath expr="//span[@t-field='product.lst_price']" position="attributes">
+            <attribute name="t-if">not (request.website.zone_id or request.website.is_canarias_conectada)</attribute>
+        </xpath>
+    </template>
+
+    <!-- 7. ESTILOS PARA EL MODO CATÁLOGO -->
+    <template id="catalog_mode_styles" inherit_id="website_sale.products" name="Catalog Mode Styles">
+        <xpath expr="//div[@id='oe_structure_website_sale_products_1']" position="after">
+            <style type="text/css">
+                /* ===== MODO CATÁLOGO - SIN COMPRA ===== */
+                .o_wsale_view_in_store_btn .btn-primary {
+                    background-color: #1561F0;
+                    border-color: #1561F0;
+                    font-weight: 500;
+                    transition: all 0.3s ease;
+                }
+                .o_wsale_view_in_store_btn .btn-primary:hover {
+                    background-color: #1046c9;
+                    border-color: #1046c9;
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 8px rgba(21, 97, 240, 0.3);
+                }
+            </style>
+        </xpath>
+    </template>
+
+</odoo>

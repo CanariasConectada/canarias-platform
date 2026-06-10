@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_partner_review_comment_list" model="ir.ui.view">
+        <field name="name">partner.review.comment.list</field>
+        <field name="model">partner.review.comment</field>
+        <field name="arch" type="xml">
+            <list string="Comentarios">
+                <field name="partner_id"/>
+                <field name="autor_nombre"/>
+                <field name="contenido_resumido"/>
+                <field name="estado" decoration-success="estado == 'aprobado'" decoration-danger="estado == 'rechazado'" decoration-warning="estado == 'pendiente'"/>
+                <field name="contiene_palabras_prohibidas"/>
+                <field name="create_date"/>
+                <button name="action_aprobar" type="object" string="Aprobar" class="btn-success" invisible="estado != 'pendiente'"/>
+                <button name="action_rechazar" type="object" string="Rechazar" class="btn-danger" invisible="estado != 'pendiente'"/>
+                <button name="action_eliminar" type="object" string="Eliminar" class="btn-outline-danger" confirm="¿Estás seguro de que deseas eliminar este comentario?"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_partner_review_comment_form" model="ir.ui.view">
+        <field name="name">partner.review.comment.form</field>
+        <field name="model">partner.review.comment</field>
+        <field name="arch" type="xml">
+            <form string="Comentario">
+                <header>
+                    <button name="action_aprobar" type="object" string="Aprobar" class="btn-success" invisible="estado != 'pendiente'"/>
+                    <button name="action_rechazar" type="object" string="Rechazar" class="btn-danger" invisible="estado != 'pendiente'"/>
+                    <button name="action_eliminar" type="object" string="Eliminar" class="btn-outline-danger" confirm="¿Estás seguro de que deseas eliminar este comentario?"/>
+                    <field name="estado" widget="statusbar" statusbar_visible="pendiente,aprobado,rechazado"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="partner_id"/>
+                        <field name="autor_id"/>
+                        <field name="autor_nombre"/>
+                        <field name="parent_id"/>
+                        <field name="contenido"/>
+                        <field name="estado"/>
+                        <field name="contiene_palabras_prohibidas"/>
+                        <field name="create_date" readonly="1"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_partner_review_comment_search" model="ir.ui.view">
+        <field name="name">partner.review.comment.search</field>
+        <field name="model">partner.review.comment</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="partner_id"/>
+                <field name="autor_nombre"/>
+                <field name="contenido"/>
+                <filter string="Pendientes" name="pendiente" domain="[('estado', '=', 'pendiente')]"/>
+                <filter string="Aprobados" name="aprobado" domain="[('estado', '=', 'aprobado')]"/>
+                <filter string="Rechazados" name="rechazado" domain="[('estado', '=', 'rechazado')]"/>
+                <filter string="Con palabras prohibidas" name="prohibidas" domain="[('contiene_palabras_prohibidas', '=', True)]"/>
+
+            </search>
+        </field>
+    </record>
+
+    <record id="action_partner_review_comment" model="ir.actions.act_window">
+        <field name="name">Comentarios</field>
+        <field name="res_model">partner.review.comment</field>
+        <field name="view_mode">list,form</field>
+
+    </record>
+</odoo>

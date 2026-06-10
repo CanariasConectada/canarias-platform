@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_partner_form_inherit_microsite" model="ir.ui.view">
+        <field name="name">res.partner.form.microsite</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Microsite" name="microsite" invisible="not has_microsite">
+                    <group>
+                        <group string="Información General">
+                            <field name="microsite_use_custom_html"/>
+                            <field name="microsite_custom_html" widget="html" invisible="not microsite_use_custom_html"/>
+                            <field name="microsite_name"/>
+                            <field name="microsite_button_text"/>
+                            <field name="microsite_hero_image" filename="hero_filename" widget="image" class="oe_avatar"/>
+                            <field name="microsite_website_url" readonly="1"/>
+                            <field name="microsite_map_url"/>
+                            <field name="microsite_last_sync" readonly="1"/>
+                        </group>
+                        <group string="Separadores">
+                            <field name="microsite_sec1_image" filename="sec1_filename" widget="image" class="oe_avatar"/>
+                            <field name="microsite_sec1_texto"/>
+                            <field name="microsite_sec2_image" filename="sec2_filename" widget="image" class="oe_avatar"/>
+                            <field name="microsite_separador_titulo"/>
+                        </group>
+                    </group>
+                    <group string="Datos de contacto y ubicación">
+                        <group>
+                            <field name="microsite_horario" placeholder="Ej: L-V 10:00-13:30 / L-V 16:30-20:00 / S 10:00-14:00"/>
+                            <field name="microsite_entrega"/>
+                            <field name="microsite_parking"/>
+                        </group>
+                        <group>
+                            <field name="microsite_email"/>
+                            <field name="microsite_phone"/>
+                            <field name="microsite_phone2" invisible="not microsite_phone"/>
+                            <field name="microsite_address"/>
+                        </group>
+                    </group>
+                    <group string="Sección 1 — Sobre nosotros">
+                        <group>
+                            <field name="microsite_acerca1_titulo"/>
+                        </group>
+                        <group>
+                            <field name="microsite_acerca1_texto"/>
+                        </group>
+                    </group>
+                    <group string="Sección 2 — Servicios">
+                        <group>
+                            <field name="microsite_acerca2_titulo"/>
+                        </group>
+                        <group>
+                            <field name="microsite_acerca2_texto"/>
+                        </group>
+                    </group>
+                    <group string="Redes Sociales">
+                        <group>
+                            <field name="microsite_facebook"/>
+                            <field name="microsite_instagram"/>
+                            <field name="microsite_website"/>
+                        </group>
+                        <group>
+                            <field name="microsite_twitter"/>
+                            <field name="microsite_linkedin"/>
+                            <field name="microsite_youtube"/>
+                        </group>
+                    </group>
+                    <field name="has_microsite" invisible="1"/>
+                    <field name="microsite_website_id" invisible="1"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
