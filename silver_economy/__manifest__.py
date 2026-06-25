@@ -3,14 +3,14 @@
 
 {
     "name": "Silver Economy Certification",
-    "version": "19.0.1.3.0",
+    "version": "19.0.1.4.1",
     "category": "Marketing/Surveys",
     "summary": "Sistema de evaluación y certificación Silver Economy para empresas",
     "description": """
         Módulo de evaluación Silver Economy basado en Survey.
         Permite a usuarios internos evaluar sus empresas mediante un cuestionario
         de 40 preguntas y obtener sellos Bronce, Plata u Oro.
-        
+
         Características:
         - Cuestionario editable por administradores
         - Control de plazos (3 meses reintento, 1 año renovación)
@@ -19,7 +19,7 @@
         - Notificaciones por email
         - Integración web (microsite y directorio)
     """,
-    'author': 'MikeColangelo',
+    "author": "MikeColangelo",
     "depends": [
         "survey",
         "contacts",
@@ -52,5 +52,5 @@
     "application": True,
     "auto_install": False,
     "license": "AGPL-3",
-    'website': 'https://github.com/CanariasConectada/canarias-platform',
+    "website": "https://github.com/CanariasConectada/canarias-platform",
 }

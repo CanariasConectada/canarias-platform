@@ -44,7 +44,7 @@ action = model.action_start_new_silver_evaluation()
     <menuitem id="menu_silver_economy_root"
               name="Silver Economy"
               web_icon="silver_economy,static/description/icon.png"
-              groups="base.group_user"
+              groups="silver_economy.group_silver_user"
               sequence="50"/>
 
     <menuitem id="menu_silver_evaluations"
