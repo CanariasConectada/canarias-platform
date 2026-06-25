@@ -1,0 +1,7 @@
+[flake8]
+max-line-length = 88
+max-complexity = 16
+# E203/W503 chocan con black; E501 lo cubre black.
+ignore = E203,E501,W503
+per-file-ignores =
+    __init__.py: F401
