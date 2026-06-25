@@ -69,6 +69,24 @@ class TestMemoriaVivaRegression(common.TransactionCase):
             "El texto placeholder hardcodeado debe haberse eliminado"
         )
 
+    def test_40_settings_resto_gated_por_enabled(self):
+        """El resto de ajustes de Memoria Viva se ocultan si el sitio no está
+        habilitado (todo depende de memoria_viva_enabled).
+
+        El toggle "Disponibilidad del sitio" debe seguir SIEMPRE visible; los
+        demás <setting> deben llevar invisible="not memoria_viva_enabled".
+        """
+        view = self.env.ref('memoria_viva.res_config_settings_view_form')
+        arch = view.arch
+        # El gate aplica al resto de ajustes (varias veces).
+        self.assertGreaterEqual(
+            arch.count('invisible="not memoria_viva_enabled"'), 8,
+            "Los ajustes dependientes deben ocultarse cuando el sitio no está "
+            "habilitado (invisible='not memoria_viva_enabled')"
+        )
+        # El propio toggle NO debe ocultarse a sí mismo.
+        self.assertIn('memoria_viva_enabled', arch)
+
     def test_30_anuncio_filtro_categoria_inexistente_no_rompe(self):
         """Regresión: el badge del filtro de categoría no debe romper (IndexError).
 

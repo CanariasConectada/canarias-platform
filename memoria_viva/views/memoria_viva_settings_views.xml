@@ -15,41 +15,53 @@
                              help="Solo los sitios web/microsites marcados muestran la página pública /memoria-viva. El resto devuelven 404.">
                         <field name="memoria_viva_enabled"/>
                     </setting>
-                    <!-- Formulario web: cada campo en su propio <setting> para que
-                         el checkbox muestre su etiqueta describiendo qué activa. -->
+                    <!-- El resto de la configuración SOLO es relevante si el sitio
+                         tiene Memoria Viva habilitada; si no, se oculta porque de
+                         memoria_viva_enabled depende todo lo demás (la página ni
+                         siquiera se publica). Cada campo va en su propio <setting>
+                         para que el checkbox muestre su etiqueta. -->
                     <setting string="Mostrar Tipo"
+                             invisible="not memoria_viva_enabled"
                              help="Muestra el selector de Tipo en el formulario público de envío.">
                         <field name="memoria_viva_show_tipo"/>
                     </setting>
                     <setting string="Mostrar Categoría"
+                             invisible="not memoria_viva_enabled"
                              help="Muestra el selector de Categoría en el formulario público de envío.">
                         <field name="memoria_viva_show_categoria"/>
                     </setting>
                     <setting string="Mostrar Subcategoría"
+                             invisible="not memoria_viva_enabled"
                              help="Muestra el selector de Subcategoría en el formulario público de envío.">
                         <field name="memoria_viva_show_subcategoria"/>
                     </setting>
                     <setting string="Mostrar Historia completa"
+                             invisible="not memoria_viva_enabled"
                              help="Muestra el campo de descripción larga (historia completa) en el formulario.">
                         <field name="memoria_viva_show_descripcion_larga"/>
                     </setting>
                     <setting string="Mostrar Coordenadas"
+                             invisible="not memoria_viva_enabled"
                              help="Permite introducir coordenadas (latitud/longitud) en el formulario.">
                         <field name="memoria_viva_show_coordenadas"/>
                     </setting>
                     <setting string="Mostrar Mapa en listado"
+                             invisible="not memoria_viva_enabled"
                              help="Muestra el mapa con las ubicaciones en la página de listado.">
                         <field name="memoria_viva_show_mapa"/>
                     </setting>
                     <setting string="Mostrar nombre del publicador"
+                             invisible="not memoria_viva_enabled"
                              help="Muestra el nombre de quien publicó cada historia.">
                         <field name="memoria_viva_show_nombre_publicador"/>
                     </setting>
                     <setting string="Mostrar solo primer nombre"
+                             invisible="not memoria_viva_enabled"
                              help="Si está activo, solo se muestra el primer nombre del publicador (privacidad).">
                         <field name="memoria_viva_show_only_firstname"/>
                     </setting>
                     <setting string="Anuncio promocional"
+                             invisible="not memoria_viva_enabled"
                              help="Banner que aparece bajo el hero en /memoria-viva">
                         <field name="memoria_viva_anuncio_activo"/>
                         <div class="content-group mt-2" invisible="not memoria_viva_anuncio_activo">
@@ -68,13 +80,16 @@
                         </div>
                     </setting>
                     <setting string="Sistema de likes"
+                             invisible="not memoria_viva_enabled"
                              help="Duración de la cookie que evita likes repetidos">
                         <field name="memoria_viva_likes_cookie_days"/>
                     </setting>
-                    <setting string="Filtros del sidebar">
+                    <setting string="Filtros del sidebar"
+                             invisible="not memoria_viva_enabled">
                         <field name="memoria_viva_show_reset_filters"/>
                     </setting>
-                    <setting string="Comentarios">
+                    <setting string="Comentarios"
+                             invisible="not memoria_viva_enabled">
                         <field name="memoria_viva_permitir_comentarios"/>
                         <div class="content-group mt-2" invisible="not memoria_viva_permitir_comentarios">
                             <div class="row">

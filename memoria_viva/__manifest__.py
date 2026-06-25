@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Memoria Viva',
-    'version': '19.0.2.4.0',
+    'version': '19.0.2.5.0',
     'category': 'Website',
     'summary': 'Galería de historias e imágenes por microsite',
     'description': """
