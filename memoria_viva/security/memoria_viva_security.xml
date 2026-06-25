@@ -1,32 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-<data noupdate="0">
-<record id="category_memoria_viva" model="ir.module.category">
-<field name="name">Memoria Viva</field>
-<field name="sequence">50</field>
-</record>
-<record id="privilege_memoria_viva" model="res.groups.privilege">
-<field name="name">Memoria Viva</field>
-<field name="category_id" ref="category_memoria_viva"/>
-</record>
-<record id="group_memoria_viva_approver" model="res.groups">
-<field name="name">Aprobador</field>
-<field name="privilege_id" ref="privilege_memoria_viva"/>
-<field name="user_ids" eval="[Command.link(ref('base.user_root'))]"/>
-</record>
-<record id="group_memoria_viva_anuncios_manager" model="res.groups">
-<field name="name">Anuncios / Administrador</field>
-<field name="comment">Puede crear, editar, eliminar y gestionar todos los anuncios.</field>
-</record>
-<record id="group_memoria_viva_anuncios_editor" model="res.groups">
-<field name="name">Anuncios / Editor</field>
-<field name="comment">Puede crear y editar anuncios, pero no eliminarlos.</field>
-</record>
-<record id="group_memoria_viva_moderator" model="res.groups">
-<field name="name">Moderador de Comentarios</field>
-<field name="privilege_id" ref="privilege_memoria_viva"/>
-<field name="comment">Puede moderar comentarios, aprobar/rechazar y gestionar palabras prohibidas.</field>
-<field name="user_ids" eval="[Command.link(ref('base.user_root'))]"/>
-</record>
-</data>
+    <data noupdate="0">
+        <!-- ================================================================
+             Permisos de Memoria Viva, agrupados en UNA sola categoría que
+             aparece como un único bloque "Memoria Viva" en el formulario de
+             usuario (Ajustes > Usuarios). Cada privilegio describe un área de
+             responsabilidad y cada grupo, dentro de su privilegio, lo que
+             concede exactamente.
+             ================================================================ -->
+        <record id="category_memoria_viva" model="ir.module.category">
+            <field name="name">Memoria Viva</field>
+            <field name="description">Permisos de la galería de historias Memoria Viva: aprobación de historias enviadas por el público, moderación de comentarios y gestión de los anuncios promocionales.</field>
+            <field name="sequence">50</field>
+        </record>
+
+        <!-- Privilegio 1 · Historias (revisión y aprobación) -->
+        <record id="privilege_memoria_viva" model="res.groups.privilege">
+            <field name="name">Historias</field>
+            <field name="category_id" ref="category_memoria_viva"/>
+            <field name="sequence">10</field>
+        </record>
+        <record id="group_memoria_viva_approver" model="res.groups">
+            <field name="name">Aprobador de historias</field>
+            <field name="privilege_id" ref="privilege_memoria_viva"/>
+            <field name="comment">Revisa las historias que envía el público y las aprueba o rechaza. Ve todas las historias, incluidas las pendientes y rechazadas.</field>
+        </record>
+
+        <!-- Privilegio 2 · Comentarios (moderación) -->
+        <record id="privilege_memoria_viva_comentarios" model="res.groups.privilege">
+            <field name="name">Comentarios</field>
+            <field name="category_id" ref="category_memoria_viva"/>
+            <field name="sequence">20</field>
+        </record>
+        <record id="group_memoria_viva_moderator" model="res.groups">
+            <field name="name">Moderador de comentarios</field>
+            <field name="privilege_id" ref="privilege_memoria_viva_comentarios"/>
+            <field name="comment">Modera los comentarios del público: los aprueba o rechaza y gestiona la lista de palabras prohibidas.</field>
+        </record>
+
+        <!-- Privilegio 3 · Anuncios (banner promocional de /memoria-viva)
+             Jerárquico: Administrador incluye los permisos de Editor. -->
+        <record id="privilege_memoria_viva_anuncios" model="res.groups.privilege">
+            <field name="name">Anuncios</field>
+            <field name="category_id" ref="category_memoria_viva"/>
+            <field name="sequence">30</field>
+        </record>
+        <record id="group_memoria_viva_anuncios_editor" model="res.groups">
+            <field name="name">Editor</field>
+            <field name="privilege_id" ref="privilege_memoria_viva_anuncios"/>
+            <field name="comment">Crea y edita anuncios promocionales, pero no puede eliminarlos.</field>
+        </record>
+        <record id="group_memoria_viva_anuncios_manager" model="res.groups">
+            <field name="name">Administrador</field>
+            <field name="privilege_id" ref="privilege_memoria_viva_anuncios"/>
+            <field name="implied_ids" eval="[Command.link(ref('group_memoria_viva_anuncios_editor'))]"/>
+            <field name="comment">Control total de los anuncios: crear, editar y eliminar. Incluye los permisos de Editor.</field>
+        </record>
+    </data>
 </odoo>

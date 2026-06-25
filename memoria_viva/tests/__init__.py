@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 # Tests ACTIVOS (verdes contra el schema actual):
-from . import test_memoria_viva_settings
-from . import test_memoria_viva_regression
+from . import (
+    test_memoria_viva_regression,
+    test_memoria_viva_security,
+    test_memoria_viva_settings,
+)
 
 # TODO(memoria_viva): reescribir la suite legacy contra el schema ACTUAL y
 # reactivar sus imports. Está en cuarentena porque prueba un schema/API ya
