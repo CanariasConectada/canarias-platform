@@ -79,19 +79,41 @@ def procesar_imagen_webp(image_data, max_width=1600, max_height=1200, quality=90
 class MemoriaVivaWebsite(http.Controller):
     """Controlador Website para Memoria Viva - Exclusivo Guanarteme"""
 
-    def _get_guanarteme_website(self):
-        """Busca y retorna el website de Guanarteme"""
+    def _get_memoria_viva_website(self):
+        """Busca un website con Memoria Viva habilitada (para rutas JSON/API).
+
+        Las rutas JSON (``type='json'``) no tienen ``request.website``, así que
+        usamos el primer website marcado con ``memoria_viva_enabled``. Sustituye
+        a la antigua búsqueda hardcodeada por el dominio de Guanarteme.
+        """
         website = request.env['website'].sudo().search([
-            ('domain', 'ilike', 'guanarteme.canariasconectada.es')
+            ('memoria_viva_enabled', '=', True)
         ], limit=1)
         return website
 
-    def _check_guanarteme_website(self):
-        """Verifica que estemos en el website de Guanarteme, si no retorna 404"""
-        guanarteme = self._get_guanarteme_website()
-        if not guanarteme:
+    def _check_memoria_viva_website(self):
+        """Verifica que el website actual tenga Memoria Viva habilitada.
+
+        Para rutas ``website=True``: usa ``request.website`` y exige que esté
+        marcado con ``memoria_viva_enabled``; si no, devuelve 404.
+        """
+        website = getattr(request, 'website', None)
+        if not website or not website.memoria_viva_enabled:
             raise werkzeug.exceptions.NotFound()
-        return guanarteme
+        return website
+
+    def _mv_config(self):
+        """Devuelve el website cuyos campos memoria_viva_* contienen la config.
+
+        Sustituye al antiguo singleton memoria.viva.settings: la configuración
+        vive ahora como campos website-specific (ver models/res_website.py).
+        Usa el website actual de la petición y, si no hay (rutas no website),
+        cae al website de Guanarteme.
+        """
+        website = getattr(request, 'website', None)
+        if not website:
+            website = self._get_memoria_viva_website()
+        return website.sudo() if website else request.env['website'].sudo().browse()
 
     # ========================================
     # PÁGINA PRINCIPAL - LISTADO
@@ -99,7 +121,7 @@ class MemoriaVivaWebsite(http.Controller):
     @http.route('/memoria-viva', auth='public', website=True)
     def memoria_viva_list(self, **kw):
         """Página principal: Hero + Filtros + Mapa + Galería + Formulario"""
-        self._check_guanarteme_website()
+        self._check_memoria_viva_website()
         
         # Obtener parámetros de filtro
         search = kw.get('search', '')
@@ -211,16 +233,26 @@ class MemoriaVivaWebsite(http.Controller):
         tipos = Tipo.search([('active', '=', True)])
         categorias = Categoria.search([('active', '=', True), ('tipo_id', '=', 11)])  # Solo tipo General
         
-        # Preparar tipos y categorías con conteos
-        tipos_data = []
-        for tipo in tipos:
-            count = Historia.search_count([('state', '=', 'aprobado'), ('tipo_id', '=', tipo.id)])
-            tipos_data.append({'id': tipo.id, 'name': tipo.name, 'count': count})
-        
-        categorias_data = []
-        for cat in categorias:
-            count = Historia.search_count([('state', '=', 'aprobado'), ('categoria_id', '=', cat.id)])
-            categorias_data.append({'id': cat.id, 'name': cat.name, 'count': count})
+        # Preparar tipos y categorías con conteos (un read_group por modelo, evita N+1)
+        base_domain = [('state', '=', 'aprobado')]
+
+        tipo_counts = {}
+        for group in Historia.read_group(base_domain, ['tipo_id'], ['tipo_id']):
+            if group['tipo_id']:
+                tipo_counts[group['tipo_id'][0]] = group['tipo_id_count']
+        tipos_data = [
+            {'id': tipo.id, 'name': tipo.name, 'count': tipo_counts.get(tipo.id, 0)}
+            for tipo in tipos
+        ]
+
+        categoria_counts = {}
+        for group in Historia.read_group(base_domain, ['categoria_id'], ['categoria_id']):
+            if group['categoria_id']:
+                categoria_counts[group['categoria_id'][0]] = group['categoria_id_count']
+        categorias_data = [
+            {'id': cat.id, 'name': cat.name, 'count': categoria_counts.get(cat.id, 0)}
+            for cat in categorias
+        ]
         
         # Parsear filtros a int
         tipo_filter_int = None
@@ -237,9 +269,8 @@ class MemoriaVivaWebsite(http.Controller):
             pass
         
         # Obtener configuración
-        Settings = request.env['memoria.viva.settings'].sudo()
-        config = Settings.get_settings()
-        
+        config = self._mv_config()
+
         # Generar lista de décadas para el filtro (1840 hasta año actual)
         from datetime import datetime
         year_now = datetime.now().year
@@ -321,7 +352,7 @@ class MemoriaVivaWebsite(http.Controller):
     @http.route('/memoria-viva/<string:slug>', auth='public', website=True)
     def memoria_viva_detail(self, slug, **kw):
         """Página de detalle de un lugar"""
-        self._check_guanarteme_website()
+        self._check_memoria_viva_website()
         
         Historia = request.env['memoria.viva.historia'].sudo()
         lugar = Historia.search([
@@ -345,8 +376,7 @@ class MemoriaVivaWebsite(http.Controller):
         
         # Obtener configuración
         try:
-            Settings = request.env['memoria.viva.settings'].sudo()
-            config = Settings.get_settings()
+            config = self._mv_config()
         except Exception as e:
             import logging
             _logger = logging.getLogger(__name__)
@@ -371,7 +401,7 @@ class MemoriaVivaWebsite(http.Controller):
             data = {}
         
         # Verificar website
-        guanarteme = self._get_guanarteme_website()
+        guanarteme = self._get_memoria_viva_website()
         if not guanarteme:
             return {'success': False, 'error': 'Website no configurado'}
         
@@ -429,7 +459,7 @@ class MemoriaVivaWebsite(http.Controller):
             return {'success': False, 'error': f'Datos JSON inválidos: {str(e)}'}
         
         # Verificar website
-        guanarteme = self._get_guanarteme_website()
+        guanarteme = self._get_memoria_viva_website()
         if not guanarteme:
             return {'success': False, 'error': 'Website no disponible'}
         
@@ -661,8 +691,8 @@ class MemoriaVivaWebsite(http.Controller):
         try:
             Lugar = request.env['memoria.viva.historia'].sudo()
             Like = request.env['memoria.viva.like'].sudo()
-            Settings = request.env['memoria.viva.settings'].sudo().get_settings()
-            
+            Settings = self._mv_config()
+
             lugar = Lugar.browse(lugar_id)
             if not lugar.exists() or lugar.state != 'aprobado':
                 return request.make_response(json.dumps({'success': False, 'error': 'Lugar no encontrado'}), headers=headers)
@@ -682,7 +712,7 @@ class MemoriaVivaWebsite(http.Controller):
                     'already_liked': True,
                     'like_count': lugar.like_count
                 }), headers=headers)
-                response.set_cookie('mv_session_id', session_id, max_age=60*60*24*Settings.likes_cookie_days)
+                response.set_cookie('mv_session_id', session_id, max_age=60*60*24*Settings.memoria_viva_likes_cookie_days)
                 return response
             
             # Crear like
@@ -704,7 +734,7 @@ class MemoriaVivaWebsite(http.Controller):
             }), headers=headers)
             
             # Establecer cookie con duración configurada
-            response.set_cookie('mv_session_id', session_id, max_age=60*60*24*Settings.likes_cookie_days)
+            response.set_cookie('mv_session_id', session_id, max_age=60*60*24*Settings.memoria_viva_likes_cookie_days)
             return response
             
         except Exception as e:
@@ -739,8 +769,8 @@ class MemoriaVivaWebsite(http.Controller):
                 return request.make_response(json.dumps({'success': False, 'error': 'Lugar no encontrado'}), headers=headers)
             
             # Verificar configuración de comentarios
-            Settings = request.env['memoria.viva.settings'].sudo().get_settings()
-            if not Settings.permitir_comentarios:
+            Settings = self._mv_config()
+            if not Settings.memoria_viva_permitir_comentarios:
                 return request.make_response(json.dumps({'success': False, 'error': 'Los comentarios están deshabilitados'}), headers=headers)
             
             # Crear comentario
@@ -791,8 +821,8 @@ class MemoriaVivaWebsite(http.Controller):
                 return request.make_response(json.dumps({'success': False, 'error': 'Lugar no especificado'}), headers=headers)
             
             # Verificar configuración de visibilidad pública
-            Config = request.env['memoria.viva.settings'].sudo().get_settings()
-            if not Config.comentarios_publicos:
+            Config = self._mv_config()
+            if not Config.memoria_viva_comentarios_publicos:
                 # Si no es público, requerir usuario logueado
                 if not request.env.user or request.env.user._is_public():
                     return request.make_response(json.dumps({

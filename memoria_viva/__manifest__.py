@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Memoria Viva',
-    'version': '19.0.2.2.0',
+    'version': '19.0.2.4.0',
     'category': 'Website',
     'summary': 'Galería de historias e imágenes por microsite',
     'description': """
@@ -27,14 +27,13 @@ Módulo para gestionar y publicar historias/memorias de una zona comercial:
         'views/memoria_viva_evento_views.xml',
         'views/memoria_viva_anuncio_views.xml',
         'views/memoria_viva_historia_views.xml',
-        'views/memoria_viva_settings_views.xml',
         'views/memoria_viva_comentario_views.xml',
         'views/memoria_viva_palabra_prohibida_views.xml',
+        'views/memoria_viva_settings_views.xml',
         'views/memoria_viva_templates.xml',
         'views/memoria_viva_menus.xml',
         'data/memoria_viva_demo.xml',
         'data/categorias_nuevas.xml',
-        'data/seccion_editable.xml',
     ],
     'assets': {
         'web.assets_frontend': [

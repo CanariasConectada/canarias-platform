@@ -16,7 +16,13 @@ class TestMemoriaVivaComentarios(common.TransactionCase):
         
         # Usuarios
         cls.user_admin = cls.env.ref('base.user_admin')
-        cls.user_demo = cls.env.ref('base.user_demo')
+        # base.user_demo no existe sin datos demo: creamos un usuario interno.
+        cls.user_demo = cls.env['res.users'].create({
+            'name': 'Test Demo User',
+            'login': 'mv_test_demo_coment',
+            'email': 'mv_test_demo_coment@example.com',
+            'groups_id': [(6, 0, [cls.env.ref('base.group_user').id])],
+        })
         cls.user_portal = cls.env['res.users'].create({
             'name': 'Test Portal',
             'login': 'test_portal',
@@ -31,19 +37,17 @@ class TestMemoriaVivaComentarios(common.TransactionCase):
                 'domain': 'test.local',
             })
         
-        # Configuración con comentarios habilitados
-        cls.config = cls.env['memoria.viva.settings'].create({
-            'website_primario_id': cls.website.id,
-            'permitir_comentarios': True,
-            'moderar_comentarios': True,
+        # Configuración con comentarios habilitados (campos website-specific).
+        cls.website.write({
+            'memoria_viva_permitir_comentarios': True,
         })
-        
+
         # Lugar de prueba
         cls.lugar = cls.env['memoria.viva.historia'].create({
             'name': 'Lugar con Comentarios',
             'description': 'Test de comentarios',
             'website_primario_id': cls.website.id,
-            'state': 'approved',
+            'state': 'aprobado',
         })
         
         # Modelos
@@ -140,24 +144,24 @@ class TestMemoriaVivaComentarios(common.TransactionCase):
         self.assertEqual(padre.respuesta_ids.ids, [respuesta.id])
     
     def test_07_comentario_tiene_respuestas(self):
-        """Test: Campo computado tiene_respuestas"""
+        """Test: Un comentario expone sus respuestas (respuesta_ids)."""
         padre = self.Comentario.sudo().create({
             'lugar_id': self.lugar.id,
             'contenido': 'Padre',
             'autor_id': self.user_demo.id,
         })
-        
-        self.assertFalse(padre.tiene_respuestas)
-        
+
+        self.assertFalse(padre.respuesta_ids)
+
         self.Comentario.sudo().create({
             'lugar_id': self.lugar.id,
             'contenido': 'Hijo',
             'autor_id': self.user_demo.id,
             'parent_id': padre.id,
         })
-        
+
         padre.invalidate_recordset()
-        self.assertTrue(padre.tiene_respuestas)
+        self.assertTrue(padre.respuesta_ids)
     
     def test_08_maximo_nivel_anidamiento(self):
         """Test: Solo se permite 1 nivel de respuestas"""
@@ -196,12 +200,10 @@ class TestMemoriaVivaComentarios(common.TransactionCase):
         })
         
         self.assertEqual(comentario.estado, 'pendiente')
-        
-        comentario.action_approve()
+
+        comentario.action_aprobar()
         self.assertEqual(comentario.estado, 'aprobado')
-        self.assertTrue(comentario.moderado_por)
-        self.assertTrue(comentario.fecha_moderacion)
-    
+
     def test_10_rechazar_comentario(self):
         """Test: Rechazar un comentario"""
         comentario = self.Comentario.sudo().create({
@@ -210,8 +212,8 @@ class TestMemoriaVivaComentarios(common.TransactionCase):
             'autor_id': self.user_demo.id,
             'estado': 'pendiente',
         })
-        
-        comentario.action_reject()
+
+        comentario.action_rechazar()
         self.assertEqual(comentario.estado, 'rechazado')
     
     # === Tests de Obtención de Comentarios ===

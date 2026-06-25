@@ -8,8 +8,9 @@ from . import memoria_viva_subcategoria
 from . import memoria_viva_tags
 from . import memoria_viva_evento
 from . import memoria_viva_anuncio
-from . import memoria_viva_settings
 from . import memoria_viva_like
 from . import memoria_viva_comentario
 from . import memoria_viva_palabra_prohibida
 from . import memoria_viva_rating
+from . import res_website
+from . import res_config_settings

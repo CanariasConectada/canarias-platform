@@ -9,8 +9,7 @@ class MemoriaVivaPalabraProhibida(models.Model):
 
     name = fields.Char(string='Palabra', required=True, translate=False)
     active = fields.Boolean(string='Activa', default=True)
-    settings_id = fields.Many2one('memoria.viva.settings', string='Configuración')
-    
+
     _sql_constraints = [
         ('unique_name', 'unique(name)', 'Esta palabra ya está en la lista.')
     ]

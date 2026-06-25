@@ -35,8 +35,6 @@ access_memoria_viva_anuncio_system,memoria.viva.anuncio.system,model_memoria_viv
 access_memoria_viva_anuncio_manager,memoria.viva.anuncio.manager,model_memoria_viva_anuncio,group_memoria_viva_anuncios_manager,1,1,1,1
 access_memoria_viva_anuncio_editor,memoria.viva.anuncio.editor,model_memoria_viva_anuncio,group_memoria_viva_anuncios_editor,1,1,1,0
 access_memoria_viva_anuncio_public,memoria.viva.anuncio.public,model_memoria_viva_anuncio,base.group_public,1,0,0,0
-access_memoria_viva_settings_system,memoria.viva.settings.system,model_memoria_viva_settings,base.group_system,1,1,1,1
-access_memoria_viva_settings_approver,memoria.viva.settings.approver,model_memoria_viva_settings,group_memoria_viva_approver,1,0,0,0
 access_memoria_viva_like_system,memoria.viva.like.system,model_memoria_viva_like,base.group_system,1,1,1,1
 access_memoria_viva_like_public,memoria.viva.like.public,model_memoria_viva_like,base.group_public,1,0,1,0
 access_memoria_viva_comentario_system,memoria.viva.comentario.system,model_memoria_viva_comentario,base.group_system,1,1,1,1

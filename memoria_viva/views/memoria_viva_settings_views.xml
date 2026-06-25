@@ -1,79 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Vista formulario de configuración -->
-    <record id="view_memoria_viva_settings_form" model="ir.ui.view">
-        <field name="name">memoria.viva.settings.form</field>
-        <field name="model">memoria.viva.settings</field>
+    <!-- Configuración de Memoria Viva integrada en Ajustes > Website.
+         Sustituye al antiguo formulario sobre el modelo singleton
+         memoria.viva.settings (que abría en modo creación y no guardaba). -->
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.memoria.viva</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="90"/>
+        <field name="inherit_id" ref="website.res_config_settings_view_form"/>
         <field name="arch" type="xml">
-            <form string="Configuración de Memoria Viva">
-                <sheet>
-                    <div class="oe_title">
-                        <h1>Configuración de Memoria Viva</h1>
-                    </div>
-                    
-                    <!-- Formulario Web -->
-                    <group string="Formulario Web">
-                        <group>
-                            <field name="show_tipo"/>
-                            <field name="show_categoria"/>
-                            <field name="show_subcategoria"/>
-                            <field name="show_descripcion_larga"/>
-                            <field name="show_coordenadas"/>
-                        </group>
-                        <group>
-                            <field name="show_mapa"/>
-                            <field name="show_nombre_publicador"/>
-                            <field name="show_only_firstname"/>
-                        </group>
-                    </group>
-                    
-                    <!-- Likes -->
-                    <group string="Sistema de Likes">
-                        <field name="likes_cookie_days"/>
-                    </group>
-                    
-                    <!-- Filtros del Sidebar -->
-                    <group string="Filtros del Sidebar">
-                        <field name="show_reset_filters" widget="boolean_toggle"/>
-                    </group>
-                    
-                    <!-- Anuncio Promocional -->
-                    <group string="Anuncio Promocional">
-                        <field name="anuncio_activo"/>
-                        <field name="anuncio_titulo" invisible="not anuncio_activo"/>
-                        <field name="anuncio_texto" invisible="not anuncio_activo"/>
-                        <field name="anuncio_color" invisible="not anuncio_activo"/>
-                    </group>
-                    
-                    <!-- Comentarios -->
-                    <group string="Sistema de Comentarios">
-                        <field name="permitir_comentarios"/>
-                        <field name="comentarios_publicos" invisible="not permitir_comentarios" widget="boolean_toggle"/>
-                        <field name="comentarios_por_pagina" invisible="not permitir_comentarios"/>
-                    </group>
-                    
-                    <!-- Palabras Prohibidas - Botón de acción -->
-                    <group string="Moderación - Palabras Prohibidas" invisible="not permitir_comentarios">
-                        <p class="text-muted">Administra las palabras que requieren moderación automática en los comentarios.</p>
-                        <button name="%(action_memoria_viva_palabra_prohibida)d" 
-                                type="action" 
-                                string="Gestionar Palabras Prohibidas" 
-                                class="btn btn-outline-secondary"
-                                icon="fa-list"/>
-                    </group>
-                </sheet>
-            </form>
+            <xpath expr="//app[@name='website']//block[@id='website_info_settings']" position="after">
+                <block title="Memoria Viva" name="memoria_viva_settings" invisible="not website_id">
+                    <setting string="Disponibilidad del sitio"
+                             help="Solo los sitios web/microsites marcados muestran la página pública /memoria-viva. El resto devuelven 404.">
+                        <field name="memoria_viva_enabled"/>
+                    </setting>
+                    <!-- Formulario web: cada campo en su propio <setting> para que
+                         el checkbox muestre su etiqueta describiendo qué activa. -->
+                    <setting string="Mostrar Tipo"
+                             help="Muestra el selector de Tipo en el formulario público de envío.">
+                        <field name="memoria_viva_show_tipo"/>
+                    </setting>
+                    <setting string="Mostrar Categoría"
+                             help="Muestra el selector de Categoría en el formulario público de envío.">
+                        <field name="memoria_viva_show_categoria"/>
+                    </setting>
+                    <setting string="Mostrar Subcategoría"
+                             help="Muestra el selector de Subcategoría en el formulario público de envío.">
+                        <field name="memoria_viva_show_subcategoria"/>
+                    </setting>
+                    <setting string="Mostrar Historia completa"
+                             help="Muestra el campo de descripción larga (historia completa) en el formulario.">
+                        <field name="memoria_viva_show_descripcion_larga"/>
+                    </setting>
+                    <setting string="Mostrar Coordenadas"
+                             help="Permite introducir coordenadas (latitud/longitud) en el formulario.">
+                        <field name="memoria_viva_show_coordenadas"/>
+                    </setting>
+                    <setting string="Mostrar Mapa en listado"
+                             help="Muestra el mapa con las ubicaciones en la página de listado.">
+                        <field name="memoria_viva_show_mapa"/>
+                    </setting>
+                    <setting string="Mostrar nombre del publicador"
+                             help="Muestra el nombre de quien publicó cada historia.">
+                        <field name="memoria_viva_show_nombre_publicador"/>
+                    </setting>
+                    <setting string="Mostrar solo primer nombre"
+                             help="Si está activo, solo se muestra el primer nombre del publicador (privacidad).">
+                        <field name="memoria_viva_show_only_firstname"/>
+                    </setting>
+                    <setting string="Anuncio promocional"
+                             help="Banner que aparece bajo el hero en /memoria-viva">
+                        <field name="memoria_viva_anuncio_activo"/>
+                        <div class="content-group mt-2" invisible="not memoria_viva_anuncio_activo">
+                            <div class="row">
+                                <label string="Título" for="memoria_viva_anuncio_titulo" class="col-lg-3"/>
+                                <field name="memoria_viva_anuncio_titulo"/>
+                            </div>
+                            <div class="row">
+                                <label string="Texto" for="memoria_viva_anuncio_texto" class="col-lg-3"/>
+                                <field name="memoria_viva_anuncio_texto"/>
+                            </div>
+                            <div class="row">
+                                <label string="Color" for="memoria_viva_anuncio_color" class="col-lg-3"/>
+                                <field name="memoria_viva_anuncio_color"/>
+                            </div>
+                        </div>
+                    </setting>
+                    <setting string="Sistema de likes"
+                             help="Duración de la cookie que evita likes repetidos">
+                        <field name="memoria_viva_likes_cookie_days"/>
+                    </setting>
+                    <setting string="Filtros del sidebar">
+                        <field name="memoria_viva_show_reset_filters"/>
+                    </setting>
+                    <setting string="Comentarios">
+                        <field name="memoria_viva_permitir_comentarios"/>
+                        <div class="content-group mt-2" invisible="not memoria_viva_permitir_comentarios">
+                            <div class="row">
+                                <field name="memoria_viva_comentarios_publicos"/>
+                                <label string="Comentarios visibles públicamente" for="memoria_viva_comentarios_publicos"/>
+                            </div>
+                            <div class="row">
+                                <label string="Comentarios por página" for="memoria_viva_comentarios_por_pagina" class="col-lg-4"/>
+                                <field name="memoria_viva_comentarios_por_pagina"/>
+                            </div>
+                            <div class="mt-2">
+                                <button name="%(action_memoria_viva_palabra_prohibida)d"
+                                        type="action"
+                                        string="Gestionar palabras prohibidas"
+                                        class="btn btn-link"
+                                        icon="fa-arrow-right"/>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
         </field>
     </record>
-    
-    <!-- Acción para abrir configuración -->
+
+    <!-- Acción del menú: abre Ajustes desplazado a la sección Website -->
     <record id="action_memoria_viva_settings" model="ir.actions.act_window">
-        <field name="name">Configuración</field>
-        <field name="res_model">memoria.viva.settings</field>
+        <field name="name">Configuración Memoria Viva</field>
+        <field name="res_model">res.config.settings</field>
         <field name="view_mode">form</field>
-        <field name="target">current</field>
+        <field name="context">{'module': 'website', 'bin_size': False}</field>
     </record>
-    
-    <!-- Nota: El menú de configuración se define en memoria_viva_menus.xml
-         bajo el submenú Configuración para mejor organización -->
 </odoo>

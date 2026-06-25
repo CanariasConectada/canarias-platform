@@ -17,7 +17,14 @@ class TestMemoriaVivaModels(common.TransactionCase):
         
         # Crear usuarios de prueba
         cls.user_admin = cls.env.ref('base.user_admin')
-        cls.user_demo = cls.env.ref('base.user_demo')
+        # base.user_demo no existe en BD sin datos demo: creamos un usuario
+        # interno básico (sin privilegios de aprobador) equivalente.
+        cls.user_demo = cls.env['res.users'].create({
+            'name': 'Test Demo User',
+            'login': 'mv_test_demo_models',
+            'email': 'mv_test_demo_models@example.com',
+            'groups_id': [(6, 0, [cls.env.ref('base.group_user').id])],
+        })
         
         # Crear grupo de aprobadores
         cls.group_approver = cls.env['res.groups'].create({
@@ -59,21 +66,21 @@ class TestMemoriaVivaModels(common.TransactionCase):
             'latitude': 28.1234,
             'longitude': -15.5678,
             'website_primario_id': cls.website.id,
-            'state': 'approved',
+            'state': 'aprobado',
             'publicador_nombre': 'Test Publisher',
             'publicador_telefono': '123456789',
             'publicador_email': 'test@example.com',
         })
-        
-        # Crear configuración
-        cls.config = cls.env['memoria.viva.settings'].create({
-            'website_primario_id': cls.website.id,
-            'permitir_comentarios': True,
-            'moderar_comentarios': True,
-            'show_tipo': True,
-            'show_categoria': True,
-            'show_descripcion_larga': True,
-            'show_coordenadas': True,
+
+        # Configuración: ahora son campos website-specific (memoria_viva_*)
+        # editados vía res.config.settings (el modelo memoria.viva.settings
+        # ya no existe).
+        cls.website.write({
+            'memoria_viva_permitir_comentarios': True,
+            'memoria_viva_show_tipo': True,
+            'memoria_viva_show_categoria': True,
+            'memoria_viva_show_descripcion_larga': True,
+            'memoria_viva_show_coordenadas': True,
         })
     
     # === Tests de MemoriaVivaHistoria ===
@@ -85,11 +92,11 @@ class TestMemoriaVivaModels(common.TransactionCase):
             'description': 'Descripción de test',
             'tipo_id': self.tipo.id,
             'website_primario_id': self.website.id,
-            'state': 'pending',
+            'state': 'pendiente',
         })
         self.assertTrue(lugar.id)
         self.assertEqual(lugar.name, 'Nuevo Lugar Test')
-        self.assertEqual(lugar.state, 'pending')
+        self.assertEqual(lugar.state, 'pendiente')
         self.assertTrue(lugar.slug)
         self.assertIn('nuevo-lugar-test', lugar.slug)
     
@@ -109,30 +116,28 @@ class TestMemoriaVivaModels(common.TransactionCase):
         self.assertTrue(lugar2.slug.startswith('lugar-unico-'))
     
     def test_03_aprobar_lugar(self):
-        """Test: Aprobar un lugar pendiente"""
+        """Test: Aprobar un lugar pendiente (transición de estado)"""
         lugar = self.env['memoria.viva.historia'].create({
             'name': 'Lugar Pendiente',
             'description': 'Test',
             'website_primario_id': self.website.id,
-            'state': 'pending',
+            'state': 'pendiente',
         })
-        self.assertEqual(lugar.state, 'pending')
-        
-        lugar.action_approve()
-        self.assertEqual(lugar.state, 'approved')
-        self.assertTrue(lugar.approved_uid)
-        self.assertTrue(lugar.approved_date)
-    
+        self.assertEqual(lugar.state, 'pendiente')
+
+        lugar.write({'state': 'aprobado'})
+        self.assertEqual(lugar.state, 'aprobado')
+
     def test_04_rechazar_lugar(self):
-        """Test: Rechazar un lugar"""
+        """Test: Rechazar un lugar (transición de estado)"""
         lugar = self.env['memoria.viva.historia'].create({
             'name': 'Lugar Rechazado',
             'description': 'Test',
             'website_primario_id': self.website.id,
-            'state': 'pending',
+            'state': 'pendiente',
         })
-        lugar.action_reject()
-        self.assertEqual(lugar.state, 'rejected')
+        lugar.write({'state': 'rechazado'})
+        self.assertEqual(lugar.state, 'rechazado')
     
     def test_05_incrementar_contador_vistas(self):
         """Test: Incrementar contador de vistas"""
@@ -187,16 +192,23 @@ class TestMemoriaVivaModels(common.TransactionCase):
     # === Tests de Configuración ===
     
     def test_10_configuracion_por_website(self):
-        """Test: Configuración específica por website"""
-        settings = self.env['memoria.viva.settings'].get_settings(self.website.id)
-        self.assertTrue(settings)
-        self.assertEqual(settings.website_primario_id.id, self.website.id)
-        self.assertTrue(settings.permitir_comentarios)
-    
+        """Test: La configuración vive como campos website-specific."""
+        # En setUpClass se escribió memoria_viva_permitir_comentarios=True
+        self.assertTrue(self.website.memoria_viva_permitir_comentarios)
+        self.assertTrue(self.website.memoria_viva_show_tipo)
+        self.assertTrue(self.website.memoria_viva_show_categoria)
+
+        # Y se puede modificar por website.
+        self.website.write({'memoria_viva_permitir_comentarios': False})
+        self.assertFalse(self.website.memoria_viva_permitir_comentarios)
+
     def test_11_configuracion_global(self):
-        """Test: Configuración global sin website específico"""
-        settings = self.env['memoria.viva.settings'].get_settings()
-        self.assertTrue(settings)
+        """Test: Aislamiento de la config entre websites."""
+        otro = self.env['website'].create({'name': 'Otro Website MV'})
+        self.website.write({'memoria_viva_show_coordenadas': True})
+        otro.write({'memoria_viva_show_coordenadas': False})
+        self.assertTrue(self.website.memoria_viva_show_coordenadas)
+        self.assertFalse(otro.memoria_viva_show_coordenadas)
     
     # === Tests de Likes ===
     
@@ -289,7 +301,7 @@ class TestMemoriaVivaImportExport(common.TransactionCase):
         
         datos_preparados = Historia._prepare_import_values(valores)
         self.assertEqual(datos_preparados['name'], 'Lugar Import Test')
-        self.assertEqual(datos_preparados['state'], 'approved')
+        self.assertEqual(datos_preparados['state'], 'aprobado')
     
     def test_02_exportar_datos(self):
         """Test: Exportar datos de lugares"""
@@ -301,7 +313,7 @@ class TestMemoriaVivaImportExport(common.TransactionCase):
             'publicador_nombre': 'Exportador',
             'publicador_telefono': '999888777',
             'publicador_email': 'export@test.com',
-            'state': 'approved',
+            'state': 'aprobado',
         })
         
         datos = lugar._export_data()

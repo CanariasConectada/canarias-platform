@@ -34,23 +34,24 @@
         </div>
     </section>
     
-    <t t-if="config.anuncio_activo">
+    <t t-if="config and config.memoria_viva_anuncio_activo">
         <section class="py-3 bg-dark">
             <div class="container text-center">
-                <h5 class="text-white mb-2 fw-bold" t-esc="config.anuncio_titulo"/>
-                <p class="text-white mb-0" t-esc="config.anuncio_texto"/>
+                <h5 class="text-white mb-2 fw-bold" t-esc="config.memoria_viva_anuncio_titulo"/>
+                <p class="text-white mb-0" t-esc="config.memoria_viva_anuncio_texto"/>
             </div>
         </section>
     </t>
     
-    <!-- Sección editable con Website Builder -->
-    <div class="oe_structure" data-editor-message="Arrastra bloques aquí para personalizar">
-        <section class="py-4">
-            <div class="container">
-                <p class="text-muted text-center">Haz clic en 'Editar' para añadir contenido aquí</p>
-            </div>
-        </section>
-    </div>
+    <!-- Sección editable con Website Builder.
+         Dropzone canónica de Odoo: oe_structure VACÍA con id estable.
+         NO añadir contenido hijo ni data-editor-message manual: Odoo muestra su
+         propio mensaje "Arrastra bloques aquí" cuando la zona está vacía. Tener un
+         <section> placeholder + data-editor-message provocaba un doble placeholder
+         ("campos duplicados") y un DOM no estándar que el editor no serializa bien
+         al guardar (copy-on-write), causando el spinner infinito al soltar bloques.
+         El id se conserva para no perder el contenido ya guardado por COW. -->
+    <div id="oe_structure_memoria_viva_top" class="oe_structure"/>
     
     <!-- FORMULARIO COMPLETO -->
     <section class="py-4 bg-light" id="formulario-envio-section">
@@ -400,7 +401,7 @@
                     </div>
                     
                     <!-- Botón Quitar filtros (configurable) -->
-                    <t t-if="config.show_reset_filters">
+                    <t t-if="config and config.memoria_viva_show_reset_filters">
                         <div class="d-grid mt-3">
                             <a href="/memoria-viva#entries_grid" class="btn btn-outline-danger">
                                 <i class="fa fa-trash me-2"/>Quitar filtros
@@ -418,8 +419,8 @@
                             </span>
                             <t t-if="categoria_filter or decada_filter">
                                 <span class="text-muted">|</span>
-                                <span class="badge bg-primary" t-if="categoria_filter">
-                                    <t t-esc="[c for c in categorias if c['id'] == categoria_filter][0]['name']"/>
+                                <span class="badge bg-primary" t-if="categoria_filter and any(c['id'] == categoria_filter for c in categorias)">
+                                    <t t-esc="next((c['name'] for c in categorias if c['id'] == categoria_filter), '')"/>
                                 </span>
                                 <span class="badge bg-primary" t-if="decada_filter">
                                     Década <t t-esc="decada_filter"/>s
@@ -1057,9 +1058,8 @@
                         </div>
                     </div>
                     
-                    <!-- DEBUG: config=<t t-esc="config"/>, permitir=<t t-esc="config.permitir_comentarios if config else 'NO CONFIG'"/> -->
                     <!-- Sección de Comentarios -->
-                    <div class="row mt-5" t-if="config and config.permitir_comentarios">
+                    <div class="row mt-5" t-if="config and config.memoria_viva_permitir_comentarios">
                         <div class="col-12">
                             <h3 class="mb-4">
                                 <i class="fa fa-comments me-2 text-primary"/>
