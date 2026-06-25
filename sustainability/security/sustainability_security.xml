@@ -28,10 +28,10 @@
 
     <data noupdate="1">
         <!-- REGLAS DE ACCESO -->
-        
+
         <!-- Usuario normal: solo ve respuestas de sus empresas -->
         <record id="survey_user_input_rule_sust_user" model="ir.rule">
-            <field name="name">Silver: usuario solo ve respuestas de sus empresas</field>
+            <field name="name">Sostenibilidad: usuario solo ve respuestas de sus empresas</field>
             <field name="model_id" ref="survey.model_survey_user_input"/>
             <field name="domain_force">[
                 ('survey_id.is_sustainability', '=', True),
@@ -41,13 +41,13 @@
             <field name="groups" eval="[(4, ref('group_sustainability_user'))]"/>
             <field name="perm_read" eval="1"/>
             <field name="perm_write" eval="0"/>
-            <field name="perm_create" eval="0"/>
+            <field name="perm_create" eval="1"/>
             <field name="perm_unlink" eval="0"/>
         </record>
 
-        <!-- Administrador: ve todas las respuestas Silver -->
+        <!-- Administrador: ve todas las respuestas Sostenibilidad -->
         <record id="survey_user_input_rule_sust_manager" model="ir.rule">
-            <field name="name">Silver: administrador ve todas las respuestas Silver</field>
+            <field name="name">Sostenibilidad: administrador ve todas las respuestas</field>
             <field name="model_id" ref="survey.model_survey_user_input"/>
             <field name="domain_force">[('survey_id.is_sustainability', '=', True), ('test_entry', '=', False)]</field>
             <field name="groups" eval="[(4, ref('group_sustainability_manager'))]"/>
@@ -59,37 +59,10 @@
 
         <!-- Regla para survey.survey: usuarios solo ven encuestas Sostenibilidad publicadas -->
         <record id="survey_survey_rule_sust_user" model="ir.rule">
-            <field name="name">Silver: usuario ve encuestas Silver activas</field>
+            <field name="name">Sostenibilidad: usuario ve encuestas activas</field>
             <field name="model_id" ref="survey.model_survey_survey"/>
             <field name="domain_force">[('is_sustainability', '=', True), ('active', '=', True)]</field>
             <field name="groups" eval="[(4, ref('group_sustainability_user'))]"/>
-            <field name="perm_read" eval="1"/>
-            <field name="perm_write" eval="0"/>
-            <field name="perm_create" eval="0"/>
-            <field name="perm_unlink" eval="0"/>
-        </record>
-
-        <!-- Reglas para base.group_user (todos los usuarios internos) -->
-        <record id="survey_user_input_rule_internal_user" model="ir.rule">
-            <field name="name">Silver: usuario interno solo ve respuestas de sus empresas</field>
-            <field name="model_id" ref="survey.model_survey_user_input"/>
-            <field name="domain_force">[
-                ('survey_id.is_sustainability', '=', True),
-                ('company_id', 'in', user.company_ids.ids),
-                ('test_entry', '=', False),
-            ]</field>
-            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
-            <field name="perm_read" eval="1"/>
-            <field name="perm_write" eval="0"/>
-            <field name="perm_create" eval="1"/>
-            <field name="perm_unlink" eval="0"/>
-        </record>
-
-        <record id="survey_survey_rule_internal_user" model="ir.rule">
-            <field name="name">Silver: usuario interno ve encuestas Silver activas</field>
-            <field name="model_id" ref="survey.model_survey_survey"/>
-            <field name="domain_force">[('is_sustainability', '=', True), ('active', '=', True)]</field>
-            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
             <field name="perm_read" eval="1"/>
             <field name="perm_write" eval="0"/>
             <field name="perm_create" eval="0"/>

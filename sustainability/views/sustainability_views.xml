@@ -44,7 +44,7 @@ action = model.action_start_new_sustainability_evaluation()
     <menuitem id="menu_sustainability_root"
               name="Sostenibilidad"
               web_icon="sustainability,static/description/icon.png"
-              groups="base.group_user"
+              groups="sustainability.group_sustainability_user"
               sequence="50"/>
 
     <menuitem id="menu_sust_evaluations"

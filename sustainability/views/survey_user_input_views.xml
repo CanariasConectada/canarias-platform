@@ -23,18 +23,6 @@
         </field>
     </record>
 
-    <!-- Herencia de la vista form de survey.user_input -->
-    <!-- Nota: el page de Auditoría ya lo añade silver_economy. Solo se añade desde sustainability si es necesario. -->
-    <record id="view_survey_user_input_form_inherit_silver" model="ir.ui.view">
-        <field name="name">survey.user_input.form.inherit.silver</field>
-        <field name="model">survey.user_input</field>
-        <field name="inherit_id" ref="survey.survey_user_input_view_form"/>
-        <field name="arch" type="xml">
-            <!-- Sin adiciones de campos: la vista base de survey ya incluye company_id, certification_level, etc. -->
-            <!-- silver_economy añade el page de Auditoría desde su módulo. -->
-        </field>
-    </record>
-
     <!--
         Vista form para interceptar el botón "Nuevo" nativo en Mis Evaluaciones.
         Cuando el usuario hace clic en "Nuevo" desde el contexto Sostenibilidad,
