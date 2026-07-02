@@ -110,7 +110,7 @@ class BusinessCategory(models.Model):
     @api.constrains("parent_id")
     def _check_category_recursion(self) -> None:
         """Verifica que no existan ciclos en la jerarquía."""
-        if not self._check_recursion():
+        if self._has_cycle():
             raise ValidationError(
                 "Error: No puedes crear categorías recursivas "
                 "(una categoría no puede ser hija de sí misma)."
@@ -118,8 +118,14 @@ class BusinessCategory(models.Model):
 
     @api.model
     def name_create(self, name: str) -> tuple[int, str]:
-        """Permite crear categorías rápidamente desde campos Many2one."""
-        return self.create({"name": name}).name_get()[0]
+        """Permite crear categorías rápidamente desde campos Many2one.
+
+        Override necesario porque _rec_name es "complete_name" (computado,
+        no se puede escribir directamente); el name_create del core
+        intentaría crear el registro con {"complete_name": name}.
+        """
+        record = self.create({"name": name})
+        return record.id, record.display_name
 
     def unlink(self):
         """

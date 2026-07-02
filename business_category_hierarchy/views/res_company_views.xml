@@ -11,8 +11,7 @@
             <xpath expr="//field[@name='name']/.." position="after">
                 <field name="business_category_ids"
                        widget="many2many_tags"
-                       placeholder="Seleccione categorías..."
-                       options="{'no_create': True}"
+                       placeholder="Seleccione categorías o escriba una nueva..."
                        style="min-width: 350px;"/>
             </xpath>
         </field>

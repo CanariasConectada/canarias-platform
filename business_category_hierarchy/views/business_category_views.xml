@@ -93,9 +93,8 @@
                     </div>
                     <group>
                         <group>
-                            <field name="parent_id" 
-                                   options="{'no_create': True}"
-                                   placeholder="Seleccione categoría padre (dejar vacío para categoría principal)"/>
+                            <field name="parent_id"
+                                   placeholder="Seleccione categoría padre o escriba un nombre nuevo (dejar vacío para categoría principal)"/>
                             <field name="hierarchy_level" readonly="1"/>
                         </group>
                         <group>
