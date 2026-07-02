@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright 2026 Tu Empresa
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
      License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
 <odoo>
 
@@ -11,8 +11,7 @@
             <xpath expr="//field[@name='name']/.." position="after">
                 <field name="business_category_ids"
                        widget="many2many_tags"
-                       placeholder="Seleccione categorías o escriba una nueva..."
-                       style="min-width: 350px;"/>
+                       placeholder="Pick categories or type a new one..."/>
             </xpath>
         </field>
     </record>

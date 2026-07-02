@@ -1,0 +1,223 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * business_category_hierarchy
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: Canarias Conectada\n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: business_category_hierarchy
+#: model:ir.model.fields,field_description:business_category_hierarchy.field_business_category__company_count
+msgid "# Companies"
+msgstr "Nº Empresas"
+
+#. module: business_category_hierarchy
+#: model_terms:ir.ui.view,arch_db:business_category_hierarchy.business_category_view_form
+#: model_terms:ir.ui.view,arch_db:business_category_hierarchy.business_category_view_search
+msgid "Archived"
+msgstr "Archivado"
+
+#. module: business_category_hierarchy
+#: model:ir.model.fields,help:business_category_hierarchy.field_business_category__active
+msgid "Archived categories are no longer selectable on companies."
+msgstr "Las categorías archivadas dejan de poder seleccionarse en las empresas."
+
+#. module: business_category_hierarchy
+#: model:ir.model,name:business_category_hierarchy.model_business_category
+msgid "Business Category"
+msgstr "Categoría de Comercio"
+
+#. module: business_category_hierarchy
+#: model:ir.actions.act_window,name:business_category_hierarchy.business_category_action
+#: model:ir.model.fields,field_description:business_category_hierarchy.field_res_company__business_category_ids
+#: model:ir.ui.menu,name:business_category_hierarchy.menu_business_category_config
+msgid "Business Categories"
+msgstr "Categorías de Comercio"
+
+#. module: business_category_hierarchy
+#: model_terms:ir.actions.act_window,help:business_category_hierarchy.business_category_action
+msgid ""
+"Business categories classify companies in a hierarchy,\n"
+"                e.g. to filter them in the public directory."
+msgstr ""
+"Las categorías de comercio clasifican las empresas de forma jerárquica,\n"
+"                por ejemplo para filtrarlas en el directorio público."
+
+#. module: business_category_hierarchy
+#: model:ir.model.fields,help:business_category_hierarchy.field_res_company__business_category_ids
+msgid ""
+"Business categories used to segment this company, e.g. in the public "
+"directory."
+msgstr ""
+"Categorías de comercio para segmentar esta empresa, por ejemplo en el "
+"directorio público."
+
+#. module: business_category_hierarchy
+#: model_terms:ir.ui.view,arch_db:business_category_hierarchy.business_category_import_view_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: business_category_hierarchy
+#: model_terms:ir.ui.view,arch_db:business_category_hierarchy.business_category_view_form
+msgid "Category name"
+msgstr "Nombre de la categoría"
+
+#. module: business_category_hierarchy
+#: model:ir.model,name:business_category_hierarchy.model_res_company
+#: model:ir.model.fields,field_description:business_category_hierarchy.field_business_category__company_ids
+#: model_terms:ir.ui.view,arch_db:business_category_hierarchy.business_category_view_form
+msgid "Companies"
+msgstr "Empresas"
+
+#. module: business_category_hierarchy
+#: model:ir.model.fields,field_description:business_category_hierarchy.field_business_category__complete_name
+msgid "Complete Name"
+msgstr "Nombre Completo"
+
+#. module: business_category_hierarchy
+#: model_terms:ir.actions.act_window,help:business_category_hierarchy.business_category_action
+msgid "Create a new business category"
+msgstr "Crear una nueva categoría de comercio"
+
+#. module: business_category_hierarchy
+#: model:ir.model.fields,field_description:business_category_hierarchy.field_business_category_import__import_data
+msgid "Data to Import"
+msgstr "Datos a Importar"
+
+#. module: business_category_hierarchy
+#: model:ir.model.fields,help:business_category_hierarchy.field_business_category__hierarchy_level
+msgid ""
+"Depth in the hierarchy: 1 for root categories, 2 for subcategories, and so "
+"on."
+msgstr ""
+"Profundidad en la jerarquía: 1 para categorías principales, 2 para "
+"subcategorías, etcétera."
+
+#. module: business_category_hierarchy
+#: model_terms:ir.ui.view,arch_db:business_category_hierarchy.business_category_import_view_form
+msgid "Import"
+msgstr "Importar"
+
+#. module: business_category_hierarchy
+#: model:ir.model,name:business_category_hierarchy.model_business_category_import
+msgid "Import Business Categories"
+msgstr "Importar Categorías de Comercio"
+
+#. module: business_category_hierarchy
+#: model:ir.actions.act_window,name:business_category_hierarchy.business_category_import_action
+#: model:ir.ui.menu,name:business_category_hierarchy.menu_business_category_import
+msgid "Import Categories"
+msgstr "Importar Categorías"
+
+#. module: business_category_hierarchy
+#. odoo-python
+#: code:addons/business_category_hierarchy/wizard/import_categories.py:0
+msgid "Imported Categories (%s new)"
+msgstr "Categorías Importadas (%s nuevas)"
+
+#. module: business_category_hierarchy
+#: model:ir.model.fields,help:business_category_hierarchy.field_business_category__parent_id
+msgid "Leave empty to create a root category (level 1)."
+msgstr "Deje vacío para crear una categoría principal (nivel 1)."
+
+#. module: business_category_hierarchy
+#: model:ir.model.fields,field_description:business_category_hierarchy.field_business_category__hierarchy_level
+#: model_terms:ir.ui.view,arch_db:business_category_hierarchy.business_category_view_search
+msgid "Level"
+msgstr "Nivel"
+
+#. module: business_category_hierarchy
+#: model:ir.model.fields,field_description:business_category_hierarchy.field_business_category__name
+msgid "Name"
+msgstr "Nombre"
+
+#. module: business_category_hierarchy
+#: model:ir.model.fields,field_description:business_category_hierarchy.field_business_category__parent_id
+#: model_terms:ir.ui.view,arch_db:business_category_hierarchy.business_category_view_search
+msgid "Parent Category"
+msgstr "Categoría Padre"
+
+#. module: business_category_hierarchy
+#: model:ir.model.fields,help:business_category_hierarchy.field_business_category_import__import_data
+msgid ""
+"Paste the category list here.\n"
+"\n"
+"Lines starting with 2 spaces are root categories; lines without leading "
+"spaces are subcategories of the previous root. Markdown links "
+"([Name](url)) are also accepted.\n"
+"\n"
+"Example:\n"
+"  Alimentación\n"
+"Panadería\n"
+"Frutería\n"
+"  Comercio\n"
+"Ferretería"
+msgstr ""
+"Pegue aquí la lista de categorías.\n"
+"\n"
+"Las líneas que empiezan con 2 espacios son categorías principales; las "
+"líneas sin espacios iniciales son subcategorías de la principal anterior. "
+"También se aceptan enlaces Markdown ([Nombre](url)).\n"
+"\n"
+"Ejemplo:\n"
+"  Alimentación\n"
+"Panadería\n"
+"Frutería\n"
+"  Comercio\n"
+"Ferretería"
+
+#. module: business_category_hierarchy
+#: model_terms:ir.ui.view,arch_db:business_category_hierarchy.business_category_import_view_form
+msgid "Paste the category list here (see the field help for the expected format)..."
+msgstr "Pegue aquí la lista de categorías (vea la ayuda del campo para el formato esperado)..."
+
+#. module: business_category_hierarchy
+#: model_terms:ir.ui.view,arch_db:business_category_hierarchy.business_category_view_form
+msgid "Pick a parent or type a new name (empty for a root category)"
+msgstr "Seleccione categoría padre o escriba un nombre nuevo (vacío para categoría principal)"
+
+#. module: business_category_hierarchy
+#: model_terms:ir.ui.view,arch_db:business_category_hierarchy.view_company_form_business_category
+msgid "Pick categories or type a new one..."
+msgstr "Seleccione categorías o escriba una nueva..."
+
+#. module: business_category_hierarchy
+#: model_terms:ir.ui.view,arch_db:business_category_hierarchy.business_category_view_search
+msgid "Root Categories"
+msgstr "Categorías Principales"
+
+#. module: business_category_hierarchy
+#: model_terms:ir.ui.view,arch_db:business_category_hierarchy.business_category_view_search
+msgid "Specialties (level 3)"
+msgstr "Especialidades (nivel 3)"
+
+#. module: business_category_hierarchy
+#: model:ir.model.fields,field_description:business_category_hierarchy.field_business_category__child_ids
+#: model_terms:ir.ui.view,arch_db:business_category_hierarchy.business_category_view_form
+msgid "Subcategories"
+msgstr "Subcategorías"
+
+#. module: business_category_hierarchy
+#: model_terms:ir.ui.view,arch_db:business_category_hierarchy.business_category_view_search
+msgid "Subcategories (level 2)"
+msgstr "Subcategorías (nivel 2)"
+
+#. module: business_category_hierarchy
+#. odoo-python
+#: code:addons/business_category_hierarchy/wizard/import_categories.py:0
+msgid "There is no data to import."
+msgstr "No hay datos para importar."
+
+#. module: business_category_hierarchy
+#. odoo-python
+#: code:addons/business_category_hierarchy/models/business_category.py:0
+msgid "You cannot create recursive categories."
+msgstr "No puedes crear categorías recursivas."

@@ -1,4 +1,4 @@
-# Copyright 2026 Tu Empresa
+# Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 from . import import_categories

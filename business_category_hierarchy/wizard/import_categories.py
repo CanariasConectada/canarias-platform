@@ -1,144 +1,76 @@
-# Copyright 2026 Tu Empresa
+# Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 import re
 
-from odoo import api, fields, models
+from odoo import fields, models
 from odoo.exceptions import UserError
+
+# Markdown link: [Name](ignored url)
+MARKDOWN_LINK = re.compile(r"\[([^\]]+)\]\([^)]*\)")
 
 
 class BusinessCategoryImport(models.TransientModel):
-    """Wizard para importar categorías de comercio masivamente."""
-
     _name = "business.category.import"
-    _description = "Importar Categorías de Comercio"
+    _description = "Import Business Categories"
 
     import_data = fields.Text(
-        string="Datos a Importar",
+        string="Data to Import",
         required=True,
-        help="""Pegue aquí la lista de categorías.
-
-Formato esperado:
-- Las líneas que comienzan con 2 espacios son categorías padre.
-- Las líneas sin espacios iniciales son subcategorías del padre anterior.
-
-También acepta formato Markdown: [Nombre](url_ignorada)
-
-Ejemplo:
-  Alimentación
-Panadería
-Frutería
-  Comercio
-Ferretería
-""",
+        help="Paste the category list here.\n\n"
+        "Lines starting with 2 spaces are root categories; lines without "
+        "leading spaces are subcategories of the previous root. Markdown "
+        "links ([Name](url)) are also accepted.\n\n"
+        "Example:\n"
+        "  Alimentación\n"
+        "Panadería\n"
+        "Frutería\n"
+        "  Comercio\n"
+        "Ferretería",
     )
 
-    def _parse_line(self, line: str) -> tuple[str, bool]:
-        """
-        Parsea una línea y devuelve el nombre y si es categoría padre.
-
-        Args:
-            line: Línea de texto a parsear.
-
-        Returns:
-            Tupla con (nombre_categoría, es_padre)
-        """
-        # Verificar si empieza con espacios (categoría padre)
-        is_parent = line.startswith("  ") and not line.startswith("    ")
-
-        # Limpiar espacios
+    def _parse_line(self, line):
+        """Return (category name, is_root) for one line of input."""
+        is_root = line.startswith("  ") and not line.startswith("    ")
         clean_line = line.strip()
+        markdown_match = MARKDOWN_LINK.match(clean_line)
+        name = markdown_match.group(1).strip() if markdown_match else clean_line
+        return name, is_root
 
-        # Intentar extraer nombre del formato Markdown [Nombre](url)
-        md_match = re.match(r"\[([^\]]+)\]\([^)]*\)", clean_line)
-        if md_match:
-            name = md_match.group(1).strip()
-        else:
-            name = clean_line
-
-        return name, is_parent
-
-    def action_import(self) -> dict:
-        """
-        Procesa la importación de categorías.
-
-        Returns:
-            Acción para mostrar las categorías importadas.
-        """
-        self.ensure_one()
-
-        if not self.import_data:
-            raise UserError("No hay datos para importar.")
-
+    def _get_or_create(self, name, parent, created_ids):
         category_model = self.env["business.category"]
-        created_categories: list[int] = []
-        current_parent = None
-        current_parent_name = ""
+        category = category_model.search(
+            [("name", "=", name), ("parent_id", "=", parent.id if parent else False)],
+            limit=1,
+        )
+        if not category:
+            category = category_model.create(
+                {"name": name, "parent_id": parent.id if parent else False}
+            )
+            created_ids.append(category.id)
+        return category
 
-        lines = self.import_data.split("\n")
-
-        for line in lines:
-            # Ignorar líneas vacías
+    def action_import(self):
+        self.ensure_one()
+        if not self.import_data:
+            raise UserError(self.env._("There is no data to import."))
+        created_ids = []
+        current_root = None
+        for line in self.import_data.splitlines():
             if not line.strip():
                 continue
-
-            name, is_parent = self._parse_line(line)
-
+            name, is_root = self._parse_line(line)
             if not name:
                 continue
-
-            if is_parent:
-                # Buscar o crear categoría padre
-                existing = category_model.search([
-                    ("name", "=", name),
-                    ("parent_id", "=", False),
-                ], limit=1)
-
-                if existing:
-                    current_parent = existing
-                else:
-                    current_parent = category_model.create({
-                        "name": name,
-                        "parent_id": False,
-                    })
-                    created_categories.append(current_parent.id)
-
-                current_parent_name = name
+            if is_root:
+                current_root = self._get_or_create(name, None, created_ids)
             else:
-                # Es subcategoría
-                if not current_parent:
-                    # Si no hay padre, crear como categoría raíz
-                    existing = category_model.search([
-                        ("name", "=", name),
-                        ("parent_id", "=", False),
-                    ], limit=1)
-
-                    if not existing:
-                        new_cat = category_model.create({
-                            "name": name,
-                            "parent_id": False,
-                        })
-                        created_categories.append(new_cat.id)
-                else:
-                    # Buscar si ya existe esta subcategoría
-                    existing = category_model.search([
-                        ("name", "=", name),
-                        ("parent_id", "=", current_parent.id),
-                    ], limit=1)
-
-                    if not existing:
-                        new_cat = category_model.create({
-                            "name": name,
-                            "parent_id": current_parent.id,
-                        })
-                        created_categories.append(new_cat.id)
-
-        # Retornar acción para mostrar categorías
+                self._get_or_create(name, current_root, created_ids)
         return {
-            "name": f"Categorías Importadas ({len(created_categories)} nuevas)",
+            "name": self.env._("Imported Categories (%s new)", len(created_ids)),
             "type": "ir.actions.act_window",
             "res_model": "business.category",
             "view_mode": "list,form",
-            "domain": [("id", "in", created_categories)] if created_categories else [],
+            "domain": [("id", "in", created_ids)],
             "context": {"search_default_group_parent": 1},
         }

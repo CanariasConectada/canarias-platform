@@ -1,91 +1,70 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright 2026 Tu Empresa
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
      License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
 <odoo>
 
-    <!-- Search View -->
     <record id="business_category_view_search" model="ir.ui.view">
         <field name="name">business.category.search</field>
         <field name="model">business.category</field>
         <field name="arch" type="xml">
-            <search string="Buscar Categorías de Comercio">
-                <field name="name" string="Nombre"/>
-                <field name="complete_name" string="Nombre Completo"/>
+            <search>
+                <field name="name"/>
+                <field name="complete_name"/>
                 <field name="parent_id"/>
                 <separator/>
                 <filter name="filter_root"
-                        string="Categorías Principales"
+                        string="Root Categories"
                         domain="[('parent_id', '=', False)]"/>
-                <filter name="filter_level1"
-                        string="Subcategorías (Nivel 2)"
-                        domain="[('parent_id', '!=', False), ('parent_id.parent_id', '=', False)]"/>
                 <filter name="filter_level2"
-                        string="Especialidades (Nivel 3)"
-                        domain="[('parent_id', '!=', False), ('parent_id.parent_id', '!=', False)]"/>
+                        string="Subcategories (level 2)"
+                        domain="[('hierarchy_level', '=', 2)]"/>
+                <filter name="filter_level3"
+                        string="Specialties (level 3)"
+                        domain="[('hierarchy_level', '=', 3)]"/>
                 <separator/>
                 <filter name="filter_inactive"
-                        string="Archivados"
+                        string="Archived"
                         domain="[('active', '=', False)]"/>
                 <group>
                     <filter name="group_parent"
-                            string="Categoría Padre"
-                            domain="[]"
+                            string="Parent Category"
                             context="{'group_by': 'parent_id'}"/>
                     <filter name="group_level"
-                            string="Nivel"
-                            domain="[]"
+                            string="Level"
                             context="{'group_by': 'hierarchy_level'}"/>
                 </group>
             </search>
         </field>
     </record>
 
-    <!-- Tree View con Jerarquía -->
-    <record id="business_category_view_tree" model="ir.ui.view">
-        <field name="name">business.category.tree</field>
+    <record id="business_category_view_list" model="ir.ui.view">
+        <field name="name">business.category.list</field>
         <field name="model">business.category</field>
         <field name="arch" type="xml">
-            <list string="Categorías de Comercio">
+            <list>
                 <field name="complete_name"/>
                 <field name="hierarchy_level" optional="show"/>
                 <field name="parent_id" optional="show"/>
-                <field name="child_ids" widget="many2many_tags" optional="hide"/>
-                <field name="active" column_invisible="1"/>
-            </list>
-        </field>
-    </record>
-
-    <!-- Tree View de Subcategorías -->
-    <record id="business_category_view_tree_hierarchy" model="ir.ui.view">
-        <field name="name">business.category.tree.hierarchy</field>
-        <field name="model">business.category</field>
-        <field name="priority">99</field>
-        <field name="arch" type="xml">
-            <list string="Jerarquía de Categorías">
-                <field name="display_name"/>
-                <field name="hierarchy_level"/>
-                <field name="parent_id"/>
                 <field name="company_count" optional="show"/>
                 <field name="active" column_invisible="1"/>
             </list>
         </field>
     </record>
 
-    <!-- Form View Mejorado -->
     <record id="business_category_view_form" model="ir.ui.view">
         <field name="name">business.category.form</field>
         <field name="model">business.category</field>
         <field name="arch" type="xml">
-            <form string="Categoría de Comercio">
+            <form>
                 <sheet>
                     <widget name="web_ribbon"
-                            title="Archivado"
+                            title="Archived"
                             bg_color="text-bg-danger"
                             invisible="active"/>
                     <div class="oe_title">
                         <label for="name" class="oe_edit_only"/>
                         <h1>
-                            <field name="name" placeholder="Nombre de la categoría"/>
+                            <field name="name" placeholder="Category name"/>
                         </h1>
                         <h2 class="oe_read_only">
                             <field name="complete_name"/>
@@ -94,29 +73,32 @@
                     <group>
                         <group>
                             <field name="parent_id"
-                                   placeholder="Seleccione categoría padre o escriba un nombre nuevo (dejar vacío para categoría principal)"/>
-                            <field name="hierarchy_level" readonly="1"/>
+                                   placeholder="Pick a parent or type a new name (empty for a root category)"/>
+                            <field name="hierarchy_level"/>
                         </group>
                         <group>
-                            <field name="company_count" readonly="1"/>
+                            <field name="company_count"/>
                             <field name="active" widget="boolean_toggle"/>
                         </group>
                     </group>
                     <notebook>
-                        <page string="Subcategorías" name="subcategories" invisible="not child_ids">
+                        <page string="Subcategories"
+                              name="subcategories"
+                              invisible="not child_ids">
                             <field name="child_ids" mode="list">
-                                <list string="Subcategorías" editable="bottom">
+                                <list editable="bottom">
                                     <field name="name"/>
-                                    <field name="complete_name" readonly="1"/>
-                                    <field name="company_count" readonly="1"/>
+                                    <field name="complete_name"/>
+                                    <field name="company_count"/>
                                 </list>
                             </field>
                         </page>
-                        <page string="Empresas" name="companies" invisible="company_count == 0">
-                            <field name="company_ids" readonly="1">
+                        <page string="Companies"
+                              name="companies"
+                              invisible="company_count == 0">
+                            <field name="company_ids">
                                 <list>
                                     <field name="name"/>
-                                    <field name="zone_id"/>
                                 </list>
                             </field>
                         </page>
@@ -126,27 +108,24 @@
         </field>
     </record>
 
-    <!-- Action -->
     <record id="business_category_action" model="ir.actions.act_window">
-        <field name="name">Categorías de Comercio</field>
+        <field name="name">Business Categories</field>
         <field name="res_model">business.category</field>
         <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="business_category_view_search"/>
-        <field name="context">{'search_default_filter_inactive': 0}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Crear una nueva categoría de comercio
+                Create a new business category
             </p>
             <p>
-                Las categorías de comercio permiten segmentar y clasificar
-                empresas de forma jerárquica.
+                Business categories classify companies in a hierarchy,
+                e.g. to filter them in the public directory.
             </p>
         </field>
     </record>
 
-    <!-- Menu Items -->
     <menuitem id="menu_business_category_config"
-              name="Categorías de Comercio"
+              name="Business Categories"
               parent="contacts.res_partner_menu_config"
               action="business_category_action"
               sequence="10"/>

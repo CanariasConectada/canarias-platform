@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- A 3-level branch to exercise the hierarchy. -->
+    <record id="demo_category_food" model="business.category">
+        <field name="name">Demo Food</field>
+    </record>
+    <record id="demo_category_bakery" model="business.category">
+        <field name="name">Demo Bakery</field>
+        <field name="parent_id" ref="demo_category_food"/>
+    </record>
+    <record id="demo_category_sourdough" model="business.category">
+        <field name="name">Demo Sourdough Specialist</field>
+        <field name="parent_id" ref="demo_category_bakery"/>
+    </record>
+
+    <record id="demo_company_bakery" model="res.company">
+        <field name="name">Demo Panadería La Espiga</field>
+        <field name="business_category_ids"
+               eval="[Command.set([ref('demo_category_bakery'), ref('demo_category_sourdough')])]"/>
+    </record>
+
+</odoo>
