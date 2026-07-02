@@ -22,6 +22,6 @@
     "installable": True,
     "application": False,
     'author': 'MikeColangelo',
-    "license": "LGPL-3"
+    "license": "LGPL-3",
     'website': 'https://github.com/CanariasConectada/canarias-platform',
 }
