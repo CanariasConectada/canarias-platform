@@ -10,11 +10,7 @@
             <t t-set="sust_level" t-value="entry.company_id.sustain_certification_level"/>
             <t t-set="sust_expired" t-value="entry.company_id.sustain_expiry_date and entry.company_id.sustain_expiry_date &lt; datetime.date.today()"/>
             <span t-if="not sust_expired"
-                  t-att-class="'badge rounded-pill ms-1 ' + {
-                      'bronze': '',
-                      'silver': '',
-                      'gold': ''
-                  }.get(sust_level, '')"
+                  class="badge rounded-pill ms-1"
                   t-att-style="'font-size: 0.55rem; padding: 0.15em 0.4em; ' + {
                       'bronze': 'background-color: #CD7F32 !important; color: #fff !important;',
                       'silver': 'background-color: #C0C0C0 !important; color: #212529 !important;',
@@ -70,10 +66,7 @@
             <t t-set="is_homepage" t-value="request.httprequest.path == (website.homepage_url or '/')"/>
             <t t-set="is_error_page" t-value="request.httprequest.path.startswith('/website/error') or request.httprequest.path in ['/404', '/500']"/>
 
-            <!-- Placeholder para futuro modulo Sostenibilidad -->
-            <t t-set="has_sustain" t-value="False"/>
-
-            <section t-if="is_homepage and not is_error_page and (has_sust or has_sustain) and not suppress_sust_card"
+            <section t-if="is_homepage and not is_error_page and has_sust and not suppress_sust_card"
                      class="s_three_columns o_cc o_cc2 pt32 pb32 o_colored_level"
                      data-snippet="s_three_columns" data-name="Columnas">
                 <div class="container">
@@ -109,9 +102,9 @@
                             <p class="text-center text-muted" style="font-size: 0.95rem; line-height: 1.6;">
                                 Este negocio ha sido evaluado y reconocido con el sello de Sostenibilidad,
                                 por su compromiso con prácticas responsables en:<br/>
-                                <strong>Accesibilidad</strong><br/>
-                                <strong>Atención personalizada</strong><br/>
-                                <strong>Servicio y adaptación al colectivo</strong>
+                                <strong>Eficiencia energética</strong><br/>
+                                <strong>Gestión responsable de residuos</strong><br/>
+                                <strong>Consumo local y economía circular</strong>
                             </p>
                         </div>
                     </div>
@@ -130,12 +123,6 @@
                         </div>
                     </div>
 
-                    <!-- Sostenible placeholder (futuro) -->
-                    <div class="row" t-if="has_sustain">
-                        <div class="col-12 text-center mt-4">
-                            <p class="text-muted">Comercio Sostenible — placeholder para futuro módulo</p>
-                        </div>
-                    </div>
                 </div>
             </section>
         </xpath>

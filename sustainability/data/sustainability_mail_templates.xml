@@ -14,7 +14,7 @@
                         Hola <t t-out="object.partner_id.name"/>,
                     </p>
                     <p style="margin: 0px; padding: 0px; font-size: 13px;">
-                        Han pasado 3 meses desde tu última evaluación Sostenibilidad. Ya puedes realizar un nuevo intento para obtener tu sello de certificación.
+                        El plazo de espera desde tu última evaluación de Sostenibilidad ha terminado. Ya puedes realizar un nuevo intento para obtener tu sello de certificación.
                     </p>
                     <p style="margin: 0px; padding: 0px; font-size: 13px;">
                         <a t-att-href="'/web#action=%s' % env.ref('sustainability.action_sust_evaluations').id" style="background-color: #875A7B; padding: 10px 20px; color: #ffffff; text-decoration: none; border-radius: 5px;">
@@ -85,7 +85,7 @@
                             <t t-if="object.certification_level == 'silver'">🥈 Plata</t>
                             <t t-if="object.certification_level == 'gold'">🥇 Oro</t>
                         </h2>
-                        <p>Puntuación: <strong t-out="object.scoring_total"/> / 80 puntos</p>
+                        <p>Puntuación: <strong t-out="object.scoring_total"/> / <t t-out="object.survey_id.sustain_max_score"/> puntos</p>
                         <p>Válido hasta: <strong t-out="object.expiry_date"/></p>
                     </div>
                     <p style="margin: 0px; padding: 0px; font-size: 13px;">

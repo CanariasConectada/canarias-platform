@@ -1,62 +1,143 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
 <odoo>
-    <!-- Herencia de la vista list de survey.user_input -->
-    <record id="view_survey_user_input_tree_inherit_silver" model="ir.ui.view">
-        <field name="name">survey.user_input.tree.inherit.silver</field>
+    <!--
+        survey.user_input list: certification columns (Sustainability context
+        only). The list decorations are IDENTICAL to the ones silver_economy
+        sets on this view: attribute rewrites are last-one-wins, so keeping
+        both copies in sync guarantees the same result whatever the install
+        order.
+    -->
+    <record id="view_survey_user_input_tree_inherit_sustainability" model="ir.ui.view">
+        <field name="name">survey.user_input.list.inherit.sustainability</field>
         <field name="model">survey.user_input</field>
-        <field name="inherit_id" ref="survey.survey_user_input_view_tree"/>
+        <field name="inherit_id" ref="survey.survey_user_input_view_tree" />
         <field name="arch" type="xml">
             <xpath expr="//list" position="attributes">
                 <attribute name="create">1</attribute>
                 <attribute name="decoration-muted">test_entry == True</attribute>
-                <attribute name="decoration-info">certification_level == 'bronze'</attribute>
-                <attribute name="decoration-primary">certification_level == 'silver'</attribute>
-                <attribute name="decoration-warning">certification_level == 'gold'</attribute>
+                <attribute
+                    name="decoration-info"
+                >certification_level == 'bronze'</attribute>
+                <attribute
+                    name="decoration-primary"
+                >certification_level == 'silver'</attribute>
+                <attribute
+                    name="decoration-warning"
+                >certification_level == 'gold'</attribute>
             </xpath>
             <xpath expr="//field[@name='state']" position="before">
-                <button name="action_continue_sustainability_evaluation" type="object" icon="fa-play" title="Continuar evaluación"
-                        invisible="state != 'in_progress' or not context.get('is_sustainability')"/>
+                <button
+                    name="action_continue_sustainability_evaluation"
+                    type="object"
+                    icon="fa-play"
+                    title="Continue evaluation"
+                    column_invisible="not context.get('is_sustainability')"
+                    invisible="state != 'in_progress'"
+                />
             </xpath>
             <xpath expr="//field[@name='survey_id']" position="after">
-                <field name="is_manually_overridden" optional="hide" invisible="not context.get('is_sustainability')"/>
+                <field
+                    name="company_id"
+                    optional="show"
+                    column_invisible="not context.get('is_sustainability')"
+                />
+                <field
+                    name="certification_level"
+                    optional="show"
+                    widget="badge"
+                    decoration-muted="certification_level == 'none'"
+                    decoration-info="certification_level == 'bronze'"
+                    decoration-primary="certification_level == 'silver'"
+                    decoration-warning="certification_level == 'gold'"
+                    column_invisible="not context.get('is_sustainability')"
+                />
+                <field
+                    name="next_attempt_date"
+                    optional="show"
+                    column_invisible="not context.get('is_sustainability')"
+                />
+                <field
+                    name="expiry_date"
+                    optional="show"
+                    column_invisible="not context.get('is_sustainability')"
+                />
+                <field
+                    name="is_manually_overridden"
+                    optional="hide"
+                    column_invisible="not context.get('is_sustainability')"
+                />
+            </xpath>
+        </field>
+    </record>
+
+    <!-- survey.user_input form: manual override audit page -->
+    <record id="view_survey_user_input_form_inherit_sustainability" model="ir.ui.view">
+        <field name="name">survey.user_input.form.inherit.sustainability</field>
+        <field name="model">survey.user_input</field>
+        <field name="inherit_id" ref="survey.survey_user_input_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page
+                    string="Audit"
+                    name="audit_sustainability"
+                    invisible="not is_manually_overridden"
+                >
+                    <group>
+                        <field name="is_manually_overridden" />
+                        <field name="original_scoring_total" />
+                        <field name="override_scoring_total" />
+                        <field name="override_user_id" />
+                        <field name="override_date" />
+                        <field name="override_reason" />
+                    </group>
+                </page>
             </xpath>
         </field>
     </record>
 
     <!--
-        Vista form para interceptar el botón "Nuevo" nativo en Mis Evaluaciones.
-        Cuando el usuario hace clic en "Nuevo" desde el contexto Sostenibilidad,
-        en lugar de mostrar el formulario completo de survey.user_input,
-        mostramos un panel limpio con un botón para iniciar la evaluación.
+        Intercept the native 'New' button in My Evaluations: instead of the
+        raw survey.user_input form, show a clean panel with a single button
+        that validates the cooldown and opens the questionnaire.
+        The sheet visibility condition names BOTH certification context keys
+        (plain dict lookups, safe even when the sibling module is not
+        installed) so the last applied inheritance is identical in both
+        modules.
     -->
     <record id="view_survey_user_input_form_sust_start" model="ir.ui.view">
-        <field name="name">survey.user_input.form.silver.start</field>
+        <field name="name">survey.user_input.form.sust.start</field>
         <field name="model">survey.user_input</field>
-        <field name="inherit_id" ref="survey.survey_user_input_view_form"/>
+        <field name="inherit_id" ref="survey.survey_user_input_view_form" />
         <field name="mode">extension</field>
         <field name="priority">99</field>
         <field name="arch" type="xml">
-            <!-- Panel de inicio: solo visible cuando es registro nuevo y contexto Sostenibilidad -->
             <xpath expr="//sheet" position="before">
-                <div class="alert alert-info text-center p-5 mb-0"
-                     invisible="not context.get('is_sustainability') or id">
-                    <h3 class="mb-3">📝 Nueva evaluación Sostenibilidad</h3>
+                <div
+                    class="alert alert-info text-center p-5 mb-0"
+                    invisible="not context.get('is_sustainability') or id"
+                >
+                    <h3 class="mb-3">📝 Nueva evaluación de Sostenibilidad</h3>
                     <p class="lead">
                         Inicie una nueva evaluación para su empresa.
                     </p>
                     <p class="text-muted">
                         Al hacer clic en el botón se validarán los plazos de espera
-                        y se inició el cuestionario en una nueva pestaña.
+                        y se iniciará el cuestionario en una nueva pestaña.
                     </p>
-                    <button name="action_start_sustainability_from_form"
-                            type="object"
-                            string="Iniciar evaluación"
-                            class="btn btn-primary btn-lg mt-3"/>
+                    <button
+                        name="action_start_sustainability_from_form"
+                        type="object"
+                        string="Iniciar evaluación"
+                        class="btn btn-primary btn-lg mt-3"
+                    />
                 </div>
             </xpath>
-            <!-- Ocultar el contenido normal del formulario SOLO cuando es registro nuevo en contexto Silver -->
             <xpath expr="//sheet" position="attributes">
-                <attribute name="invisible">context.get('is_sustainability') and not id</attribute>
+                <attribute
+                    name="invisible"
+                >(context.get('is_silver_economy') or context.get('is_sustainability')) and not id</attribute>
             </xpath>
         </field>
     </record>

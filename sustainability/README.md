@@ -1,28 +1,28 @@
-# Sostenibilidad Certification
+# Sustainability Certification
 
-**Versión:** 19.0.1.3.0 | **Licencia:** AGPL-3 | **Autor:** MikeColangelo
+**Versión:** 19.0.2.0.0 | **Licencia:** AGPL-3 | **Autor:** Canarias Conectada
 
-Sistema de evaluación y certificación de Sostenibilidad para comercios locales.
+Evaluación y certificación de Sostenibilidad para las empresas del
+marketplace de Canarias Conectada, construida sobre la app `survey`. Un
+cuestionario de 40 preguntas otorga sellos Bronce/Plata/Oro que se muestran
+en el backend, en el directorio público y en el microsite de la empresa, con
+caducidad, plazos de reintento y recordatorios por correo.
 
-## Descripción
+Convive con su módulo gemelo `silver_economy`: la lógica compartida sobre
+`survey.user_input` usa el hook cooperativo
+`survey.survey._get_certification_config()` para que cada tipo de encuesta
+se puntúe siempre con los umbrales de su propio módulo.
 
-Módulo de evaluación basado en Survey. Permite a usuarios internos evaluar
-sus empresas mediante un cuestionario de 40 preguntas y obtener los sellos
-de certificación Bronce, Plata u Oro de Sostenibilidad según la puntuación.
+La documentación detallada está en los fragmentos de [`readme/`](readme/):
+[descripción](readme/DESCRIPTION.md) · [configuración](readme/CONFIGURE.md) ·
+[uso](readme/USAGE.md) · [historial de cambios](readme/HISTORY.md) ·
+[contribuidores](readme/CONTRIBUTORS.md)
 
 ## Dependencias
 
-- `survey`, `contacts`, `website`, `mail` (Odoo core)
+- `survey`, `website` (Odoo core)
 - `website_directory` (canarias-platform)
 
-## Configuración
+## Licencia
 
-Survey > Sostenibilidad para gestionar el cuestionario y los umbrales de certificación.
-
-## Créditos
-
-### Autor
-- [MikeColangelo](https://github.com/CanariasConectada)
-
-### Licencia
 [AGPL-3](https://www.gnu.org/licenses/agpl-3.0.html)

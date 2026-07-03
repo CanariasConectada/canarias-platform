@@ -1,0 +1,2 @@
+- [MikeColangelo](https://github.com/CanariasConectada)
+- Claude (Anthropic) — 19.0 OCA-style reform

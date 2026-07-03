@@ -1,88 +1,120 @@
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
+# Copyright 2026 Canarias Conectada
+# License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import api, fields, models, _
+from odoo import _, fields, models
+from odoo.exceptions import UserError
 
 
 class SurveySurvey(models.Model):
-    _inherit = 'survey.survey'
+    _inherit = "survey.survey"
 
     is_sustainability = fields.Boolean(
-        string='Es evaluación Sostenibilidad',
+        string="Is Sustainability Evaluation",
         default=False,
-        help='Si está marcado, esta encuesta se usa para certificación Sostenibilidad'
+        help="If checked, this survey is used for Sustainability certification",
     )
-    
-    # Umbrales configurables de puntuación
+    # Generic flag shared with any sibling certification module (e.g.
+    # silver_economy). Both modules define this field and its compute with the
+    # same name and a cooperative body, so whichever implementation wins in
+    # the registry MRO produces the right value for every survey type.
+    is_certification_survey = fields.Boolean(
+        string="Is Certification Survey",
+        compute="_compute_is_certification_survey",
+    )
+
+    # Configurable score thresholds
     sustain_max_score = fields.Float(
-        string='Puntuación máxima',
+        string="Maximum Score",
         default=80.0,
-        help='Puntuación máxima posible (40 preguntas x 2 puntos)'
+        help="Maximum reachable score (40 questions x 2 points)",
     )
     sustain_bronze_min = fields.Float(
-        string='Mínimo Bronce',
+        string="Bronze Minimum",
         default=40.0,
-        help='Puntuación mínima para obtener sello Bronce'
+        help="Minimum score to be awarded the Bronze badge",
     )
     sustain_silver_min = fields.Float(
-        string='Mínimo Plata',
+        string="Silver Minimum",
         default=56.0,
-        help='Puntuación mínima para obtener sello Plata'
+        help="Minimum score to be awarded the Silver badge",
     )
     sustain_gold_min = fields.Float(
-        string='Mínimo Oro',
+        string="Gold Minimum",
         default=71.0,
-        help='Puntuación mínima para obtener sello Oro'
+        help="Minimum score to be awarded the Gold badge",
     )
 
-    # Tiempos configurables
+    # Configurable timing
     sustain_cooldown_months = fields.Integer(
-        string='Meses de espera tras reprobar',
+        string="Cooldown Months After Failing",
         default=3,
-        help='Número de meses que debe esperar el usuario para reintentar si no aprueba'
+        help="Months the company must wait before retrying after a failed evaluation",
     )
     sustain_validity_years = fields.Integer(
-        string='Años de validez del sello',
+        string="Badge Validity (Years)",
         default=1,
-        help='Número de años que el sello permanece válido tras obtenerlo'
+        help="Years the badge remains valid once awarded",
     )
     sustain_renewal_reminder_days = fields.Integer(
-        string='Días de aviso previo a renovación',
+        string="Renewal Reminder Days",
         default=30,
-        help='Días antes de la expiración para enviar recordatorio de renovación'
+        help="Days before expiry to send the renewal reminder",
     )
 
+    def _compute_is_certification_survey(self):
+        # Cooperative body: chain into the sibling certification module when
+        # it is installed, then OR our own flag on top.
+        parent = super()
+        if hasattr(parent, "_compute_is_certification_survey"):
+            parent._compute_is_certification_survey()
+        else:
+            for survey in self:
+                survey.is_certification_survey = False
+        for survey in self:
+            survey.is_certification_survey = (
+                survey.is_certification_survey or survey.is_sustainability
+            )
+
+    def _get_certification_config(self):
+        """Return the certification parameters that apply to this survey.
+
+        Cooperative hook: every certification module contributes its own
+        configuration when the survey carries its flag, and delegates to the
+        sibling module (if installed) otherwise. Returns ``None`` for surveys
+        that are not certification surveys.
+        """
+        self.ensure_one()
+        parent = super()
+        config = (
+            parent._get_certification_config()
+            if hasattr(parent, "_get_certification_config")
+            else None
+        )
+        if config is None and self.is_sustainability:
+            config = {
+                "max_score": self.sustain_max_score,
+                "bronze_min": self.sustain_bronze_min,
+                "silver_min": self.sustain_silver_min,
+                "gold_min": self.sustain_gold_min,
+                "cooldown_months": self.sustain_cooldown_months or 3,
+                "validity_years": self.sustain_validity_years or 1,
+                "reminder_days": self.sustain_renewal_reminder_days or 30,
+                "manager_group": "sustainability.group_sustainability_manager",
+            }
+        return config
+
     def action_start_sustainability_evaluation(self):
-        """Acción para usuarios internos: inicia una evaluación real (no test)"""
+        """Start a real (non test) evaluation for the current internal user."""
         self.ensure_one()
         if not self.is_sustainability:
-            raise UserError(_('Esta encuesta no está configurada como evaluación Sostenibilidad.'))
-        
-        user = self.env.user
-        if not user.company_id:
-            raise UserError(_('Debe tener una empresa asignada para realizar la evaluación.'))
-        
-        # Verificar cooldown
-        last_attempt = self.env['survey.user_input'].search([
-            ('survey_id', '=', self.id),
-            ('company_id', '=', user.company_id.id),
-            ('state', '=', 'done'),
-            ('test_entry', '=', False),
-        ], order='create_date desc', limit=1)
-        
-        if last_attempt and last_attempt.next_attempt_date and last_attempt.next_attempt_date > fields.Date.today():
-            raise UserError(_('No puede realizar una nueva evaluación hasta el %s.') % last_attempt.next_attempt_date)
-        
-        # Crear respuesta real (no test) con company_id incluido para cumplir ir.rule
-        answer = self.env['survey.user_input'].create({
-            'survey_id': self.id,
-            'partner_id': user.partner_id.id,
-            'company_id': user.company_id.id,
-            'test_entry': False,
-        })
-        
+            raise UserError(
+                _("This survey is not configured as a Sustainability evaluation.")
+            )
+        answer = self.env["survey.user_input"]._create_certification_answer(self)
         return {
-            'type': 'ir.actions.act_url',
-            'name': _('Iniciar evaluación Sostenibilidad'),
-            'target': 'new',
-            'url': '/survey/start/%s?answer_token=%s' % (self.access_token, answer.access_token),
+            "type": "ir.actions.act_url",
+            "name": _("Start Sustainability evaluation"),
+            "target": "new",
+            "url": "/survey/start/%s?answer_token=%s"
+            % (self.access_token, answer.access_token),
         }

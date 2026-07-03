@@ -1,0 +1,2491 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-03 21:47+0000\n"
+"PO-Revision-Date: 2026-07-03 21:47+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q1
+msgid "1. Control del consumo energético"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q10
+msgid "10. Selección de proveedores responsables"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q11
+msgid "11. Medición del impacto ambiental"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q12
+msgid "12. Política ambiental"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q13
+msgid "13. Implicación del equipo"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q14
+msgid "14. Integración en decisiones"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q15
+msgid "15. Condiciones laborales justas"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q16
+msgid "16. Estabilidad del empleo"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q17
+msgid "17. Igualdad de oportunidades"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q18
+msgid "18. Formación del equipo"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q19
+msgid "19. Bienestar del equipo"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q2
+msgid "2. Medidas de eficiencia energética"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q20
+msgid "20. Comunicación interna"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q21
+msgid "21. Participación del equipo"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q22
+msgid "22. Relación con clientes"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q23
+msgid "23. Satisfacción del cliente"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q24
+msgid "24. Impacto en la comunidad"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q25
+msgid "25. Prácticas responsables con clientes"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q26
+msgid "26. Inclusión y diversidad"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q27
+msgid "27. Relación con proveedores"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q28
+msgid "28. Cumplimiento normativo"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q29
+msgid "29. Transparencia en la gestión"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q3
+msgid "3. Uso de energías renovables"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q30
+msgid "30. Toma de decisiones responsable"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q31
+msgid "31. Código ético o valores definidos"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q32
+msgid "32. Coherencia en la gestión"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q33
+msgid "33. Gestión de riesgos"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q34
+msgid "34. Toma de decisiones basada en datos"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q35
+msgid "35. Planificación a medio/largo plazo"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q36
+msgid "36. Responsabilidad en la cadena de valor"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q37
+msgid "37. Gestión ética de conflictos"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q38
+msgid "38. Protección de datos y privacidad"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q39
+msgid "39. Revisión y mejora continua"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q4
+msgid "4. Consumo responsable de materiales"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q40
+msgid "40. Integración de la sostenibilidad en la estrategia"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q5
+msgid "5. Gestión de residuos"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q6
+msgid "6. Separación de residuos"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q7
+msgid "7. Consumo de agua"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q8
+msgid "8. Medidas de ahorro de agua"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_q9
+msgid "9. Control del desperdicio"
+msgstr ""
+
+#. module: sustainability
+#: model:mail.template,body_html:sustainability.mail_template_sust_admin_expiry_alert
+msgid ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        Administrador,\n"
+"                    </p>\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        El sello Sostenibilidad de la empresa <strong t-out=\"object.company_id.name\"/> ha expirado.\n"
+"                    </p>\n"
+"                    <ul>\n"
+"                        <li>Nivel anterior: <t t-out=\"object.certification_level\"/></li>\n"
+"                        <li>Fecha de expiración: <t t-out=\"object.expiry_date\"/></li>\n"
+"                        <li>Usuario: <t t-out=\"object.partner_id.name\"/></li>\n"
+"                    </ul>\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        <a t-att-href=\"'/web#id=%s&amp;model=survey.user_input&amp;view_type=form' % object.id\">\n"
+"                            Ver evaluación\n"
+"                        </a>\n"
+"                    </p>\n"
+"                </div>\n"
+"            "
+msgstr ""
+
+#. module: sustainability
+#: model:mail.template,body_html:sustainability.mail_template_sust_retry_available
+msgid ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        Hola <t t-out=\"object.partner_id.name\"/>,\n"
+"                    </p>\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        El plazo de espera desde tu última evaluación de Sostenibilidad ha terminado. Ya puedes realizar un nuevo intento para obtener tu sello de certificación.\n"
+"                    </p>\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        <a t-att-href=\"'/web#action=%s' % env.ref('sustainability.action_sust_evaluations').id\" style=\"background-color: #875A7B; padding: 10px 20px; color: #ffffff; text-decoration: none; border-radius: 5px;\">\n"
+"                            Ir a Mis Evaluaciones\n"
+"                        </a>\n"
+"                    </p>\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        ¡Mucho éxito!<br/>\n"
+"                        El equipo de Canarias Conectada\n"
+"                    </p>\n"
+"                </div>\n"
+"            "
+msgstr ""
+
+#. module: sustainability
+#: model:mail.template,body_html:sustainability.mail_template_sust_renewal_due
+msgid ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        Hola <t t-out=\"object.partner_id.name\"/>,\n"
+"                    </p>\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        Tu sello Sostenibilidad <strong t-out=\"object.certification_level\"/> vence el <strong t-out=\"object.expiry_date\"/>.\n"
+"                    </p>\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        Para mantener tu certificación activa, debes realizar una nueva evaluación antes de esa fecha.\n"
+"                    </p>\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        <a t-att-href=\"'/web#action=%s' % env.ref('sustainability.action_sust_evaluations').id\" style=\"background-color: #875A7B; padding: 10px 20px; color: #ffffff; text-decoration: none; border-radius: 5px;\">\n"
+"                            Realizar renovación\n"
+"                        </a>\n"
+"                    </p>\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        Saludos,<br/>\n"
+"                        El equipo de Canarias Conectada\n"
+"                    </p>\n"
+"                </div>\n"
+"            "
+msgstr ""
+
+#. module: sustainability
+#: model:mail.template,body_html:sustainability.mail_template_sust_new_badge
+msgid ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        Hola <t t-out=\"object.partner_id.name\"/>,\n"
+"                    </p>\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        ¡Enhorabuena! Tu empresa <strong t-out=\"object.company_id.name\"/> ha obtenido el sello:\n"
+"                    </p>\n"
+"                    <div style=\"text-align: center; padding: 20px; margin: 20px 0; background-color: #f8f9fa; border-radius: 10px;\">\n"
+"                        <h2 style=\"color: #875A7B; text-transform: uppercase;\">\n"
+"                            <t t-if=\"object.certification_level == 'bronze'\">🥉 Bronce</t>\n"
+"                            <t t-if=\"object.certification_level == 'silver'\">🥈 Plata</t>\n"
+"                            <t t-if=\"object.certification_level == 'gold'\">🥇 Oro</t>\n"
+"                        </h2>\n"
+"                        <p>Puntuación: <strong t-out=\"object.scoring_total\"/> / <t t-out=\"object.survey_id.sustain_max_score\"/> puntos</p>\n"
+"                        <p>Válido hasta: <strong t-out=\"object.expiry_date\"/></p>\n"
+"                    </div>\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        El sello aparecerá automáticamente en tu microsite web.\n"
+"                    </p>\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        Saludos,<br/>\n"
+"                        El equipo de Canarias Conectada\n"
+"                    </p>\n"
+"                </div>\n"
+"            "
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"<i class=\"bi bi-download me-2\"/>Módulo 1: Introducción a la Sostenibilidad"
+" y los ODS"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "<i class=\"bi bi-download me-2\"/>Módulo 2: Economía Circular"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "<i class=\"bi bi-download me-2\"/>Módulo 3: Gestión Sostenible de Residuos"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"<i class=\"bi bi-download me-2\"/>Módulo 4: Eficiencia Energética y Energías"
+" Renovables"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"<i class=\"bi bi-download me-2\"/>Módulo 5: Integración de la Sostenibilidad"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.directory_sust_badge
+msgid "<i class=\"fa fa-certificate me-1\"/>Sostenibilidad"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.survey_fill_form_done_sust_recommendations
+msgid ""
+"<i class=\"fa fa-lightbulb-o text-warning me-2\"/>\n"
+"                            Recomendaciones para mejorar"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.question_multiple_choice_sust_print
+#: model_terms:ir.ui.view,arch_db:sustainability.question_simple_choice_sust_print
+msgid ""
+"<i class=\"fa fa-lightbulb-o text-warning me-2\"/>\n"
+"                        <strong>Recomendación:</strong>"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.survey_fill_form_done_sust_close
+msgid "<i class=\"fa fa-times\"/> Cerrar"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"<span class=\"carousel-control-next-icon\" aria-hidden=\"true\"/>\n"
+"                                    <span class=\"visually-hidden\">Adelante</span>"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"<span class=\"carousel-control-prev-icon\" aria-hidden=\"true\"/>\n"
+"                                    <span class=\"visually-hidden\">Atrás</span>"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"<span class=\"sust-green\" style=\"font-size: xx-large;\">Eje Estratégico "
+"para el Tejido Empresarial</span>"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.survey_fill_form_done_sust_recommendations
+msgid "<strong>Tu respuesta:</strong>"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Accede a material de apoyo y profundiza en los temas tratados."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_microsite_header_section
+msgid "Acciones sostenibles de este negocio"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Actualmente hay un cuestionario de evaluación activo.\n"
+"                                Accede a través de tu panel de <strong>Sostenibilidad &gt; Mis Evaluaciones</strong>."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Adoptar medidas urgentes para combatir el cambio climático y sus efectos."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.view_survey_user_input_form_sust_start
+msgid ""
+"Al hacer clic en el botón se validarán los plazos de espera\n"
+"                        y se iniciará el cuestionario en una nueva pestaña."
+msgstr ""
+
+#. module: sustainability
+#: model:mail.template,subject:sustainability.mail_template_sust_admin_expiry_alert
+msgid "Alerta: Sellos Sostenibilidad expirados"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Ampliar y mejorar la oferta de programas formativos especializados. Incluir "
+"conceptos de EC en programas de formación para el empleo y emprendedores."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q16
+msgid ""
+"Analiza la duración media de los contratos y las causas de salida del "
+"equipo. La estabilidad no siempre depende del tipo de contrato, sino de cómo"
+" se gestiona el entorno laboral."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q30
+msgid ""
+"Antes de decidir, añade la siguiente reflexión: ¿Esto qué implica dentro de "
+"6 meses o 1 año?"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q14
+msgid "Antes de decidir, pregúntate: ¿Hay una alternativa más sostenible?"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q3
+msgid ""
+"Antes de pensar en instalaciones complejas, revisa tu contrato energético. "
+"Muchas comercializadoras ofrecen opciones de energía renovable sin cambios "
+"estructurales."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Apoyos necesarios para los comercios locales"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Asesoramiento y acompañamiento"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Asignar recursos técnicos y económicos. Poner a disposición de las empresas "
+"instrumentos sencillos y prácticos. Difusión de recursos y herramientas "
+"adaptados a diferentes sectores y tamaños de empresa. Elaboración de guías y"
+" catálogos."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Audiencias"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.view_survey_user_input_form_inherit_sustainability
+msgid "Audit"
+msgstr "Auditoría"
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Ayuda a identificar futuras oportunidades de negocio, y además permite "
+"adelantarse a las exigencias de ciertas normativas."
+msgstr ""
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_survey_user_input__expiry_date
+msgid "Badge Expiry Date"
+msgstr "Fecha de expiración del sello"
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_survey_survey__sustain_validity_years
+msgid "Badge Validity (Years)"
+msgstr "Años de validez del sello"
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Bajo nivel de conocimiento de la Agenda ODS."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.survey_fill_form_done_sust_recommendations
+msgid "Basado en tus respuestas, estas son las áreas donde puedes enfocarte:"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Beneficios para los comercios locales"
+msgstr ""
+
+#. module: sustainability
+#: model:ir.model.fields.selection,name:sustainability.selection__res_company__sustain_certification_level__bronze
+#: model:ir.model.fields.selection,name:sustainability.selection__survey_user_input__certification_level__bronze
+msgid "Bronze"
+msgstr "Bronce"
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_survey_survey__sustain_bronze_min
+msgid "Bronze Minimum"
+msgstr "Mínimo Bronce"
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Cambio de paradigma"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Canarias tiene recursos renovables que ayudan a mejorar la generación de "
+"energía, especialmente la eólica y fotovoltaica. La Estrategia Energética "
+"Canarias 2025 se centra en aumentar el uso de energías renovables y reducir "
+"el consumo de energía. La declaración de emergencia climática en 2019 señala"
+" un mayor enfoque en las energías sostenibles."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Canarias tiene un contexto ambiental frágil. El ecosistema marino y "
+"terrestre es de importancia clave en la economía canaria."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Cerrar"
+msgstr ""
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_res_company__certification_input_ids
+msgid "Certification Evaluations"
+msgstr "Evaluaciones de certificación"
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_survey_user_input__certification_level
+msgid "Certification Level"
+msgstr "Nivel de certificación"
+
+#. module: sustainability
+#: model:ir.model,name:sustainability.model_res_company
+msgid "Companies"
+msgstr "Compañías"
+
+#. module: sustainability
+#: model:ir.model.fields,help:sustainability.field_survey_user_input__company_id
+msgid "Company this evaluation belongs to"
+msgstr "Empresa a la que corresponde esta evaluación"
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Complejidad normativa"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q13
+msgid "Comunica, explica y da ejemplo. La cultura no se impone, se construye."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Comunicación de la sostenibilidad"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.survey_survey_view_form_sustain_timing
+msgid "Configuration"
+msgstr "Configuración"
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Conservar y utilizar en forma sostenible los océanos, los mares y los "
+"recursos marinos para el desarrollo sostenible."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Construir infraestructuras resilientes, promover la industrialización "
+"inclusiva y sostenible y fomentar la innovación."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Contexto actual"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.view_survey_user_input_tree_inherit_sustainability
+msgid "Continue evaluation"
+msgstr "Continuar evaluación"
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Contribuir a la sostenibilidad es un diferenciador positivo estratégico."
+msgstr ""
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_survey_survey__sustain_cooldown_months
+msgid "Cooldown Months After Failing"
+msgstr "Meses de espera tras reprobar"
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Coyunturas externas desvían recursos de la sostenibilidad."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q21
+msgid "Cuando las personas participan, el compromiso aumenta."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Cubos de reciclaje"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.survey,title:sustainability.sust_economy_master_survey
+msgid "Cuestionario de Evaluación Sostenibilidad"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Cuestionario disponible"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Cumbre de Río (1992)"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q28
+msgid ""
+"Cumplir la normativa no es solo una obligación, es la base mínima sobre la "
+"que se construye cualquier empresa responsable."
+msgstr ""
+
+#. module: sustainability
+#: model:ir.model.fields,help:sustainability.field_survey_survey__sustain_renewal_reminder_days
+msgid "Days before expiry to send the renewal reminder"
+msgstr "Días antes de la expiración para enviar el recordatorio de renovación"
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_no_company
+msgid ""
+"Debe tener una empresa asignada en su perfil de usuario para realizar la "
+"evaluación de Sostenibilidad."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q34
+msgid "Decidir sin datos suele llevar a intuiciones poco fiables."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q35
+msgid "Define dónde quieres estar, qué necesitas cambiar y en qué plazos."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Definición - Comisión Mundial sobre Medio Ambiente y Desarrollo"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Demanda creciente"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Desafíos"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Desafíos, oportunidades y apoyos para los comercios locales"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Desarrollar programas para asesorar y acompañar a pymes en diseño e "
+"implantación de ODS y sostenibilidad. Apoyar a empresas de consultoría "
+"especializadas."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Descarga los PDF de nuestros módulos"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Diferenciación"
+msgstr ""
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_res_company__display_name
+#: model:ir.model.fields,field_description:sustainability.field_res_users__display_name
+#: model:ir.model.fields,field_description:sustainability.field_survey_survey__display_name
+#: model:ir.model.fields,field_description:sustainability.field_survey_user_input__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Economía Terciarizada"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Ecosistema"
+msgstr ""
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_survey_user_input__override_date
+msgid "Edit Date"
+msgstr "Fecha de edición"
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_survey_user_input__override_reason
+msgid "Edit Reason"
+msgstr "Motivo de edición"
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_survey_user_input__override_user_id
+msgid "Edited By"
+msgstr "Editado por"
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q19
+msgid ""
+"El bienestar no es solo evitar problemas, es crear un entorno donde las "
+"personas puedan trabajar de forma sostenible."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"El concepto de desarrollo sostenible busca satisfacer las necesidades de las generaciones presentes\n"
+"                                            sin comprometer la capacidad de las generaciones futuras para satisfacer sus propias necesidades. Esta\n"
+"                                            definición fue establecida en 1987 por la Comisión Mundial sobre Medio Ambiente y Desarrollo."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q7
+msgid ""
+"El consumo de agua suele pasar desapercibido hasta que aparece un problema o"
+" un coste elevado."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q9
+msgid ""
+"El desperdicio no es solo un problema ambiental, también es una pérdida "
+"económica."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.survey_fill_form_done_inherit_sustainability
+msgid "El sello es válido hasta:"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q4
+msgid ""
+"El uso de materiales suele estar lleno de inercias: se hacen cosas porque "
+"\"siempre se han hecho así\"."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q11
+msgid "Empieza con 3 indicadores, como energía, agua y residuos."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q23
+msgid ""
+"Empieza con algo simple como preguntar, recoger opiniones y observar "
+"patrones de conducta de tus clientes."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q34
+msgid ""
+"Empieza con indicadores simples como ventas, costes y consumo. No necesitas "
+"muchos datos, necesitas los adecuados."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q10
+msgid ""
+"Empieza con una pregunta simple a tus proveedores: ¿Tenéis políticas "
+"ambientales?. No necesitas cambiar todo. Necesitas empezar a incorporar "
+"criterio."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q1
+msgid ""
+"Empieza por algo muy sencillo: revisa tus facturas de los últimos meses. "
+"Detectarás patrones, picos o consumos que quizá no esperabas."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q29
+msgid ""
+"Empieza por compartir información clave como objetivos, decisiones "
+"relevantes y situación general. No se trata de contar todo, sino de no "
+"ocultar lo importante."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q5
+msgid ""
+"Empieza por identificar tipos de residuos, volumen y destino. No puedes "
+"mejorar lo que no conoces."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q2
+msgid ""
+"Empieza por lo más evidente, como cambiar a iluminación LED, apagar equipos "
+"fuera de uso, optimizar horarios, etc. Muchas mejoras no requieren "
+"inversión, solo atención."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q36
+msgid ""
+"Empieza por observar prácticas, condiciones y coherencia. No se trata de "
+"controlar todo, sino de no ignorarlo."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q26
+msgid "Empieza por observar, evitar sesgos y abrir oportunidades."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q8
+msgid ""
+"Empieza por revisar fugas, instalar dispositivos de ahorro y ajustar "
+"hábitos."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q17
+msgid ""
+"Empieza por revisar los procesos de selección, la promoción interna y "
+"posibles sesgos. Lo importante no es la perfección, es la intención "
+"aplicada."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.survey_fill_form_done_inherit_sustainability
+msgid ""
+"En esta ocasión no has alcanzado el nivel mínimo para obtener el sello de "
+"Sostenibilidad."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_instructions_page
+msgid "En este momento no hay ningún cuestionario de evaluación activo."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_error
+msgid "Error al iniciar evaluación"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Es necesario extender el conocimiento en todos los niveles para lograr un "
+"compromiso efectivo."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.survey,description:sustainability.sust_economy_master_survey
+msgid ""
+"Este cuestionario te ayudará a evaluar el nivel de sostenibilidad de tu "
+"empresa en tres dimensiones: medio ambiente, impacto social y gobernanza."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q14
+msgid "Este es el nivel de madurez real."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q40
+msgid ""
+"Este es el nivel más alto: cuando deja de ser algo puntual y pasa a ser "
+"parte del sistema."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_microsite_header_section
+msgid ""
+"Este negocio ha sido evaluado y reconocido con el sello de Sostenibilidad,\n"
+"                                por su compromiso con prácticas responsables en:<br/>\n"
+"                                <strong>Eficiencia energética</strong><br/>\n"
+"                                <strong>Gestión responsable de residuos</strong><br/>\n"
+"                                <strong>Consumo local y economía circular</strong>"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_cooldown
+msgid "Evaluación no disponible"
+msgstr ""
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_survey_user_input__company_id
+msgid "Evaluated Company"
+msgstr "Empresa evaluada"
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Existe el reto específico en Canarias de ser la comunidad autónoma con más "
+"población en riesgo de exclusión social."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Falta de conocimiento"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Financiación"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Formación y capacitación"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Fortalecer los medios de ejecución y revitalizar la Alianza Mundial para el "
+"Desarrollo Sostenible."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Garantizar el acceso a una energía asequible, segura, sostenible y moderna "
+"para todos."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Garantizar la disponibilidad de agua y su gestión sostenible y el "
+"saneamiento para todos."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Garantizar modalidades de consumo y producción sostenibles."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Garantizar una educación inclusiva, equitativa y de calidad y promover "
+"oportunidades de aprendizaje durante toda la vida para todos."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Garantizar una vida sana y promover el bienestar para todos en todas las "
+"edades."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q5
+msgid "Generar residuos es inevitable. Gestionarlos mal, no."
+msgstr ""
+
+#. module: sustainability
+#: model:ir.model.fields.selection,name:sustainability.selection__res_company__sustain_certification_level__gold
+#: model:ir.model.fields.selection,name:sustainability.selection__survey_user_input__certification_level__gold
+msgid "Gold"
+msgstr "Oro"
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_survey_survey__sustain_gold_min
+msgid "Gold Minimum"
+msgstr "Mínimo Oro"
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q33
+msgid ""
+"Haz un ejercicio básico y pregúntate qué puede salir mal, qué impacto "
+"tendría y cómo podrías evitarlo."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q4
+msgid ""
+"Haz una revisión interna sencilla, como qué utilizas, cuánto utilizas, si "
+"realmente es necesario, etc. Reducir no es eliminar, es optimizar."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q6
+msgid ""
+"Hazlo fácil, utiliza contenedores visibles, señalización clara y reglas "
+"simples. Si es complicado, no se hará."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Históricamente, la promoción del desarrollo sostenible fue uno de los objetivos incluidos en el\n"
+"                                            Tratado de Maastricht de 1992."
+msgstr ""
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_res_company__id
+#: model:ir.model.fields,field_description:sustainability.field_res_users__id
+#: model:ir.model.fields,field_description:sustainability.field_survey_survey__id
+#: model:ir.model.fields,field_description:sustainability.field_survey_user_input__id
+msgid "ID"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Icono ODS 1"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Icono ODS 10"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Icono ODS 11"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Icono ODS 12"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Icono ODS 13"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Icono ODS 14"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Icono ODS 15"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Icono ODS 16"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Icono ODS 17"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Icono ODS 2"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Icono ODS 3"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Icono ODS 4"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Icono ODS 5"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Icono ODS 6"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Icono ODS 7"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Icono ODS 8"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Icono ODS 9"
+msgstr ""
+
+#. module: sustainability
+#: model:ir.model.fields,help:sustainability.field_survey_survey__is_sustainability
+msgid "If checked, this survey is used for Sustainability certification"
+msgstr ""
+"Si está marcado, esta encuesta se usa para la certificación de "
+"Sostenibilidad"
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q8
+msgid ""
+"Igual que con la energía, pequeñas acciones pueden tener un impacto "
+"acumulado importante."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Importancia"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.view_survey_user_input_form_sust_start
+msgid "Iniciar evaluación"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.view_survey_user_input_form_sust_start
+msgid "Inicie una nueva evaluación para su empresa."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Innovación"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_instructions_page
+msgid "Instrucciones del Examen"
+msgstr ""
+
+#. module: sustainability
+#: model:ir.actions.act_url,name:sustainability.action_sust_instructions
+#: model:ir.ui.menu,name:sustainability.menu_sust_instructions
+msgid "Instructions"
+msgstr "Instrucciones"
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Insularidad"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Integrar los ODS en los informes corporativos ayuda a comunicar la "
+"contribución y atender las necesidades de las partes interesadas."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q37
+msgid "Introduce escucha activa, criterios claros y soluciones justas."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q20
+msgid ""
+"Introduce espacios simples, como reuniones breves, realimentación regular y "
+"canales claros."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q39
+msgid ""
+"Introduce revisiones simples: qué funciona bien, qué no está funcionando y "
+"qué cambiar para mejorar."
+msgstr ""
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_survey_survey__is_certification_survey
+msgid "Is Certification Survey"
+msgstr "Es encuesta de certificación"
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_survey_survey__is_sustainability
+msgid "Is Sustainability Evaluation"
+msgstr "Es evaluación de Sostenibilidad"
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"La Agenda Canaria de Desarrollo Sostenible (ACDS 2030) busca guiar el nuevo "
+"desarrollo en Canarias, involucrando a todos los sectores. La Estrategia "
+"Canaria de Economía Circular (ECEC) forma parte de esta agenda para aplicar "
+"los ODS en la región. Las microempresas están empezando a entender la "
+"importancia de los ODS, pero su falta de inversión dificulta la transición a"
+" la Economía Circular. Este módulo tratará sobre la importancia de la "
+"sostenibilidad y su comunicación para los negocios locales en Canarias."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"La Confederación Canaria de Empresarios (CCE) ve los ODS como una "
+"oportunidad. Promueve que las organizaciones canarias apliquen iniciativas "
+"para reducir los impactos negativos."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"La Cumbre de Río o Cumbre de la Tierra en 1992 fue un punto culminante para definir un modelo de\n"
+"                                            desarrollo sostenible, y sus acuerdos se concretaron, entre otros, en la ejecución de la Agenda 21\n"
+"                                            Local."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"La comunicación clara y activa sobre sostenibilidad mejora la reputación y "
+"la imagen de marca."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"La comunicación debe incluir a la plantilla, clientes, proveedores, aliados "
+"y la sociedad sobre la Agenda 2030 y los ODS."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"La comunicación transparente fortalece la reputación y la imagen de la "
+"marca. Proyecta en los clientes una imagen de preocupación."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q25
+msgid ""
+"La confianza es uno de los activos más importantes de cualquier negocio."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q38
+msgid "La confianza también se basa en cómo gestionas la información."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q26
+msgid ""
+"La diversidad no es solo un valor social, también mejora la resiliencia del "
+"negocio."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"La estructura económica de Canarias está terciarizada, con un peso principal"
+" del turismo, aunque los sectores primario, industrial y construcción son "
+"significativos."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q20
+msgid "La falta de comunicación genera errores, frustración y desconexión."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q3
+msgid ""
+"La fuente de energía que utilizas tiene un impacto directo en tu huella "
+"ambiental."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"La gestión de residuos es un reto, como el PIRCAN. Los palets que llegan a "
+"Canarias a menudo van a la economía sumergida. Se busca políticas de "
+"residuos cero y promover la Economía Circular. El impacto ambiental es "
+"significativo en un territorio escaso, frágil y con mucha presión humana, "
+"haciendo esencial una gestión sostenible de recursos."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q17
+msgid ""
+"La igualdad no es solo una cuestión ética, también mejora la calidad de las "
+"decisiones y la diversidad de perspectivas."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"La implementación de la Estrategia Canaria de Economía Circular (ECEC) debe "
+"tener en cuenta la insularidad, dando a los Cabildos un papel protagonista."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q32
+msgid "La incoherencia es uno de los mayores riesgos reputacionales."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q36
+msgid "La responsabilidad no termina en tu empresa."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q16
+msgid ""
+"La rotación constante genera costes ocultos: pérdida de conocimiento, menor "
+"compromiso y menor calidad en el servicio."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q6
+msgid "La separación es la base para que el reciclaje funcione realmente."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"La sostenibilidad es ahora muy importante en la economía y la sociedad. Ha "
+"cambiado de un papel secundario a uno central."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"La sostenibilidad es clave para transformar la economía y generar riqueza "
+"sin aumentar el consumo de recursos."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q13
+msgid ""
+"La sostenibilidad no depende solo de dirección, sino del comportamiento "
+"diario."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q22
+msgid ""
+"La sostenibilidad también es cómo tratas a quienes confían en tu negocio."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q27
+msgid ""
+"La sostenibilidad también se construye en cómo tratas a quienes hacen "
+"posible tu actividad."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"La sostenibilidad y la transformación digital son fuentes de innovación. La "
+"Economía Circular debe ser un eje central de la estrategia de I+D+i de "
+"Canarias (S3)."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q29
+msgid ""
+"La transparencia genera confianza, tanto dentro como fuera de la empresa."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q15
+msgid ""
+"Las condiciones laborales no solo afectan al bienestar de las personas, "
+"también impactan directamente en la estabilidad, motivación y rendimiento "
+"del negocio."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q30
+msgid ""
+"Las decisiones rápidas pueden resolver problemas inmediatos, pero generar "
+"consecuencias futuras."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Las empresas que demuestren su compromiso con la sostenibilidad superando nuestro formulario de evaluación,\n"
+"                                recibirán un distintivo digital. Este sello podrá ser exhibido en su página web y otros materiales,\n"
+"                                destacando sus buenas prácticas."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q11
+msgid "Lo que no se mide, no se gestiona."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q23
+msgid "Lo que no se mide, se interpreta… y muchas veces se interpreta mal."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q39
+msgid "Lo que no se revisa, se estanca."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Lograr la igualdad de género y empoderar a todas las mujeres y las niñas."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Lograr que las ciudades y los asentamientos humanos sean inclusivos, "
+"seguros, resilientes y sostenibles."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Los 17 Objetivos de Desarrollo Sostenible"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Los Objetivos de Desarrollo Sostenible y la Agenda 2030 muestran un nuevo "
+"enfoque sobre el desarrollo sostenible. Este enfoque es más amplio, complejo"
+" e interconectado."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q37
+msgid ""
+"Los conflictos son inevitables. La forma de gestionarlos define la cultura "
+"de la empresa."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Los consumidores incluyen cada vez más criterios de sostenibilidad en sus "
+"compras."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Marco normativo muy complejo para empresas pequeñas."
+msgstr ""
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_survey_survey__sustain_max_score
+msgid "Maximum Score"
+msgstr "Puntuación máxima"
+
+#. module: sustainability
+#: model:ir.model.fields,help:sustainability.field_survey_survey__sustain_max_score
+msgid "Maximum reachable score (40 questions x 2 points)"
+msgstr "Puntuación máxima posible (40 preguntas x 2 puntos)"
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Mejora Competitiva"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Mejora de la reputación e imagen"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Menos recursos económicos, técnicos y de personal."
+msgstr ""
+
+#. module: sustainability
+#: model:ir.model.fields,help:sustainability.field_survey_survey__sustain_bronze_min
+msgid "Minimum score to be awarded the Bronze badge"
+msgstr "Puntuación mínima para obtener el sello Bronce"
+
+#. module: sustainability
+#: model:ir.model.fields,help:sustainability.field_survey_survey__sustain_gold_min
+msgid "Minimum score to be awarded the Gold badge"
+msgstr "Puntuación mínima para obtener el sello Oro"
+
+#. module: sustainability
+#: model:ir.model.fields,help:sustainability.field_survey_survey__sustain_silver_min
+msgid "Minimum score to be awarded the Silver badge"
+msgstr "Puntuación mínima para obtener el sello Plata"
+
+#. module: sustainability
+#: model:ir.model.fields,help:sustainability.field_survey_survey__sustain_cooldown_months
+msgid "Months the company must wait before retrying after a failed evaluation"
+msgstr ""
+"Meses que la empresa debe esperar para reintentar tras una evaluación "
+"suspendida"
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q1
+msgid ""
+"Muchas empresas consumen más energía de la que realmente necesitan, "
+"simplemente porque nunca han mirado sus datos con detalle. Sin esa "
+"información, es muy difícil tomar decisiones o detectar mejoras."
+msgstr ""
+
+#. module: sustainability
+#: model:ir.ui.menu,name:sustainability.menu_sust_evaluations
+msgid "My Evaluations"
+msgstr "Mis Evaluaciones"
+
+#. module: sustainability
+#. odoo-python
+#: code:addons/sustainability/models/res_users.py:0
+msgid "My Sustainability evaluations"
+msgstr "Mis evaluaciones de Sostenibilidad"
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_microsite_header_section
+msgid "Negocio Comprometido"
+msgstr ""
+
+#. module: sustainability
+#: model:ir.actions.server,name:sustainability.action_start_sustainability_evaluation_server
+msgid "New Sustainability evaluation"
+msgstr "Nueva evaluación de Sostenibilidad"
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_survey_user_input__next_attempt_date
+msgid "Next Attempt Available"
+msgstr "Próximo intento disponible"
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.survey_fill_form_done_sust_recommendations
+msgid "No"
+msgstr ""
+
+#. module: sustainability
+#: model:ir.model.fields.selection,name:sustainability.selection__res_company__sustain_certification_level__none
+#: model:ir.model.fields.selection,name:sustainability.selection__survey_user_input__certification_level__none
+msgid "No badge"
+msgstr "Sin sello"
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q31
+msgid ""
+"No hace falta un documento complejo. Define qué es importante y qué no es "
+"aceptable. Esto da coherencia a todo lo demás."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_instructions_page
+msgid "No hay cuestionarios activos"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_instructions_page
+msgid "No hay instrucciones definidas para este cuestionario."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q40
+msgid ""
+"No intentes hacerlo todo. Empieza por integrar criterios, decisiones y "
+"seguimiento. La sostenibilidad no es un proyecto, es una forma de gestionar."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q18
+msgid ""
+"No necesitas grandes programas. Empieza por formación práctica, aprendizaje "
+"interno y compartir conocimiento."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_no_company
+msgid "No tiene empresa asignada"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q12
+msgid ""
+"No tiene que ser complejo. Define algo sencillo pero claro, por ejemplo, "
+"cómo queremos hacer las cosas."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "ODS 10: Reducción de las desigualdades"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "ODS 11: Ciudades y comunidades sostenibles"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "ODS 12: Producción y consumo responsables"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "ODS 13: Acción por el clima"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "ODS 14: Vida submarina"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "ODS 15: Vida de ecosistemas terrestres"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "ODS 16: Paz, justicia e instituciones sólidas"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "ODS 17: Alianzas para lograr los objetivos"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "ODS 1: Fin de la pobreza"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "ODS 2: Hambre Cero"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "ODS 3: Salud y bienestar"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "ODS 4: Educación de calidad"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "ODS 5: Igualdad de género"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "ODS 6: Agua limpia y saneamiento"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "ODS 7: Energía asequible y no contaminante"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "ODS 8: Trabajo decente y crecimiento económico"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "ODS 9: Industria, innovación e infraestructura"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q19
+msgid ""
+"Observa la carga de trabajo, el estrés y el ambiente laboral. Muchas señales"
+" aparecen antes de que surjan los problemas."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q9
+msgid ""
+"Observa qué se tira, por qué y con qué frecuencia. Ahí están muchas "
+"oportunidades de mejora."
+msgstr ""
+
+#. module: sustainability
+#. odoo-python
+#: code:addons/sustainability/models/survey_user_input.py:0
+msgid "Only certification managers can edit scores."
+msgstr "Solo los administradores de certificación pueden editar puntuaciones."
+
+#. module: sustainability
+#. odoo-python
+#: code:addons/sustainability/models/survey_user_input.py:0
+msgid "Only certification managers can revert score edits."
+msgstr "Solo los administradores de certificación pueden revertir ediciones."
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Oportunidad Empresarial"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Oportunidades"
+msgstr ""
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_survey_user_input__original_scoring_total
+msgid "Original Score"
+msgstr "Puntuación original"
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Otorgado a empresas que inician su camino en la sostenibilidad con acciones "
+"fundamentales."
+msgstr ""
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_survey_user_input__override_scoring_total
+msgid "Overridden Score"
+msgstr "Puntuación sobrescrita"
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Paneles solares"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.survey_fill_form_done_sust_recommendations
+msgid "Parcialmente"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q24
+msgid ""
+"Piensa en proveedores locales, colaboración con entorno o impacto en el "
+"barrio o comunidad."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Pilar esencial"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_cooldown
+msgid "Podrá realizar una nueva evaluación a partir del:"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.survey_fill_form_done_inherit_sustainability
+msgid "Podrás volver a intentarlo a partir del:"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Poner a disposición de las empresas instrumentos que permitan realizar las "
+"inversiones y esfuerzos para avanzar. Líneas de apoyo específicas (ej: "
+"emprendimiento en EC, ecodiseño). Incentivar la I+D+i en EC."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Poner fin a la pobreza en todas sus formas en todo el mundo."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Poner fin al hambre, lograr la seguridad alimentaria y la mejora de la "
+"nutrición y promover la agricultura sostenible."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Posible acceso a fondos europeos (Next Generation) y líneas de financiación "
+"pública o privada orientadas a la sostenibilidad."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q21
+msgid ""
+"Pregunta y escucha más. Muchas mejoras vienen de quienes están en el día a "
+"día."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Prepárate para entender los cimientos de un desarrollo más consciente y equitativo. La sostenibilidad es\n"
+"                                    mucho más que una palabra de moda; es una forma de entender nuestra relación con el mundo, basada en el\n"
+"                                    equilibrio entre lo que tomamos y lo que dejamos para los que vienen detrás. Significa vivir, producir y\n"
+"                                    consumir de manera que respetemos los límites del planeta, sin agotar sus recursos ni dañar\n"
+"                                    irreversiblemente los ecosistemas. En un momento en que el cambio climático, la pérdida de biodiversidad\n"
+"                                    y las desigualdades sociales son cada vez más evidentes, pensar en sostenibilidad ya no es una opción,\n"
+"                                    sino una necesidad urgente. Pero ¿cómo se traduce esto en nuestra vida diaria, en las decisiones que\n"
+"                                    tomamos o en la manera en que trabajamos y nos movemos? Eso es lo que merece la pena explorar."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Promover el crecimiento económico sostenido, inclusivo y sostenible, el "
+"empleo pleno y productivo y el trabajo decente para todos."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Promover sociedades pacíficas e inclusivas para el desarrollo sostenible, "
+"facilitar el acceso a la justicia para todos y crear instituciones eficaces,"
+" responsables e inclusivas a todos los niveles."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Proteger, restablecer y promover el uso sostenible de los ecosistemas "
+"terrestres, gestionar los bosques de forma sostenible, luchar contra la "
+"desertificación, detener e invertir la degradación de las tierras y poner "
+"freno a la pérdida de la diversidad biológica."
+msgstr ""
+
+#. module: sustainability
+#: model:mail.template,subject:sustainability.mail_template_sust_retry_available
+msgid "Puedes volver a realizar tu evaluación Sostenibilidad"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.survey_fill_form_done_inherit_sustainability
+msgid "Puntuación:"
+msgstr ""
+
+#. module: sustainability
+#. odoo-python
+#: code:addons/sustainability/controllers/main.py:0
+msgid "Questionnaire not found or inactive."
+msgstr "Cuestionario no encontrado o inactivo."
+
+#. module: sustainability
+#: model:ir.ui.menu,name:sustainability.menu_sust_surveys
+msgid "Questionnaires"
+msgstr "Cuestionarios"
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Reconocimiento a tu Compromiso Sostenible"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Recursos limitados"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Recursos y Desafíos Ambientales en Canarias"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Recursos y herramientas"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Reducción de costes"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Reduce costes, es más barato por energía no consumida y su gestión "
+"sostenible es una inversión que mejora la productividad a largo plazo."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Reducir la desigualdad en y entre los países."
+msgstr ""
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_survey_survey__sustain_renewal_reminder_days
+msgid "Renewal Reminder Days"
+msgstr "Días de aviso previo a renovación"
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.survey_fill_form_done_inherit_sustainability
+msgid "Resultado de la evaluación"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Retos Sociales"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q15
+msgid ""
+"Revisa aspectos básicos, como salarios, horarios y carga de trabajo. Muchas "
+"veces no se trata de grandes cambios, sino de corregir desequilibrios "
+"evidentes."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q38
+msgid ""
+"Revisa cómo almacenas y tratas los datos de tus clientes y proveedores y el "
+"acceso a los mismos. No es solo legal, es reputacional."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q22
+msgid ""
+"Revisa la claridad en la información, las expectativas generadas y la "
+"gestión de incidencias."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q27
+msgid ""
+"Revisa las condiciones, plazos de pago y trato. La relación importa tanto "
+"como el precio."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q28
+msgid ""
+"Revisa licencias, obligaciones fiscales y normativa laboral. No cumplir no "
+"solo implica riesgo legal, también afecta a la reputación."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q25
+msgid ""
+"Revisa los mensajes comerciales, las condiciones y las promesas. Lo "
+"sostenible también es ser coherente."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q7
+msgid ""
+"Revisa tus facturas y detecta patrones. Muchas mejoras empiezan simplemente "
+"observando."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,comments_message:sustainability.sust_economy_q32
+msgid ""
+"Revisa tus mensajes frente a tus acciones y tus promesas frente a la "
+"realidad. La sostenibilidad empieza por la coherencia."
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_page_1
+msgid "SECCIÓN A — ENERGÍA Y RECURSOS"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_page_1000
+msgid "SECCIÓN B — IMPACTO SOCIAL"
+msgstr ""
+
+#. module: sustainability
+#: model:survey.question,title:sustainability.sust_economy_page_2000
+msgid "SECCIÓN C — GOBERNANZA Y ÉTICA"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q2
+msgid ""
+"Saber cuánto consumes es el primer paso, pero el cambio real ocurre cuando "
+"se traduce en decisiones concretas."
+msgstr ""
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_survey_user_input__is_manually_overridden
+msgid "Score Manually Edited"
+msgstr "Puntuación editada manualmente"
+
+#. module: sustainability
+#: model:ir.model.fields,help:sustainability.field_survey_user_input__override_scoring_total
+msgid ""
+"Score imposed by the manager; reapplied whenever the survey scoring is "
+"recomputed"
+msgstr ""
+"Puntuación impuesta por el administrador; se reaplica cada vez que se "
+"recalcula la puntuación de la encuesta"
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.survey_survey_view_form_sustain_timing
+msgid "Score thresholds"
+msgstr "Umbrales de puntuación"
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Sello Sostenible"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Sello de Sostenibilidad"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Sensibilización interna"
+msgstr ""
+
+#. module: sustainability
+#: model:ir.model.fields,help:sustainability.field_survey_user_input__is_manually_overridden
+msgid "Set when a certification manager overrode the computed score"
+msgstr ""
+"Se activa cuando un administrador de certificación sobrescribe la puntuación"
+" calculada"
+
+#. module: sustainability
+#: model:ir.model.fields.selection,name:sustainability.selection__res_company__sustain_certification_level__silver
+#: model:ir.model.fields.selection,name:sustainability.selection__survey_user_input__certification_level__silver
+msgid "Silver"
+msgstr "Plata"
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_survey_survey__sustain_silver_min
+msgid "Silver Minimum"
+msgstr "Mínimo Plata"
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q12
+msgid "Sin criterios, las decisiones dependen del momento."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q31
+msgid ""
+"Sin valores claros, las decisiones dependen del contexto y pueden volverse "
+"incoherentes."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q35
+msgid "Sin visión, la empresa reacciona en lugar de avanzar."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Slide 1"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Slide 2"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Slide 3"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Slide 4"
+msgstr ""
+
+#. module: sustainability
+#: model:ir.ui.menu,name:sustainability.menu_sustainability_root
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_microsite_header_section
+msgid "Sostenibilidad"
+msgstr ""
+
+#. module: sustainability
+#: model:mail.template,name:sustainability.mail_template_sust_admin_expiry_alert
+msgid "Sostenibilidad (Admin): Alerta de sellos expirados"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Sostenibilidad en Canarias"
+msgstr ""
+
+#. module: sustainability
+#: model:ir.actions.server,name:sustainability.ir_cron_sust_expiry_alert_ir_actions_server
+msgid "Sostenibilidad: Alertar admin de sellos expirados"
+msgstr ""
+
+#. module: sustainability
+#: model:mail.template,name:sustainability.mail_template_sust_new_badge
+msgid "Sostenibilidad: Nuevo sello obtenido"
+msgstr ""
+
+#. module: sustainability
+#: model:ir.actions.server,name:sustainability.ir_cron_sust_retry_reminder_ir_actions_server
+msgid "Sostenibilidad: Recordar reintentos disponibles"
+msgstr ""
+
+#. module: sustainability
+#: model:ir.actions.server,name:sustainability.ir_cron_sust_renewal_reminder_ir_actions_server
+msgid "Sostenibilidad: Recordar renovaciones próximas"
+msgstr ""
+
+#. module: sustainability
+#: model:mail.template,name:sustainability.mail_template_sust_retry_available
+msgid "Sostenibilidad: Reintento disponible"
+msgstr ""
+
+#. module: sustainability
+#: model:mail.template,name:sustainability.mail_template_sust_renewal_due
+msgid "Sostenibilidad: Renovación próxima"
+msgstr ""
+
+#. module: sustainability
+#. odoo-python
+#: code:addons/sustainability/models/survey_survey.py:0
+msgid "Start Sustainability evaluation"
+msgstr "Iniciar evaluación de Sostenibilidad"
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Sumérgete en el fascinante mundo de la sostenibilidad. Aquí descubrirás qué significa realmente este\n"
+"                                concepto vital, cómo impacta nuestro día a día y el futuro del planeta, y por qué es especialmente\n"
+"                                relevante en un archipiélago como Canarias."
+msgstr ""
+
+#. module: sustainability
+#: model:ir.model,name:sustainability.model_survey_survey
+msgid "Survey"
+msgstr "Encuesta"
+
+#. module: sustainability
+#: model:ir.model,name:sustainability.model_survey_user_input
+msgid "Survey User Input"
+msgstr ""
+
+#. module: sustainability
+#: model:res.groups.privilege,name:sustainability.res_groups_privilege_sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.survey_survey_view_form_sustain_timing
+#: model_terms:ir.ui.view,arch_db:sustainability.view_company_form_inherit_sustainability
+msgid "Sustainability"
+msgstr "Sostenibilidad"
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_res_company__sustain_expiry_date
+msgid "Sustainability Badge Expiry"
+msgstr "Expiración del sello de Sostenibilidad"
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_res_company__sustain_certification_date
+msgid "Sustainability Certification Date"
+msgstr "Fecha de certificación de Sostenibilidad"
+
+#. module: sustainability
+#: model:ir.actions.act_window,name:sustainability.action_sust_evaluations
+#: model:ir.model.fields,field_description:sustainability.field_res_company__sustain_evaluation_count
+#: model_terms:ir.ui.view,arch_db:sustainability.view_company_form_inherit_sustainability
+msgid "Sustainability Evaluations"
+msgstr "Evaluaciones de Sostenibilidad"
+
+#. module: sustainability
+#. odoo-python
+#: code:addons/sustainability/models/res_company.py:0
+msgid "Sustainability Evaluations - %s"
+msgstr "Evaluaciones de Sostenibilidad - %s"
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_res_company__sustain_certification_level
+msgid "Sustainability Level"
+msgstr "Nivel de Sostenibilidad"
+
+#. module: sustainability
+#: model:res.groups,name:sustainability.group_sustainability_manager
+msgid "Sustainability Manager"
+msgstr "Administrador Sostenibilidad"
+
+#. module: sustainability
+#: model:ir.actions.act_window,name:sustainability.action_sust_surveys
+msgid "Sustainability Questionnaires"
+msgstr "Cuestionarios de Sostenibilidad"
+
+#. module: sustainability
+#: model:ir.model.fields,field_description:sustainability.field_res_company__sustain_cert_score
+msgid "Sustainability Score (%)"
+msgstr "Puntuación de Sostenibilidad (%)"
+
+#. module: sustainability
+#: model:res.groups,name:sustainability.group_sustainability_user
+msgid "Sustainability User"
+msgstr "Usuario Sostenibilidad"
+
+#. module: sustainability
+#. odoo-python
+#: code:addons/sustainability/models/survey_user_input.py:0
+msgid "The related survey could not be found."
+msgstr "No se encontró la encuesta asociada."
+
+#. module: sustainability
+#. odoo-python
+#: code:addons/sustainability/controllers/main.py:0
+#: code:addons/sustainability/models/survey_user_input.py:0
+msgid ""
+"There is no active Sustainability questionnaire. Please contact the "
+"administrator."
+msgstr ""
+"No hay un cuestionario de Sostenibilidad activo. Contacte al administrador."
+
+#. module: sustainability
+#. odoo-python
+#: code:addons/sustainability/models/survey_user_input.py:0
+msgid "This answer does not belong to a certification survey."
+msgstr "Esta respuesta no pertenece a una encuesta de certificación."
+
+#. module: sustainability
+#. odoo-python
+#: code:addons/sustainability/models/survey_user_input.py:0
+msgid "This evaluation has already been completed."
+msgstr "Esta evaluación ya ha sido completada."
+
+#. module: sustainability
+#. odoo-python
+#: code:addons/sustainability/models/survey_survey.py:0
+msgid "This survey is not configured as a Sustainability evaluation."
+msgstr "Esta encuesta no está configurada como evaluación de Sostenibilidad."
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.survey_survey_view_form_sustain_timing
+msgid "Timing"
+msgstr "Tiempos"
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q24
+msgid ""
+"Toda empresa forma parte de un ecosistema social, aunque no siempre sea "
+"consciente de ello."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q33
+msgid ""
+"Toda empresa tiene riesgos, la diferencia está en si se anticipan o se "
+"sufren."
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid ""
+"Trabajar con los ODS ayuda a acceder a grandes empresas y a consumidores "
+"interesados en la sostenibilidad."
+msgstr ""
+
+#. module: sustainability
+#: model:ir.actions.act_url,name:sustainability.action_sust_formaciones
+#: model:ir.ui.menu,name:sustainability.menu_sust_formaciones
+msgid "Trainings"
+msgstr "Formaciones"
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Transformación Económica"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Transparencia"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Tratado de Maastricht (1992)"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q10
+msgid ""
+"Tu impacto no termina en tu negocio, también está en tu cadena de "
+"suministro."
+msgstr ""
+
+#. module: sustainability
+#: model:mail.template,subject:sustainability.mail_template_sust_renewal_due
+msgid "Tu sello Sostenibilidad vence pronto - Renovación necesaria"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:survey.question,description:sustainability.sust_economy_q18
+msgid ""
+"Un equipo que no crece acaba estancándose, y eso impacta directamente en el "
+"negocio."
+msgstr ""
+
+#. module: sustainability
+#: model:ir.model,name:sustainability.model_res_users
+msgid "User"
+msgstr "Usuario"
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "Ventaja competitiva y captación de clientes"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_cooldown
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_error
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_no_company
+msgid "Volver a Mis Evaluaciones"
+msgstr ""
+
+#. module: sustainability
+#. odoo-python
+#: code:addons/sustainability/models/res_company.py:0
+msgid "We apply energy saving practices"
+msgstr "Aplicamos prácticas de ahorro energético"
+
+#. module: sustainability
+#. odoo-python
+#: code:addons/sustainability/models/res_company.py:0
+msgid "We manage our waste responsibly"
+msgstr "Realizamos una gestión responsable de residuos"
+
+#. module: sustainability
+#. odoo-python
+#: code:addons/sustainability/models/res_company.py:0
+msgid "We offer eco-friendly and/or local products"
+msgstr "Ofrecemos productos ecológicos y/o locales"
+
+#. module: sustainability
+#: model_terms:ir.actions.act_window,help:sustainability.action_sust_evaluations
+msgid "Welcome to Sustainability"
+msgstr "Bienvenido a Sostenibilidad"
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_cooldown
+msgid "Ya ha realizado una evaluación recientemente."
+msgstr ""
+
+#. module: sustainability
+#: model:ir.model.fields,help:sustainability.field_survey_survey__sustain_validity_years
+msgid "Years the badge remains valid once awarded"
+msgstr "Años que el sello permanece válido tras obtenerlo"
+
+#. module: sustainability
+#. odoo-python
+#: code:addons/sustainability/models/survey_user_input.py:0
+msgid "You cannot take a new evaluation until %s."
+msgstr "No puede realizar una nueva evaluación hasta el %s."
+
+#. module: sustainability
+#: model_terms:ir.actions.act_window,help:sustainability.action_sust_evaluations
+msgid ""
+"You have not taken any evaluation for your company yet.\n"
+"                Click <b>New</b> to start your first evaluation and find out\n"
+"                whether your business qualifies for the Sustainability badge."
+msgstr ""
+"Aún no has realizado ninguna evaluación para tu empresa. Haz clic en "
+"<b>Nuevo</b> para iniciar tu primera evaluación y descubrir si tu comercio "
+"califica para el sello de Sostenibilidad."
+
+#. module: sustainability
+#. odoo-python
+#: code:addons/sustainability/models/survey_user_input.py:0
+msgid "You must have a company assigned to take the evaluation."
+msgstr "Debe tener una empresa asignada para realizar la evaluación."
+
+#. module: sustainability
+#. odoo-python
+#: code:addons/sustainability/models/res_company.py:0
+msgid "ecológlocalcomunidad"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.survey_fill_form_done_inherit_sustainability
+msgid ""
+"puntos\n"
+"                        ("
+msgstr ""
+
+#. module: sustainability
+#. odoo-python
+#: code:addons/sustainability/models/res_company.py:0
+msgid "residuo"
+msgstr ""
+
+#. module: sustainability
+#. odoo-python
+#: code:addons/sustainability/models/res_users.py:0
+msgid "survey_id.is_sustainability"
+msgstr ""
+
+#. module: sustainability
+#: model:mail.template,subject:sustainability.mail_template_sust_new_badge
+msgid "¡Felicidades! Has obtenido el sello Sostenibilidad"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "¿Qué es el Desarrollo Sostenible?"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.sust_economy_page
+msgid "¿Qué es la sostenibilidad?"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.survey_fill_form_done_inherit_sustainability
+msgid "🎉 ¡Felicidades! Tu empresa ha obtenido el sello de Sostenibilidad"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.view_survey_user_input_form_sust_start
+msgid "📝 Nueva evaluación de Sostenibilidad"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.survey_fill_form_done_inherit_sustainability
+msgid "🥇 ORO"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.survey_fill_form_done_inherit_sustainability
+msgid "🥈 PLATA"
+msgstr ""
+
+#. module: sustainability
+#: model_terms:ir.ui.view,arch_db:sustainability.survey_fill_form_done_inherit_sustainability
+msgid "🥉 BRONCE"
+msgstr ""

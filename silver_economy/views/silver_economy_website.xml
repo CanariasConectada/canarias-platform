@@ -18,11 +18,7 @@
             <t t-set="silver_level" t-value="entry.company_id.silver_certification_level"/>
             <t t-set="silver_expired" t-value="entry.company_id.silver_expiry_date and entry.company_id.silver_expiry_date &lt; datetime.date.today()"/>
             <span t-if="not silver_expired"
-                  t-att-class="'badge rounded-pill ms-1 ' + {
-                      'bronze': '',
-                      'silver': '',
-                      'gold': ''
-                  }.get(silver_level, '')"
+                  class="badge rounded-pill ms-1"
                   t-att-style="'font-size: 0.55rem; padding: 0.15em 0.4em; ' + {
                       'bronze': 'background-color: #CD7F32 !important; color: #fff !important;',
                       'silver': 'background-color: #C0C0C0 !important; color: #212529 !important;',
@@ -82,10 +78,7 @@
             <t t-set="is_homepage" t-value="request.httprequest.path == (website.homepage_url or '/')"/>
             <t t-set="is_error_page" t-value="request.httprequest.path.startswith('/website/error') or request.httprequest.path in ['/404', '/500']"/>
 
-            <!-- Placeholder para futuro modulo Sostenibilidad -->
-            <t t-set="has_sustain" t-value="False"/>
-
-            <section t-if="is_homepage and not is_error_page and (has_silver or has_sustain) and not suppress_silver_card"
+            <section t-if="is_homepage and not is_error_page and has_silver and not suppress_silver_card"
                      class="s_three_columns o_cc o_cc2 pt32 pb32 o_colored_level"
                      data-snippet="s_three_columns" data-name="Columnas">
                 <div class="container">
@@ -132,10 +125,10 @@
                         </div>
                     </div>
 
-                    <!-- Parte inferior: Acciones sostenibles (dinámicas) -->
+                    <!-- Parte inferior: items positivos (dinámicos) -->
                     <div class="row" t-if="has_silver and positive_items">
                         <div class="col-12">
-                            <h4 class="fw-bold mb-3 text-center" style="font-size: 1.25rem; color: #333;">Acciones sostenibles de este negocio</h4>
+                            <h4 class="fw-bold mb-3 text-center" style="font-size: 1.25rem; color: #333;">Acciones destacadas de este negocio</h4>
                             <div class="d-flex flex-column align-items-center">
                                 <div t-foreach="positive_items" t-as="item" class="d-flex align-items-center mb-2">
                                     <i t-att-class="'fa %s me-2' % item['icon']"
@@ -146,12 +139,6 @@
                         </div>
                     </div>
 
-                    <!-- Sostenible placeholder (futuro) -->
-                    <div class="row" t-if="has_sustain">
-                        <div class="col-12 text-center mt-4">
-                            <p class="text-muted">Comercio Sostenible — placeholder para futuro módulo</p>
-                        </div>
-                    </div>
                 </div>
             </section>
         </xpath>

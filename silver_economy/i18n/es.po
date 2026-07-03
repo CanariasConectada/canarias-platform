@@ -1,0 +1,2234 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-03 21:47+0000\n"
+"PO-Revision-Date: 2026-07-03 21:47+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "2022: Récord de 83.1 años de esperanza de vida."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"2040 (Proyección): 85.8 años, situando a España entre los países con mayor\n"
+"                                        esperanza de vida mundial."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"2095-2100 (Proyección ONU): 92.6 años de esperanza de vida al nacer, \"solo por\n"
+"                                        debajo de Japón.\""
+msgstr ""
+
+#. module: silver_economy
+#: model:mail.template,body_html:silver_economy.mail_template_silver_admin_expiry_alert
+msgid ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        Administrador,\n"
+"                    </p>\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        El sello Silver Economy de la empresa <strong t-out=\"object.company_id.name\"/> ha expirado.\n"
+"                    </p>\n"
+"                    <ul>\n"
+"                        <li>Nivel anterior: <t t-out=\"object.certification_level\"/></li>\n"
+"                        <li>Fecha de expiración: <t t-out=\"object.expiry_date\"/></li>\n"
+"                        <li>Usuario: <t t-out=\"object.partner_id.name\"/></li>\n"
+"                    </ul>\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        <a t-att-href=\"'/web#id=%s&amp;model=survey.user_input&amp;view_type=form' % object.id\">\n"
+"                            Ver evaluación\n"
+"                        </a>\n"
+"                    </p>\n"
+"                </div>\n"
+"            "
+msgstr ""
+
+#. module: silver_economy
+#: model:mail.template,body_html:silver_economy.mail_template_silver_retry_available
+msgid ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        Hola <t t-out=\"object.partner_id.name\"/>,\n"
+"                    </p>\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        El plazo de espera desde tu última evaluación Silver Economy ha terminado. Ya puedes realizar un nuevo intento para obtener tu sello de certificación.\n"
+"                    </p>\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        <a t-att-href=\"'/web#action=%s' % env.ref('silver_economy.action_silver_evaluations').id\" style=\"background-color: #875A7B; padding: 10px 20px; color: #ffffff; text-decoration: none; border-radius: 5px;\">\n"
+"                            Ir a Mis Evaluaciones\n"
+"                        </a>\n"
+"                    </p>\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        ¡Mucho éxito!<br/>\n"
+"                        El equipo de Canarias Conectada\n"
+"                    </p>\n"
+"                </div>\n"
+"            "
+msgstr ""
+
+#. module: silver_economy
+#: model:mail.template,body_html:silver_economy.mail_template_silver_renewal_due
+msgid ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        Hola <t t-out=\"object.partner_id.name\"/>,\n"
+"                    </p>\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        Tu sello Silver Economy <strong t-out=\"object.certification_level\"/> vence el <strong t-out=\"object.expiry_date\"/>.\n"
+"                    </p>\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        Para mantener tu certificación activa, debes realizar una nueva evaluación antes de esa fecha.\n"
+"                    </p>\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        <a t-att-href=\"'/web#action=%s' % env.ref('silver_economy.action_silver_evaluations').id\" style=\"background-color: #875A7B; padding: 10px 20px; color: #ffffff; text-decoration: none; border-radius: 5px;\">\n"
+"                            Realizar renovación\n"
+"                        </a>\n"
+"                    </p>\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        Saludos,<br/>\n"
+"                        El equipo de Canarias Conectada\n"
+"                    </p>\n"
+"                </div>\n"
+"            "
+msgstr ""
+
+#. module: silver_economy
+#: model:mail.template,body_html:silver_economy.mail_template_silver_new_badge
+msgid ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        Hola <t t-out=\"object.partner_id.name\"/>,\n"
+"                    </p>\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        ¡Enhorabuena! Tu empresa <strong t-out=\"object.company_id.name\"/> ha obtenido el sello:\n"
+"                    </p>\n"
+"                    <div style=\"text-align: center; padding: 20px; margin: 20px 0; background-color: #f8f9fa; border-radius: 10px;\">\n"
+"                        <h2 style=\"color: #875A7B; text-transform: uppercase;\">\n"
+"                            <t t-if=\"object.certification_level == 'bronze'\">🥉 Bronce</t>\n"
+"                            <t t-if=\"object.certification_level == 'silver'\">🥈 Plata</t>\n"
+"                            <t t-if=\"object.certification_level == 'gold'\">🥇 Oro</t>\n"
+"                        </h2>\n"
+"                        <p>Puntuación: <strong t-out=\"object.scoring_total\"/> / <t t-out=\"object.survey_id.silver_max_score\"/> puntos</p>\n"
+"                        <p>Válido hasta: <strong t-out=\"object.expiry_date\"/></p>\n"
+"                    </div>\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        El sello aparecerá automáticamente en tu microsite web.\n"
+"                    </p>\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                        Saludos,<br/>\n"
+"                        El equipo de Canarias Conectada\n"
+"                    </p>\n"
+"                </div>\n"
+"            "
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "<i class=\"bi bi-download me-2\"/>Módulo 1: Longevidad y vejez"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "<i class=\"bi bi-download me-2\"/>Módulo 2: Economía plateada"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "<i class=\"bi bi-download me-2\"/>Módulo 3: Desafío demográfico"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "<i class=\"bi bi-download me-2\"/>Módulo 4: Sostenibilidad y desarrollo"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "<i class=\"bi bi-download me-2\"/>Módulo 5: Retos en la atención"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.directory_silver_badge
+msgid "<i class=\"fa fa-certificate me-1\"/>Silver Economy"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.survey_fill_form_done_silver_recommendations
+msgid ""
+"<i class=\"fa fa-lightbulb-o text-warning me-2\"/>\n"
+"                            Recomendaciones para mejorar"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.question_multiple_choice_silver_print
+#: model_terms:ir.ui.view,arch_db:silver_economy.question_simple_choice_silver_print
+msgid ""
+"<i class=\"fa fa-lightbulb-o text-warning me-2\"/>\n"
+"                        <strong>Recomendación:</strong>"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.survey_fill_form_done_silver_close
+msgid "<i class=\"fa fa-times\"/> Cerrar"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"<span class=\"silver-blue\" style=\"font-size: xx-large;\">El concepto de\n"
+"                                    sostenibilidad en el desarrollo territorial</span>"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.survey_fill_form_done_silver_recommendations
+msgid "<strong>Tu respuesta:</strong>"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"A pesar de su potencial, la Silver Economy se enfrenta a desafíos significativos. Uno de los\n"
+"                                            principales es la heterogeneidad de la población mayor, que exige soluciones personalizadas y flexibles\n"
+"                                            para distintas edades, capacidades y estilos de vida, evitando así la generalización y el edadismo. Otro\n"
+"                                            reto crucial es la sostenibilidad de los sistemas de bienestar (pensiones y salud) ante el aumento de la\n"
+"                                            esperanza de vida y la disminución de la natalidad, lo que requiere modelos de financiación innovadores.\n"
+"                                            La brecha digital sigue siendo un obstáculo para muchos mayores, limitando su acceso a servicios\n"
+"                                            esenciales y su plena inclusión social. Finalmente, adaptar las infraestructuras urbanas y el mercado\n"
+"                                            laboral para fomentar la movilidad, la participación y el empleo senior también representa un desafío\n"
+"                                            considerable."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q35
+msgid ""
+"A veces la discriminación no es intencionada. Puede estar en pequeños "
+"detalles: procesos pensados solo para perfiles digitales, lenguaje poco "
+"inclusivo o suposiciones sobre capacidades."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Accede a material de apoyo y profundiza en los temas tratados."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_microsite_header_section
+msgid "Acciones destacadas de este negocio"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"Actualidad: \"Nueve de cada diez\" personas alcanzan los 65 años. Los años\n"
+"                                        promedio vividos después de la jubilación han aumentado de \"apenas 10 a más de\n"
+"                                        23 años para las mujeres.\""
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"Actualmente hay un cuestionario de evaluación activo.\n"
+"                                Accede a través de tu panel de <strong>Silver Economy &gt; Mis Evaluaciones</strong>."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.view_survey_user_input_form_silver_start
+msgid ""
+"Al hacer clic en el botón se validarán los plazos de espera\n"
+"                        y se iniciará el cuestionario en una nueva pestaña."
+msgstr ""
+
+#. module: silver_economy
+#: model:mail.template,subject:silver_economy.mail_template_silver_admin_expiry_alert
+msgid "Alerta: Sellos Silver Economy expirados"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"Apoyan la digitalización de cooperativas y sus socios. Las \"platform coops\" son una herramienta clave para\n"
+"                            potenciar el empleo cualificado de base tecnológica en entornos rurales, desvinculando el empleo de la\n"
+"                            localización geográfica."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"Aquellos que particularmente traten de cubrir las necesidades de los adultos mayores de 65 años y sus familias\n"
+"                            (responsables de su atención), con el propósito de transformar el envejecimiento de la población\n"
+"                            en una oportunidad comercial."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q16
+msgid ""
+"Asegúrate de que el teléfono esté bien visible y que realmente se atienda."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.view_survey_user_input_form_inherit_silver
+msgid "Audit"
+msgstr "Auditoría"
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q16
+msgid ""
+"Aunque existan canales digitales, muchas personas mayores siguen prefiriendo"
+" el teléfono o el contacto directo."
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_survey_user_input__expiry_date
+msgid "Badge Expiry Date"
+msgstr "Fecha de expiración del sello"
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_survey_survey__silver_validity_years
+msgid "Badge Validity (Years)"
+msgstr "Años de validez del sello"
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.survey_fill_form_done_silver_recommendations
+msgid "Basado en tus respuestas, estas son las áreas donde puedes enfocarte:"
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields.selection,name:silver_economy.selection__res_company__silver_certification_level__bronze
+#: model:ir.model.fields.selection,name:silver_economy.selection__survey_user_input__certification_level__bronze
+msgid "Bronze"
+msgstr "Bronce"
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_survey_survey__silver_bronze_min
+msgid "Bronze Minimum"
+msgstr "Mínimo Bronce"
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q12
+msgid ""
+"Cada persona es diferente. En el caso de clientes mayores, esta diferencia "
+"suele ser más evidente: algunos necesitan más tiempo, otros más explicación,"
+" otros simplemente sentirse acompañados."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q36
+msgid ""
+"Cada vez más procesos pasan por lo digital. Si este entorno no es accesible,"
+" estás dejando fuera a parte de tus clientes."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Cambio demográfico"
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_res_company__certification_input_ids
+msgid "Certification Evaluations"
+msgstr "Evaluaciones de certificación"
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_survey_user_input__certification_level
+msgid "Certification Level"
+msgstr "Nivel de certificación"
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Colaboración Público-Privada"
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model,name:silver_economy.model_res_company
+msgid "Companies"
+msgstr "Compañías"
+
+#. module: silver_economy
+#: model:ir.model.fields,help:silver_economy.field_survey_user_input__company_id
+msgid "Company this evaluation belongs to"
+msgstr "Empresa a la que corresponde esta evaluación"
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q3
+msgid ""
+"Con la edad, la capacidad visual cambia. Zonas oscuras, sombras o "
+"deslumbramientos pueden dificultar la experiencia e incluso generar "
+"inseguridad."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q7
+msgid ""
+"Con la edad, la visión cambia. Textos pequeños, tipografías complejas o "
+"demasiado contenido junto pueden dificultar la lectura y generar "
+"frustración."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.survey_survey_view_form_silver_timing
+msgid "Configuration"
+msgstr "Configuración"
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Conservación"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Consideraciones éticas y Sociales"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.view_survey_user_input_tree_inherit_silver
+msgid "Continue evaluation"
+msgstr "Continuar evaluación"
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"Contribuyen a la diversificación de la economía rural y al aprovechamiento de sus potencialidades. Impulsan\n"
+"                            proyectos relacionados con la transición ecológica, como las comunidades energéticas y la economía circular."
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_survey_survey__silver_cooldown_months
+msgid "Cooldown Months After Failing"
+msgstr "Meses de espera tras reprobar"
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_silver_positive_item__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_silver_positive_item__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q2
+msgid ""
+"Cuando una persona no encuentra lo que busca rápidamente, puede sentirse "
+"incómoda o dependiente. Esto es especialmente relevante en personas mayores,"
+" que valoran mucho la autonomía."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q35
+msgid ""
+"Cuestiona las suposiciones. No todas las personas mayores son iguales, ni "
+"tienen las mismas limitaciones."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.survey,title:silver_economy.silver_economy_master_survey
+msgid "Cuestionario de Evaluación Silver Economy"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Cuestionario disponible"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"Datos Recientes: 2017: Esperanza de vida al nacer de 83.4 años (segunda más alta\n"
+"                                        de Europa). Esperanza de vida a los 65 años de 21.5 años (tercera más alta de\n"
+"                                        Europa)."
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields,help:silver_economy.field_survey_survey__silver_renewal_reminder_days
+msgid "Days before expiry to send the renewal reminder"
+msgstr "Días antes de la expiración para enviar el recordatorio de renovación"
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_no_company
+msgid ""
+"Debe tener una empresa asignada en su perfil de usuario para realizar la "
+"evaluación Silver Economy."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Desafíos Significativos"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Desafíos Socioeconómicos"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Desarrollo Local y Sostenibilidad"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Descarga los PDF de nuestros módulos"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Dilemas éticos"
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_res_company__display_name
+#: model:ir.model.fields,field_description:silver_economy.field_res_users__display_name
+#: model:ir.model.fields,field_description:silver_economy.field_silver_positive_item__display_name
+#: model:ir.model.fields,field_description:silver_economy.field_survey_survey__display_name
+#: model:ir.model.fields,field_description:silver_economy.field_survey_user_input__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_silver_positive_item__label
+msgid "Display Text"
+msgstr "Texto a mostrar"
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Distribución Geográfica del Envejecimiento"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Economía Circular"
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_survey_user_input__override_date
+msgid "Edit Date"
+msgstr "Fecha de edición"
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_survey_user_input__override_reason
+msgid "Edit Reason"
+msgstr "Motivo de edición"
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_survey_user_input__override_user_id
+msgid "Edited By"
+msgstr "Editado por"
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"Eficiencia energética y uso de energías\n"
+"                                            renovables (fotovoltaica, bioenergía)."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "El Contexto del Desafío Demográfico y la España Vaciada"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"El Papel de la Economía Social en la Sostenibilidad\n"
+"                        y el Desarrollo Territorial"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q8
+msgid ""
+"El contraste alto (oscuro sobre claro) suele ser la mejor opción en la "
+"mayoría de casos."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q26
+msgid ""
+"El momento del pago es crítico: cualquier dificultad puede hacer perder la "
+"venta."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.survey_fill_form_done_inherit_silver
+msgid "El sello es válido hasta:"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q28
+msgid "Ellos mismos son la mejor fuente de mejora."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q40
+msgid ""
+"Empieza con pequeños objetivos realistas. Mejorar poco a poco es mucho más "
+"efectivo que intentar hacerlo todo de golpe."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q32
+msgid ""
+"Empieza por algo sencillo: observa, pregunta y escucha. Incluso unas pocas "
+"conversaciones reales pueden darte más información que muchos datos "
+"teóricos."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q31
+msgid "Empieza por analizar quiénes son tus clientes actuales."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"En Canarias, el turismo sostenible es clave, promoviendo bienestar social,\n"
+"                                            protección del medio ambiente y gestión eficiente."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.survey_fill_form_done_inherit_silver
+msgid ""
+"En esta ocasión no has alcanzado el nivel mínimo para obtener el sello "
+"Silver Economy."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_instructions_page
+msgid "En este momento no hay ningún cuestionario de evaluación activo."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "En resumen"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"En síntesis, la Economía Social es una \"<b>herramienta vital y un modelo de\n"
+"                            desarrollo sostenible</b> para abordar el desafío demográfico y la 'España Vaciada'\". Su enfoque en <b>la\n"
+"                            creación de empleo</b>, la provisión de servicios esenciales en el medio rural, la promoción de\n"
+"                            la sostenibilidad y la digitalización, siempre con una profunda raíz territorial y un enfoque\n"
+"                            en la cohesión social\" la posiciona como un pilar indispensable para el futuro\n"
+"                            socioeconómico de España."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"Entidades de Economía Social (cooperativas de crédito, consumo, enseñanza, servicios de atención a mayores y\n"
+"                            colectivos vulnerables) facilitan el acceso a servicios básicos y cubren necesidades en el medio rural,\n"
+"                            incluyendo la economía de los cuidados y el cohousing para seniors con servicios sociosanitarios."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Envejecimiento grandes urbes"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Envejecimiento media nacional"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Envejecimiento zonas rurales"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_error
+msgid "Error al iniciar evaluación"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"Es crucial que las soluciones tecnológicas se adapten a las necesidades de las personas mayores y no al\n"
+"                                    revés."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"Es importante considerar los posibles dilemas éticos relacionados con el aislamiento social, la\n"
+"                                    dependencia tecnológica, la privacidad y el consentimiento de los usuarios."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q12
+msgid ""
+"Escuchar antes de actuar es la clave. Una simple pregunta puede ayudarte a "
+"entender qué necesita realmente el cliente."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"España ha experimentado un notable aumento en la esperanza de vida, posicionándose\n"
+"                                entre los líderes mundiales:"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"España ha tenido un cambio demográfico rápido. La esperanza de vida ha superado los 50 años desde 1930.\n"
+"                                            Actualmente, las mujeres viven más de 23 años después de jubilarse. Hoy, nueve de cada diez españoles\n"
+"                                            llegan a los 65 años, una cifra mucho más alta que una de cada diez en 1900."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q38
+msgid ""
+"Establece pequeños momentos de revisión. No hace falta un gran proyecto, "
+"sino constancia."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.survey,description:silver_economy.silver_economy_master_survey
+msgid ""
+"Este cuestionario te ayudará a entender hasta qué punto tu empresa está "
+"preparada para atender bien a las personas mayores."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_microsite_header_section
+msgid ""
+"Este negocio ha sido evaluado y reconocido con el sello de Silver Economy,\n"
+"                                por su compromiso con prácticas responsables en:<br/>\n"
+"                                <strong>Accesibilidad</strong><br/>\n"
+"                                <strong>Atención personalizada</strong><br/>\n"
+"                                <strong>Servicio y adaptación al colectivo</strong>"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"Estos retos, sin embargo, se traducen en inmensas oportunidades para la innovación y el crecimiento\n"
+"                                            económico. La Silver Economy impulsa el desarrollo de tecnologías asistenciales y soluciones de salud\n"
+"                                            digital que mejoran la autonomía y el monitoreo de la salud. Abre las puertas a la creación de viviendas\n"
+"                                            inteligentes y comunidades diseñadas para el bienestar y la seguridad de las personas mayores. En el\n"
+"                                            sector turístico, permite el diseño de experiencias de viaje personalizadas y accesibles. Además,\n"
+"                                            fomenta la creación de nuevos modelos de negocio en servicios financieros adaptados y en programas de\n"
+"                                            formación continua que permiten a los mayores mantenerse activos y productivos. En definitiva, entender\n"
+"                                            y atender las necesidades de este segmento no solo es una cuestión de justicia social, sino una\n"
+"                                            estrategia inteligente para el desarrollo económico y la creación de una sociedad más inclusiva y\n"
+"                                            próspera para todas las edades."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_cooldown
+msgid "Evaluación no disponible"
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_survey_user_input__company_id
+msgid "Evaluated Company"
+msgstr "Empresa evaluada"
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q20
+msgid "Evita sistemas automáticos complejos. Prioriza el trato humano."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q25
+msgid "Evita sorpresas. Explica siempre el precio final."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q22
+msgid "Evita textos largos y complejos. Usa ejemplos o pasos simples."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Evolución histórica"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Fijación de población y creación de empleo"
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields,help:silver_economy.field_silver_positive_item__icon
+msgid ""
+"Font Awesome class for the icon shown next to the item on the microsite, "
+"e.g. fa-wheelchair, fa-heart, fa-universal-access"
+msgstr ""
+"Clase Font Awesome del icono que acompaña al item en el microsite, p. ej. "
+"fa-wheelchair, fa-heart, fa-universal-access"
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Generación y Mantenimiento de Empleo de Calidad"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Gestión Hídrica"
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields.selection,name:silver_economy.selection__res_company__silver_certification_level__gold
+#: model:ir.model.fields.selection,name:silver_economy.selection__survey_user_input__certification_level__gold
+msgid "Gold"
+msgstr "Oro"
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_survey_survey__silver_gold_min
+msgid "Gold Minimum"
+msgstr "Mínimo Oro"
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Grandes urbes"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q11
+msgid ""
+"Habla con tu equipo sobre situaciones reales. No hace falta una gran "
+"formación: a veces basta con tomar conciencia y compartir buenas prácticas."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q6
+msgid ""
+"Haz una prueba: alguien sin experiencia digital debería poder navegar sin "
+"ayuda."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q14
+msgid ""
+"Haz una prueba: si tuvieras que explicárselo a alguien sin experiencia, ¿lo "
+"entendería fácilmente?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q27
+msgid "Haz visible este soporte."
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_res_company__id
+#: model:ir.model.fields,field_description:silver_economy.field_res_users__id
+#: model:ir.model.fields,field_description:silver_economy.field_silver_positive_item__id
+#: model:ir.model.fields,field_description:silver_economy.field_survey_survey__id
+#: model:ir.model.fields,field_description:silver_economy.field_survey_user_input__id
+msgid "ID"
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_silver_positive_item__icon
+msgid "Icon"
+msgstr "Icono"
+
+#. module: silver_economy
+#: model:ir.model.fields,help:silver_economy.field_survey_survey__is_silver_economy
+msgid "If checked, this survey is used for Silver Economy certification"
+msgstr ""
+"Si está marcado, esta encuesta se usa para la certificación Silver Economy"
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Impulso a la Innovación y Digitalización"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Inclusión y Dignidad"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q37
+msgid ""
+"Incluye una pregunta sencilla en tus encuestas o recoge sus comentarios "
+"directos. No tiene que ser complejo."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.view_survey_user_input_form_silver_start
+msgid "Iniciar evaluación"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.view_survey_user_input_form_silver_start
+msgid "Inicie una nueva evaluación para su empresa."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_instructions_page
+msgid "Instrucciones del Examen"
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.actions.act_url,name:silver_economy.action_silver_instructions
+#: model:ir.ui.menu,name:silver_economy.menu_silver_instructions
+msgid "Instructions"
+msgstr "Instrucciones"
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q13
+msgid ""
+"Introduce una idea sencilla en tu equipo: “no tenemos prisa por vender, "
+"tenemos interés en que el cliente se sienta cómodo”."
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_survey_survey__is_certification_survey
+msgid "Is Certification Survey"
+msgstr "Es encuesta de certificación"
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_survey_survey__is_silver_economy
+msgid "Is Silver Economy Evaluation"
+msgstr "Es evaluación Silver Economy"
+
+#. module: silver_economy
+#: model:ir.model.fields,help:silver_economy.field_survey_survey__positive_item_ids
+msgid ""
+"Items shown on the microsite when the related question scores at least its "
+"minimum"
+msgstr ""
+"Items que aparecen en el microsite cuando la pregunta asociada alcanza su "
+"puntuación mínima"
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"La Economía Social es un socio clave para los poderes públicos, promoviendo medidas y proyectos conjuntos que\n"
+"                            favorezcan el desarrollo rural y la cohesión territorial."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"La Economía Social, lucha contra los estereotipos y la discriminación por edad, y busca transformar la\n"
+"                                    percepción de las personas mayores de una carga a un valioso capital humano."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q31
+msgid ""
+"La Silver Economy no es un nicho pequeño: es un segmento creciente con gran "
+"capacidad de consumo. No tenerlo en cuenta puede suponer perder "
+"oportunidades importantes."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"La Silver Economy, o Economía Plateada, es el conjunto de actividades económicas, productos y\n"
+"                                            servicios diseñados para satisfacer las necesidades específicas de las personas mayores de 50 años.\n"
+"                                            Lejos de ser un concepto limitado a la geriatría, abarca un amplio espectro de sectores como la\n"
+"                                            tecnología, la vivienda, el turismo, la salud y el bienestar, los servicios financieros y la formación.\n"
+"                                            El rápido envejecimiento de la población a nivel global ha convertido a este segmento demográfico en un\n"
+"                                            motor económico de creciente importancia, impulsando la innovación y la adaptación en múltiples\n"
+"                                            industrias. No hablamos solo de una población que vive más años, sino de una generación con mayor poder\n"
+"                                            adquisitivo, más activa y digitalmente conectada, que busca soluciones que mejoren su calidad de vida y\n"
+"                                            les permitan mantener su independencia y participación social."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "La Silver Economy: Un Vistazo General"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q40
+msgid ""
+"La adaptación a la Silver Economy no es una acción puntual, sino un proceso."
+" Lo importante no es estar perfecto, sino avanzar de forma constante."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"La clave es fomentar la colaboración público-privada para generar una malla protectora y asegurar que el\n"
+"                                    desarrollo se centre en el bienestar de las personas."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q30
+msgid "La complejidad digital es una de las mayores barreras actuales."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q21
+msgid "La complejidad innecesaria genera frustración y abandono."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "La economía del futuro"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q39
+msgid ""
+"La experiencia del cliente depende en gran parte de las personas que lo "
+"atienden. Sin formación, es difícil que haya un cambio real."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q25
+msgid ""
+"La falta de claridad genera desconfianza, especialmente en clientes más "
+"prudentes."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q39
+msgid ""
+"La formación no tiene que ser compleja. Compartir experiencias y buenas "
+"prácticas ya es un gran paso."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"La longevidad es un gran logro, pero trae muchos desafíos. Estos incluyen presión sobre el estado del\n"
+"                                            bienestar y las finanzas públicas, posible disminución de la fuerza laboral y aumento del gasto social y\n"
+"                                            sanitario."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"La sostenibilidad y el desarrollo territorial son esenciales para un futuro equitativo y próspero. Estos\n"
+"                                    conceptos buscan un equilibrio entre crecimiento económico, equidad social y protección ambiental. Es\n"
+"                                    importante que las acciones actuales no perjudiquen a las futuras generaciones."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"Las cooperativas de crédito ayudan a que las personas en áreas rurales accedan a servicios bancarios.\n"
+"                                            Las cooperativas de consumo ofrecen alimentos esenciales. Se crean empresas para servicios sociales y\n"
+"                                            atención a personas mayores. El sector de cuidados creará muchos empleos. Además, se fomenta la creación\n"
+"                                            de cooperativas de taxi y el uso de vehículos eléctricos. También se quiere mejorar la conectividad\n"
+"                                            rural con redes de 5G y banda ancha para apoyar el teletrabajo."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"Las empresas de Economía Social son clave en áreas rurales. No se deslocalizan, lo que ayuda a mantener la población.\n"
+"                            Promueven el emprendimiento colectivo, creando empleo estable y valioso."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"Las empresas de Economía Social son frecuentes en zonas rurales y ayudan a mantener la población. Se\n"
+"                                            busca aumentar la participación laboral de personas inactivas y fomentar el emprendimiento colectivo a\n"
+"                                            través de cooperativas."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"Las proyecciones indican que la tasa de dependencia de la población\n"
+"                                            mayor podría alcanzar el 58,1% en 2040, y la población española\n"
+"                                            podría ser la más envejecida del mundo en 2050."
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_silver_positive_item__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_silver_positive_item__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q38
+msgid ""
+"Lo que hoy funciona, puede no funcionar mañana. Las necesidades cambian, y "
+"tu negocio debe adaptarse con ellas."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q37
+msgid ""
+"Lo que no se mide, normalmente no se mejora. Y si no diferencias por tipo de"
+" cliente, puedes estar perdiendo información clave."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q14
+msgid ""
+"Lo que para ti es habitual, para el cliente puede ser confuso. Un lenguaje "
+"complicado genera inseguridad y hace que muchas personas no pregunten por "
+"vergüenza."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Logo de subvención"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q18
+msgid ""
+"Los procesos largos o poco intuitivos pueden hacer que el cliente abandone "
+"si no se siente acompañado."
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_survey_survey__silver_max_score
+msgid "Maximum Score"
+msgstr "Puntuación máxima"
+
+#. module: silver_economy
+#: model:ir.model.fields,help:silver_economy.field_survey_survey__silver_max_score
+msgid "Maximum reachable score (40 questions x 2 points)"
+msgstr "Puntuación máxima posible (40 preguntas x 2 puntos)"
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Media nacional"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Medicina"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.survey_survey_view_form_silver_timing
+msgid "Microsite positive items"
+msgstr "Items positivos del microsite"
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_silver_positive_item__min_score
+msgid "Minimum Score"
+msgstr "Puntuación mínima"
+
+#. module: silver_economy
+#: model:ir.model.fields,help:silver_economy.field_silver_positive_item__min_score
+msgid ""
+"Minimum score the answer must reach for the item to show up as positive on "
+"the microsite"
+msgstr ""
+"Puntuación mínima que debe alcanzar la respuesta para que el item aparezca "
+"como positivo en el microsite"
+
+#. module: silver_economy
+#: model:ir.model.fields,help:silver_economy.field_survey_survey__silver_bronze_min
+msgid "Minimum score to be awarded the Bronze badge"
+msgstr "Puntuación mínima para obtener el sello Bronce"
+
+#. module: silver_economy
+#: model:ir.model.fields,help:silver_economy.field_survey_survey__silver_gold_min
+msgid "Minimum score to be awarded the Gold badge"
+msgstr "Puntuación mínima para obtener el sello Oro"
+
+#. module: silver_economy
+#: model:ir.model.fields,help:silver_economy.field_survey_survey__silver_silver_min
+msgid "Minimum score to be awarded the Silver badge"
+msgstr "Puntuación mínima para obtener el sello Plata"
+
+#. module: silver_economy
+#: model:ir.model.fields,help:silver_economy.field_survey_survey__silver_cooldown_months
+msgid "Months the company must wait before retrying after a failed evaluation"
+msgstr ""
+"Meses que la empresa debe esperar para reintentar tras una evaluación "
+"suspendida"
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q34
+msgid ""
+"Muchas comunicaciones están orientadas, sin darse cuenta, a un público más "
+"joven. Esto puede hacer que otros perfiles no se sientan identificados o "
+"directamente se desconecten."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q32
+msgid ""
+"Muchas empresas creen conocer a sus clientes, pero en realidad trabajan con "
+"suposiciones. En el caso de las personas mayores, esto es aún más frecuente."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q5
+msgid ""
+"Muchas personas mayores necesitan hacer pausas. No ofrecer esa posibilidad "
+"puede hacer que la visita sea más corta o incómoda."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q13
+msgid ""
+"Muchas personas mayores necesitan más tiempo para comprender información o "
+"tomar decisiones. Sentirse presionado puede generar inseguridad o hacer que "
+"abandonen la compra."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q6
+msgid ""
+"Muchas personas mayores no tienen dificultades por falta de capacidad, sino "
+"por interfaces complejas o poco intuitivas."
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.ui.menu,name:silver_economy.menu_silver_evaluations
+msgid "My Evaluations"
+msgstr "Mis Evaluaciones"
+
+#. module: silver_economy
+#. odoo-python
+#: code:addons/silver_economy/models/res_users.py:0
+msgid "My Silver Economy evaluations"
+msgstr "Mis evaluaciones Silver Economy"
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_microsite_header_section
+msgid "Negocio Comprometido"
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.actions.server,name:silver_economy.action_start_silver_evaluation_server
+msgid "New Silver Economy evaluation"
+msgstr "Nueva evaluación Silver Economy"
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_survey_user_input__next_attempt_date
+msgid "Next Attempt Available"
+msgstr "Próximo intento disponible"
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.survey_fill_form_done_silver_recommendations
+msgid "No"
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields.selection,name:silver_economy.selection__res_company__silver_certification_level__none
+#: model:ir.model.fields.selection,name:silver_economy.selection__survey_user_input__certification_level__none
+msgid "No badge"
+msgstr "Sin sello"
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q15
+msgid ""
+"No basta con explicar. Es importante comprobar que la otra persona ha "
+"entendido. Muchas veces los clientes dicen 'sí' aunque tengan dudas."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q17
+msgid ""
+"No des por hecho que el cliente entiende. Asegúrate de cerrar cada "
+"conversación con claridad."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q33
+msgid ""
+"No hace falta empezar con grandes campañas. Pequeñas acciones bien pensadas "
+"pueden tener mucho impacto."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q36
+msgid ""
+"No hace falta hacerlo perfecto desde el principio. Empieza por mejorar lo "
+"más básico: claridad, simplicidad y ayuda."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_instructions_page
+msgid "No hay cuestionarios activos"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_instructions_page
+msgid "No hay instrucciones definidas para este cuestionario."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q29
+msgid "No se trata de crear algo nuevo, sino de ajustar lo que ya tienes."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q11
+msgid ""
+"No se trata solo de ser amable. Atender bien a una persona mayor implica "
+"entender su ritmo, sus dudas y, en muchos casos, su necesidad de sentirse "
+"escuchada y acompañada."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_no_company
+msgid "No tiene empresa asignada"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q19
+msgid ""
+"No tiene que ser complejo, ya que una simple una llamada o mensaje pueden "
+"marcar la diferencia."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q24
+msgid ""
+"No todos los clientes buscan lo mismo. Ofrecer opciones simples facilita la "
+"decisión."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q29
+msgid "Observa cómo usan tus productos."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q1
+msgid ""
+"Observa tu entrada como si fueras un cliente mayor. ¿Hay algo que te haría "
+"dudar en entrar? Pequeñas mejoras como una rampa, una barandilla o una "
+"puerta más accesible pueden tener un impacto enorme."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q26
+msgid "Ofrece varias opciones y acompaña si es necesario."
+msgstr ""
+
+#. module: silver_economy
+#. odoo-python
+#: code:addons/silver_economy/models/survey_user_input.py:0
+msgid "Only certification managers can edit scores."
+msgstr "Solo los administradores de certificación pueden editar puntuaciones."
+
+#. module: silver_economy
+#. odoo-python
+#: code:addons/silver_economy/models/survey_user_input.py:0
+msgid "Only certification managers can revert score edits."
+msgstr "Solo los administradores de certificación pueden revertir ediciones."
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Oportunidades de Negocio"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Oportunidades de Oro para el Futuro"
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_survey_user_input__original_scoring_total
+msgid "Original Score"
+msgstr "Puntuación original"
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_survey_user_input__override_scoring_total
+msgid "Overridden Score"
+msgstr "Puntuación sobrescrita"
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q20
+msgid ""
+"Para muchas personas mayores, el teléfono sigue siendo el canal más cómodo y"
+" confiable."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.survey_fill_form_done_silver_recommendations
+msgid "Parcialmente"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q4
+msgid ""
+"Pasillos estrechos, objetos mal colocados o exceso de mobiliario pueden "
+"dificultar el movimiento, especialmente si hay bastones, carros o movilidad "
+"reducida."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q1
+msgid ""
+"Piensa en alguien con movilidad reducida, que camina despacio o que evita "
+"escaleras. Un pequeño escalón, una puerta pesada o una entrada estrecha "
+"pueden convertirse en un obstáculo importante, aunque no lo parezcan a "
+"simple vista."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q18
+msgid ""
+"Piensa en qué momentos el cliente puede perderse… y ahí es donde debes "
+"intervenir."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q24
+msgid "Piensa en una versión “básica” de tu oferta."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_cooldown
+msgid "Podrá realizar una nueva evaluación a partir del:"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.survey_fill_form_done_inherit_silver
+msgid "Podrás volver a intentarlo a partir del:"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"Políticas para vivir con animales, agricultura, restaurar ecosistemas,\n"
+"                                            reverdecer ciudades."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"Posición Global: España ostenta la \"cuarta mayor esperanza de vida\" a nivel\n"
+"                                        mundial, \"solo por debajo de Japón, Suiza y Singapur.\""
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_survey_survey__positive_item_ids
+msgid "Positive Items"
+msgstr "Items positivos"
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q28
+msgid "Pregunta directamente y escucha sin justificarte."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"Principios del Siglo XX: Apenas una de cada diez personas alcanzaba los 65 años,\n"
+"                                        y la esperanza de vida superó los 50 años solo en 1930."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q23
+msgid ""
+"Procesos largos o complejos pueden ser una barrera importante, especialmente"
+" en entornos digitales. Cada paso adicional aumenta el riesgo de abandono."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Provisión de Servicios Esenciales"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Proyecciones Preocupantes"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q15
+msgid ""
+"Puedes preguntar algo tan simple como: “¿te ha quedado claro?” o “¿quieres "
+"que lo veamos de otra forma?”."
+msgstr ""
+
+#. module: silver_economy
+#: model:mail.template,subject:silver_economy.mail_template_silver_retry_available
+msgid "Puedes volver a realizar tu evaluación Silver Economy"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.survey_fill_form_done_inherit_silver
+msgid "Puntuación:"
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_silver_positive_item__question_id
+msgid "Question"
+msgstr "Pregunta"
+
+#. module: silver_economy
+#. odoo-python
+#: code:addons/silver_economy/controllers/main.py:0
+msgid "Questionnaire not found or inactive."
+msgstr "Cuestionario no encontrado o inactivo."
+
+#. module: silver_economy
+#: model:ir.ui.menu,name:silver_economy.menu_silver_surveys
+msgid "Questionnaires"
+msgstr "Cuestionarios"
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q4
+msgid ""
+"Recorre tu local con una mirada crítica. A veces basta con reorganizar para "
+"mejorar mucho la experiencia."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q23
+msgid ""
+"Reduce pasos innecesarios, simplifica formularios y ofrece ayuda en puntos "
+"clave."
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_survey_survey__silver_renewal_reminder_days
+msgid "Renewal Reminder Days"
+msgstr "Días de aviso previo a renovación"
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.survey_fill_form_done_inherit_silver
+msgid "Resultado de la evaluación"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q3
+msgid ""
+"Revisa tu local en diferentes momentos del día. Ajustar la iluminación es "
+"una de las mejoras más sencillas y efectivas."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q34
+msgid ""
+"Revisa tus mensajes con una mirada crítica: ¿quién aparece?, ¿a quién te "
+"diriges?, ¿quién queda fuera?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_page_A
+msgid "SECCIÓN A — ACCESIBILIDAD"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_page_B
+msgid "SECCIÓN B — ATENCIÓN"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_page_C
+msgid "SECCIÓN C — PRODUCTO / SERVICIO"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_page_D
+msgid "SECCIÓN D — ESTRATEGIA"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "SOSTENIBILIDAD Y DESARROLLO TERRITORIAL"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q27
+msgid "Saber que hay apoyo genera tranquilidad incluso antes de comprar."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q10
+msgid ""
+"Saber que hay ayuda disponible genera seguridad, incluso aunque no se "
+"utilice."
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_survey_user_input__is_manually_overridden
+msgid "Score Manually Edited"
+msgstr "Puntuación editada manualmente"
+
+#. module: silver_economy
+#: model:ir.model.fields,help:silver_economy.field_survey_user_input__override_scoring_total
+msgid ""
+"Score imposed by the manager; reapplied whenever the survey scoring is "
+"recomputed"
+msgstr ""
+"Puntuación impuesta por el administrador; se reaplica cada vez que se "
+"recalcula la puntuación de la encuesta"
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.survey_survey_view_form_silver_timing
+msgid "Score thresholds"
+msgstr "Umbrales de puntuación"
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"Se busca promover la economía circular y la gestión de residuos. Esto\n"
+"                                            significa mejorar la recuperación de materiales y disminuir el consumo."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid ""
+"Se enfoca en usar el agua de manera eficiente y con calidad. También busca\n"
+"                                            reducir pérdidas, optimizar su uso, y fomentar la regeneración y reutilización del agua."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Sello Silver Economy"
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_silver_positive_item__sequence
+msgid "Sequence"
+msgstr "Secuencia"
+
+#. module: silver_economy
+#: model:ir.model.fields,help:silver_economy.field_survey_user_input__is_manually_overridden
+msgid "Set when a certification manager overrode the computed score"
+msgstr ""
+"Se activa cuando un administrador de certificación sobrescribe la puntuación"
+" calculada"
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q33
+msgid ""
+"Si no haces nada específico, lo más probable es que este colectivo no se "
+"sienta especialmente tenido en cuenta, aunque tu intención sea buena."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q30
+msgid "Si puedes simplificar, hazlo."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q9
+msgid ""
+"Si un usuario se pierde, es muy probable que abandone. Esto ocurre aún más "
+"en usuarios menos habituados a entornos digitales."
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields.selection,name:silver_economy.selection__res_company__silver_certification_level__silver
+#: model:ir.model.fields.selection,name:silver_economy.selection__survey_user_input__certification_level__silver
+msgid "Silver"
+msgstr "Plata"
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_res_company__silver_expiry_date
+msgid "Silver Badge Expiry"
+msgstr "Expiración del sello Silver"
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_res_company__silver_certification_date
+msgid "Silver Certification Date"
+msgstr "Fecha de certificación Silver"
+
+#. module: silver_economy
+#: model:ir.ui.menu,name:silver_economy.menu_silver_economy_root
+#: model:res.groups.privilege,name:silver_economy.res_groups_privilege_silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_microsite_header_section
+#: model_terms:ir.ui.view,arch_db:silver_economy.survey_survey_view_form_silver_timing
+#: model_terms:ir.ui.view,arch_db:silver_economy.view_company_form_inherit_silver
+msgid "Silver Economy"
+msgstr ""
+
+#. module: silver_economy
+#: model:mail.template,name:silver_economy.mail_template_silver_admin_expiry_alert
+msgid "Silver Economy (Admin): Alerta de sellos expirados"
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.actions.act_window,name:silver_economy.action_silver_evaluations
+msgid "Silver Economy Evaluations"
+msgstr "Evaluaciones Silver Economy"
+
+#. module: silver_economy
+#. odoo-python
+#: code:addons/silver_economy/models/res_company.py:0
+msgid "Silver Economy Evaluations - %s"
+msgstr "Evaluaciones Silver Economy - %s"
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_res_company__silver_certification_level
+msgid "Silver Economy Level"
+msgstr "Nivel Silver Economy"
+
+#. module: silver_economy
+#: model:res.groups,name:silver_economy.group_silver_manager
+msgid "Silver Economy Manager"
+msgstr "Administrador Silver Economy"
+
+#. module: silver_economy
+#: model:ir.model,name:silver_economy.model_silver_positive_item
+msgid "Silver Economy Positive Item"
+msgstr "Item positivo Silver Economy"
+
+#. module: silver_economy
+#: model:ir.actions.act_window,name:silver_economy.action_silver_surveys
+msgid "Silver Economy Questionnaires"
+msgstr "Cuestionarios Silver Economy"
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_res_company__silver_cert_score
+msgid "Silver Economy Score (%)"
+msgstr "Puntuación Silver Economy (%)"
+
+#. module: silver_economy
+#: model:res.groups,name:silver_economy.group_silver_user
+msgid "Silver Economy User"
+msgstr "Usuario Silver Economy"
+
+#. module: silver_economy
+#: model:ir.actions.server,name:silver_economy.ir_cron_silver_expiry_alert_ir_actions_server
+msgid "Silver Economy: Alertar admin de sellos expirados"
+msgstr ""
+
+#. module: silver_economy
+#: model:mail.template,name:silver_economy.mail_template_silver_new_badge
+msgid "Silver Economy: Nuevo sello obtenido"
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.actions.server,name:silver_economy.ir_cron_silver_retry_reminder_ir_actions_server
+msgid "Silver Economy: Recordar reintentos disponibles"
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.actions.server,name:silver_economy.ir_cron_silver_renewal_reminder_ir_actions_server
+msgid "Silver Economy: Recordar renovaciones próximas"
+msgstr ""
+
+#. module: silver_economy
+#: model:mail.template,name:silver_economy.mail_template_silver_retry_available
+msgid "Silver Economy: Reintento disponible"
+msgstr ""
+
+#. module: silver_economy
+#: model:mail.template,name:silver_economy.mail_template_silver_renewal_due
+msgid "Silver Economy: Renovación próxima"
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_res_company__silver_evaluation_count
+#: model_terms:ir.ui.view,arch_db:silver_economy.view_company_form_inherit_silver
+msgid "Silver Evaluations"
+msgstr "Evaluaciones Silver"
+
+#. module: silver_economy
+#: model:ir.model.fields,field_description:silver_economy.field_survey_survey__silver_silver_min
+msgid "Silver Minimum"
+msgstr "Mínimo Plata"
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q9
+msgid "Simplifica menús y estructura. Menos opciones, pero más claras."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q2
+msgid ""
+"Simplifica y prioriza. Es mejor pocos mensajes claros que muchos confusos. "
+"Usa letras grandes y ubicaciones visibles."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q21
+msgid "Simplificar no es empeorar, es mejorar la experiencia."
+msgstr ""
+
+#. module: silver_economy
+#. odoo-python
+#: code:addons/silver_economy/models/survey_survey.py:0
+msgid "Start Silver Economy evaluation"
+msgstr "Iniciar evaluación Silver Economy"
+
+#. module: silver_economy
+#: model:ir.model,name:silver_economy.model_survey_survey
+#: model:ir.model.fields,field_description:silver_economy.field_silver_positive_item__survey_id
+msgid "Survey"
+msgstr "Encuesta"
+
+#. module: silver_economy
+#: model:ir.model,name:silver_economy.model_survey_user_input
+msgid "Survey User Input"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q8
+msgid ""
+"Texto claro sobre fondo claro, o combinaciones poco contrastadas, pueden "
+"dificultar mucho la lectura."
+msgstr ""
+
+#. module: silver_economy
+#. odoo-python
+#: code:addons/silver_economy/models/survey_user_input.py:0
+msgid "The related survey could not be found."
+msgstr "No se encontró la encuesta asociada."
+
+#. module: silver_economy
+#. odoo-python
+#: code:addons/silver_economy/controllers/main.py:0
+#: code:addons/silver_economy/models/survey_user_input.py:0
+msgid ""
+"There is no active Silver Economy questionnaire. Please contact the "
+"administrator."
+msgstr ""
+"No hay un cuestionario Silver Economy activo. Contacte al administrador."
+
+#. module: silver_economy
+#. odoo-python
+#: code:addons/silver_economy/models/survey_user_input.py:0
+msgid "This answer does not belong to a certification survey."
+msgstr "Esta respuesta no pertenece a una encuesta de certificación."
+
+#. module: silver_economy
+#. odoo-python
+#: code:addons/silver_economy/models/survey_user_input.py:0
+msgid "This evaluation has already been completed."
+msgstr "Esta evaluación ya ha sido completada."
+
+#. module: silver_economy
+#. odoo-python
+#: code:addons/silver_economy/models/survey_survey.py:0
+msgid "This survey is not configured as a Silver Economy evaluation."
+msgstr "Esta encuesta no está configurada como evaluación Silver Economy."
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.survey_survey_view_form_silver_timing
+msgid "Timing"
+msgstr "Tiempos"
+
+#. module: silver_economy
+#: model:ir.actions.act_url,name:silver_economy.action_silver_formaciones
+#: model:ir.ui.menu,name:silver_economy.menu_silver_formaciones
+msgid "Trainings"
+msgstr "Formaciones"
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Transición Ecológica"
+msgstr ""
+
+#. module: silver_economy
+#: model:mail.template,subject:silver_economy.mail_template_silver_renewal_due
+msgid "Tu sello Silver Economy vence pronto - Renovación necesaria"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Turismo Sostenible"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q22
+msgid "Un buen producto puede fallar si no se explica bien."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q19
+msgid ""
+"Un pequeño gesto posterior transmite interés y genera confianza a largo "
+"plazo."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q10
+msgid ""
+"Un teléfono visible o una persona accesible puede marcar la diferencia."
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:survey.question,description:silver_economy.silver_economy_q17
+msgid ""
+"Una duda mal resuelta genera desconfianza. Y en muchos casos, el cliente no "
+"vuelve a preguntar."
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q5
+msgid ""
+"Una simple silla bien ubicada puede cambiar completamente la experiencia del"
+" cliente."
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model,name:silver_economy.model_res_users
+msgid "User"
+msgstr "Usuario"
+
+#. module: silver_economy
+#: model:survey.question,comments_message:silver_economy.silver_economy_q7
+msgid ""
+"Utiliza tamaños de letra más grandes, tipografías sencillas y deja espacio "
+"entre líneas. Haz una prueba rápida: ¿puedes leerlo cómodamente desde cierta"
+" distancia?"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Vertebración Social y Territorial"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_cooldown
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_error
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_no_company
+msgid "Volver a Mis Evaluaciones"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.actions.act_window,help:silver_economy.action_silver_evaluations
+msgid "Welcome to Silver Economy"
+msgstr "Bienvenido a Silver Economy"
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_cooldown
+msgid "Ya ha realizado una evaluación recientemente."
+msgstr ""
+
+#. module: silver_economy
+#: model:ir.model.fields,help:silver_economy.field_survey_survey__silver_validity_years
+msgid "Years the badge remains valid once awarded"
+msgstr "Años que el sello permanece válido tras obtenerlo"
+
+#. module: silver_economy
+#. odoo-python
+#: code:addons/silver_economy/models/survey_user_input.py:0
+msgid "You cannot take a new evaluation until %s."
+msgstr "No puede realizar una nueva evaluación hasta el %s."
+
+#. module: silver_economy
+#: model_terms:ir.actions.act_window,help:silver_economy.action_silver_evaluations
+msgid ""
+"You have not taken any evaluation for your company yet.\n"
+"                Click <b>New</b> to start your first evaluation and find out\n"
+"                whether your business qualifies for the Silver Economy badge."
+msgstr ""
+"Aún no has realizado ninguna evaluación para tu empresa. Haz clic en "
+"<b>Nuevo</b> para iniciar tu primera evaluación y descubrir si tu comercio "
+"califica para el sello Silver Economy."
+
+#. module: silver_economy
+#. odoo-python
+#: code:addons/silver_economy/models/survey_user_input.py:0
+msgid "You must have a company assigned to take the evaluation."
+msgstr "Debe tener una empresa asignada para realizar la evaluación."
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "Zonas rurales del interior de España"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.survey_fill_form_done_inherit_silver
+msgid ""
+"puntos\n"
+"                        ("
+msgstr ""
+
+#. module: silver_economy
+#. odoo-python
+#: code:addons/silver_economy/models/res_users.py:0
+msgid "survey_id.is_silver_economy"
+msgstr ""
+
+#. module: silver_economy
+#: model:mail.template,subject:silver_economy.mail_template_silver_new_badge
+msgid "¡Felicidades! Has obtenido el sello Silver Economy"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q18
+msgid ""
+"¿Acompañas al cliente cuando el proceso es complejo (compra, registro, "
+"etc.)?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q12
+msgid ""
+"¿Adaptas la atención a cada cliente en lugar de aplicar un trato estándar?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q29
+msgid ""
+"¿Adaptas tus productos o servicios a las necesidades reales de este "
+"colectivo?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q32
+msgid ""
+"¿Conoces realmente cómo son, qué necesitan y cómo se comportan tus clientes "
+"mayores?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q31
+msgid ""
+"¿Consideras a las personas mayores como un público importante dentro de tu "
+"negocio?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q1
+msgid ""
+"¿El acceso a tu local resulta cómodo y sin barreras para una persona mayor?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q25
+msgid "¿El cliente entiende claramente cuánto va a pagar y por qué?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q10
+msgid ""
+"¿El cliente puede pedir ayuda fácilmente si lo necesita (en tienda o en la "
+"web)?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q27
+msgid "¿El cliente puede recibir ayuda después de la compra si la necesita?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q8
+msgid "¿El contraste de colores facilita la lectura de la información?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q4
+msgid ""
+"¿El espacio permite moverse con comodidad, sin obstáculos ni estrecheces?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q23
+msgid ""
+"¿El proceso de compra (físico o digital) es sencillo y fácil de seguir?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q26
+msgid "¿El proceso de pago es sencillo y se adapta a diferentes preferencias?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q7
+msgid ""
+"¿El texto de tu web (o materiales digitales) es fácil de leer para personas "
+"mayores?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q16
+msgid ""
+"¿Es fácil contactar contigo a través de canales accesibles para personas "
+"mayores?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q9
+msgid "¿Es fácil encontrar lo que se busca en tu web sin perderse?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q30
+msgid "¿Evitas procesos digitales innecesariamente complejos?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q35
+msgid ""
+"¿Evitas, de forma consciente, prácticas o decisiones que puedan excluir a "
+"personas por su edad?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q39
+msgid ""
+"¿Formas a tu equipo en cómo atender y entender mejor a personas mayores?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q20
+msgid "¿La atención telefónica es clara, cercana y fácil de gestionar?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q3
+msgid "¿La iluminación del espacio permite ver con claridad sin esfuerzo?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q2
+msgid ""
+"¿La señalización dentro del local permite orientarse fácilmente sin "
+"necesidad de preguntar?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q17
+msgid "¿Las dudas de los clientes se resuelven de forma clara y completa?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q22
+msgid "¿Las instrucciones son fáciles de entender para cualquier persona?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q37
+msgid "¿Mides la satisfacción de tus clientes mayores de forma específica?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q5
+msgid "¿Ofreces algún espacio donde el cliente pueda sentarse o descansar?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q24
+msgid ""
+"¿Ofreces alternativas más simples para quien no necesita opciones avanzadas?"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.silver_economy_page
+msgid "¿Qué es la Silver Economy?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q33
+msgid ""
+"¿Realizas acciones concretas pensadas para atraer o mejorar la experiencia "
+"de clientes mayores?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q19
+msgid "¿Realizas algún tipo de seguimiento después de la compra o servicio?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q28
+msgid "¿Recoges la opinión de clientes mayores para mejorar tu servicio?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q38
+msgid ""
+"¿Revisas periódicamente tus procesos para detectar barreras o puntos de "
+"mejora?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q15
+msgid ""
+"¿Te aseguras de que el cliente entiende bien lo que está comprando o "
+"contratando?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q36
+msgid ""
+"¿Trabajas activamente para que tu entorno digital sea accesible para "
+"personas mayores?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q40
+msgid ""
+"¿Tu empresa trabaja activamente en mejorar su adaptación a este colectivo de"
+" forma continua?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q11
+msgid ""
+"¿Tu equipo está preparado para atender a personas mayores de forma adecuada "
+"y empática?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q13
+msgid ""
+"¿Tu equipo respeta el ritmo del cliente, especialmente cuando necesita más "
+"tiempo?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q34
+msgid ""
+"¿Tu forma de comunicar (web, publicidad, mensajes) incluye y representa a "
+"las personas mayores?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q6
+msgid ""
+"¿Tu web es sencilla de usar, incluso para alguien con poca experiencia "
+"digital?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q21
+msgid ""
+"¿Tus productos o servicios son fáciles de usar sin necesidad de ayuda "
+"constante?"
+msgstr ""
+
+#. module: silver_economy
+#: model:survey.question,title:silver_economy.silver_economy_q14
+msgid ""
+"¿Utilizas un lenguaje fácil de entender, evitando tecnicismos innecesarios?"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.survey_fill_form_done_inherit_silver
+msgid "🎉 ¡Felicidades! Tu empresa ha obtenido el sello Silver Economy"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.view_survey_user_input_form_silver_start
+msgid "📝 Nueva evaluación Silver Economy"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.survey_fill_form_done_inherit_silver
+msgid "🥇 ORO"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.survey_fill_form_done_inherit_silver
+msgid "🥈 PLATA"
+msgstr ""
+
+#. module: silver_economy
+#: model_terms:ir.ui.view,arch_db:silver_economy.survey_fill_form_done_inherit_silver
+msgid "🥉 BRONCE"
+msgstr ""
