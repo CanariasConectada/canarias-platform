@@ -14,7 +14,7 @@ DEFAULT_ZONES = [
 ]
 
 
-def post_init_hook(cr, registry):
+def post_init_hook(env):
     """
     Post-init hook para:
     1. Actualizar FK constraint
@@ -22,8 +22,21 @@ def post_init_hook(cr, registry):
     3. Configurar reglas de partners
     4. Corregir valores NULL en campos requeridos de res.company
     """
-    env = api.Environment(cr, SUPERUSER_ID, {})
-    
+    cr = env.cr
+
+    def _column_exists(table, column):
+        # Los campos de los pasos 4-6 pertenecen a stock/account; en una
+        # instalación sin esos módulos la columna no existe y el UPDATE
+        # rompería el install entero.
+        cr.execute(
+            """
+            SELECT 1 FROM information_schema.columns
+            WHERE table_name = %s AND column_name = %s
+            """,
+            (table, column),
+        )
+        return bool(cr.fetchone())
+
     # ===== 1. Actualizar FK constraint =====
     _logger.info("Actualizando FK constraint de zone_id...")
     cr.execute("""
@@ -72,6 +85,8 @@ def post_init_hook(cr, registry):
     
     updates_made = False
     for field_name, default_value in defaults.items():
+        if not _column_exists('res_company', field_name):
+            continue
         # Verificar si hay registros con NULL
         cr.execute(f"""
             SELECT COUNT(*) FROM res_company WHERE {field_name} IS NULL
@@ -140,7 +155,11 @@ def post_init_hook(cr, registry):
     
     # ===== 6. Fix: Missing not-null constraint en res.config.settings.default_picking_policy =====
     _logger.info("Corrigiendo constraint NOT NULL en res_config_settings.default_picking_policy...")
-    
+
+    if not _column_exists('res_config_settings', 'default_picking_policy'):
+        _logger.info("  default_picking_policy no existe en esta instalación; se omite.")
+        return
+
     # Primero actualizar valores NULL
     cr.execute("""
         UPDATE res_config_settings 
