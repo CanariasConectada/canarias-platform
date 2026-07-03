@@ -1,6 +1,6 @@
 {
     'name': 'Partner Microsite Manager',
-    'version': '1.3.9',
+    'version': '19.0.1.4.0',
     'category': 'Website',
     'summary': 'Gestión de microsites desde el contacto de la compañía',
     'description': """

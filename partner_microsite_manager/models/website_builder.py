@@ -7,14 +7,30 @@ import json
 import re
 from datetime import datetime
 
+from markupsafe import escape
+
 CTA_IMAGE_ID = 20891
 SUBVENCIONES_IMAGE_ID = 16549
 
+# Todo valor de usuario interpolado en el HTML acaba dentro del arch QWeb de
+# la vista homepage: sin escapar, un campo con '<', '&' o directivas t-*
+# rompe el XML del arch o, peor, se compila y ejecuta como QWeb para todos
+# los visitantes del microsite. escape() (markupsafe) neutraliza ambas cosas.
+
+
+def _safe_map_url(url):
+    """Solo URLs http(s) pueden ir al src del iframe del mapa."""
+    url = str(url or '').strip()
+    if url.startswith(('http://', 'https://')):
+        return url
+    return ''
+
 
 def build_hero_section(nombre_empresa, hero_image_id=None, button_text='Tienda'):
-    titulo = nombre_empresa or ''
+    titulo = escape(nombre_empresa or '')
+    button_text = escape(button_text or 'Tienda')
     if hero_image_id:
-        bg_style = f"background-image: url('/web/image/ir.attachment/{hero_image_id}/datas'); background-size: cover; background-position: center; background-attachment: fixed;"
+        bg_style = f"background-image: url('/web/image/ir.attachment/{int(hero_image_id)}/datas'); background-size: cover; background-position: center; background-attachment: fixed;"
     else:
         bg_style = "background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);"
     return f'''<section class="s_cover parallax s_parallax_is_fixed bg-black-50 pt96 pb96" data-snippet="s_cover" data-name="Hero" style="{bg_style} min-height: 60vh; display: flex; align-items: center; position: relative;">
@@ -80,8 +96,9 @@ def parse_horario_to_json(horario_str):
 
 def build_horario_accordion(horario_str, subdomain):
     dias_json = parse_horario_to_json(horario_str)
+    subdomain = escape(subdomain or '')
     if not dias_json:
-        return f'<small class="text-muted text-center d-block">{horario_str}</small>'
+        return f'<small class="text-muted text-center d-block">{escape(horario_str)}</small>'
     dias_semana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
     hoy = dias_semana[datetime.now().weekday()]
     hora_hoy_raw = dias_json.get(hoy, 'Cerrado')
@@ -129,6 +146,7 @@ def build_horario_accordion(horario_str, subdomain):
         </div>
     </div>
     <script>
+        //<![CDATA[
         (function(){{
             var horarios = {json.dumps(horarios_js)};
             var dias = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
@@ -158,14 +176,17 @@ def build_horario_accordion(horario_str, subdomain):
             var diaSpan = document.getElementById('horario-dia-{subdomain}');
             if (diaSpan){{ diaSpan.textContent = diaNombre; }}
             var horaSpan = document.getElementById('horario-hora-{subdomain}');
-            if (horaSpan){{ horaSpan.textContent = '{hora_hoy_str}'.replace(/__DIA__/g, diaNombre); }}
+            if (horaSpan){{ horaSpan.textContent = {json.dumps(str(hora_hoy_str))}.replace(/__DIA__/g, diaNombre); }}
         }})();
+        //]]>
     </script>
 </div>'''
 
 
 def build_features_section(horario, entrega, parking, subdomain):
     items_html = ''
+    entrega = escape(entrega) if entrega else entrega
+    parking = escape(parking) if parking else parking
     if horario and str(horario).strip() and str(horario).lower() not in ['nan', 'none', '']:
         horario_html = build_horario_accordion(horario, subdomain)
         items_html += f'''<div class="col-lg-4 pt16 pb16 text-center">
@@ -198,6 +219,7 @@ def build_features_section(horario, entrega, parking, subdomain):
 
 def build_acerca_section(sec1_texto, sec2_texto, sec1_titulo, sec2_titulo, subdomain):
     items = []
+    subdomain = escape(subdomain or '')
     if sec1_texto and str(sec1_texto).strip() and str(sec1_texto).lower() not in ['nan', 'none', '']:
         titulo = sec1_titulo if sec1_titulo and str(sec1_titulo).lower() not in ['nan', 'none', ''] else 'Sobre nosotros'
         preview = str(sec1_texto)[:120] + '...' if len(str(sec1_texto)) > 120 else str(sec1_texto)
@@ -212,13 +234,13 @@ def build_acerca_section(sec1_texto, sec2_texto, sec1_titulo, sec2_titulo, subdo
     for item in items:
         col_html = f'''<div class="border o_colored_level col-lg-6 text-center pt-4 pb-4" data-name="Column">
             <span class="fa {item['icono']} fa-3x mb-3" style="display: block;"></span>
-            <h6 class="text-center">{item['titulo']}</h6>
-            <small class="text-muted d-block" style="padding: 0 20px;">{item['preview']}</small>
+            <h6 class="text-center">{escape(item['titulo'])}</h6>
+            <small class="text-muted d-block" style="padding: 0 20px;">{escape(item['preview'])}</small>
             <div class="mt-3 text-center">
                 <a href="#{item['id']}" data-bs-toggle="collapse" class="btn btn-primary rounded-pill px-4">Leer más</a>
             </div>
             <div id="{item['id']}" class="collapse mt-3">
-                <div class="card card-body bg-light">{item['texto']}</div>
+                <div class="card card-body bg-light">{escape(item['texto'])}</div>
             </div>
         </div>'''
         cols_html += col_html
@@ -271,18 +293,18 @@ def build_formulario_section(subdomain, map_url, company_info, website_url='', p
             email = str(company_info['email'])
     contacto_html = ''
     if direccion:
-        contacto_html += f'<p class="mb-2"><i class="fa fa-map-marker fa-fw mr-2 text-primary"/>{direccion}</p>\n'
+        contacto_html += f'<p class="mb-2"><i class="fa fa-map-marker fa-fw mr-2 text-primary"/>{escape(direccion)}</p>\n'
     if telefono:
-        contacto_html += f'<p class="mb-2"><i class="fa fa-phone fa-fw mr-2 text-primary"/>{telefono}</p>\n'
+        contacto_html += f'<p class="mb-2"><i class="fa fa-phone fa-fw mr-2 text-primary"/>{escape(telefono)}</p>\n'
     if phone2:
-        contacto_html += f'<p class="mb-2"><i class="fa fa-phone fa-fw mr-2 text-primary"/>{phone2}</p>\n'
+        contacto_html += f'<p class="mb-2"><i class="fa fa-phone fa-fw mr-2 text-primary"/>{escape(phone2)}</p>\n'
     if email:
-        contacto_html += f'<p class="mb-2"><i class="fa fa-envelope fa-fw mr-2 text-primary"/>{email}</p>\n'
+        contacto_html += f'<p class="mb-2"><i class="fa fa-envelope fa-fw mr-2 text-primary"/>{escape(email)}</p>\n'
     if website_url:
         url_display = str(website_url)
         if not url_display.startswith(('http://', 'https://')):
             url_display = 'https://' + url_display
-        contacto_html += f'<p class="mb-2"><i class="fa fa-globe fa-fw mr-2 text-primary"/><a href="{url_display}" target="_blank">{website_url}</a></p>\n'
+        contacto_html += f'<p class="mb-2"><i class="fa fa-globe fa-fw mr-2 text-primary"/><a href="{escape(url_display)}" target="_blank">{escape(website_url)}</a></p>\n'
     return f'''<section class="s_website_form pt48 pb48" data-snippet="s_website_form" data-name="Formulario">
     <div class="container">
         <div class="row">
@@ -316,7 +338,7 @@ def build_formulario_section(subdomain, map_url, company_info, website_url='', p
             </div>
             <div class="col-lg-6">
                 <div class="mt-3 mb-3">
-                    <iframe src="{map_url}" width="100%" height="200" style="border:0; border-radius: 8px;"></iframe>
+                    <iframe src="{escape(_safe_map_url(map_url))}" width="100%" height="200" style="border:0; border-radius: 8px;"></iframe>
                 </div>
                 <h4 class="mb-3"><span class="fa fa-map-marker" style="margin-right: 8px;"></span><strong>ENCUÉNTRANOS</strong></h4>
                 {contacto_html}
@@ -342,12 +364,12 @@ def build_subvenciones_section():
 
 def build_social_link(url, icon_class, label):
     if url and str(url).strip() and str(url).lower() not in ['nan', 'none', '', 'false']:
-        return f'<a href="{url}" target="_blank" class="text-white fs-4" title="{label}"><i class="fa {icon_class}"></i></a>'
+        return f'<a href="{escape(url)}" target="_blank" class="text-white fs-4" title="{escape(label)}"><i class="fa {icon_class}"></i></a>'
     return ''
 
 
 def build_footer(nombre_comercial, rrss=None):
-    nombre_display = nombre_comercial if nombre_comercial else ''
+    nombre_display = escape(nombre_comercial) if nombre_comercial else ''
     rrss = rrss or {}
     social_icons = []
     social_links = [

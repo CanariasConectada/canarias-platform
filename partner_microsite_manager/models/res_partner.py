@@ -1,5 +1,10 @@
+from lxml import etree
+from lxml import html as lxml_html
+from markupsafe import escape
+
 from odoo import models, fields, api
 from odoo.exceptions import UserError
+from odoo.tools import html_sanitize
 from . import website_builder
 import re
 
@@ -150,6 +155,50 @@ class ResPartner(models.Model):
                     res['microsite_favicon'] = website.favicon
         return result
 
+    @api.model
+    def _build_homepage_arch(self, view_key, inner_html):
+        """Envuelve el contenido en el layout y valida que el arch resultante
+        sea XML bien formado. Devuelve None si no lo es.
+
+        El arch de una vista QWeb es CÓDIGO: cualquier contenido de usuario
+        incrustado sin escapar se compila y ejecuta (directivas t-*). Los
+        helpers de website_builder escapan todos los valores; esta validación
+        es la última barrera para no escribir nunca un arch corrupto.
+        """
+        full_arch = f'''<t t-name="{view_key}">
+    <t t-call="website.layout">
+        <div id="wrap" class="oe_structure oe_empty">
+            {inner_html}
+        </div>
+    </t>
+</t>'''
+        try:
+            etree.fromstring(full_arch.encode())
+        except etree.XMLSyntaxError:
+            return None
+        return full_arch
+
+    def _custom_html_as_inert_xml(self):
+        """Sanitiza microsite_custom_html y lo devuelve como XML inerte.
+
+        html_sanitize con sanitize_attributes=True elimina scripts y todos
+        los atributos no seguros — incluidas las directivas t-* que, dentro
+        del arch, se ejecutarían como QWeb (inyección de plantillas, no solo
+        XSS). Después se reserializa como XML para que el arch siga siendo
+        bien formado.
+        """
+        raw = self.microsite_custom_html or ''
+        if not raw.strip():
+            return ''
+        clean = html_sanitize(raw, sanitize_attributes=True)
+        try:
+            root = lxml_html.fragment_fromstring(clean, create_parent='div')
+            root.attrib.clear()
+            root.set('class', 'o_microsite_custom_html')
+            return etree.tostring(root, encoding='unicode', method='xml')
+        except (etree.XMLSyntaxError, etree.ParserError, ValueError):
+            return f'<div class="o_microsite_custom_html">{escape(raw)}</div>'
+
     def _sync_to_website(self):
         """Genera y actualiza la vista QWeb del website desde los campos del partner."""
         self.ensure_one()
@@ -167,14 +216,14 @@ class ResPartner(models.Model):
 
         # ── HTML personalizado (toggle) ──
         if self.microsite_use_custom_html:
-            custom_html = self.microsite_custom_html or ''
-            full_arch = f'''<t name="Home - {subdomain}" t-name="{view_key}">
-    <t t-call="website.layout">
-        <div id="wrap" class="oe_structure oe_empty">
-            {custom_html}
-        </div>
-    </t>
-</t>'''
+            custom_html = self._custom_html_as_inert_xml()
+            full_arch = self._build_homepage_arch(view_key, custom_html)
+            if full_arch is None:
+                # Último recurso: el contenido se muestra escapado antes que
+                # escribir un arch corrupto o ejecutable.
+                full_arch = self._build_homepage_arch(
+                    view_key, escape(self.microsite_custom_html or '')
+                )
             View = self.env['ir.ui.view'].sudo()
             Page = self.env['website.page'].sudo()
             view_ids = View.browse()
@@ -288,17 +337,18 @@ class ResPartner(models.Model):
             html_parts.append(features)
 
         if sec1_texto:
+            sec1_texto_safe = escape(sec1_texto[:200])
             if sec1_id:
                 html_parts.append(f'''<section class="s_kickoff o_cc o_cc5 o_colored_level pt104 pb120" data-snippet="s_kickoff" data-name="SEC1" style="background-image: url('/web/image/ir.attachment/{sec1_id}/datas'); background-size: cover; background-position: center; background-attachment: fixed; position: relative;">
     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 0;"></div>
     <div class="container" style="position: relative; z-index: 1;">
-        <h2 class="h3-fs text-center text-white">{sec1_texto[:200]}</h2>
+        <h2 class="h3-fs text-center text-white">{sec1_texto_safe}</h2>
     </div>
 </section>''')
             else:
                 html_parts.append(f'''<section class="s_kickoff o_cc o_cc5 o_colored_level pt104 pb120" data-snippet="s_kickoff" data-name="SEC1" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); position: relative;">
     <div class="container" style="position: relative; z-index: 1;">
-        <h2 class="h3-fs text-center text-white">{sec1_texto[:200]}</h2>
+        <h2 class="h3-fs text-center text-white">{sec1_texto_safe}</h2>
     </div>
 </section>''')
 
@@ -306,7 +356,7 @@ class ResPartner(models.Model):
         if acerca:
             html_parts.append(acerca)
 
-        separador_titulo = self.microsite_separador_titulo or 'Consume Productos Canarios'
+        separador_titulo = escape(self.microsite_separador_titulo or 'Consume Productos Canarios')
         if sec2_id:
             html_parts.append(f'''<section class="s_kickoff o_cc o_cc5 pt104 pb120 o_colored_level" data-snippet="s_kickoff" data-name="Separador" style="background-image: url('/web/image/ir.attachment/{sec2_id}/datas'); background-size: cover; background-position: center; background-attachment: fixed; position: relative;">
     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 0;"></div>
@@ -333,13 +383,12 @@ class ResPartner(models.Model):
         # El footer lo gestiona el tema corporate_footer; no inyectamos uno manual
 
         html_content = '\n'.join(html_parts)
-        full_arch = f'''<t name="Home - {subdomain}" t-name="{view_key}">
-    <t t-call="website.layout">
-        <div id="wrap" class="oe_structure oe_empty">
-            {html_content}
-        </div>
-    </t>
-</t>'''
+        full_arch = self._build_homepage_arch(view_key, html_content)
+        if full_arch is None:
+            raise UserError(
+                "El contenido del microsite genera una página inválida; "
+                "revisa los campos de texto del microsite."
+            )
 
         View = self.env['ir.ui.view'].sudo()
         Page = self.env['website.page'].sudo()
