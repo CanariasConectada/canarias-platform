@@ -58,11 +58,11 @@ class PartnerReviewRating(models.Model):
             return
         subject = f"Nueva valoración en {partner.name}"
         body = f"""
-        <p>Hola <strong>{escapeHtml(partner.name)}</strong>,</p>
+        <p>Hola <strong>{html_escape(partner.name)}</strong>,</p>
         <p>Has recibido una nueva valoración en tu página de reseñas:</p>
         <div style="background:#f8f9fa;padding:15px;border-radius:5px;margin:15px 0;">
             <p><strong>Valoración:</strong> {self.rating} de 5 estrellas</p>
-            <p><strong>Usuario:</strong> {escapeHtml(self.user_id.name)}</p>
+            <p><strong>Usuario:</strong> {html_escape(self.user_id.name)}</p>
         </div>
         <p>Puedes ver todas tus reseñas en el panel de administración.</p>
         """

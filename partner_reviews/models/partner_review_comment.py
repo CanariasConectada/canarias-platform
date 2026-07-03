@@ -133,13 +133,13 @@ class PartnerReviewComment(models.Model):
 
     def _notificar_moderacion(self):
         self.ensure_one()
-        try:
-            grupo_moderadores = self.env.ref('partner_reviews.group_partner_reviews_moderator', raise_if_not_found=False)
-            if not grupo_moderadores:
-                return
-            usuarios_moderadores = self.env['res.users'].search([('groups_id', 'in', grupo_moderadores.id)])
-        except Exception:
+        grupo_moderadores = self.env.ref('partner_reviews.group_partner_reviews_moderator', raise_if_not_found=False)
+        if not grupo_moderadores:
             return
+        # all_group_ids incluye los grupos implicados (en Odoo 19 groups_id
+        # ya no existe en res.users; el search antiguo lanzaba ValueError y
+        # el try/except lo silenciaba: nunca se notificaba a nadie).
+        usuarios_moderadores = self.env['res.users'].search([('all_group_ids', 'in', grupo_moderadores.id)])
         if not usuarios_moderadores:
             return
         for usuario in usuarios_moderadores:

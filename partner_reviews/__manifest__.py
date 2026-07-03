@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Partner Reviews - Reseñas de Comercios',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'category': 'Website',
     'summary': 'Sistema de reseñas con valoraciones y comentarios para microsites de comercios',
     'description': """
