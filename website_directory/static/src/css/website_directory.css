@@ -1,0 +1,73 @@
+/* Copyright 2026 Canarias Conectada
+ * License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). */
+
+.wd-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+/* Cards */
+.wd-card {
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.wd-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.wd-card-img-wrap {
+    height: 180px;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 1rem;
+}
+
+.wd-logo {
+    max-height: 140px;
+    max-width: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    transition: transform 0.3s ease;
+}
+
+.wd-card:hover .wd-logo {
+    transform: scale(1.05);
+}
+
+.wd-zone-badge {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 0.5rem;
+    z-index: 2;
+    font-size: 0.75rem;
+    padding: 0.4em 0.8em;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.wd-card .card-footer .btn {
+    border-radius: 25px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: all 0.3s ease;
+}
+
+.wd-card .card-footer .btn:hover:not(.disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+}
+
+/* List view */
+.wd-list-logo-wrap {
+    width: 80px;
+    height: 80px;
+}
+
+.wd-list-logo {
+    max-height: 80px;
+    max-width: 80px;
+    object-fit: contain;
+}

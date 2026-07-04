@@ -1,169 +1,172 @@
-# -*- coding: utf-8 -*-
-from odoo import models, fields, api
+# Copyright 2026 Canarias Conectada
+# License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+import logging
+
+from odoo import api, fields, models
+
+_logger = logging.getLogger(__name__)
+
+# Partner-related keys that Odoo forwards from the company form and that
+# must refresh the directory entry when written on the company.
+PARTNER_SYNC_FIELDS = {"phone", "email", "street", "city", "vat", "website"}
 
 
 class ResCompany(models.Model):
-    _inherit = 'res.company'
+    _inherit = "res.company"
 
     show_in_directory = fields.Boolean(
-        string='Mostrar en directorio',
+        string="Show in Directory",
         default=True,
-        help='Si está marcado, esta compañía aparecerá en el directorio web.'
+        help="If set, this company is listed in the public website directory.",
     )
 
+    # ------------------------------------------------------------------
+    # Extension hooks (override in zone / microsite modules)
+    # ------------------------------------------------------------------
     def _get_directory_zone(self):
-        """Mapea zone_id.name a los valores de website.directory.entry.zone"""
-        self.ensure_one()
-        if self.zone_id and self.zone_id.name:
-            zone_name = self.zone_id.name.strip()
-            zone_map = {
-                'Guanarteme': 'guanarteme',
-                'Tamaraceite': 'tamaraceite',
-                'Lomo los Frailes': 'lomolosfrailes',
-                'Ninguna': 'canarias',
-            }
-            return zone_map.get(zone_name, 'canarias')
-        return 'canarias'
+        """Zone assigned to a NEW directory entry of this company.
 
-    def _get_directory_website_url(self):
-        """Obtiene la URL web preferida para el directorio"""
+        The base module knows nothing about zones: it always returns the
+        global zone. The future zone module must override this method to
+        map its own data to the entry ``zone`` selection. Existing entries
+        keep their zone: the sync only sets it on creation.
+        """
         self.ensure_one()
-        partner = self.partner_id.with_context(prefetch_fields=False)
-        # Prioridad 1: URL del partner
-        if partner and partner.website:
-            url = partner.website
-            if url.startswith('http'):
-                return url
-            return f'https://{url}'
-        # Prioridad 2: computed_website_url
-        if hasattr(self, 'computed_website_url') and self.computed_website_url:
-            return self.computed_website_url
-        # Prioridad 3: main_website_id.domain
-        if self.main_website_id and self.main_website_id.domain:
-            domain = self.main_website_id.domain
-            if domain.startswith('http'):
-                return domain
-            return f'https://{domain}'
-        # Prioridad 4: website_id.domain
-        if self.website_id and self.website_id.domain:
-            domain = self.website_id.domain
-            if domain.startswith('http'):
-                return domain
-            return f'https://{domain}'
-        return ''
+        return "canarias"
+
+    def _get_directory_extra_website_url(self):
+        """Preferred public URL provided by extension modules.
+
+        The base module only knows base + website fields. Microsite modules
+        (custom domains, subdomains, main website...) must override this
+        method and return their computed URL, or empty to fall back to the
+        base priorities of :meth:`_get_directory_website_url`.
+        """
+        self.ensure_one()
+        return ""
+
+    def _get_directory_sync_fields(self):
+        """Company fields that trigger a directory sync when written.
+
+        Extension modules append their own fields here (e.g. the zone
+        module adds its zone field, microsite modules their domain fields).
+        """
+        return {"name", "logo", "show_in_directory", "website_id", "active"}
+
+    # ------------------------------------------------------------------
+    # Sync company -> directory entry
+    # ------------------------------------------------------------------
+    def _get_directory_website_url(self):
+        """Public URL of the company for the directory entry.
+
+        Priority: extension hook > partner website > company website domain.
+        """
+        self.ensure_one()
+        url = self._get_directory_extra_website_url()
+        if not url:
+            url = self.partner_id.website or ""
+        if not url and self.website_id.domain:
+            url = self.website_id.domain
+        if url and not url.startswith(("http://", "https://")):
+            url = f"https://{url}"
+        return url
+
+    def _prepare_directory_entry_values(self):
+        """Values written on the directory entry at every sync."""
+        self.ensure_one()
+        partner = self.partner_id
+        values = {
+            "name": self.name,
+            "phone": partner.phone or "",
+            "email": partner.email or "",
+            "street": partner.street or "",
+            "city": partner.city or "",
+            "vat": partner.vat or "",
+            "website_url": self._get_directory_website_url(),
+            "active": self.show_in_directory,
+        }
+        if self.logo:
+            values["image_1920"] = self.logo
+        return values
 
     def _sync_to_directory_entry(self):
-        """Sincroniza los datos de la compañía a su entrada en el directorio"""
-        for company in self.with_context(prefetch_fields=False):
-            cr = self.env.cr
-            savepoint = 'sp_directory_sync_%s' % company.id
+        """Create or update the directory entry of each company.
+
+        Each company is synced inside its own savepoint so a failure never
+        breaks the company write itself, but it is ALWAYS logged.
+        """
+        for company in self:
             try:
-                cr.execute('SAVEPOINT "%s"' % savepoint)
-
-                Entry = self.env['website.directory.entry'].sudo()
-                entries = Entry.with_context(active_test=False).search([
-                    ('company_id', '=', company.id),
-                ])
-
-                partner = company.partner_id.with_context(prefetch_fields=False)
-                vals = {
-                    'name': company.name,
-                    'phone': partner.phone or '',
-                    'email': partner.email or '',
-                    'street': partner.street or '',
-                    'city': partner.city or '',
-                    'vat': partner.vat or '',
-                    'website_url': company._get_directory_website_url(),
-                    'zone': company._get_directory_zone(),
-                    'is_published': True,
-                    'active': company.show_in_directory,
-                    'short_description': '',  # Limpiar descripción corta ya que no hay fuente en compañía
-                }
-
-                # Categorías de negocio (Many2many)
-                if company.business_category_ids:
-                    vals['category_ids'] = [(6, 0, company.business_category_ids.ids)]
-                else:
-                    vals['category_ids'] = [(5, 0, 0)]
-
-                if entries:
-                    entries.write(vals)
-                else:
-                    vals['company_id'] = company.id
-                    entries = Entry.create(vals)
-
-                # Actualizar campos traducibles en español (idioma activo del sitio web)
-                # para evitar que queden traducciones desfasadas
-                entries.with_context(lang='es_ES').write({
-                    'name': company.name,
-                    'short_description': '',
-                })
-
-                # Logo: intentar sincronizar por separado para manejar posibles colisiones
-                if company.logo:
-                    try:
-                        entries.write({'image': company.logo})
-                    except Exception:
-                        pass
-
-                cr.execute('RELEASE SAVEPOINT "%s"' % savepoint)
+                with self.env.cr.savepoint():
+                    company._sync_single_directory_entry()
             except Exception:
-                # Rollback parcial: la compañía principal se guarda, pero el sync del directorio falla silenciosamente
-                cr.execute('ROLLBACK TO SAVEPOINT "%s"' % savepoint)
-                pass
+                _logger.warning(
+                    "Directory sync failed for company %r (id %s)",
+                    company.name,
+                    company.id,
+                    exc_info=True,
+                )
+
+    def _sync_single_directory_entry(self):
+        self.ensure_one()
+        entry_model = (
+            self.env["website.directory.entry"].sudo().with_context(active_test=False)
+        )
+        entries = entry_model.search([("company_id", "=", self.id)])
+        values = self._prepare_directory_entry_values()
+        if entries:
+            # zone, is_published and short_description are deliberately NOT
+            # rewritten on update: they may have been curated by hand.
+            entries.write(values)
+        else:
+            values.update(
+                company_id=self.id,
+                zone=self._get_directory_zone(),
+                is_published=True,
+            )
+            entry_model.create(values)
 
     def action_sync_to_directory(self):
-        """Acción de botón para forzar la sincronización manual"""
+        """Form button: force a manual sync of the directory entry."""
         self._sync_to_directory_entry()
         return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': 'Directorio sincronizado',
-                'message': 'La compañía se ha sincronizado correctamente con el directorio web.',
-                'type': 'success',
-                'sticky': False,
-            }
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": self.env._("Directory synchronized"),
+                "message": self.env._(
+                    "The company has been synchronized with its "
+                    "website directory entry."
+                ),
+                "type": "success",
+                "sticky": False,
+            },
         }
 
-    def write(self, vals):
-        """Sobrescribe write para sincronizar automáticamente con el directorio"""
-        # Si se archiva la compañía, apagar automáticamente show_in_directory
-        if 'active' in vals and not vals['active']:
-            vals['show_in_directory'] = False
-
-        res = super(ResCompany, self).write(vals)
-        # Campos que al cambiar deben disparar sincronización
-        sync_fields = {
-            'name', 'logo', 'show_in_directory', 'zone_id',
-            'business_category_ids', 'website_id', 'main_website_id',
-            'computed_website_url', 'company_subdomain', 'custom_domain_url',
-            'use_custom_domain', 'active',
-        }
-        # También si cambia el partner (aunque no suele cambiar, por si acaso)
-        if any(f in vals for f in sync_fields):
-            self._sync_to_directory_entry()
-        else:
-            # Si cambian campos del partner, debemos sincronizar también
-            # Odoo no nos dice qué campos del partner cambiaron aquí,
-            # así que si vals contiene 'partner_id' o campos de contacto
-            # que a veces se escriben desde la vista de compañía...
-            partner_fields = {'phone', 'email', 'street', 'city', 'vat', 'website'}
-            # En la vista de compañía de Odoo 19, los campos del partner
-            # se escriben a menudo con claves como 'phone', 'email', etc.
-            # directamente en vals con el contexto 'no_vat_validation' o similar.
-            # Odoo los reenvía al partner automáticamente.
-            if any(f in vals for f in partner_fields):
-                self._sync_to_directory_entry()
-        return res
-
+    # ------------------------------------------------------------------
+    # ORM overrides
+    # ------------------------------------------------------------------
     @api.model_create_multi
     def create(self, vals_list):
-        """Crear entrada en directorio automáticamente al crear compañía"""
-        companies = super(ResCompany, self).create(vals_list)
-        current_allowed = list(self.env.context.get('allowed_company_ids') or [self.env.company.id])
-        new_ids = [c.id for c in companies if c.id not in current_allowed]
-        extended_ctx = dict(self.env.context, allowed_company_ids=current_allowed + new_ids) if new_ids else self.env.context
-        for company in companies.with_context(extended_ctx):
-            company._sync_to_directory_entry()
+        companies = super().create(vals_list)
+        # Extend the allowed companies so the sync can read the new records
+        # even in restricted multi-company environments.
+        allowed_ids = list(
+            self.env.context.get("allowed_company_ids") or [self.env.company.id]
+        )
+        new_ids = [c.id for c in companies if c.id not in allowed_ids]
+        companies.with_context(
+            allowed_company_ids=allowed_ids + new_ids
+        )._sync_to_directory_entry()
         return companies
+
+    def write(self, vals):
+        # Archiving a company always removes it from the directory.
+        if "active" in vals and not vals["active"]:
+            vals = dict(vals, show_in_directory=False)
+        res = super().write(vals)
+        trigger_fields = self._get_directory_sync_fields() | PARTNER_SYNC_FIELDS
+        if trigger_fields.intersection(vals):
+            self._sync_to_directory_entry()
+        return res

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- A small category tree (root "view" + leaf "normal" categories). -->
+    <record id="demo_wd_category_root" model="res.company.category">
+        <field name="name">Demo Directory Food</field>
+        <field name="type">view</field>
+    </record>
+    <record id="demo_wd_category_bakery" model="res.company.category">
+        <field name="name">Demo Directory Bakery</field>
+        <field name="type">normal</field>
+        <field name="parent_id" ref="demo_wd_category_root"/>
+    </record>
+    <record id="demo_wd_category_cafe" model="res.company.category">
+        <field name="name">Demo Directory Cafe</field>
+        <field name="type">normal</field>
+        <field name="parent_id" ref="demo_wd_category_root"/>
+    </record>
+
+    <!-- Companies: their directory entries are created automatically by the
+         company -> entry synchronization. -->
+    <record id="demo_wd_company_bakery" model="res.company">
+        <field name="name">Demo Bakery La Espiga Dorada</field>
+        <field name="category_id" ref="demo_wd_category_bakery"/>
+        <field name="website">https://espiga-dorada.example.com</field>
+    </record>
+    <record id="demo_wd_company_cafe" model="res.company">
+        <field name="name">Demo Cafe El Timple</field>
+        <field name="category_id" ref="demo_wd_category_cafe"/>
+    </record>
+    <record id="demo_wd_company_hidden" model="res.company">
+        <field name="name">Demo Hidden Workshop</field>
+        <field name="show_in_directory" eval="False"/>
+    </record>
+
+</odoo>
