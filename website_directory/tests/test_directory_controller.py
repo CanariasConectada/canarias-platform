@@ -102,6 +102,18 @@ class TestDirectoryController(HttpCase):
         response = self.url_open("/directorio/zona/guanarteme")
         self.assertEqual(response.status_code, 200)
 
+    def test_clear_filters_trash_visibility(self):
+        # With an active filter the red trash (clear-all) must be rendered...
+        response = self.url_open(f"/directorio/categoria/{self.leaf_a.id}")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("wd-clear-filters", response.text)
+        response = self.url_open("/directorio?search=Alpha")
+        self.assertIn("wd-clear-filters", response.text)
+        # ...and on the bare directory there is nothing to clear.
+        response = self.url_open("/directorio")
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("wd-clear-filters", response.text)
+
     def test_ajax_search_partial(self):
         response = self.url_open("/directorio/ajax/search?search=Alpha")
         self.assertEqual(response.status_code, 200)

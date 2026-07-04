@@ -110,6 +110,15 @@
                     <t t-esc="filter_category_obj.name"/>
                 </span>
             </t>
+            <!-- Red trash: wipes every active filter (search, category, zone)
+                 by reloading the bare directory page. Only rendered when
+                 there is something to clear. -->
+            <a t-if="search or selected_category or (current_zone and current_zone != 'canarias')"
+               href="/directorio"
+               class="btn btn-sm btn-outline-danger wd-clear-filters d-inline-flex align-items-center"
+               title="Clear all filters">
+                <i class="fa fa-trash"/>
+            </a>
             <span class="text-muted small ms-auto">
                 <t t-esc="entries_count"/> result(s)
             </span>
@@ -274,7 +283,10 @@
 
                         <div class="col-lg-9">
                             <div id="wd_results">
-                                <t t-call="website_directory.directory_results"/>
+                                <!-- Same partial the AJAX injects: keeps the
+                                     active-filter badges (and the clear-all
+                                     trash) visible on direct URL loads too. -->
+                                <t t-call="website_directory.directory_search_results"/>
                             </div>
                         </div>
                     </div>

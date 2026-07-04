@@ -409,5 +409,10 @@ msgstr "comercios"
 
 #. module: website_directory
 #: model_terms:ir.ui.view,arch_db:website_directory.directory_search_results
+msgid "Clear all filters"
+msgstr "Borrar todos los filtros"
+
+#. module: website_directory
+#: model_terms:ir.ui.view,arch_db:website_directory.directory_search_results
 msgid "result(s)"
 msgstr "resultado(s)"
