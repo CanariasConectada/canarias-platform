@@ -20,7 +20,7 @@
                     <p t-if="entry.short_description" class="card-text text-muted small mb-2" t-esc="entry.short_description"/>
                     <div t-if="entry.category_id" class="mb-2 wd-category-badges">
                         <t t-foreach="entry.get_category_badges()" t-as="badge">
-                            <a t-att-href="'/directorio/categoria/%s' % badge['id']" t-attf-class="badge {{
+                            <a t-att-href="'/comercio/categoria/%s' % badge['id']" t-attf-class="badge {{
                                     {1: 'bg-primary', 2: 'bg-info'}.get(badge['level'], 'bg-success')
                                 }} text-white me-1 small fw-normal text-decoration-none" t-esc="badge['name']"/>
                         </t>
@@ -56,7 +56,7 @@
                 <p t-if="entry.short_description" class="text-muted small mb-1" t-esc="entry.short_description"/>
                 <div t-if="entry.category_id" class="wd-category-badges">
                     <t t-foreach="entry.get_category_badges()" t-as="badge">
-                        <a t-att-href="'/directorio/categoria/%s' % badge['id']" t-attf-class="badge {{
+                        <a t-att-href="'/comercio/categoria/%s' % badge['id']" t-attf-class="badge {{
                                 {1: 'bg-primary', 2: 'bg-info'}.get(badge['level'], 'bg-success')
                             }} text-white me-1 small fw-normal text-decoration-none" t-esc="badge['name']"/>
                     </t>
@@ -114,7 +114,7 @@
                  by reloading the bare directory page. Only rendered when
                  there is something to clear. -->
             <a t-if="search or selected_category or (current_zone and current_zone != 'canarias')"
-               href="/directorio"
+               href="/comercio"
                class="btn btn-sm btn-outline-danger wd-clear-filters d-inline-flex align-items-center"
                title="Clear all filters">
                 <i class="fa fa-trash"/>
@@ -144,7 +144,7 @@
                         <div class="col-lg-8 text-center">
                             <h1 class="display-5 mb-3 fw-bold">Business Directory</h1>
                             <p class="lead mb-4 text-muted">Find the best businesses and services in your area</p>
-                            <form action="/directorio" method="get" class="input-group input-group-lg" id="wd_search_form">
+                            <form action="/comercio" method="get" class="input-group input-group-lg" id="wd_search_form">
                                 <input type="hidden" name="category" t-att-value="selected_category or ''"/>
                                 <input type="text" name="search" id="wd_search_input" class="form-control border-end-0" placeholder="Search businesses..." t-att-value="search or ''" autocomplete="off"/>
                                 <button type="submit" class="btn btn-primary px-4">
@@ -206,16 +206,16 @@
                                 </div>
                                 <div class="card-body">
                                     <select class="form-select" id="wd_zone_select" t-att-data-current="current_zone or 'canarias'">
-                                        <option value="/directorio" t-att-selected="not current_zone or current_zone == 'canarias' or None">All zones</option>
+                                        <option value="/comercio" t-att-selected="not current_zone or current_zone == 'canarias' or None">All zones</option>
                                         <t t-foreach="zone_options" t-as="zone_option">
-                                            <option t-if="zone_option[0] != 'canarias'" t-att-value="'/directorio/zona/%s' % zone_option[0]" t-att-selected="current_zone == zone_option[0] or None" t-esc="zone_option[1]"/>
+                                            <option t-if="zone_option[0] != 'canarias'" t-att-value="'/comercio/zona/%s' % zone_option[0]" t-att-selected="current_zone == zone_option[0] or None" t-esc="zone_option[1]"/>
                                         </t>
                                     </select>
                                     <div t-if="current_zone and current_zone != 'canarias'" class="mt-3">
                                         <small class="text-muted d-block mb-1">Filtering by:</small>
                                         <span class="badge bg-primary d-inline-flex align-items-center">
                                             <t t-esc="dict(zone_options).get(current_zone, current_zone)"/>
-                                            <a href="/directorio" class="text-white ms-2 text-decoration-none fw-bold">×</a>
+                                            <a href="/comercio" class="text-white ms-2 text-decoration-none fw-bold">×</a>
                                         </span>
                                     </div>
                                 </div>
@@ -230,7 +230,7 @@
                                     </div>
                                 </div>
                                 <div class="card-body">
-                                    <form action="/directorio" method="get" id="wd_category_form" autocomplete="off">
+                                    <form action="/comercio" method="get" id="wd_category_form" autocomplete="off">
                                         <input type="hidden" name="search" t-att-value="search or ''"/>
                                         <div class="mb-3">
                                             <label class="form-label small text-muted mb-1" for="wd_cat_l1">
@@ -263,7 +263,7 @@
                                     <div t-if="selected_category" class="mt-3 pt-3 border-top" id="wd_category_badge">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
                                             <small class="text-muted">Filtering by:</small>
-                                            <a href="/directorio" class="btn btn-sm btn-outline-secondary py-0 px-2">
+                                            <a href="/comercio" class="btn btn-sm btn-outline-secondary py-0 px-2">
                                                 <i class="fa fa-times me-1"/>Clear
                                             </a>
                                         </div>

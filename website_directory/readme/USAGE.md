@@ -4,11 +4,11 @@
 2. Keep the company checkbox **Show in Directory** enabled (default). The
    directory entry is created and updated automatically; the header button
    **Synchronize with Directory** forces a manual refresh.
-3. Open `/directorio` on the website. Routes:
-   * `/directorio` — full directory (zone inferred from the website domain),
-   * `/directorio/zona/<zone>` — explicit zone filter,
-   * `/directorio/categoria/<id>` — category filter (descendants included),
-   * `/directorio/img/<id>` — public image (entry image or company logo).
+3. Open `/comercio` on the website. Routes:
+   * `/comercio` — full directory (zone inferred from the website domain),
+   * `/comercio/zona/<zone>` — explicit zone filter,
+   * `/comercio/categoria/<id>` — category filter (descendants included),
+   * `/comercio/img/<id>` — public image (entry image or company logo).
 
 Curated fields are never overwritten by the synchronization: the entry
 `zone`, `short_description`, `description` and published state only change

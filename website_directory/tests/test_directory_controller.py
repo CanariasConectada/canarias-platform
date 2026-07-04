@@ -43,23 +43,23 @@ class TestDirectoryController(HttpCase):
         cls.entry_unpublished.is_published = False
 
     def test_directory_page_ok(self):
-        response = self.url_open("/directorio")
+        response = self.url_open("/comercio")
         self.assertEqual(response.status_code, 200)
         self.assertIn("WDC Alpha Bakery", response.text)
         self.assertIn("WDC Beta Cafe", response.text)
 
     def test_hidden_company_not_listed(self):
-        response = self.url_open("/directorio")
+        response = self.url_open("/comercio")
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("WDC Hidden Shop", response.text)
 
     def test_unpublished_entry_not_listed(self):
-        response = self.url_open("/directorio")
+        response = self.url_open("/comercio")
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("WDC Unpublished Bar", response.text)
 
     def test_search_filter(self):
-        response = self.url_open("/directorio?search=Alpha")
+        response = self.url_open("/comercio?search=Alpha")
         self.assertEqual(response.status_code, 200)
         self.assertIn("WDC Alpha Bakery", response.text)
         self.assertNotIn("WDC Beta Cafe", response.text)
@@ -67,71 +67,93 @@ class TestDirectoryController(HttpCase):
     def test_category_filter_includes_descendants(self):
         # Filtering by the root (view) category must include the companies
         # of all descendant categories (child_of semantics).
-        response = self.url_open(f"/directorio/categoria/{self.root_category.id}")
+        response = self.url_open(f"/comercio/categoria/{self.root_category.id}")
         self.assertEqual(response.status_code, 200)
         self.assertIn("WDC Alpha Bakery", response.text)
         self.assertIn("WDC Beta Cafe", response.text)
 
     def test_category_filter_leaf_only(self):
-        response = self.url_open(f"/directorio/categoria/{self.leaf_a.id}")
+        response = self.url_open(f"/comercio/categoria/{self.leaf_a.id}")
         self.assertEqual(response.status_code, 200)
         self.assertIn("WDC Alpha Bakery", response.text)
         self.assertNotIn("WDC Beta Cafe", response.text)
 
     def test_category_filter_query_param(self):
-        response = self.url_open(f"/directorio?category={self.leaf_b.id}")
+        response = self.url_open(f"/comercio?category={self.leaf_b.id}")
         self.assertEqual(response.status_code, 200)
         self.assertIn("WDC Beta Cafe", response.text)
         self.assertNotIn("WDC Alpha Bakery", response.text)
 
     def test_unknown_category_not_found(self):
-        response = self.url_open("/directorio/categoria/99999999")
+        response = self.url_open("/comercio/categoria/99999999")
         self.assertEqual(response.status_code, 404)
 
     def test_pagination_out_of_range(self):
-        response = self.url_open("/directorio/page/999")
+        response = self.url_open("/comercio/page/999")
         self.assertEqual(response.status_code, 200)
 
     def test_invalid_page_and_ppg_fall_back(self):
-        response = self.url_open("/directorio?page=abc&ppg=7")
+        response = self.url_open("/comercio?page=abc&ppg=7")
         self.assertEqual(response.status_code, 200)
-        response = self.url_open("/directorio?ppg=abc")
+        response = self.url_open("/comercio?ppg=abc")
         self.assertEqual(response.status_code, 200)
 
     def test_zone_route_ok(self):
-        response = self.url_open("/directorio/zona/guanarteme")
+        response = self.url_open("/comercio/zona/guanarteme")
         self.assertEqual(response.status_code, 200)
 
     def test_clear_filters_trash_visibility(self):
         # With an active filter the red trash (clear-all) must be rendered...
-        response = self.url_open(f"/directorio/categoria/{self.leaf_a.id}")
+        response = self.url_open(f"/comercio/categoria/{self.leaf_a.id}")
         self.assertEqual(response.status_code, 200)
         self.assertIn("wd-clear-filters", response.text)
-        response = self.url_open("/directorio?search=Alpha")
+        response = self.url_open("/comercio?search=Alpha")
         self.assertIn("wd-clear-filters", response.text)
         # ...and on the bare directory there is nothing to clear.
-        response = self.url_open("/directorio")
+        response = self.url_open("/comercio")
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("wd-clear-filters", response.text)
 
     def test_ajax_search_partial(self):
-        response = self.url_open("/directorio/ajax/search?search=Alpha")
+        response = self.url_open("/comercio/ajax/search?search=Alpha")
         self.assertEqual(response.status_code, 200)
         self.assertIn("WDC Alpha Bakery", response.text)
         # Partial rendering: no full page layout.
         self.assertNotIn("<html", response.text[:200])
 
     def test_image_route_mimetype(self):
-        response = self.url_open(f"/directorio/img/{self.entry_a.id}")
+        response = self.url_open(f"/comercio/img/{self.entry_a.id}")
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.headers.get("Content-Type", "").startswith("image/"))
 
     def test_image_route_unpublished_not_found(self):
-        response = self.url_open(f"/directorio/img/{self.entry_unpublished.id}")
+        response = self.url_open(f"/comercio/img/{self.entry_unpublished.id}")
         self.assertEqual(response.status_code, 404)
 
     def test_shuffle_cookie_set(self):
-        response = self.url_open("/directorio")
+        response = self.url_open("/comercio")
         self.assertEqual(response.status_code, 200)
         cookies = response.headers.get("Set-Cookie", "")
         self.assertIn("directory_seed", cookies)
+
+    def test_legacy_directorio_redirects(self):
+        # Old /directorio URLs must 301 to /comercio keeping path and query.
+        response = self.url_open("/directorio", allow_redirects=False)
+        self.assertEqual(response.status_code, 301)
+        self.assertTrue(response.headers["Location"].endswith("/comercio"))
+        response = self.url_open(
+            f"/directorio/categoria/{self.leaf_a.id}", allow_redirects=False
+        )
+        self.assertEqual(response.status_code, 301)
+        self.assertTrue(
+            response.headers["Location"].endswith(
+                f"/comercio/categoria/{self.leaf_a.id}"
+            )
+        )
+        response = self.url_open("/directorio?search=Alpha", allow_redirects=False)
+        self.assertEqual(response.status_code, 301)
+        self.assertTrue(response.headers["Location"].endswith("/comercio?search=Alpha"))
+        # Followed, the legacy URL lands on the working page.
+        response = self.url_open("/directorio?search=Alpha")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("WDC Alpha Bakery", response.text)

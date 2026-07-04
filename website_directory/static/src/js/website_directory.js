@@ -282,7 +282,7 @@
         Object.assign(state, changes);
         var query = buildQuery(state);
         setLoading(true);
-        fetch("/directorio/ajax/search" + (query ? "?" + query : ""), {
+        fetch("/comercio/ajax/search" + (query ? "?" + query : ""), {
             headers: {"X-Requested-With": "XMLHttpRequest"},
         })
             .then(function (response) {
@@ -301,7 +301,7 @@
                     window.history.pushState(
                         {},
                         document.title,
-                        "/directorio" + (query ? "?" + query : "")
+                        "/comercio" + (query ? "?" + query : "")
                     );
                 }
                 setLoading(false);
@@ -309,7 +309,7 @@
             .catch(function () {
                 // Network/server issue: fall back to a full page load.
                 setLoading(false);
-                window.location.href = "/directorio" + (query ? "?" + query : "");
+                window.location.href = "/comercio" + (query ? "?" + query : "");
             });
     }
 

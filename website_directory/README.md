@@ -3,7 +3,7 @@
 **Versión:** 19.0.5.0.0 | **Licencia:** AGPL-3 | **Autor:** Canarias Conectada
 
 Directorio público de comercios del marketplace de Canarias Conectada,
-servido en `/directorio`: cards con logo, filtro de categorías en cascada
+servido en `/comercio`: cards con logo, filtro de categorías en cascada
 (jerarquía OCA `res.company.category`, descendientes incluidos), búsqueda
 asíncrona, paginación configurable y rotación diaria equitativa de los
 comercios. La entrada de cada comercio (`website.directory.entry`) se

@@ -1,5 +1,5 @@
 Public business directory for the Canarias Conectada marketplace, served at
-`/directorio`.
+`/comercio`.
 
 Each participating company gets a directory entry
 (`website.directory.entry`) that is kept in sync automatically from the

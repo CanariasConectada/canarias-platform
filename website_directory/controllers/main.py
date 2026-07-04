@@ -21,7 +21,7 @@ SHUFFLE_COOKIE_MAX_AGE = 86400  # 24h: everyone gets a fresh order every day
 
 
 class WebsiteDirectory(http.Controller):
-    """Public business directory (``/directorio``).
+    """Public business directory (``/comercio``).
 
     Extension points for future bridge modules (silver economy,
     sustainability, zones...):
@@ -185,7 +185,7 @@ class WebsiteDirectory(http.Controller):
         except (TypeError, ValueError):
             return default
 
-    def _prepare_directory_values(self, page=1, zone=None, url="/directorio", **kw):
+    def _prepare_directory_values(self, page=1, zone=None, url="/comercio", **kw):
         """Single implementation of domain + shuffle + pager + categories."""
         page = self._sanitize_int(kw.get("page", page), 1)
         ppg = self._sanitize_int(kw.get("ppg"), DEFAULT_PPG)
@@ -251,7 +251,7 @@ class WebsiteDirectory(http.Controller):
     # Routes
     # ------------------------------------------------------------------
     @http.route(
-        ["/directorio", "/directorio/page/<int:page>"],
+        ["/comercio", "/comercio/page/<int:page>"],
         type="http",
         auth="public",
         website=True,
@@ -263,7 +263,7 @@ class WebsiteDirectory(http.Controller):
         values = self._prepare_directory_values(
             page=page,
             zone=current_zone if current_zone != "canarias" else None,
-            url="/directorio",
+            url="/comercio",
             **kw,
         )
         values["current_zone"] = current_zone
@@ -271,8 +271,8 @@ class WebsiteDirectory(http.Controller):
 
     @http.route(
         [
-            "/directorio/zona/<string:zone>",
-            "/directorio/zona/<string:zone>/page/<int:page>",
+            "/comercio/zona/<string:zone>",
+            "/comercio/zona/<string:zone>/page/<int:page>",
         ],
         type="http",
         auth="public",
@@ -282,15 +282,15 @@ class WebsiteDirectory(http.Controller):
     def directory_by_zone(self, zone, page=1, **kw):
         """Directory filtered by an explicit zone."""
         values = self._prepare_directory_values(
-            page=page, zone=zone, url=f"/directorio/zona/{zone}", **kw
+            page=page, zone=zone, url=f"/comercio/zona/{zone}", **kw
         )
         values["current_zone"] = zone
         return self._render_directory(values)
 
     @http.route(
         [
-            "/directorio/categoria/<int:category_id>",
-            "/directorio/categoria/<int:category_id>/page/<int:page>",
+            "/comercio/categoria/<int:category_id>",
+            "/comercio/categoria/<int:category_id>/page/<int:page>",
         ],
         type="http",
         auth="public",
@@ -307,7 +307,7 @@ class WebsiteDirectory(http.Controller):
         values = self._prepare_directory_values(
             page=page,
             zone=current_zone if current_zone != "canarias" else None,
-            url=f"/directorio/categoria/{category_id}",
+            url=f"/comercio/categoria/{category_id}",
             **kw,
         )
         values["current_zone"] = current_zone
@@ -315,7 +315,7 @@ class WebsiteDirectory(http.Controller):
         return self._render_directory(values)
 
     @http.route(
-        "/directorio/ajax/search",
+        "/comercio/ajax/search",
         type="http",
         auth="public",
         website=True,
@@ -327,7 +327,7 @@ class WebsiteDirectory(http.Controller):
         current_zone = self._get_zone_from_website(request.website)
         values = self._prepare_directory_values(
             zone=current_zone if current_zone != "canarias" else None,
-            url="/directorio",
+            url="/comercio",
             **kw,
         )
         values["current_zone"] = current_zone
@@ -335,7 +335,7 @@ class WebsiteDirectory(http.Controller):
         return self._set_shuffle_cookie_if_needed(response)
 
     @http.route(
-        "/directorio/img/<int:entry_id>",
+        "/comercio/img/<int:entry_id>",
         type="http",
         auth="public",
         website=True,
@@ -357,3 +357,30 @@ class WebsiteDirectory(http.Controller):
             record, field_name = entry.company_id, "logo"
         stream = request.env["ir.binary"]._get_image_stream_from(record, field_name)
         return stream.get_response()
+
+    # ------------------------------------------------------------------
+    # Legacy URLs: the directory lived under /directorio until 19.0.7.0.0.
+    # Permanent redirects keep old links (search engines, shared URLs,
+    # printed QR codes) working after the rename to /comercio.
+    # ------------------------------------------------------------------
+    @http.route(
+        [
+            "/directorio",
+            "/directorio/page/<int:page>",
+            "/directorio/zona/<string:zone>",
+            "/directorio/zona/<string:zone>/page/<int:page>",
+            "/directorio/categoria/<int:category_id>",
+            "/directorio/categoria/<int:category_id>/page/<int:page>",
+            "/directorio/ajax/search",
+            "/directorio/img/<int:entry_id>",
+        ],
+        type="http",
+        auth="public",
+        website=True,
+        sitemap=False,
+    )
+    def directory_legacy_redirect(self, **kw):
+        """301 from the historical /directorio paths to /comercio."""
+        path = request.httprequest.path.replace("/directorio", "/comercio", 1)
+        query = request.httprequest.query_string.decode()
+        return request.redirect(path + (f"?{query}" if query else ""), code=301)

@@ -80,7 +80,7 @@ class WebsiteDirectoryEntry(models.Model):
     def get_image_url(self):
         """URL of the public image route (entry image or company logo)."""
         self.ensure_one()
-        return f"/directorio/img/{self.id}"
+        return f"/comercio/img/{self.id}"
 
     def get_website_url(self):
         """External URL of the business, always with a scheme."""
