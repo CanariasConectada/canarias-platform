@@ -20,6 +20,14 @@ class ResCompany(models.Model):
         default=True,
         help="If set, this company is listed in the public website directory.",
     )
+    directory_sync_pending = fields.Boolean(
+        string="Directory Sync Pending",
+        default=True,
+        copy=False,
+        help="Set when the company changed and its directory entry still has "
+        "to be refreshed. A scheduled action syncs pending companies in the "
+        "background, so the sync never blocks saving the company.",
+    )
 
     # ------------------------------------------------------------------
     # Extension hooks (override in zone / microsite modules)
@@ -127,46 +135,46 @@ class ResCompany(models.Model):
             )
             entry_model.create(values)
 
-    def action_sync_to_directory(self):
-        """Form button: force a manual sync of the directory entry."""
-        self._sync_to_directory_entry()
-        return {
-            "type": "ir.actions.client",
-            "tag": "display_notification",
-            "params": {
-                "title": self.env._("Directory synchronized"),
-                "message": self.env._(
-                    "The company has been synchronized with its "
-                    "website directory entry."
-                ),
-                "type": "success",
-                "sticky": False,
-            },
-        }
+    # ------------------------------------------------------------------
+    # Async sync: cron drains the companies flagged as pending
+    # ------------------------------------------------------------------
+    @api.model
+    def _cron_sync_directory_entries(self, batch_size=200):
+        """Sync the directory entry of every company flagged as pending.
 
-    # ------------------------------------------------------------------
-    # ORM overrides
-    # ------------------------------------------------------------------
-    @api.model_create_multi
-    def create(self, vals_list):
-        companies = super().create(vals_list)
-        # Extend the allowed companies so the sync can read the new records
-        # even in restricted multi-company environments.
-        allowed_ids = list(
-            self.env.context.get("allowed_company_ids") or [self.env.company.id]
+        Runs in the background (``ir.cron``) so saving a company never waits
+        for the directory sync. Companies are flagged on create/write and
+        drained here in batches; if a full batch is processed the cron
+        re-triggers itself to keep going without waiting a full interval.
+        """
+        companies = self.with_context(active_test=False).search(
+            [("directory_sync_pending", "=", True)], limit=batch_size
         )
-        new_ids = [c.id for c in companies if c.id not in allowed_ids]
-        companies.with_context(
-            allowed_company_ids=allowed_ids + new_ids
-        )._sync_to_directory_entry()
-        return companies
+        if not companies:
+            return
+        companies._sync_to_directory_entry()
+        companies.directory_sync_pending = False
+        if len(companies) == batch_size:
+            cron = self.env.ref(
+                "website_directory.cron_sync_directory_entries",
+                raise_if_not_found=False,
+            )
+            if cron:
+                cron._trigger()
 
+    # ------------------------------------------------------------------
+    # ORM overrides — flag pending instead of syncing inline
+    # ------------------------------------------------------------------
     def write(self, vals):
         # Archiving a company always removes it from the directory.
         if "active" in vals and not vals["active"]:
             vals = dict(vals, show_in_directory=False)
         res = super().write(vals)
         trigger_fields = self._get_directory_sync_fields() | PARTNER_SYNC_FIELDS
+        # ``directory_sync_pending`` is not a trigger field, so flagging here
+        # never recurses back into this branch.
         if trigger_fields.intersection(vals):
-            self._sync_to_directory_entry()
+            self.filtered(lambda c: not c.directory_sync_pending).write(
+                {"directory_sync_pending": True}
+            )
         return res

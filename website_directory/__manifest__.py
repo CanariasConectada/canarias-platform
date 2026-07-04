@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website Directory",
-    "version": "19.0.5.0.0",
+    "version": "19.0.6.0.0",
     "category": "Website",
     "summary": "Public business directory with category filter, search and shuffle",
     "author": "Canarias Conectada",
@@ -16,6 +16,7 @@
     ],
     "data": [
         "security/ir.model.access.csv",
+        "data/website_directory_cron.xml",
         "views/website_directory_templates.xml",
         "views/res_company_views.xml",
     ],

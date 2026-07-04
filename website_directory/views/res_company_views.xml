@@ -8,11 +8,6 @@
         <field name="model">res.company</field>
         <field name="inherit_id" ref="base.view_company_form"/>
         <field name="arch" type="xml">
-            <sheet position="before">
-                <header>
-                    <button name="action_sync_to_directory" string="Synchronize with Directory" type="object" class="oe_highlight" icon="fa-refresh" help="Force the synchronization of this company with its website directory entry."/>
-                </header>
-            </sheet>
             <field name="website" position="after">
                 <field name="show_in_directory" widget="boolean_toggle"/>
             </field>

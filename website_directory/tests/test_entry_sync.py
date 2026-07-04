@@ -34,6 +34,15 @@ class TestDirectoryEntrySync(TransactionCase):
         cls.company = cls.Company.create(
             {"name": "WD Test Company", "category_id": cls.leaf_category.id}
         )
+        # Sync is asynchronous now (flagged on create/write, drained by cron):
+        # flush the test company so entry-reading tests see the steady state.
+        cls._flush(cls.company)
+
+    @classmethod
+    def _flush(cls, companies):
+        """Run the async sync for the given companies, as the cron would."""
+        companies._sync_to_directory_entry()
+        companies.directory_sync_pending = False
 
     def _get_entry(self, company):
         return (
@@ -52,11 +61,13 @@ class TestDirectoryEntrySync(TransactionCase):
 
     def test_write_company_syncs_entry(self):
         self.company.write({"name": "WD Renamed Company"})
+        self._flush(self.company)
         entry = self._get_entry(self.company)
         self.assertEqual(entry.name, "WD Renamed Company")
 
     def test_partner_contact_fields_sync(self):
         self.company.write({"phone": "+34 928 000 000", "city": "Las Palmas"})
+        self._flush(self.company)
         entry = self._get_entry(self.company)
         self.assertEqual(entry.phone, "+34 928 000 000")
         self.assertEqual(entry.city, "Las Palmas")
@@ -77,18 +88,22 @@ class TestDirectoryEntrySync(TransactionCase):
     def test_show_in_directory_toggle(self):
         entry = self._get_entry(self.company)
         self.company.show_in_directory = False
+        self._flush(self.company)
         self.assertFalse(entry.active)
         self.company.show_in_directory = True
+        self._flush(self.company)
         self.assertTrue(entry.active)
 
     def test_archive_company_hides_entry(self):
         self.company.write({"active": False})
         self.assertFalse(self.company.show_in_directory)
+        self._flush(self.company)
         entry = self._get_entry(self.company)
         self.assertFalse(entry.active)
 
     def test_logo_syncs_to_image(self):
         self.company.write({"logo": PNG_PIXEL})
+        self._flush(self.company)
         entry = self._get_entry(self.company)
         self.assertTrue(entry.image_1920)
         self.assertTrue(entry.image_128)
@@ -97,6 +112,7 @@ class TestDirectoryEntrySync(TransactionCase):
         entry = self._get_entry(self.company)
         entry.write({"short_description": "Handmade bread", "is_published": False})
         self.company.write({"name": "WD Curated Company"})
+        self._flush(self.company)
         self.assertEqual(entry.short_description, "Handmade bread")
         self.assertFalse(entry.is_published)
 
@@ -139,8 +155,37 @@ class TestDirectoryEntrySync(TransactionCase):
     def test_website_url_from_partner(self):
         # res.partner sanitizes bare domains by prefixing http://.
         self.company.write({"website": "https://wd-partner.example.com"})
+        self._flush(self.company)
         entry = self._get_entry(self.company)
         self.assertEqual(entry.website_url, "https://wd-partner.example.com")
+
+    # ------------------------------------------------------------------
+    # Async behaviour: create/write flag pending, the cron drains it
+    # ------------------------------------------------------------------
+    def test_create_flags_pending(self):
+        company = self.Company.create({"name": "WD Pending Co"})
+        self.assertTrue(company.directory_sync_pending)
+
+    def test_write_trigger_flags_pending(self):
+        self._flush(self.company)
+        self.assertFalse(self.company.directory_sync_pending)
+        self.company.write({"name": "WD Touched Co"})
+        self.assertTrue(self.company.directory_sync_pending)
+
+    def test_write_non_trigger_does_not_flag(self):
+        self._flush(self.company)
+        # ``email`` is a partner trigger field; a truly inert write must not
+        # re-flag. Use a field outside the trigger set.
+        self.company.write({"currency_id": self.company.currency_id.id})
+        self.assertFalse(self.company.directory_sync_pending)
+
+    def test_cron_syncs_and_clears_pending(self):
+        company = self.Company.create({"name": "WD Cron Co"})
+        self.assertTrue(company.directory_sync_pending)
+        self.env["res.company"]._cron_sync_directory_entries()
+        self.assertFalse(company.directory_sync_pending)
+        entry = self._get_entry(company)
+        self.assertEqual(entry.name, "WD Cron Co")
 
     def test_zone_hook_default(self):
         self.assertEqual(self.company._get_directory_zone(), "canarias")

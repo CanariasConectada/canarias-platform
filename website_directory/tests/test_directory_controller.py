@@ -28,6 +28,13 @@ class TestDirectoryController(HttpCase):
             {"name": "WDC Hidden Shop", "show_in_directory": False}
         )
         cls.company_unpublished = Company.create({"name": "WDC Unpublished Bar"})
+        # Directory sync is asynchronous (flagged on create, drained by cron):
+        # flush the new companies so their entries exist for the assertions.
+        new_companies = (
+            cls.company_a | cls.company_b | cls.company_hidden | cls.company_unpublished
+        )
+        new_companies._sync_to_directory_entry()
+        new_companies.directory_sync_pending = False
         Entry = cls.env["website.directory.entry"].sudo()
         cls.entry_a = Entry.search([("company_id", "=", cls.company_a.id)])
         cls.entry_unpublished = Entry.search(
