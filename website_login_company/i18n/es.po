@@ -1,0 +1,26 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* website_login_company
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: website_login_company
+#: model:ir.module.module,shortdesc:website_login_company.module_meta_information
+msgid "Website Login Company"
+msgstr "Compañía del sitio web al iniciar sesión"
+
+#. module: website_login_company
+#: model:ir.module.module,summary:website_login_company.module_meta_information
+msgid "Select the website company as active company at login"
+msgstr ""
+"Selecciona la compañía del sitio web como compañía activa al iniciar sesión"
