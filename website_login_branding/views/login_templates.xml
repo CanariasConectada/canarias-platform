@@ -5,7 +5,7 @@
             <div class="text-center pt-4 mb-4">
                 <img src="/website_login_branding/static/src/img/canarias_conectada_logo.webp"
                      alt="Canarias Conectada"
-                     style="max-height: 90px; max-width: 80%; width: auto;"/>
+                     style="max-height: 180px; max-width: 80%; width: auto;"/>
             </div>
         </xpath>
         <xpath expr="//div[hasclass('oe_website_login_container')]" position="after">
