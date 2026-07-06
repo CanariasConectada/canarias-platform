@@ -2,7 +2,7 @@
 <odoo>
     <template id="login_layout_branding" inherit_id="website.login_layout" name="Login Branding Logos">
         <xpath expr="//div[hasclass('oe_website_login_container')]" position="before">
-            <div class="text-center pt-4 mb-3">
+            <div class="text-center mb-3">
                 <img src="/website_login_branding/static/src/img/canarias_conectada_logo.webp"
                      alt="Canarias Conectada"
                      style="max-height: 180px; max-width: 80%; width: auto;"/>
@@ -12,8 +12,7 @@
             <div class="text-center mt-4 pb-4">
                 <img src="/website_login_branding/static/src/img/zca_logo.png"
                      alt="Zonas Comerciales Abiertas"
-                     class="img-fluid"
-                     style="max-width: min(90%, 480px); width: auto;"/>
+                     class="img-fluid"/>
             </div>
         </xpath>
     </template>
