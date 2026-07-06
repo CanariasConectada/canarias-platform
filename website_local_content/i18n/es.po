@@ -1,0 +1,266 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* website_local_content
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: website_local_content
+#: model:website.local.content.type,name:website_local_content.content_type_living_memory
+msgid "Living Memory"
+msgstr "Memoria Viva"
+
+#. module: website_local_content
+#: model:website.local.content.type,name:website_local_content.content_type_places_of_interest
+msgid "Places of Interest"
+msgstr "Lugares de Interés"
+
+#. module: website_local_content
+#: model:website.local.content.type,description:website_local_content.content_type_living_memory
+msgid "Historical photographs and stories of the neighbourhood, shared by its people."
+msgstr "Fotografías históricas e historias del barrio, compartidas por su gente."
+
+#. module: website_local_content
+#: model:website.local.content.type,description:website_local_content.content_type_places_of_interest
+msgid "Places worth visiting in the area: culture, leisure, nature and more."
+msgstr "Lugares que merece la pena visitar en la zona: cultura, ocio, naturaleza y más."
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "All categories"
+msgstr "Todas las categorías"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "Decade"
+msgstr "Década"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "Search..."
+msgstr "Buscar..."
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "results"
+msgstr "resultados"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "Newest first"
+msgstr "Más recientes primero"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "Oldest first"
+msgstr "Más antiguos primero"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "Most liked"
+msgstr "Más gustados"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "Photo year (oldest)"
+msgstr "Año de la foto (más antiguo)"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "Photo year (newest)"
+msgstr "Año de la foto (más reciente)"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "No content matches your filters."
+msgstr "Ningún contenido coincide con tus filtros."
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "All"
+msgstr "Todas"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_item_card
+msgid "View"
+msgstr "Ver"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "Shared by"
+msgstr "Compartido por"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "Back to"
+msgstr "Volver a"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__name
+msgid "Title"
+msgstr "Título"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__description
+msgid "Short Description"
+msgstr "Descripción corta"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__body
+msgid "Full Story"
+msgstr "Historia completa"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__photo_year
+msgid "Photo Year"
+msgstr "Año de la fotografía"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__decade
+msgid "Decade"
+msgstr "Década"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__type_id
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_category__type_id
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_subcategory__type_id
+msgid "Content Type"
+msgstr "Tipo de contenido"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__category_id
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_subcategory__category_id
+msgid "Category"
+msgstr "Categoría"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__subcategory_id
+msgid "Subcategory"
+msgstr "Subcategoría"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__like_count
+msgid "Like Count"
+msgstr "Número de «me gusta»"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__opening_hours
+msgid "Opening Hours"
+msgstr "Horario"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__address
+msgid "Address"
+msgstr "Dirección"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__city
+msgid "City"
+msgstr "Ciudad"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__district
+msgid "District"
+msgstr "Barrio"
+
+#. module: website_local_content
+#: model:ir.model.fields.selection,name:website_local_content.selection__website_local_content_item__state__draft
+msgid "Draft"
+msgstr "Borrador"
+
+#. module: website_local_content
+#: model:ir.model.fields.selection,name:website_local_content.selection__website_local_content_item__state__pending
+msgid "Pending Approval"
+msgstr "Pendiente de aprobación"
+
+#. module: website_local_content
+#: model:ir.model.fields.selection,name:website_local_content.selection__website_local_content_item__state__approved
+msgid "Approved"
+msgstr "Aprobado"
+
+#. module: website_local_content
+#: model:ir.model.fields.selection,name:website_local_content.selection__website_local_content_item__state__rejected
+msgid "Rejected"
+msgstr "Rechazado"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_form
+msgid "Approve"
+msgstr "Aprobar"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_form
+msgid "Reject"
+msgstr "Rechazar"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_form
+msgid "Submit for Approval"
+msgstr "Enviar a aprobación"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_form
+msgid "Reset to Draft"
+msgstr "Volver a borrador"
+
+#. module: website_local_content
+#: model:ir.ui.menu,name:website_local_content.menu_local_content_root
+msgid "Local Content"
+msgstr "Contenido local"
+
+#. module: website_local_content
+#: model:ir.ui.menu,name:website_local_content.menu_local_content_items
+msgid "Items"
+msgstr "Elementos"
+
+#. module: website_local_content
+#: model:ir.ui.menu,name:website_local_content.menu_local_content_types
+msgid "Content Types"
+msgstr "Tipos de contenido"
+
+#. module: website_local_content
+#: model:ir.ui.menu,name:website_local_content.menu_local_content_categories
+msgid "Categories"
+msgstr "Categorías"
+
+#. module: website_local_content
+#: code:addons/website_local_content/models/local_content_item.py:0
+msgid "The photo year must be between %(min_year)s and %(max_year)s."
+msgstr "El año de la fotografía debe estar entre %(min_year)s y %(max_year)s."
+
+#. module: website_local_content
+#: code:addons/website_local_content/models/local_content_item.py:0
+msgid "Latitude must be between -90 and 90."
+msgstr "La latitud debe estar entre -90 y 90."
+
+#. module: website_local_content
+#: code:addons/website_local_content/models/local_content_item.py:0
+msgid "Longitude must be between -180 and 180."
+msgstr "La longitud debe estar entre -180 y 180."
+
+#. module: website_local_content
+#: code:addons/website_local_content/models/local_content_item.py:0
+msgid "The category does not belong to the selected content type."
+msgstr "La categoría no pertenece al tipo de contenido seleccionado."
+
+#. module: website_local_content
+#: code:addons/website_local_content/models/local_content_item.py:0
+msgid "The subcategory does not belong to the selected category."
+msgstr "La subcategoría no pertenece a la categoría seleccionada."
+
+#. module: website_local_content
+#: model:ir.model.constraint,message:website_local_content.constraint_website_local_content_item_slug_type_uniq
+msgid "The slug must be unique within the same content type."
+msgstr "El slug debe ser único dentro del mismo tipo de contenido."
+
+#. module: website_local_content
+#: model:ir.model.constraint,message:website_local_content.constraint_website_local_content_like_item_session_uniq
+msgid "This visitor already liked this item."
+msgstr "Este visitante ya ha dado «me gusta» a este elemento."
