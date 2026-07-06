@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="review_forbidden_word_view_list" model="ir.ui.view">
+        <field name="name">review.forbidden.word.list</field>
+        <field name="model">review.forbidden.word</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="review_forbidden_word_view_search" model="ir.ui.view">
+        <field name="name">review.forbidden.word.search</field>
+        <field name="model">review.forbidden.word</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <filter name="filter_inactive" string="Archived" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_review_forbidden_word" model="ir.actions.act_window">
+        <field name="name">Forbidden Words</field>
+        <field name="res_model">review.forbidden.word</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Add a forbidden word
+            </p>
+            <p>
+                Reviews containing any of these words are held for manual
+                moderation instead of being published automatically.
+            </p>
+        </field>
+    </record>
+
+</odoo>

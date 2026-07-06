@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- Dedicated views for merchant reviews. They are bound to our action
+         only, so the generic rating views of other apps stay untouched. -->
+    <record id="rating_rating_view_list_reviews" model="ir.ui.view">
+        <field name="name">rating.rating.list.partner.reviews</field>
+        <field name="model">rating.rating</field>
+        <field name="arch" type="xml">
+            <list decoration-warning="moderation_status == 'pending'" decoration-muted="moderation_status == 'rejected'">
+                <field name="create_date"/>
+                <field name="res_name" string="Business"/>
+                <field name="partner_id" string="Customer"/>
+                <field name="rating" string="Stars"/>
+                <field name="feedback"/>
+                <field name="requires_moderation" optional="hide"/>
+                <field name="moderation_status" widget="badge" decoration-success="moderation_status == 'approved'" decoration-warning="moderation_status == 'pending'" decoration-danger="moderation_status == 'rejected'"/>
+                <button name="action_approve" type="object" string="Approve" icon="fa-check" invisible="moderation_status == 'approved'"/>
+                <button name="action_reject" type="object" string="Reject" icon="fa-times" invisible="moderation_status == 'rejected'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="rating_rating_view_form_reviews" model="ir.ui.view">
+        <field name="name">rating.rating.form.partner.reviews</field>
+        <field name="model">rating.rating</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_approve" type="object" string="Approve" class="btn-primary" invisible="moderation_status == 'approved'"/>
+                    <button name="action_reject" type="object" string="Reject" invisible="moderation_status == 'rejected'"/>
+                    <field name="moderation_status" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="res_name" string="Business"/>
+                            <field name="partner_id" string="Customer" readonly="1"/>
+                            <field name="rating" string="Stars" readonly="1"/>
+                            <field name="create_date" readonly="1"/>
+                            <field name="requires_moderation"/>
+                        </group>
+                        <group>
+                            <field name="feedback" readonly="1"/>
+                            <field name="publisher_comment" string="Merchant Answer"/>
+                            <field name="publisher_id" readonly="1"/>
+                            <field name="publisher_datetime" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="rating_rating_view_search_reviews" model="ir.ui.view">
+        <field name="name">rating.rating.search.partner.reviews</field>
+        <field name="model">rating.rating</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="res_name" string="Business"/>
+                <field name="partner_id" string="Customer"/>
+                <field name="feedback"/>
+                <filter name="filter_pending" string="Pending Moderation" domain="[('moderation_status', '=', 'pending')]"/>
+                <filter name="filter_approved" string="Approved" domain="[('moderation_status', '=', 'approved')]"/>
+                <filter name="filter_rejected" string="Rejected" domain="[('moderation_status', '=', 'rejected')]"/>
+                <group>
+                    <filter name="group_by_business" string="Business" context="{'group_by': 'res_id'}"/>
+                    <filter name="group_by_status" string="Status" context="{'group_by': 'moderation_status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_partner_reviews" model="ir.actions.act_window">
+        <field name="name">Merchant Reviews</field>
+        <field name="res_model">rating.rating</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('res_model', '=', 'res.company'), ('consumed', '=', True)]</field>
+        <field name="view_id" ref="rating_rating_view_list_reviews"/>
+        <field name="search_view_id" ref="rating_rating_view_search_reviews"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No reviews yet
+            </p>
+            <p>
+                Customer reviews appear here as soon as they are submitted
+                on a merchant website.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_partner_reviews_form" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="rating_rating_view_form_reviews"/>
+        <field name="act_window_id" ref="action_partner_reviews"/>
+    </record>
+
+    <record id="action_partner_reviews_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="rating_rating_view_list_reviews"/>
+        <field name="act_window_id" ref="action_partner_reviews"/>
+    </record>
+
+</odoo>

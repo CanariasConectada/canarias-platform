@@ -1,3 +1,1 @@
-# -*- coding: utf-8 -*-
-from . import test_partner_reviews_models
-from . import test_partner_reviews_website
+from . import test_review_moderation, test_review_stats, test_review_website

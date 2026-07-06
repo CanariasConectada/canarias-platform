@@ -1,28 +1,22 @@
-# Partner Reviews
+# Merchant Reviews
 
-**Versión:** 19.0.1.0.0 | **Licencia:** LGPL-3 | **Autor:** MikeColangelo
+**Version:** 19.0.2.0.0 | **License:** AGPL-3 | **Author:** Canarias Conectada
 
-Sistema de reseñas con valoraciones y comentarios para microsites de comercios.
+Customer reviews for merchant websites, built on Odoo's native
+`rating.rating` model.
 
-## Descripción
+See the `readme/` fragments for the full description, usage and history.
 
-Permite a clientes dejar reseñas en los microsites de comercios locales:
-valoraciones de 1 a 5 estrellas, comentarios textuales con moderación automática
-de palabras prohibidas, y gestión de respuestas por parte del comercio.
+## Dependencies
 
-## Dependencias
+- `portal_rating`, `website` (Odoo core)
 
-- `base`, `website`, `mail` (Odoo core)
-- `partner_microsite_manager` (canarias-platform)
+## Credits
 
-## Configuración
+### Contributors
 
-Configuración > Reseñas para gestionar palabras prohibidas y moderación.
+- Mike Colangelo
 
-## Créditos
+### License
 
-### Autor
-- [MikeColangelo](https://github.com/CanariasConectada)
-
-### Licencia
-[LGPL-3](https://www.gnu.org/licenses/lgpl-3.0.html)
+[AGPL-3](https://www.gnu.org/licenses/agpl-3.0.html)

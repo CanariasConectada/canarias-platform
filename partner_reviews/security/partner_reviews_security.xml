@@ -1,24 +1,28 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
 <odoo>
+
     <record id="privilege_partner_reviews" model="res.groups.privilege">
-        <field name="name">Reseñas de Comercios</field>
+        <field name="name">Merchant Reviews</field>
     </record>
 
     <record id="group_partner_reviews_user" model="res.groups">
-        <field name="name">Usuario</field>
+        <field name="name">User</field>
         <field name="privilege_id" ref="privilege_partner_reviews"/>
         <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
     </record>
 
     <record id="group_partner_reviews_moderator" model="res.groups">
-        <field name="name">Moderador de Reseñas</field>
+        <field name="name">Moderator</field>
         <field name="privilege_id" ref="privilege_partner_reviews"/>
         <field name="implied_ids" eval="[(4, ref('group_partner_reviews_user'))]"/>
     </record>
 
     <record id="group_partner_reviews_manager" model="res.groups">
-        <field name="name">Administrador de Reseñas</field>
+        <field name="name">Administrator</field>
         <field name="privilege_id" ref="privilege_partner_reviews"/>
         <field name="implied_ids" eval="[(4, ref('group_partner_reviews_moderator'))]"/>
     </record>
+
 </odoo>
