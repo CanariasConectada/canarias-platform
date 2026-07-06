@@ -10,7 +10,7 @@
         </xpath>
         <xpath expr="//div[hasclass('oe_website_login_container')]" position="after">
             <div class="text-center mt-4 pb-4">
-                <img src="/website_login_branding/static/src/img/zca_logo.png"
+                <img src="/website_login_branding/static/src/img/zca_logo.webp"
                      alt="Zonas Comerciales Abiertas"
                      class="img-fluid"/>
             </div>

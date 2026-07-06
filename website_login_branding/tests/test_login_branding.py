@@ -2,7 +2,7 @@
 from odoo.tests import HttpCase, tagged
 
 CC_LOGO = "/website_login_branding/static/src/img/canarias_conectada_logo.webp"
-ZCA_LOGO = "/website_login_branding/static/src/img/zca_logo.png"
+ZCA_LOGO = "/website_login_branding/static/src/img/zca_logo.webp"
 
 
 @tagged("post_install", "-at_install")
