@@ -1,0 +1,232 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* partner_microsite_manager
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: Canarias Conectada\n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_about_text
+msgid "About Text"
+msgstr "Texto sobre nosotros"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_about_title
+msgid "About Title"
+msgstr "Título sobre nosotros"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "About"
+msgstr "Sobre nosotros"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid "About Us"
+msgstr "Sobre nosotros"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "Banners"
+msgstr "Banners"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_banner_image
+msgid "Closing Banner Image"
+msgstr "Imagen del banner de cierre"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_banner_title
+msgid "Closing Banner Title"
+msgstr "Título del banner de cierre"
+
+#. module: partner_microsite_manager
+#: model:ir.model,name:partner_microsite_manager.model_res_company
+msgid "Companies"
+msgstr "Compañías"
+
+#. module: partner_microsite_manager
+#: model:ir.model,name:partner_microsite_manager.model_res_partner
+msgid "Contact"
+msgstr "Contacto"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid "Contact Us"
+msgstr "Contáctanos"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_map_url
+msgid "Custom Map URL"
+msgstr "URL de mapa personalizado"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_delivery_info
+msgid "Delivery / Shipping"
+msgstr "Entrega / Envío"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid "Find Us"
+msgstr "Encuéntranos"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__has_microsite
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_partner__has_microsite
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_users__has_microsite
+msgid "Has Microsite"
+msgstr "Tiene microsite"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_button_text
+msgid "Hero Button Label"
+msgstr "Texto del botón de cabecera"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_hero_image
+msgid "Hero Image"
+msgstr "Imagen de cabecera"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "Identity"
+msgstr "Identidad"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_intro_image
+msgid "Intro Banner Image"
+msgstr "Imagen del banner de introducción"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_intro_title
+msgid "Intro Banner Title"
+msgstr "Título del banner de introducción"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid ""
+"Invalid opening hours format. Expected e.g. 'L-V 10:00-13:30 / L-V "
+"16:30-20:00 / S 10:00-14:00'."
+msgstr ""
+"Formato de horario no válido. Ejemplo esperado: 'L-V 10:00-13:30 / L-V "
+"16:30-20:00 / S 10:00-14:00'."
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+#: code:addons/partner_microsite_manager/models/res_partner.py:0
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_partner_form_microsite
+msgid "Microsite"
+msgstr "Microsite"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_partner__microsite_company_id
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_users__microsite_company_id
+msgid "Microsite Company"
+msgstr "Compañía del microsite"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_homepage_page_id
+msgid "Microsite Homepage"
+msgstr "Portada del microsite"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_opening_hours
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid "Opening Hours"
+msgstr "Horario"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid "Our Services"
+msgstr "Nuestros servicios"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid "Parking"
+msgstr "Parking"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_parking_info
+msgid "Parking / Directions"
+msgstr "Parking / Cómo llegar"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "Practical Information"
+msgstr "Información práctica"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "Publication"
+msgstr "Publicación"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "Publish Homepage"
+msgstr "Publicar portada"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "Services"
+msgstr "Servicios"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_services_text
+msgid "Services Text"
+msgstr "Texto de servicios"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_services_title
+msgid "Services Title"
+msgstr "Título de servicios"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid "Shop"
+msgstr "Tienda"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid ""
+"Too many time ranges for %(day)s: at most %(limit)s per day (morning and "
+"afternoon)."
+msgstr ""
+"Demasiadas franjas horarias para %(day)s: máximo %(limit)s por día (mañana "
+"y tarde)."
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_name
+msgid "Trade Name"
+msgstr "Nombre comercial"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid ""
+"This replaces the current homepage of the company website with the "
+"microsite template. Continue?"
+msgstr ""
+"Esto sustituye la portada actual del website de la compañía por la "
+"plantilla del microsite. ¿Continuar?"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid ""
+"Company %(name)s has no website yet. Create its website first (Settings > "
+"Websites)."
+msgstr ""
+"La compañía %(name)s aún no tiene website. Cree primero su website "
+"(Ajustes > Websites)."
