@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <data noupdate="1">
+        <record id="ir_cron_certification_retry_reminder" model="ir.cron">
+            <field name="name">Certification: Retry Reminders</field>
+            <field name="model_id" ref="survey.model_survey_user_input"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_certification_retry_reminder()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+        </record>
+
+        <record id="ir_cron_certification_renewal_reminder" model="ir.cron">
+            <field name="name">Certification: Renewal Reminders</field>
+            <field name="model_id" ref="survey.model_survey_user_input"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_certification_renewal_reminder()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+        </record>
+
+        <record id="ir_cron_certification_expiry" model="ir.cron">
+            <field name="name">Certification: Expire Stale Seals</field>
+            <field name="model_id" ref="survey.model_survey_user_input"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_certification_expiry()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+        </record>
+    </data>
+</odoo>

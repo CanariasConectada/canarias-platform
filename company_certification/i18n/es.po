@@ -1,0 +1,155 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* company_certification
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: Canarias Conectada\n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: company_certification
+#: model:ir.model.fields.selection,name:company_certification.selection__certification_type__level__none
+msgid "No seal"
+msgstr "Sin sello"
+
+#. module: company_certification
+#: model:ir.model.fields.selection,name:company_certification.selection__certification_type__level__bronze
+msgid "Bronze"
+msgstr "Bronce"
+
+#. module: company_certification
+#: model:ir.model.fields.selection,name:company_certification.selection__certification_type__level__silver
+msgid "Silver"
+msgstr "Plata"
+
+#. module: company_certification
+#: model:ir.model.fields.selection,name:company_certification.selection__certification_type__level__gold
+msgid "Gold"
+msgstr "Oro"
+
+#. module: company_certification
+#: model:ir.model,name:company_certification.model_certification_type
+msgid "Company Certification Type"
+msgstr "Tipo de certificación de empresa"
+
+#. module: company_certification
+#: model:ir.model,name:company_certification.model_certification_positive_item
+msgid "Certification Positive Item"
+msgstr "Item positivo de certificación"
+
+#. module: company_certification
+#: model:ir.model,name:company_certification.model_res_company_certification
+msgid "Company Certification Status"
+msgstr "Estado de certificación de empresa"
+
+#. module: company_certification
+#: code:addons/company_certification/models/certification_type.py:0
+msgid "My Evaluations"
+msgstr "Mis evaluaciones"
+
+#. module: company_certification
+#: code:addons/company_certification/models/certification_type.py:0
+msgid "New Evaluation"
+msgstr "Nueva evaluación"
+
+#. module: company_certification
+#: code:addons/company_certification/models/certification_type.py:0
+msgid "%s Evaluations"
+msgstr "Evaluaciones %s"
+
+#. module: company_certification
+#: code:addons/company_certification/models/certification_type.py:0
+msgid "New %s Evaluation"
+msgstr "Nueva evaluación %s"
+
+#. module: company_certification
+#: code:addons/company_certification/models/survey_user_input.py:0
+msgid "Only certification managers can override levels."
+msgstr "Solo los gestores de certificación pueden modificar niveles."
+
+#. module: company_certification
+#: code:addons/company_certification/models/survey_user_input.py:0
+msgid "You need a company on your user profile to run an evaluation."
+msgstr ""
+"Necesitas una empresa asignada en tu perfil de usuario para realizar una "
+"evaluación."
+
+#. module: company_certification
+#: code:addons/company_certification/models/survey_user_input.py:0
+msgid "No questionnaire is configured for %s. Please contact the administrator."
+msgstr ""
+"No hay un cuestionario configurado para %s. Contacta con el administrador."
+
+#. module: company_certification
+#: code:addons/company_certification/models/survey_user_input.py:0
+msgid "You cannot run a new evaluation until %s."
+msgstr "No puedes realizar una nueva evaluación hasta el %s."
+
+#. module: company_certification
+#: code:addons/company_certification/models/survey_user_input.py:0
+msgid "This evaluation is already completed."
+msgstr "Esta evaluación ya ha sido completada."
+
+#. module: company_certification
+#: code:addons/company_certification/controllers/main.py:0
+#: code:addons/company_certification/models/survey_user_input.py:0
+msgid "Unknown certification type."
+msgstr "Tipo de certificación desconocido."
+
+#. module: company_certification
+#: code:addons/company_certification/models/res_company.py:0
+msgid "Certification Evaluations - %s"
+msgstr "Evaluaciones de certificación - %s"
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_no_company
+msgid "No company assigned"
+msgstr "No tienes empresa asignada"
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_no_company
+msgid "You need a company on your user profile to run a\n"
+"                       certification evaluation."
+msgstr ""
+"Necesitas una empresa asignada en tu perfil de usuario para realizar una "
+"evaluación de certificación."
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_cooldown
+msgid "Evaluation not available yet"
+msgstr "Evaluación no disponible todavía"
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_error
+msgid "Could not start the evaluation"
+msgstr "No se pudo iniciar la evaluación"
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.survey_fill_form_done_certification
+msgid "Evaluation result"
+msgstr "Resultado de la evaluación"
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.survey_fill_form_done_certification
+msgid "Recommendations to improve"
+msgstr "Recomendaciones para mejorar"
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.question_simple_choice_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.question_multiple_choice_certification
+msgid "Recommendation:"
+msgstr "Recomendación:"
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_no_company
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_cooldown
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_error
+msgid "Back"
+msgstr "Volver"
