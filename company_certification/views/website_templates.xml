@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!-- ============================================================ -->
+    <!-- Friendly pages for the /certification/<code>/start route     -->
+    <!-- ============================================================ -->
+    <template id="certification_no_company" name="Certification - No Company">
+        <t t-call="website.layout">
+            <div class="container py-5">
+                <div class="alert alert-warning">
+                    <h4>No company assigned</h4>
+                    <p>You need a company on your user profile to run a
+                       certification evaluation.</p>
+                    <a href="javascript:window.close()" class="btn btn-primary">Back</a>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="certification_cooldown" name="Certification - Cooldown">
+        <t t-call="website.layout">
+            <div class="container py-5">
+                <div class="alert alert-info">
+                    <h4>Evaluation not available yet</h4>
+                    <p>Your company already ran a recent
+                       <t t-esc="cert_type.name"/> evaluation.</p>
+                    <p>You can run a new one from:
+                       <strong t-esc="next_date"/></p>
+                    <a href="javascript:window.close()" class="btn btn-primary">Back</a>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="certification_error" name="Certification - Error">
+        <t t-call="website.layout">
+            <div class="container py-5">
+                <div class="alert alert-danger">
+                    <h4>Could not start the evaluation</h4>
+                    <p t-esc="error"/>
+                    <a href="javascript:window.close()" class="btn btn-primary">Back</a>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- ============================================================ -->
+    <!-- Survey flow tweaks for certification questionnaires          -->
+    <!-- ============================================================ -->
+
+    <!-- No retake button: retries are ruled by the cooldown, not the user. -->
+    <template id="survey_button_retake_certification" inherit_id="survey.survey_button_retake">
+        <xpath expr="//div[@class='d-print-none']" position="attributes">
+            <attribute name="t-if">not survey.certification_type_id and not answer.is_session_answer and not (survey.certification and answer.scoring_success)</attribute>
+        </xpath>
+    </template>
+
+    <!-- Result panel on the survey completion page. -->
+    <template id="survey_fill_form_done_certification" inherit_id="survey.survey_fill_form_done">
+        <xpath expr="//div[@class='o_survey_finished mt32 mb32']" position="inside">
+            <t t-set="cert_type" t-value="survey.certification_type_id"/>
+            <t t-if="cert_type and answer.certification_level != 'none'">
+                <div class="alert alert-success mt-3 text-center">
+                    <h3 class="mb-3">Congratulations! Your company earned the <t t-esc="cert_type.name"/> seal</h3>
+                    <span t-attf-class="badge p-3 fs-4 {{
+                            {'bronze': 'text-bg-info',
+                             'silver': 'text-bg-secondary',
+                             'gold': 'text-bg-warning'}.get(answer.certification_level, 'text-bg-light')
+                        }}" t-esc="answer._get_certification_level_label()"/>
+                    <p class="mt-3">
+                        Score: <strong t-esc="answer.scoring_total"/> /
+                        <t t-esc="cert_type.max_score"/> points
+                        (<t t-esc="answer.scoring_percentage"/>%)
+                    </p>
+                    <p class="text-muted">
+                        Valid until: <strong t-esc="answer.expiry_date"/>
+                    </p>
+                </div>
+            </t>
+            <t t-if="cert_type and answer.certification_level == 'none'">
+                <div class="alert alert-info mt-3 text-center">
+                    <h4>Evaluation result</h4>
+                    <p>
+                        Score: <strong t-esc="answer.scoring_total"/> /
+                        <t t-esc="cert_type.max_score"/> points
+                        (<t t-esc="answer.scoring_percentage"/>%)
+                    </p>
+                    <p>You did not reach the minimum level for the
+                       <t t-esc="cert_type.name"/> seal this time.</p>
+                    <p class="text-muted">You can try again from:
+                       <strong t-esc="answer.next_attempt_date"/></p>
+                </div>
+            </t>
+            <!-- Improvement recommendations: questions answered below the
+                 full score whose comment message holds the advice. -->
+            <t t-if="cert_type">
+                <t t-set="weak_lines" t-value="answer.user_input_line_ids.filtered(lambda l: l.question_id.comments_allowed and l.answer_score &lt; cert_type.question_full_score and l.question_id.comments_message)"/>
+                <div t-if="weak_lines" class="alert alert-info mt-4">
+                    <h4 class="alert-heading">
+                        <i class="fa fa-lightbulb-o text-warning me-2"/>
+                        Recommendations to improve
+                    </h4>
+                    <div class="row">
+                        <t t-foreach="weak_lines" t-as="line">
+                            <div class="col-12 col-md-6 mb-3">
+                                <div class="card h-100 border-start border-warning border-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-muted mb-2" t-esc="line.question_id.title"/>
+                                        <p class="card-text small text-secondary fst-italic">
+                                            <i class="fa fa-arrow-right text-warning me-1"/>
+                                            <t t-esc="line.question_id.comments_message"/>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+        <xpath expr="//div[contains(@class, 'o_survey_finished')]//div[contains(@class, 'd-flex') and contains(@class, 'gap-3')]" position="inside">
+            <a t-if="survey.certification_type_id" role="button"
+               class="btn btn-outline-secondary btn-lg"
+               href="javascript:window.close()">
+                <i class="fa fa-times"/> Close
+            </a>
+        </xpath>
+    </template>
+
+    <!-- Show the question's comment message as a fixed recommendation
+         instead of a free comment box on certification questionnaires. -->
+    <template id="question_simple_choice_certification" inherit_id="survey.question_simple_choice">
+        <xpath expr="//div[@t-if='question.comments_allowed and not question.comment_count_as_answer']" position="replace">
+            <div t-if="question.comments_allowed and not question.comment_count_as_answer"
+                 class="mb-2 o_survey_comment_container mt-3">
+                <t t-if="survey.certification_type_id and not answer.test_entry">
+                    <div class="alert alert-light border mt-2 p-2">
+                        <i class="fa fa-lightbulb-o text-warning me-2"/>
+                        <strong>Recommendation:</strong>
+                        <span t-out="question.comments_message"/>
+                    </div>
+                </t>
+                <t t-else="">
+                    <textarea type="text" class="col form-control o_survey_comment o_survey_question_text_box bg-transparent rounded-0 p-0"
+                        t-att-placeholder="question.comments_message or default_comments_message if not survey_form_readonly else ''"><t t-esc="comment_line.value_char_box if comment_line else ''"/></textarea>
+                </t>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="question_multiple_choice_certification" inherit_id="survey.question_multiple_choice">
+        <xpath expr="//div[@t-if='question.comments_allowed and not question.comment_count_as_answer']" position="replace">
+            <div t-if="question.comments_allowed and not question.comment_count_as_answer"
+                 class="mb-2 o_survey_comment_container mt-3">
+                <t t-if="survey.certification_type_id and not answer.test_entry">
+                    <div class="alert alert-light border mt-2 p-2">
+                        <i class="fa fa-lightbulb-o text-warning me-2"/>
+                        <strong>Recommendation:</strong>
+                        <span t-out="question.comments_message"/>
+                    </div>
+                </t>
+                <t t-else="">
+                    <textarea type="text" class="col form-control o_survey_comment o_survey_question_text_box bg-transparent rounded-0 p-0"
+                        t-att-placeholder="question.comments_message or default_comments_message if not survey_form_readonly else ''"><t t-esc="comment_line.value_char_box if comment_line else ''"/></textarea>
+                </t>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- ============================================================ -->
+    <!-- Microsite: certification section above the footer            -->
+    <!-- ============================================================ -->
+
+    <!-- Do not show the section while filling a survey. -->
+    <template id="survey_page_fill_suppress_certification" inherit_id="survey.survey_page_fill">
+        <xpath expr="//t[@t-call='survey.layout']" position="before">
+            <t t-set="suppress_certification_section" t-value="True"/>
+        </xpath>
+    </template>
+
+    <template id="certification_microsite_section" inherit_id="website.layout" name="Certification - Microsite Section">
+        <xpath expr="//footer[@id='bottom']" position="before">
+            <t t-set="cc_company" t-value="website.company_id"/>
+            <t t-set="cc_certifications" t-value="cc_company._get_valid_certifications()"/>
+            <t t-set="cc_is_homepage" t-value="request.httprequest.path == (website.homepage_url or '/')"/>
+            <section t-if="cc_is_homepage and cc_certifications and not suppress_certification_section"
+                     class="o_cc o_cc2 pt32 pb32 o_colored_level">
+                <div class="container">
+                    <t t-foreach="cc_certifications" t-as="cert">
+                        <t t-set="cert_type" t-value="cert.type_id"/>
+                        <t t-set="bar_color" t-value="{'gold': '#FFD700', 'silver': '#C0C0C0', 'bronze': '#CD7F32'}.get(cert.level, '#6c757d')"/>
+                        <div class="row align-items-center mb-5">
+                            <div class="col-lg-6 text-center mb-4 mb-lg-0">
+                                <img t-if="cert_type.badge_image"
+                                     t-att-src="image_data_uri(cert_type.badge_image)"
+                                     t-att-alt="cert_type.name"
+                                     class="img-fluid"
+                                     style="max-width: 280px; height: auto; object-fit: contain;"
+                                     loading="lazy"/>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="d-flex align-items-center justify-content-center mb-3">
+                                    <span class="badge rounded-pill px-4 py-2 fw-bold"
+                                          t-attf-style="background-color: {{ bar_color }}; color: {{ '#212529' if cert.level in ('gold', 'silver') else '#fff' }}; font-size: 1rem;"
+                                          t-esc="cert._get_level_label()"/>
+                                    <div t-attf-style="width: 3px; height: 60px; background-color: {{ bar_color }}; margin: 0 20px; opacity: 0.6;"/>
+                                    <div class="display-3 fw-bold" t-attf-style="color: {{ bar_color }}; line-height: 1;">
+                                        <t t-esc="int(cert.score)"/>%
+                                    </div>
+                                </div>
+                                <h3 class="fw-bold text-center mb-3" style="font-size: 1.5rem;"
+                                    t-esc="cert_type.website_title or cert_type.name"/>
+                                <p class="text-center text-muted"
+                                   style="font-size: 0.95rem; line-height: 1.6;"
+                                   t-esc="cert_type.website_description"/>
+                            </div>
+                        </div>
+                        <t t-set="positive_items" t-value="cc_company._get_certification_positive_items(cert_type)"/>
+                        <div class="row" t-if="positive_items">
+                            <div class="col-12">
+                                <div class="d-flex flex-column align-items-center mb-4">
+                                    <div t-foreach="positive_items" t-as="item" class="d-flex align-items-center mb-2">
+                                        <i t-attf-class="fa {{ item['icon'] }} me-2"
+                                           t-attf-style="color: {{ bar_color }}; font-size: 1.1rem;"/>
+                                        <span style="font-size: 1rem;" t-esc="item['label']"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </section>
+        </xpath>
+    </template>
+</odoo>

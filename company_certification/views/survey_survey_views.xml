@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <record id="survey_survey_view_form_certification" model="ir.ui.view">
+        <field name="name">survey.survey.form.certification</field>
+        <field name="model">survey.survey</field>
+        <field name="inherit_id" ref="survey.survey_survey_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Company Certification" name="company_certification"
+                      groups="company_certification.group_certification_manager">
+                    <group>
+                        <field name="certification_type_id"/>
+                    </group>
+                    <separator string="Microsite Positive Items"/>
+                    <field name="positive_item_ids" nolabel="1" context="{'default_survey_id': id}">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="survey_id" column_invisible="1"/>
+                            <field name="question_id" options="{'no_create': True}"/>
+                            <field name="min_score"/>
+                            <field name="label"/>
+                            <field name="icon"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
