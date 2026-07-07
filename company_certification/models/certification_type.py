@@ -101,12 +101,16 @@ class CertificationType(models.Model):
     def create(self, vals_list):
         types = super().create(vals_list)
         types._ensure_menu()
+        types._sync_survey_link()
         return types
 
     def write(self, vals):
+        previous_surveys = {t.id: t.survey_id for t in self}
         res = super().write(vals)
         if {"name", "group_user_id", "sequence"} & set(vals):
             self._sync_menu()
+        if "survey_id" in vals:
+            self._sync_survey_link(previous_surveys)
         return res
 
     def unlink(self):
@@ -165,6 +169,21 @@ class CertificationType(models.Model):
                     "start_action_id": start_action.id,
                 }
             )
+
+    def _sync_survey_link(self, previous_surveys=None):
+        """Keep ``survey.certification_type_id`` aligned with ``survey_id``.
+
+        The type is configured from its own form (``survey_id``), but the
+        evaluations resolve their vertical through the inverse pointer on
+        the survey, so both sides must always agree.
+        """
+        for cert_type in self:
+            previous = (previous_surveys or {}).get(cert_type.id)
+            if previous and previous != cert_type.survey_id:
+                previous.sudo().certification_type_id = False
+            survey = cert_type.survey_id
+            if survey and survey.certification_type_id != cert_type:
+                survey.sudo().certification_type_id = cert_type
 
     def _sync_menu(self):
         for cert_type in self.filtered("menu_id"):

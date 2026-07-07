@@ -13,8 +13,8 @@ from .common import CertificationCase
 class TestCertificationFlow(CertificationCase):
     def test_level_thresholds(self):
         """Scores map to levels through the type thresholds."""
-        cases = [(0, "none"), (2, "bronze"), (4, "silver"), (6, "gold")]
         # yes_answers -> score = yes_answers * 2
+        cases = [(0, "none"), (1, "bronze"), (2, "silver"), (3, "gold")]
         for yes_answers, expected in cases:
             answer = self._run_evaluation(yes_answers)
             self.assertEqual(
@@ -38,7 +38,7 @@ class TestCertificationFlow(CertificationCase):
         self.assertFalse(self.company.certification_ids)
 
     def test_failed_evaluation_creates_no_status(self):
-        self._run_evaluation(1)  # score 2 < bronze_min 3
+        self._run_evaluation(0)  # score 0 < bronze_min 2
         self.assertFalse(self.company.certification_ids)
 
     def test_expiry_and_next_attempt_dates(self):

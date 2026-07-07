@@ -8,8 +8,9 @@ their own vertical.
 """
 from odoo.exceptions import AccessError
 from odoo.tests import tagged
+from odoo.tests.common import new_test_user
 
-from .common import CertificationCase
+from .common import NO_MAIL_CTX, CertificationCase
 
 
 @tagged("post_install", "-at_install")
@@ -62,10 +63,15 @@ class TestMenuGating(CertificationCase):
         )
         # A group member of another company sees nothing.
         other_company = self.env["res.company"].create({"name": "Other Shop"})
-        other_user = self.user.copy(
-            {"login": "cert_other", "company_ids": [(6, 0, other_company.ids)]}
+        other_user = new_test_user(
+            self.env,
+            login="cert_other",
+            groups="base.group_user",
+            company_id=other_company.id,
+            company_ids=[(6, 0, other_company.ids)],
+            context=NO_MAIL_CTX,
         )
-        other_user.company_id = other_company
+        other_user.write({"group_ids": [(4, self.group_user.id)]})
         self.assertFalse(
             self.env["survey.user_input"]
             .with_user(other_user)

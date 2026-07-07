@@ -14,7 +14,7 @@ class CertificationCase(TransactionCase):
     """Shared fixtures: a small vertical with a 3-question scored survey.
 
     Each question is a simple choice worth 0 or 2 points (max 6). The
-    thresholds are Bronze >= 3, Silver >= 4, Gold >= 5.
+    thresholds are Bronze >= 2, Silver >= 4, Gold >= 6.
     """
 
     @classmethod
@@ -81,9 +81,9 @@ class CertificationCase(TransactionCase):
                 "group_user_id": cls.group_user.id,
                 "group_manager_id": cls.group_manager.id,
                 "max_score": 6,
-                "bronze_min": 3,
+                "bronze_min": 2,
                 "silver_min": 4,
-                "gold_min": 5,
+                "gold_min": 6,
                 "cooldown_months": 3,
                 "validity_years": 1,
             }
