@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!-- Reusable badge strip: one pill per seal in force. Expects `entry`. -->
+    <template id="directory_certification_badges" name="Directory Certification Badges">
+        <t t-foreach="entry.company_id.sudo()._get_valid_certifications()" t-as="cert">
+            <span t-attf-class="badge rounded-pill ms-1 {{
+                    {'bronze': 'text-bg-info',
+                     'silver': 'text-bg-secondary',
+                     'gold': 'text-bg-warning'}.get(cert.level, 'text-bg-light')
+                }}"
+                  t-attf-title="{{ cert.type_id.name }}: {{ cert._get_level_label() }}">
+                <i class="fa fa-certificate me-1"/>
+                <t t-esc="cert.type_id.name"/>
+            </span>
+        </t>
+    </template>
+
+    <!-- Grid card badge. -->
+    <template id="directory_entry_card_certification" inherit_id="website_directory.directory_entry_card">
+        <xpath expr="//h5[@class='card-title mb-1 fs-6']" position="after">
+            <t t-call="website_directory_company_certification.directory_certification_badges"/>
+        </xpath>
+    </template>
+
+    <!-- List row badge. -->
+    <template id="directory_entry_list_item_certification" inherit_id="website_directory.directory_entry_list_item">
+        <xpath expr="//h5[@class='mb-0 fs-6']" position="after">
+            <t t-call="website_directory_company_certification.directory_certification_badges"/>
+        </xpath>
+    </template>
+
+    <!-- Sidebar filter card in the extension hook. -->
+    <template id="directory_sidebar_certification" inherit_id="website_directory.directory_sidebar_extra">
+        <xpath expr="//div[@id='o_wd_sidebar_extra']" position="inside">
+            <div t-if="certification_types" class="card border-0 shadow-sm mb-3">
+                <div class="card-body">
+                    <h6 class="card-title fw-bold mb-3">
+                        <i class="fa fa-certificate me-2"/>Certifications
+                    </h6>
+                    <div class="d-flex flex-column gap-2">
+                        <t t-foreach="certification_types" t-as="cert_type">
+                            <a t-attf-href="{{ base_url }}?certification={{ '' if selected_certification == cert_type.code else cert_type.code }}"
+                               t-attf-class="btn btn-sm text-start {{
+                                   'btn-primary' if selected_certification == cert_type.code else 'btn-outline-secondary'
+                               }}">
+                                <t t-esc="cert_type.name"/>
+                            </a>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>
