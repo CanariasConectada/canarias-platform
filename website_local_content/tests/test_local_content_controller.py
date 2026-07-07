@@ -94,8 +94,8 @@ class TestLocalContentController(HttpCase):
         self.assertEqual(response.status_code, 200)  # after redirect
         self.env.invalidate_all()
         self.assertEqual(self.item_public.like_count, 1)
-        # Same session likes again: no duplicate is created.
-        csrf_token = self._get_csrf_token()
+        # Same session likes again (reusing the session token: the liked
+        # button no longer renders a form): no duplicate is created.
         self.url_open(like_url, data={"csrf_token": csrf_token})
         self.env.invalidate_all()
         self.assertEqual(self.item_public.like_count, 1)

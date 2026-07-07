@@ -48,9 +48,8 @@
             <search>
                 <field name="name"/>
                 <field name="type_id"/>
-                <group expand="0" string="Group By">
+                <separator/>
                     <filter name="group_by_type" string="Content Type" context="{'group_by': 'type_id'}"/>
-                </group>
             </search>
         </field>
     </record>
