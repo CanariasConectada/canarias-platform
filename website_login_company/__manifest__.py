@@ -5,7 +5,7 @@
     "version": "19.0.1.0.0",
     "category": "Website",
     "summary": "Select the website company as active company at login",
-    "author": "Canarias Conectada",
+    "author": "MikeColangelo",
     "website": "https://github.com/CanariasConectada/canarias-platform",
     "license": "AGPL-3",
     "maintainers": ["mikecolangelo"],

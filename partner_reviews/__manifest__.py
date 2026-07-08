@@ -5,7 +5,7 @@
     "version": "19.0.2.0.0",
     "category": "Website",
     "summary": "Customer reviews for merchant websites, built on rating.rating",
-    "author": "Canarias Conectada",
+    "author": "MikeColangelo",
     "website": "https://github.com/CanariasConectada/canarias-platform",
     "license": "AGPL-3",
     "maintainers": ["mikecolangelo"],

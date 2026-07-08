@@ -5,7 +5,7 @@
     "version": "19.0.7.0.0",
     "category": "Website",
     "summary": "Public business directory with category filter, search and shuffle",
-    "author": "Canarias Conectada",
+    "author": "MikeColangelo",
     "website": "https://github.com/CanariasConectada/canarias-platform",
     "license": "AGPL-3",
     "maintainers": ["mikecolangelo"],
