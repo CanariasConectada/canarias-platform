@@ -1,0 +1,27 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* canarias_company_categories
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: Canarias Conectada\n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: canarias_company_categories
+#: model:ir.module.module,shortdesc:base.module_canarias_company_categories
+msgid "Canarias Conectada Company Categories"
+msgstr "Categorías de Compañía de Canarias Conectada"
+
+#. module: canarias_company_categories
+#: model:ir.module.module,summary:base.module_canarias_company_categories
+msgid "Seed the Canarias Conectada business taxonomy as company categories"
+msgstr ""
+"Siembra la taxonomía de comercios de Canarias Conectada como categorías de "
+"compañía"
