@@ -103,7 +103,12 @@ class ResCompany(models.Model):
 
         Each company is synced inside its own savepoint so a failure never
         breaks the company write itself, but it is ALWAYS logged.
+
+        Returns the recordset of companies whose sync actually succeeded, so
+        the caller only clears ``directory_sync_pending`` for those: a company
+        whose savepoint rolled back stays pending and is retried next run.
         """
+        synced = self.browse()
         for company in self:
             try:
                 with self.env.cr.savepoint():
@@ -115,18 +120,30 @@ class ResCompany(models.Model):
                     company.id,
                     exc_info=True,
                 )
+            else:
+                synced |= company
+        return synced
 
     def _sync_single_directory_entry(self):
         self.ensure_one()
         entry_model = (
             self.env["website.directory.entry"].sudo().with_context(active_test=False)
         )
-        entries = entry_model.search([("company_id", "=", self.id)])
+        # A company owns at most one *active* directory entry (partial unique
+        # index on company_id WHERE active). Operate ONLY on the canonical
+        # entry -- the active one if any, else the oldest -- so a stale
+        # archived duplicate never makes the write try to activate two rows at
+        # once and violate that index (which would roll back the whole sync).
+        entry = entry_model.search(
+            [("company_id", "=", self.id)],
+            order="active desc, id asc",
+            limit=1,
+        )
         values = self._prepare_directory_entry_values()
-        if entries:
+        if entry:
             # zone, is_published and short_description are deliberately NOT
             # rewritten on update: they may have been curated by hand.
-            entries.write(values)
+            entry.write(values)
         else:
             values.update(
                 company_id=self.id,
@@ -152,9 +169,14 @@ class ResCompany(models.Model):
         )
         if not companies:
             return
-        companies._sync_to_directory_entry()
-        companies.directory_sync_pending = False
-        if len(companies) == batch_size:
+        synced = companies._sync_to_directory_entry()
+        # Only clear the flag for companies that actually synced. Ones whose
+        # savepoint failed stay pending and are retried on the next run.
+        synced.directory_sync_pending = False
+        # Re-trigger to drain the next batch only while we keep making
+        # progress; if a whole batch failed, wait for the next scheduled run
+        # instead of hot-looping on the same broken records.
+        if len(companies) == batch_size and synced:
             cron = self.env.ref(
                 "website_directory.cron_sync_directory_entries",
                 raise_if_not_found=False,

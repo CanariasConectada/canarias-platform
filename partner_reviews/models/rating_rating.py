@@ -76,11 +76,20 @@ class RatingRating(models.Model):
     # Moderation
     # ------------------------------------------------------------------
     def _apply_moderation(self):
-        """Approve clean reviews, hold the ones with forbidden words."""
+        """Approve clean reviews, hold the ones with forbidden words.
+
+        ``rejected`` is a TERMINAL state: once a moderator has turned a
+        review down, re-running moderation (typically after the customer
+        edits the feedback) must never silently bring it back to
+        ``approved``. Only an explicit moderator action (``action_approve``)
+        can move a review out of ``rejected``.
+        """
         if not self:
             return
         words = self.env["review.forbidden.word"].sudo().search([])
         for review in self:
+            if review.moderation_status == "rejected":
+                continue
             flagged = bool(words._match(review.feedback))
             review.write(
                 {
