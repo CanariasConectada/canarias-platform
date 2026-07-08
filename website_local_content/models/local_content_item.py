@@ -104,11 +104,18 @@ class LocalContentItem(models.Model):
     )
 
     # --- Submission provenance (public form of the legacy modules) -------
+    # The item model is readable by public/portal (see ir.model.access.csv),
+    # so the submitter's personal data (phone, email, ID document) is gated at
+    # field level to an internal group: public and portal users can never read
+    # this PII over RPC even though the record itself is public. ``sudo()``
+    # (the migration and any privileged write path) still bypasses the gate.
+    _PII_GROUPS = "website_local_content.group_local_content_manager"
     submitter_name = fields.Char(help="Name of the person who sent the entry.")
-    submitter_phone = fields.Char()
-    submitter_email = fields.Char()
+    submitter_phone = fields.Char(groups=_PII_GROUPS)
+    submitter_email = fields.Char(groups=_PII_GROUPS)
     submitter_identity = fields.Char(
         string="Submitter ID Document",
+        groups=_PII_GROUPS,
         help="Identity document (DNI/NIE) collected by the legacy public "
         "submission form. Kept for the data migration.",
     )
