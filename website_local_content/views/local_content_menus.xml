@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <menuitem id="menu_local_content_root"
+              name="Local Content"
+              web_icon="website_local_content,static/description/icon.png"
+              groups="website_local_content.group_local_content_manager"
+              sequence="60"/>
+
+    <menuitem id="menu_local_content_items"
+              name="Items"
+              parent="menu_local_content_root"
+              action="local_content_item_action"
+              sequence="10"/>
+
+    <menuitem id="menu_local_content_configuration"
+              name="Configuration"
+              parent="menu_local_content_root"
+              sequence="90"/>
+
+    <menuitem id="menu_local_content_types"
+              name="Content Types"
+              parent="menu_local_content_configuration"
+              action="local_content_type_action"
+              sequence="10"/>
+
+    <menuitem id="menu_local_content_categories"
+              name="Categories"
+              parent="menu_local_content_configuration"
+              action="local_content_category_action"
+              sequence="20"/>
+
+</odoo>
