@@ -15,4 +15,5 @@ Sustituye al modelo custom jubilado `business.category`
 (`business_category_hierarchy`).
 
 Detalles en [`readme/`](readme/): [descripción](readme/DESCRIPTION.md) ·
-[uso](readme/USAGE.md) · [contribuidores](readme/CONTRIBUTORS.md).
+[uso](readme/USAGE.md) · [hoja de ruta](readme/ROADMAP.md) ·
+[historial](readme/HISTORY.md) · [contribuidores](readme/CONTRIBUTORS.md).
