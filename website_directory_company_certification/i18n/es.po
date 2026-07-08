@@ -1,0 +1,30 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* website_directory_company_certification
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: Canarias Conectada\n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: website_directory_company_certification
+#: model_terms:ir.ui.view,arch_db:website_directory_company_certification.directory_sidebar_certification
+msgid "<i class=\"fa fa-certificate me-2\"/>Certifications"
+msgstr "<i class=\"fa fa-certificate me-2\"/>Certificaciones"
+
+#. module: website_directory_company_certification
+#: model:ir.module.module,shortdesc:base.module_website_directory_company_certification
+msgid "Website Directory - Company Certification"
+msgstr "Directorio Web - Certificación de Comercios"
+
+#. module: website_directory_company_certification
+#: model:ir.module.module,summary:base.module_website_directory_company_certification
+msgid "Certification badges and filters in the business directory"
+msgstr "Distintivos y filtros de certificación en el directorio de comercios"
