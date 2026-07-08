@@ -1,0 +1,1073 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <data noupdate="1">
+        <record id="survey_sustainability" model="survey.survey">
+            <field name="title">Cuestionario de Evaluación Sostenibilidad</field>
+            <field name="survey_type">survey</field>
+            <field name="scoring_type">scoring_without_answers</field>
+            <field name="scoring_success_min">50.0</field>
+            <field name="access_mode">public</field>
+            <field name="users_login_required">True</field>
+            <field name="questions_layout">page_per_section</field>
+            <field name="description">&lt;p&gt;Este cuestionario te ayudará a evaluar el nivel de sostenibilidad de tu empresa en tres dimensiones: medio ambiente, impacto social y gobernanza.&lt;/p&gt;</field>
+        </record>
+        <record id="sust_economy_page_1" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">SECCIÓN A — ENERGÍA Y RECURSOS</field>
+            <field name="is_page">True</field>
+            <field name="sequence">1</field>
+        </record>
+        <record id="sust_economy_page_1000" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">SECCIÓN B — IMPACTO SOCIAL</field>
+            <field name="is_page">True</field>
+            <field name="sequence">1000</field>
+        </record>
+        <record id="sust_economy_page_2000" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">SECCIÓN C — GOBERNANZA Y ÉTICA</field>
+            <field name="is_page">True</field>
+            <field name="sequence">2000</field>
+        </record>
+        <record id="sust_economy_q1" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">1. Control del consumo energético</field>
+            <field name="description">&lt;p&gt;Muchas empresas consumen más energía de la que realmente necesitan, simplemente porque nunca han mirado sus datos con detalle. Sin esa información, es muy difícil tomar decisiones o detectar mejoras.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">10</field>
+            <field name="page_id" ref="sust_economy_page_1"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Empieza por algo muy sencillo: revisa tus facturas de los últimos meses. Detectarás patrones, picos o consumos que quizá no esperabas.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No conozco ni controlo el consumo</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Tengo una idea general, pero sin seguimiento claro</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Lo controlo y reviso de forma periódica</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q2" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">2. Medidas de eficiencia energética</field>
+            <field name="description">&lt;p&gt;Saber cuánto consumes es el primer paso, pero el cambio real ocurre cuando se traduce en decisiones concretas.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">20</field>
+            <field name="page_id" ref="sust_economy_page_1"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Empieza por lo más evidente, como cambiar a iluminación LED, apagar equipos fuera de uso, optimizar horarios, etc. Muchas mejoras no requieren inversión, solo atención.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No hemos aplicado ninguna medida</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Algunas acciones puntuales</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí, aplicamos medidas de forma activa</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q3" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">3. Uso de energías renovables</field>
+            <field name="description">&lt;p&gt;La fuente de energía que utilizas tiene un impacto directo en tu huella ambiental.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">30</field>
+            <field name="page_id" ref="sust_economy_page_1"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Antes de pensar en instalaciones complejas, revisa tu contrato energético. Muchas comercializadoras ofrecen opciones de energía renovable sin cambios estructurales.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q4" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">4. Consumo responsable de materiales</field>
+            <field name="description">&lt;p&gt;El uso de materiales suele estar lleno de inercias: se hacen cosas porque &quot;siempre se han hecho así&quot;.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">40</field>
+            <field name="page_id" ref="sust_economy_page_1"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Haz una revisión interna sencilla, como qué utilizas, cuánto utilizas, si realmente es necesario, etc. Reducir no es eliminar, es optimizar.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No lo controlamos</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Algunas acciones</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí, lo gestionamos activamente</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q5" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">5. Gestión de residuos</field>
+            <field name="description">&lt;p&gt;Generar residuos es inevitable. Gestionarlos mal, no.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">50</field>
+            <field name="page_id" ref="sust_economy_page_1"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Empieza por identificar tipos de residuos, volumen y destino. No puedes mejorar lo que no conoces.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q6" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">6. Separación de residuos</field>
+            <field name="description">&lt;p&gt;La separación es la base para que el reciclaje funcione realmente.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">60</field>
+            <field name="page_id" ref="sust_economy_page_1"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Hazlo fácil, utiliza contenedores visibles, señalización clara y reglas simples. Si es complicado, no se hará.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">A veces</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí, de forma sistemática</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q7" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">7. Consumo de agua</field>
+            <field name="description">&lt;p&gt;El consumo de agua suele pasar desapercibido hasta que aparece un problema o un coste elevado.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">70</field>
+            <field name="page_id" ref="sust_economy_page_1"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Revisa tus facturas y detecta patrones. Muchas mejoras empiezan simplemente observando.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Tengo una idea general</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí, lo controlo</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q8" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">8. Medidas de ahorro de agua</field>
+            <field name="description">&lt;p&gt;Igual que con la energía, pequeñas acciones pueden tener un impacto acumulado importante.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">80</field>
+            <field name="page_id" ref="sust_economy_page_1"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Empieza por revisar fugas, instalar dispositivos de ahorro y ajustar hábitos.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Algunas acciones</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q9" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">9. Control del desperdicio</field>
+            <field name="description">&lt;p&gt;El desperdicio no es solo un problema ambiental, también es una pérdida económica.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">90</field>
+            <field name="page_id" ref="sust_economy_page_1"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Observa qué se tira, por qué y con qué frecuencia. Ahí están muchas oportunidades de mejora.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">De forma puntual</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí, lo controlamos</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q10" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">10. Selección de proveedores responsables</field>
+            <field name="description">&lt;p&gt;Tu impacto no termina en tu negocio, también está en tu cadena de suministro.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">100</field>
+            <field name="page_id" ref="sust_economy_page_1"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Empieza con una pregunta simple a tus proveedores: ¿Tenéis políticas ambientales?. No necesitas cambiar todo. Necesitas empezar a incorporar criterio.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">A veces</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q11" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">11. Medición del impacto ambiental</field>
+            <field name="description">&lt;p&gt;Lo que no se mide, no se gestiona.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">110</field>
+            <field name="page_id" ref="sust_economy_page_1"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Empieza con 3 indicadores, como energía, agua y residuos.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">De forma limitada</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q12" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">12. Política ambiental</field>
+            <field name="description">&lt;p&gt;Sin criterios, las decisiones dependen del momento.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">120</field>
+            <field name="page_id" ref="sust_economy_page_1"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">No tiene que ser complejo. Define algo sencillo pero claro, por ejemplo, cómo queremos hacer las cosas.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Informal</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí, definidos</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q13" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">13. Implicación del equipo</field>
+            <field name="description">&lt;p&gt;La sostenibilidad no depende solo de dirección, sino del comportamiento diario.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">130</field>
+            <field name="page_id" ref="sust_economy_page_1"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Comunica, explica y da ejemplo. La cultura no se impone, se construye.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Algo</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q14" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">14. Integración en decisiones</field>
+            <field name="description">&lt;p&gt;Este es el nivel de madurez real.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">140</field>
+            <field name="page_id" ref="sust_economy_page_1"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Antes de decidir, pregúntate: ¿Hay una alternativa más sostenible?</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">A veces</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q15" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">15. Condiciones laborales justas</field>
+            <field name="description">&lt;p&gt;Las condiciones laborales no solo afectan al bienestar de las personas, también impactan directamente en la estabilidad, motivación y rendimiento del negocio.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">1010</field>
+            <field name="page_id" ref="sust_economy_page_1000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Revisa aspectos básicos, como salarios, horarios y carga de trabajo. Muchas veces no se trata de grandes cambios, sino de corregir desequilibrios evidentes.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q16" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">16. Estabilidad del empleo</field>
+            <field name="description">&lt;p&gt;La rotación constante genera costes ocultos: pérdida de conocimiento, menor compromiso y menor calidad en el servicio.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">1020</field>
+            <field name="page_id" ref="sust_economy_page_1000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Analiza la duración media de los contratos y las causas de salida del equipo. La estabilidad no siempre depende del tipo de contrato, sino de cómo se gestiona el entorno laboral.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">En algunos casos</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q17" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">17. Igualdad de oportunidades</field>
+            <field name="description">&lt;p&gt;La igualdad no es solo una cuestión ética, también mejora la calidad de las decisiones y la diversidad de perspectivas.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">1030</field>
+            <field name="page_id" ref="sust_economy_page_1000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Empieza por revisar los procesos de selección, la promoción interna y posibles sesgos. Lo importante no es la perfección, es la intención aplicada.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">De forma informal</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q18" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">18. Formación del equipo</field>
+            <field name="description">&lt;p&gt;Un equipo que no crece acaba estancándose, y eso impacta directamente en el negocio.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">1040</field>
+            <field name="page_id" ref="sust_economy_page_1000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">No necesitas grandes programas. Empieza por formación práctica, aprendizaje interno y compartir conocimiento.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Puntualmente</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q19" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">19. Bienestar del equipo</field>
+            <field name="description">&lt;p&gt;El bienestar no es solo evitar problemas, es crear un entorno donde las personas puedan trabajar de forma sostenible.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">1050</field>
+            <field name="page_id" ref="sust_economy_page_1000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Observa la carga de trabajo, el estrés y el ambiente laboral. Muchas señales aparecen antes de que surjan los problemas.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">A veces</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q20" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">20. Comunicación interna</field>
+            <field name="description">&lt;p&gt;La falta de comunicación genera errores, frustración y desconexión.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">1060</field>
+            <field name="page_id" ref="sust_economy_page_1000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Introduce espacios simples, como reuniones breves, realimentación regular y canales claros.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Limitada</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q21" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">21. Participación del equipo</field>
+            <field name="description">&lt;p&gt;Cuando las personas participan, el compromiso aumenta.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">1070</field>
+            <field name="page_id" ref="sust_economy_page_1000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Pregunta y escucha más. Muchas mejoras vienen de quienes están en el día a día.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">De forma puntual</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q22" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">22. Relación con clientes</field>
+            <field name="description">&lt;p&gt;La sostenibilidad también es cómo tratas a quienes confían en tu negocio.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">1080</field>
+            <field name="page_id" ref="sust_economy_page_1000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Revisa la claridad en la información, las expectativas generadas y la gestión de incidencias.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q23" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">23. Satisfacción del cliente</field>
+            <field name="description">&lt;p&gt;Lo que no se mide, se interpreta… y muchas veces se interpreta mal.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">1090</field>
+            <field name="page_id" ref="sust_economy_page_1000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Empieza con algo simple como preguntar, recoger opiniones y observar patrones de conducta de tus clientes.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">De forma informal</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q24" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">24. Impacto en la comunidad</field>
+            <field name="description">&lt;p&gt;Toda empresa forma parte de un ecosistema social, aunque no siempre sea consciente de ello.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">1100</field>
+            <field name="page_id" ref="sust_economy_page_1000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Piensa en proveedores locales, colaboración con entorno o impacto en el barrio o comunidad.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">De forma puntual</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q25" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">25. Prácticas responsables con clientes</field>
+            <field name="description">&lt;p&gt;La confianza es uno de los activos más importantes de cualquier negocio.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">1110</field>
+            <field name="page_id" ref="sust_economy_page_1000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Revisa los mensajes comerciales, las condiciones y las promesas. Lo sostenible también es ser coherente.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">A veces</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q26" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">26. Inclusión y diversidad</field>
+            <field name="description">&lt;p&gt;La diversidad no es solo un valor social, también mejora la resiliencia del negocio.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">1120</field>
+            <field name="page_id" ref="sust_economy_page_1000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Empieza por observar, evitar sesgos y abrir oportunidades.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">De forma limitada</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q27" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">27. Relación con proveedores</field>
+            <field name="description">&lt;p&gt;La sostenibilidad también se construye en cómo tratas a quienes hacen posible tu actividad.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">2010</field>
+            <field name="page_id" ref="sust_economy_page_2000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Revisa las condiciones, plazos de pago y trato. La relación importa tanto como el precio.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q28" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">28. Cumplimiento normativo</field>
+            <field name="description">&lt;p&gt;Cumplir la normativa no es solo una obligación, es la base mínima sobre la que se construye cualquier empresa responsable.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">2020</field>
+            <field name="page_id" ref="sust_economy_page_2000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Revisa licencias, obligaciones fiscales y normativa laboral. No cumplir no solo implica riesgo legal, también afecta a la reputación.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q29" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">29. Transparencia en la gestión</field>
+            <field name="description">&lt;p&gt;La transparencia genera confianza, tanto dentro como fuera de la empresa.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">2030</field>
+            <field name="page_id" ref="sust_economy_page_2000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Empieza por compartir información clave como objetivos, decisiones relevantes y situación general. No se trata de contar todo, sino de no ocultar lo importante.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Limitada</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q30" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">30. Toma de decisiones responsable</field>
+            <field name="description">&lt;p&gt;Las decisiones rápidas pueden resolver problemas inmediatos, pero generar consecuencias futuras.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">2040</field>
+            <field name="page_id" ref="sust_economy_page_2000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Antes de decidir, añade la siguiente reflexión: ¿Esto qué implica dentro de 6 meses o 1 año?</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">A veces</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q31" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">31. Código ético o valores definidos</field>
+            <field name="description">&lt;p&gt;Sin valores claros, las decisiones dependen del contexto y pueden volverse incoherentes.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">2050</field>
+            <field name="page_id" ref="sust_economy_page_2000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">No hace falta un documento complejo. Define qué es importante y qué no es aceptable. Esto da coherencia a todo lo demás.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Informales</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q32" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">32. Coherencia en la gestión</field>
+            <field name="description">&lt;p&gt;La incoherencia es uno de los mayores riesgos reputacionales.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">2060</field>
+            <field name="page_id" ref="sust_economy_page_2000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Revisa tus mensajes frente a tus acciones y tus promesas frente a la realidad. La sostenibilidad empieza por la coherencia.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">A veces</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q33" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">33. Gestión de riesgos</field>
+            <field name="description">&lt;p&gt;Toda empresa tiene riesgos, la diferencia está en si se anticipan o se sufren.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">2070</field>
+            <field name="page_id" ref="sust_economy_page_2000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Haz un ejercicio básico y pregúntate qué puede salir mal, qué impacto tendría y cómo podrías evitarlo.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">De manera informal</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q34" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">34. Toma de decisiones basada en datos</field>
+            <field name="description">&lt;p&gt;Decidir sin datos suele llevar a intuiciones poco fiables.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">2080</field>
+            <field name="page_id" ref="sust_economy_page_2000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Empieza con indicadores simples como ventas, costes y consumo. No necesitas muchos datos, necesitas los adecuados.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">A veces</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q35" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">35. Planificación a medio/largo plazo</field>
+            <field name="description">&lt;p&gt;Sin visión, la empresa reacciona en lugar de avanzar.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">2090</field>
+            <field name="page_id" ref="sust_economy_page_2000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Define dónde quieres estar, qué necesitas cambiar y en qué plazos.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcial</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q36" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">36. Responsabilidad en la cadena de valor</field>
+            <field name="description">&lt;p&gt;La responsabilidad no termina en tu empresa.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">2100</field>
+            <field name="page_id" ref="sust_economy_page_2000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Empieza por observar prácticas, condiciones y coherencia. No se trata de controlar todo, sino de no ignorarlo.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">A veces</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q37" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">37. Gestión ética de conflictos</field>
+            <field name="description">&lt;p&gt;Los conflictos son inevitables. La forma de gestionarlos define la cultura de la empresa.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">2110</field>
+            <field name="page_id" ref="sust_economy_page_2000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Introduce escucha activa, criterios claros y soluciones justas.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">A veces</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q38" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">38. Protección de datos y privacidad</field>
+            <field name="description">&lt;p&gt;La confianza también se basa en cómo gestionas la información.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">2120</field>
+            <field name="page_id" ref="sust_economy_page_2000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Revisa cómo almacenas y tratas los datos de tus clientes y proveedores y el acceso a los mismos. No es solo legal, es reputacional.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcial</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q39" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">39. Revisión y mejora continua</field>
+            <field name="description">&lt;p&gt;Lo que no se revisa, se estanca.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">2130</field>
+            <field name="page_id" ref="sust_economy_page_2000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Introduce revisiones simples: qué funciona bien, qué no está funcionando y qué cambiar para mejorar.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Ocasionalmente</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+        <record id="sust_economy_q40" model="survey.question">
+            <field name="survey_id" ref="survey_sustainability" />
+            <field name="title">40. Integración de la sostenibilidad en la estrategia</field>
+            <field name="description">&lt;p&gt;Este es el nivel más alto: cuando deja de ser algo puntual y pasa a ser parte del sistema.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">2140</field>
+            <field name="page_id" ref="sust_economy_page_2000"/>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">No intentes hacerlo todo. Empieza por integrar criterios, decisiones y seguimiento. La sostenibilidad no es un proyecto, es una forma de gestionar.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">En parte</field>
+                    <field name="answer_score">1</field>
+                </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                </record>
+            </field>
+        </record>
+    </data>
+</odoo>

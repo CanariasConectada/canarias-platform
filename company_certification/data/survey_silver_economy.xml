@@ -1,0 +1,1039 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <data noupdate="1">
+        <record id="survey_silver_economy" model="survey.survey">
+            <field name="title">Cuestionario de Evaluación Silver Economy</field>
+            <field name="survey_type">survey</field>
+            <field name="scoring_type">scoring_without_answers</field>
+            <field name="scoring_success_min">50.0</field>
+            <field name="access_mode">public</field>
+            <field name="users_login_required">True</field>
+            <field name="questions_layout">page_per_section</field>
+            <field name="description">&lt;p&gt;Este cuestionario te ayudará a entender hasta qué punto tu empresa está preparada para atender bien a las personas mayores.&lt;/p&gt;</field>
+            </record>
+        <record id="silver_economy_page_A" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">SECCIÓN A — ACCESIBILIDAD</field>
+            <field name="is_page">True</field>
+            <field name="sequence">1</field>
+            </record>
+        <record id="silver_economy_q1" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿El acceso a tu local resulta cómodo y sin barreras para una persona mayor?</field>
+            <field name="description">&lt;p&gt;Piensa en alguien con movilidad reducida, que camina despacio o que evita escaleras. Un pequeño escalón, una puerta pesada o una entrada estrecha pueden convertirse en un obstáculo importante, aunque no lo parezcan a simple vista.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">2</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Observa tu entrada como si fueras un cliente mayor. ¿Hay algo que te haría dudar en entrar? Pequeñas mejoras como una rampa, una barandilla o una puerta más accesible pueden tener un impacto enorme.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q2" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿La señalización dentro del local permite orientarse fácilmente sin necesidad de preguntar?</field>
+            <field name="description">&lt;p&gt;Cuando una persona no encuentra lo que busca rápidamente, puede sentirse incómoda o dependiente. Esto es especialmente relevante en personas mayores, que valoran mucho la autonomía.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">3</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Simplifica y prioriza. Es mejor pocos mensajes claros que muchos confusos. Usa letras grandes y ubicaciones visibles.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q3" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿La iluminación del espacio permite ver con claridad sin esfuerzo?</field>
+            <field name="description">&lt;p&gt;Con la edad, la capacidad visual cambia. Zonas oscuras, sombras o deslumbramientos pueden dificultar la experiencia e incluso generar inseguridad.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">4</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Revisa tu local en diferentes momentos del día. Ajustar la iluminación es una de las mejoras más sencillas y efectivas.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q4" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿El espacio permite moverse con comodidad, sin obstáculos ni estrecheces?</field>
+            <field name="description">&lt;p&gt;Pasillos estrechos, objetos mal colocados o exceso de mobiliario pueden dificultar el movimiento, especialmente si hay bastones, carros o movilidad reducida.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">5</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Recorre tu local con una mirada crítica. A veces basta con reorganizar para mejorar mucho la experiencia.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q5" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Ofreces algún espacio donde el cliente pueda sentarse o descansar?</field>
+            <field name="description">&lt;p&gt;Muchas personas mayores necesitan hacer pausas. No ofrecer esa posibilidad puede hacer que la visita sea más corta o incómoda.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">6</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Una simple silla bien ubicada puede cambiar completamente la experiencia del cliente.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q6" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Tu web es sencilla de usar, incluso para alguien con poca experiencia digital?</field>
+            <field name="description">&lt;p&gt;Muchas personas mayores no tienen dificultades por falta de capacidad, sino por interfaces complejas o poco intuitivas.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">7</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Haz una prueba: alguien sin experiencia digital debería poder navegar sin ayuda.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q7" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿El texto de tu web (o materiales digitales) es fácil de leer para personas mayores?</field>
+            <field name="description">&lt;p&gt;Con la edad, la visión cambia. Textos pequeños, tipografías complejas o demasiado contenido junto pueden dificultar la lectura y generar frustración.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">8</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Utiliza tamaños de letra más grandes, tipografías sencillas y deja espacio entre líneas. Haz una prueba rápida: ¿puedes leerlo cómodamente desde cierta distancia?</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q8" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿El contraste de colores facilita la lectura de la información?</field>
+            <field name="description">&lt;p&gt;Texto claro sobre fondo claro, o combinaciones poco contrastadas, pueden dificultar mucho la lectura.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">9</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">El contraste alto (oscuro sobre claro) suele ser la mejor opción en la mayoría de casos.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q9" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Es fácil encontrar lo que se busca en tu web sin perderse?</field>
+            <field name="description">&lt;p&gt;Si un usuario se pierde, es muy probable que abandone. Esto ocurre aún más en usuarios menos habituados a entornos digitales.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">10</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Simplifica menús y estructura. Menos opciones, pero más claras.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q10" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿El cliente puede pedir ayuda fácilmente si lo necesita (en tienda o en la web)?</field>
+            <field name="description">&lt;p&gt;Saber que hay ayuda disponible genera seguridad, incluso aunque no se utilice.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">11</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Un teléfono visible o una persona accesible puede marcar la diferencia.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_page_B" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">SECCIÓN B — ATENCIÓN</field>
+            <field name="is_page">True</field>
+            <field name="sequence">12</field>
+            </record>
+        <record id="silver_economy_q11" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Tu equipo está preparado para atender a personas mayores de forma adecuada y empática?</field>
+            <field name="description">&lt;p&gt;No se trata solo de ser amable. Atender bien a una persona mayor implica entender su ritmo, sus dudas y, en muchos casos, su necesidad de sentirse escuchada y acompañada.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">13</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Habla con tu equipo sobre situaciones reales. No hace falta una gran formación: a veces basta con tomar conciencia y compartir buenas prácticas.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q12" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Adaptas la atención a cada cliente en lugar de aplicar un trato estándar?</field>
+            <field name="description">&lt;p&gt;Cada persona es diferente. En el caso de clientes mayores, esta diferencia suele ser más evidente: algunos necesitan más tiempo, otros más explicación, otros simplemente sentirse acompañados.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">14</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Escuchar antes de actuar es la clave. Una simple pregunta puede ayudarte a entender qué necesita realmente el cliente.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q13" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Tu equipo respeta el ritmo del cliente, especialmente cuando necesita más tiempo?</field>
+            <field name="description">&lt;p&gt;Muchas personas mayores necesitan más tiempo para comprender información o tomar decisiones. Sentirse presionado puede generar inseguridad o hacer que abandonen la compra.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">15</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Introduce una idea sencilla en tu equipo: “no tenemos prisa por vender, tenemos interés en que el cliente se sienta cómodo”.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q14" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Utilizas un lenguaje fácil de entender, evitando tecnicismos innecesarios?</field>
+            <field name="description">&lt;p&gt;Lo que para ti es habitual, para el cliente puede ser confuso. Un lenguaje complicado genera inseguridad y hace que muchas personas no pregunten por vergüenza.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">16</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Haz una prueba: si tuvieras que explicárselo a alguien sin experiencia, ¿lo entendería fácilmente?</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q15" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Te aseguras de que el cliente entiende bien lo que está comprando o contratando?</field>
+            <field name="description">&lt;p&gt;No basta con explicar. Es importante comprobar que la otra persona ha entendido. Muchas veces los clientes dicen 'sí' aunque tengan dudas.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">17</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Puedes preguntar algo tan simple como: “¿te ha quedado claro?” o “¿quieres que lo veamos de otra forma?”.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q16" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Es fácil contactar contigo a través de canales accesibles para personas mayores?</field>
+            <field name="description">&lt;p&gt;Aunque existan canales digitales, muchas personas mayores siguen prefiriendo el teléfono o el contacto directo.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">18</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Asegúrate de que el teléfono esté bien visible y que realmente se atienda.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q17" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Las dudas de los clientes se resuelven de forma clara y completa?</field>
+            <field name="description">&lt;p&gt;Una duda mal resuelta genera desconfianza. Y en muchos casos, el cliente no vuelve a preguntar.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">19</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">No des por hecho que el cliente entiende. Asegúrate de cerrar cada conversación con claridad.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q18" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Acompañas al cliente cuando el proceso es complejo (compra, registro, etc.)?</field>
+            <field name="description">&lt;p&gt;Los procesos largos o poco intuitivos pueden hacer que el cliente abandone si no se siente acompañado.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">20</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Piensa en qué momentos el cliente puede perderse… y ahí es donde debes intervenir.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q19" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Realizas algún tipo de seguimiento después de la compra o servicio?</field>
+            <field name="description">&lt;p&gt;Un pequeño gesto posterior transmite interés y genera confianza a largo plazo.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">21</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">No tiene que ser complejo, ya que una simple una llamada o mensaje pueden marcar la diferencia.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q20" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿La atención telefónica es clara, cercana y fácil de gestionar?</field>
+            <field name="description">&lt;p&gt;Para muchas personas mayores, el teléfono sigue siendo el canal más cómodo y confiable.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">22</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Evita sistemas automáticos complejos. Prioriza el trato humano.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_page_C" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">SECCIÓN C — PRODUCTO / SERVICIO</field>
+            <field name="is_page">True</field>
+            <field name="sequence">23</field>
+            </record>
+        <record id="silver_economy_q21" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Tus productos o servicios son fáciles de usar sin necesidad de ayuda constante?</field>
+            <field name="description">&lt;p&gt;La complejidad innecesaria genera frustración y abandono.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">24</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Simplificar no es empeorar, es mejorar la experiencia.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q22" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Las instrucciones son fáciles de entender para cualquier persona?</field>
+            <field name="description">&lt;p&gt;Un buen producto puede fallar si no se explica bien.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">25</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Evita textos largos y complejos. Usa ejemplos o pasos simples.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q23" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿El proceso de compra (físico o digital) es sencillo y fácil de seguir?</field>
+            <field name="description">&lt;p&gt;Procesos largos o complejos pueden ser una barrera importante, especialmente en entornos digitales. Cada paso adicional aumenta el riesgo de abandono.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">26</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Reduce pasos innecesarios, simplifica formularios y ofrece ayuda en puntos clave.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q24" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Ofreces alternativas más simples para quien no necesita opciones avanzadas?</field>
+            <field name="description">&lt;p&gt;No todos los clientes buscan lo mismo. Ofrecer opciones simples facilita la decisión.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">27</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Piensa en una versión “básica” de tu oferta.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q25" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿El cliente entiende claramente cuánto va a pagar y por qué?</field>
+            <field name="description">&lt;p&gt;La falta de claridad genera desconfianza, especialmente en clientes más prudentes.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">28</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Evita sorpresas. Explica siempre el precio final.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q26" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿El proceso de pago es sencillo y se adapta a diferentes preferencias?</field>
+            <field name="description">&lt;p&gt;El momento del pago es crítico: cualquier dificultad puede hacer perder la venta.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">29</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Ofrece varias opciones y acompaña si es necesario.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q27" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿El cliente puede recibir ayuda después de la compra si la necesita?</field>
+            <field name="description">&lt;p&gt;Saber que hay apoyo genera tranquilidad incluso antes de comprar.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">30</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Haz visible este soporte.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q28" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Recoges la opinión de clientes mayores para mejorar tu servicio?</field>
+            <field name="description">&lt;p&gt;Ellos mismos son la mejor fuente de mejora.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">31</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Pregunta directamente y escucha sin justificarte.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q29" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Adaptas tus productos o servicios a las necesidades reales de este colectivo?</field>
+            <field name="description">&lt;p&gt;No se trata de crear algo nuevo, sino de ajustar lo que ya tienes.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">32</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Observa cómo usan tus productos.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q30" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Evitas procesos digitales innecesariamente complejos?</field>
+            <field name="description">&lt;p&gt;La complejidad digital es una de las mayores barreras actuales.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">33</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Si puedes simplificar, hazlo.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_page_D" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">SECCIÓN D — ESTRATEGIA</field>
+            <field name="is_page">True</field>
+            <field name="sequence">34</field>
+            </record>
+        <record id="silver_economy_q31" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Consideras a las personas mayores como un público importante dentro de tu negocio?</field>
+            <field name="description">&lt;p&gt;La Silver Economy no es un nicho pequeño: es un segmento creciente con gran capacidad de consumo. No tenerlo en cuenta puede suponer perder oportunidades importantes.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">35</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Empieza por analizar quiénes son tus clientes actuales.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q32" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Conoces realmente cómo son, qué necesitan y cómo se comportan tus clientes mayores?</field>
+            <field name="description">&lt;p&gt;Muchas empresas creen conocer a sus clientes, pero en realidad trabajan con suposiciones. En el caso de las personas mayores, esto es aún más frecuente.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">36</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Empieza por algo sencillo: observa, pregunta y escucha. Incluso unas pocas conversaciones reales pueden darte más información que muchos datos teóricos.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q33" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Realizas acciones concretas pensadas para atraer o mejorar la experiencia de clientes mayores?</field>
+            <field name="description">&lt;p&gt;Si no haces nada específico, lo más probable es que este colectivo no se sienta especialmente tenido en cuenta, aunque tu intención sea buena.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">37</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">No hace falta empezar con grandes campañas. Pequeñas acciones bien pensadas pueden tener mucho impacto.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q34" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Tu forma de comunicar (web, publicidad, mensajes) incluye y representa a las personas mayores?</field>
+            <field name="description">&lt;p&gt;Muchas comunicaciones están orientadas, sin darse cuenta, a un público más joven. Esto puede hacer que otros perfiles no se sientan identificados o directamente se desconecten.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">38</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Revisa tus mensajes con una mirada crítica: ¿quién aparece?, ¿a quién te diriges?, ¿quién queda fuera?</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q35" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Evitas, de forma consciente, prácticas o decisiones que puedan excluir a personas por su edad?</field>
+            <field name="description">&lt;p&gt;A veces la discriminación no es intencionada. Puede estar en pequeños detalles: procesos pensados solo para perfiles digitales, lenguaje poco inclusivo o suposiciones sobre capacidades.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">39</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Cuestiona las suposiciones. No todas las personas mayores son iguales, ni tienen las mismas limitaciones.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q36" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Trabajas activamente para que tu entorno digital sea accesible para personas mayores?</field>
+            <field name="description">&lt;p&gt;Cada vez más procesos pasan por lo digital. Si este entorno no es accesible, estás dejando fuera a parte de tus clientes.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">40</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">No hace falta hacerlo perfecto desde el principio. Empieza por mejorar lo más básico: claridad, simplicidad y ayuda.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q37" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Mides la satisfacción de tus clientes mayores de forma específica?</field>
+            <field name="description">&lt;p&gt;Lo que no se mide, normalmente no se mejora. Y si no diferencias por tipo de cliente, puedes estar perdiendo información clave.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">41</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Incluye una pregunta sencilla en tus encuestas o recoge sus comentarios directos. No tiene que ser complejo.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q38" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Revisas periódicamente tus procesos para detectar barreras o puntos de mejora?</field>
+            <field name="description">&lt;p&gt;Lo que hoy funciona, puede no funcionar mañana. Las necesidades cambian, y tu negocio debe adaptarse con ellas.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">42</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Establece pequeños momentos de revisión. No hace falta un gran proyecto, sino constancia.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q39" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Formas a tu equipo en cómo atender y entender mejor a personas mayores?</field>
+            <field name="description">&lt;p&gt;La experiencia del cliente depende en gran parte de las personas que lo atienden. Sin formación, es difícil que haya un cambio real.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">43</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">La formación no tiene que ser compleja. Compartir experiencias y buenas prácticas ya es un gran paso.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        <record id="silver_economy_q40" model="survey.question">
+            <field name="survey_id" ref="survey_silver_economy" />
+            <field name="title">¿Tu empresa trabaja activamente en mejorar su adaptación a este colectivo de forma continua?</field>
+            <field name="description">&lt;p&gt;La adaptación a la Silver Economy no es una acción puntual, sino un proceso. Lo importante no es estar perfecto, sino avanzar de forma constante.&lt;/p&gt;</field>
+            <field name="question_type">simple_choice</field>
+            <field name="sequence">44</field>
+            <field name="constr_mandatory">True</field>
+            <field name="scoring_type">scoring</field>
+            <field name="comments_allowed">True</field>
+            <field name="comments_message">Empieza con pequeños objetivos realistas. Mejorar poco a poco es mucho más efectivo que intentar hacerlo todo de golpe.</field>
+            <field name="suggested_answer_ids">
+                <record model="survey.question.answer">
+                    <field name="value">No</field>
+                    <field name="answer_score">0</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Parcialmente</field>
+                    <field name="answer_score">1</field>
+                    </record>
+                <record model="survey.question.answer">
+                    <field name="value">Sí</field>
+                    <field name="answer_score">2</field>
+                    </record>
+                </field>
+            </record>
+        </data>
+    </odoo>

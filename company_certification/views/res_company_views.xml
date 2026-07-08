@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <record id="view_company_form_inherit_certification" model="ir.ui.view">
+        <field name="name">res.company.form.inherit.certification</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_certification_evaluations"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-award"
+                        groups="company_certification.group_certification_manager">
+                    <field name="certification_evaluation_count" widget="statinfo" string="Evaluations"/>
+                </button>
+            </xpath>
+            <xpath expr="//group[@name='social_media']" position="after">
+                <group string="Certifications" name="certifications"
+                       groups="company_certification.group_certification_manager">
+                    <field name="certification_ids" nolabel="1" colspan="2" readonly="1">
+                        <list>
+                            <field name="type_id"/>
+                            <field name="level" widget="badge"
+                                   decoration-info="level == 'bronze'"
+                                   decoration-primary="level == 'silver'"
+                                   decoration-warning="level == 'gold'"/>
+                            <field name="score"/>
+                            <field name="certification_date"/>
+                            <field name="expiry_date"/>
+                        </list>
+                    </field>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

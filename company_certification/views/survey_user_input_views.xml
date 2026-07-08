@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <record id="survey_user_input_view_list_certification" model="ir.ui.view">
+        <field name="name">survey.user_input.list.certification</field>
+        <field name="model">survey.user_input</field>
+        <field name="inherit_id" ref="survey.survey_user_input_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="decoration-info">certification_level == 'bronze'</attribute>
+                <attribute name="decoration-primary">certification_level == 'silver'</attribute>
+                <attribute name="decoration-warning">certification_level == 'gold'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='state']" position="before">
+                <button name="action_continue_certification_evaluation" type="object"
+                        icon="fa-play" title="Continue evaluation"
+                        invisible="state not in ('new', 'in_progress') or not context.get('certification_display')"/>
+            </xpath>
+            <xpath expr="//field[@name='survey_id']" position="after">
+                <field name="company_id" optional="show" invisible="not context.get('certification_display')"/>
+                <field name="certification_level" optional="show" widget="badge"
+                       decoration-muted="certification_level == 'none'"
+                       decoration-info="certification_level == 'bronze'"
+                       decoration-primary="certification_level == 'silver'"
+                       decoration-warning="certification_level == 'gold'"
+                       invisible="not context.get('certification_display')"/>
+                <field name="next_attempt_date" optional="show" invisible="not context.get('certification_display')"/>
+                <field name="expiry_date" optional="show" invisible="not context.get('certification_display')"/>
+                <field name="is_manually_overridden" optional="hide" invisible="not context.get('certification_display')"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="survey_user_input_view_form_certification" model="ir.ui.view">
+        <field name="name">survey.user_input.form.certification</field>
+        <field name="model">survey.user_input</field>
+        <field name="inherit_id" ref="survey.survey_user_input_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Certification" name="certification"
+                      invisible="not certification_type_id">
+                    <group>
+                        <group string="Result">
+                            <field name="certification_type_id"/>
+                            <field name="company_id"/>
+                            <field name="certification_level" widget="badge"/>
+                            <field name="next_attempt_date"/>
+                            <field name="expiry_date"/>
+                        </group>
+                        <group string="Manual Override"
+                               groups="company_certification.group_certification_manager">
+                            <field name="is_manually_overridden"/>
+                            <field name="manual_certification_level"
+                                   required="is_manually_overridden"
+                                   invisible="not is_manually_overridden"/>
+                            <field name="override_reason" invisible="not is_manually_overridden"/>
+                            <field name="override_user_id" readonly="1" invisible="not is_manually_overridden"/>
+                            <field name="override_date" readonly="1" invisible="not is_manually_overridden"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
