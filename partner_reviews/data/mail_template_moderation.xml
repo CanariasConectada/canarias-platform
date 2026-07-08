@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="mail_template_review_moderation" model="mail.template">
+        <field name="name">Reviews: Pending Moderation</field>
+        <field name="model_id" ref="rating.model_rating_rating"/>
+        <field name="subject">Review pending moderation on {{ object.res_name }}</field>
+        <field name="body_html" type="html">
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #d9534f;">Review pending moderation</h2>
+                <p>A new customer review contains words that require a manual check.</p>
+                <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                    <p><strong>Author:</strong> <t t-out="object.partner_id.name or 'Visitor'"/></p>
+                    <p><strong>Business:</strong> <t t-out="object.res_name"/></p>
+                    <p><strong>Rating:</strong> <t t-out="int(object.rating)"/>/5</p>
+                    <p><strong>Comment:</strong></p>
+                    <p style="font-style: italic;"><t t-out="object.feedback or ''"/></p>
+                </div>
+                <p>Please approve or reject it from the Reviews menu.</p>
+            </div>
+        </field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+
+</odoo>

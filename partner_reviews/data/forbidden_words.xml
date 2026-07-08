@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo noupdate="1">
+
+    <!-- Default Spanish moderation list, carried over from the legacy
+         module. Moderators maintain it from Reviews > Forbidden Words. -->
+    <record id="forbidden_word_spam" model="review.forbidden.word">
+        <field name="name">spam</field>
+    </record>
+    <record id="forbidden_word_estafa" model="review.forbidden.word">
+        <field name="name">estafa</field>
+    </record>
+    <record id="forbidden_word_timo" model="review.forbidden.word">
+        <field name="name">timo</field>
+    </record>
+    <record id="forbidden_word_fraude" model="review.forbidden.word">
+        <field name="name">fraude</field>
+    </record>
+    <record id="forbidden_word_idiota" model="review.forbidden.word">
+        <field name="name">idiota</field>
+    </record>
+    <record id="forbidden_word_estupido" model="review.forbidden.word">
+        <field name="name">estúpido</field>
+    </record>
+    <record id="forbidden_word_imbecil" model="review.forbidden.word">
+        <field name="name">imbécil</field>
+    </record>
+    <record id="forbidden_word_gilipollas" model="review.forbidden.word">
+        <field name="name">gilipollas</field>
+    </record>
+    <record id="forbidden_word_puta" model="review.forbidden.word">
+        <field name="name">puta</field>
+    </record>
+    <record id="forbidden_word_cabron" model="review.forbidden.word">
+        <field name="name">cabrón</field>
+    </record>
+    <record id="forbidden_word_mierda" model="review.forbidden.word">
+        <field name="name">mierda</field>
+    </record>
+    <record id="forbidden_word_joder" model="review.forbidden.word">
+        <field name="name">joder</field>
+    </record>
+    <record id="forbidden_word_polla" model="review.forbidden.word">
+        <field name="name">polla</field>
+    </record>
+    <record id="forbidden_word_follar" model="review.forbidden.word">
+        <field name="name">follar</field>
+    </record>
+    <record id="forbidden_word_maricon" model="review.forbidden.word">
+        <field name="name">maricón</field>
+    </record>
+    <record id="forbidden_word_hijo_de_puta" model="review.forbidden.word">
+        <field name="name">hijo de puta</field>
+    </record>
+    <record id="forbidden_word_cono" model="review.forbidden.word">
+        <field name="name">coño</field>
+    </record>
+    <record id="forbidden_word_hostia" model="review.forbidden.word">
+        <field name="name">hostia</field>
+    </record>
+
+</odoo>

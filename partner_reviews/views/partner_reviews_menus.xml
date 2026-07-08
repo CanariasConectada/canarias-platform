@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- NOTE (Odoo 19): the groups attribute ADDS groups, it never replaces
+         them. These menus are new, so the list below is the whole gate. -->
+    <menuitem id="menu_partner_reviews_root"
+              name="Reviews"
+              sequence="25"
+              groups="group_partner_reviews_user,group_partner_reviews_moderator,group_partner_reviews_manager"/>
+
+    <menuitem id="menu_partner_reviews_reviews"
+              name="Reviews"
+              parent="menu_partner_reviews_root"
+              action="action_partner_reviews"
+              sequence="10"/>
+
+    <menuitem id="menu_partner_reviews_forbidden_words"
+              name="Forbidden Words"
+              parent="menu_partner_reviews_root"
+              action="action_review_forbidden_word"
+              sequence="20"
+              groups="group_partner_reviews_manager"/>
+
+</odoo>

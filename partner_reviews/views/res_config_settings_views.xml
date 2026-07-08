@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="res_config_settings_view_form_reviews" model="ir.ui.view">
+        <field name="name">res.config.settings.form.partner.reviews</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="website.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='website_info_settings']" position="after">
+                <block title="Merchant Reviews" id="partner_reviews_settings">
+                    <setting string="Review Comments" help="Let customers write a text comment together with their star rating.">
+                        <field name="partner_reviews_allow_comments"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
