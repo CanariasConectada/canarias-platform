@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- Default microsite homepage. Rendered from the company of the current
+         website, so it stays correct even before the merchant fills in any
+         content. It is intentionally minimal: rich, editable microsite pages
+         are the job of partner_microsite_manager's "Publish Homepage" action,
+         which only overwrites this page on explicit request. -->
+    <template
+        id="default_homepage_content"
+        name="Auto Microsite Default Homepage"
+    >
+        <t t-set="company" t-value="website.company_id.sudo()"/>
+        <section
+            class="s_cover pt96 pb96 text-center"
+            data-name="Hero"
+            style="min-height: 55vh; display: flex; align-items: center;
+                   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);"
+        >
+            <div class="container">
+                <h1 class="display-4 text-white">
+                    <t t-esc="company.name"/>
+                </h1>
+                <p class="lead text-white-50">
+                    Welcome to our microsite on Canarias Conectada.
+                </p>
+                <p class="mt-4">
+                    <a class="btn btn-lg btn-primary me-2" href="/shop">Shop</a>
+                    <a class="btn btn-lg btn-outline-light" href="/comercio">
+                        Local Directory
+                    </a>
+                </p>
+            </div>
+        </section>
+    </template>
+
+</odoo>
