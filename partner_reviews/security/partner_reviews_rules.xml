@@ -14,6 +14,21 @@
         <field name="groups" eval="[(4, ref('group_partner_reviews_moderator'))]"/>
     </record>
 
+    <!-- Company scoping for every internal user. The native rating.rating
+         ACL grants base.group_user read/write with NO record rule, so a plain
+         employee could otherwise read/write reviews of ALL companies over RPC.
+         This rule scopes them to their allowed companies (same leaf as the
+         moderator rule). It is ORed with the moderator/manager rules, so it
+         never narrows their broader access: a manager keeps (1=1), a moderator
+         keeps the identical scope. Non-merchant ratings (helpdesk, project...)
+         stay untouched through the first branch. -->
+    <record id="rule_rating_review_internal" model="ir.rule">
+        <field name="name">Merchant reviews: own companies (Internal users)</field>
+        <field name="model_id" ref="rating.model_rating_rating"/>
+        <field name="domain_force">['|', ('res_model', '!=', 'res.company'), ('res_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
     <!-- Review administrators manage every review of every company. -->
     <record id="rule_rating_review_manager" model="ir.rule">
         <field name="name">Merchant reviews: all companies (Administrator)</field>
