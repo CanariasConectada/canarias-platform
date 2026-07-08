@@ -5,7 +5,7 @@
     "version": "19.0.1.0.0",
     "category": "Contacts",
     "summary": "Seed the Canarias Conectada business taxonomy as company categories",
-    "author": "Canarias Conectada",
+    "author": "MikeColangelo",
     "website": "https://github.com/CanariasConectada/canarias-platform",
     "license": "AGPL-3",
     "maintainers": ["MikeColangelo"],

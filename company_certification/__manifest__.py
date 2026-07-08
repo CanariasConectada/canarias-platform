@@ -5,7 +5,7 @@
     "version": "19.0.1.0.0",
     "category": "Marketing/Surveys",
     "summary": "Parameterizable company certification seals built on Survey",
-    "author": "Canarias Conectada",
+    "author": "MikeColangelo",
     "website": "https://github.com/CanariasConectada/canarias-platform",
     "license": "AGPL-3",
     "maintainers": ["mikecolangelo"],
