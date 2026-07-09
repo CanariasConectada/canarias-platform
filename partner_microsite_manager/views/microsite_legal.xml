@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- Legal pages shared by every microsite. Content is data-driven from
+         the website company, so a single set of templates serves all the
+         microsites. Linked from the corporate footer. -->
+
+    <template id="microsite_privacy_policy" name="Política de Privacidad">
+        <t t-call="website.layout">
+            <t t-set="pmm_company" t-value="website.company_id.sudo()"/>
+            <div id="wrap" class="oe_structure">
+                <section class="s_title pt48 pb24" data-name="Title">
+                    <div class="container">
+                        <h1 class="text-center">Política de Privacidad</h1>
+                    </div>
+                </section>
+                <section class="s_text_block pt24 pb48" data-name="Text">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <p>
+                                    Mediante la presente Política de Privacidad,
+                                    <strong t-esc="pmm_company.name"/>
+                                    muestra su compromiso con el cumplimiento de
+                                    la normativa aplicable al tratamiento de datos
+                                    personales (RGPD UE 2016/679, LOPDGDD 3/2018 y
+                                    LSSI 34/2002).
+                                </p>
+                                <h2 class="mt-4">1. Responsable del tratamiento</h2>
+                                <ul>
+                                    <li>
+                                        <strong>Nombre:</strong>
+                                        <span t-esc="pmm_company.name"/>
+                                    </li>
+                                    <li t-if="pmm_company.street">
+                                        <strong>Dirección:</strong>
+                                        <span t-esc="pmm_company.street"/>,
+                                        <span t-esc="pmm_company.city"/>
+                                    </li>
+                                    <li t-if="pmm_company.email">
+                                        <strong>Correo electrónico:</strong>
+                                        <span t-esc="pmm_company.email"/>
+                                    </li>
+                                </ul>
+                                <h2 class="mt-4">2. Datos que recopilamos</h2>
+                                <ul>
+                                    <li>Información de contacto (nombre, email, teléfono).</li>
+                                    <li>Datos necesarios para la prestación de nuestros servicios.</li>
+                                    <li>Información de navegación (cookies, dirección IP).</li>
+                                </ul>
+                                <h2 class="mt-4">3. Derechos de los interesados</h2>
+                                <p>
+                                    Puede ejercer sus derechos de acceso,
+                                    rectificación, supresión, oposición, limitación
+                                    y portabilidad escribiendo a
+                                    <span t-esc="pmm_company.email"/>.
+                                </p>
+                                <h2 class="mt-4">4. Ley aplicable</h2>
+                                <p>
+                                    La resolución de conflictos se rige por la
+                                    legislación española y los juzgados y tribunales
+                                    de Las Palmas de Gran Canaria.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <template id="microsite_cookies_policy" name="Política de Cookies">
+        <t t-call="website.layout">
+            <t t-set="pmm_company" t-value="website.company_id.sudo()"/>
+            <div id="wrap" class="oe_structure">
+                <section class="s_title pt48 pb24" data-name="Title">
+                    <div class="container">
+                        <h1 class="text-center">Política de Cookies</h1>
+                    </div>
+                </section>
+                <section class="s_text_block pt24 pb48" data-name="Text">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <h2>¿Qué son las cookies?</h2>
+                                <p>
+                                    Las cookies son pequeños archivos de datos que
+                                    se almacenan en su dispositivo al visitar una
+                                    página web y permiten recopilar información
+                                    relativa a su navegación.
+                                </p>
+                                <h2 class="mt-4">¿Qué cookies utilizamos?</h2>
+                                <p>
+                                    <strong>Técnicas:</strong> imprescindibles para
+                                    la navegación y el proceso de compra.
+                                    <strong>De personalización:</strong> recuerdan
+                                    sus preferencias (idioma, región).
+                                    <strong>Analíticas y de terceros:</strong>
+                                    permiten medir el uso del sitio y la
+                                    interacción con redes sociales.
+                                </p>
+                                <h2 class="mt-4">Gestión de cookies</h2>
+                                <p>
+                                    Puede permitir, bloquear o eliminar las cookies
+                                    instaladas mediante la configuración de su
+                                    navegador.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <template id="microsite_terms_conditions" name="Términos y Condiciones">
+        <t t-call="website.layout">
+            <t t-set="pmm_company" t-value="website.company_id.sudo()"/>
+            <div id="wrap" class="oe_structure">
+                <section class="s_title pt48 pb24" data-name="Title">
+                    <div class="container">
+                        <h1 class="text-center">Términos y Condiciones</h1>
+                    </div>
+                </section>
+                <section class="s_text_block pt24 pb48" data-name="Text">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <h2>1. Introducción</h2>
+                                <p>
+                                    Las presentes condiciones regulan el acceso y
+                                    uso de este sitio web, propiedad de
+                                    <strong t-esc="pmm_company.name"/>. El acceso
+                                    al sitio implica la aceptación de estas
+                                    condiciones.
+                                </p>
+                                <h2 class="mt-4">2. Condiciones de uso</h2>
+                                <p>
+                                    El sitio actúa como intermediario de información
+                                    sobre productos y servicios y no garantiza la
+                                    exactitud, disponibilidad o precio de los
+                                    ofrecidos por terceros.
+                                </p>
+                                <h2 class="mt-4">3. Propiedad intelectual</h2>
+                                <p>
+                                    Los contenidos, marcas y logotipos corresponden
+                                    a <span t-esc="pmm_company.name"/> o a sus
+                                    legítimos titulares. Queda prohibida su
+                                    reproducción sin autorización.
+                                </p>
+                                <h2 class="mt-4">4. Legislación aplicable</h2>
+                                <p>
+                                    Estas condiciones se rigen por la legislación
+                                    española y los juzgados de Las Palmas de Gran
+                                    Canaria.
+                                </p>
+                                <p class="mt-4">
+                                    Consulte también nuestra
+                                    <a href="/politica-privacidad">Política de Privacidad</a>
+                                    y nuestra
+                                    <a href="/politica-cookies">Política de Cookies</a>.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <!-- Published pages that expose the templates at stable URLs. Website-
+         agnostic (no website_id): available on every microsite. -->
+    <record id="microsite_privacy_page" model="website.page">
+        <field name="name">Política de Privacidad</field>
+        <field name="url">/politica-privacidad</field>
+        <field name="view_id" ref="microsite_privacy_policy"/>
+        <field name="is_published">True</field>
+    </record>
+
+    <record id="microsite_cookies_page" model="website.page">
+        <field name="name">Política de Cookies</field>
+        <field name="url">/politica-cookies</field>
+        <field name="view_id" ref="microsite_cookies_policy"/>
+        <field name="is_published">True</field>
+    </record>
+
+    <record id="microsite_terms_page" model="website.page">
+        <field name="name">Términos y Condiciones</field>
+        <field name="url">/terminos-condiciones</field>
+        <field name="view_id" ref="microsite_terms_conditions"/>
+        <field name="is_published">True</field>
+    </record>
+
+</odoo>

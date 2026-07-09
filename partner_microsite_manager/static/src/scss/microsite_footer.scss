@@ -1,0 +1,48 @@
+// Copyright 2026 Canarias Conectada
+// License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+// Corporate microsite footer polish. Only affects the black footer injected
+// by the microsite_corporate_footer template (scoped under .o_pmm_footer),
+// so non-themed websites are never touched.
+// Header / copyright cleanup, scoped to themed microsites via :has() so the
+// directory and main website keep the default Odoo chrome. The black footer
+// (.o_pmm_footer) only exists on themed sites, which makes it a reliable
+// per-website selector without touching the layout markup.
+body:has(.o_pmm_footer) {
+    // Hide the default phone element and the "Contact us" CTA in the header.
+    header a[href^="tel:"],
+    header .o_header_text_element:has(a[href^="tel:"]),
+    header a.btn[href*="contactus"],
+    header .btn_cta[href*="contactus"] {
+        display: none !important;
+    }
+
+    // Remove the standard Odoo copyright / "Powered by Odoo" bar: the
+    // corporate footer carries its own copyright line.
+    .o_footer_copyright {
+        display: none !important;
+    }
+}
+
+.o_pmm_footer {
+    footer {
+        background-color: #000 !important;
+
+        a.link-light {
+            transition: opacity 0.15s ease-in-out;
+
+            &:hover {
+                opacity: 0.7;
+            }
+        }
+
+        .fa {
+            vertical-align: middle;
+        }
+
+        .badge {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+    }
+}
