@@ -27,7 +27,7 @@
                     </div>
                 </div>
                 <div class="card-footer bg-transparent border-0 pt-0 pb-3">
-                    <a t-if="entry.website_url" t-att-href="entry.get_website_url()" class="btn btn-primary btn-sm w-100" target="_blank" rel="noopener">
+                    <a t-if="entry.has_external_website()" t-att-href="entry.get_website_url()" class="btn btn-primary btn-sm w-100" target="_blank" rel="noopener">
                         <i class="fa fa-globe me-1"/>Visit website
                     </a>
                     <span t-else="" class="btn btn-outline-secondary btn-sm w-100 disabled">
@@ -63,7 +63,7 @@
                 </div>
             </div>
             <div class="flex-shrink-0">
-                <a t-if="entry.website_url" t-att-href="entry.get_website_url()" class="btn btn-outline-primary btn-sm" target="_blank" rel="noopener">
+                <a t-if="entry.has_external_website()" t-att-href="entry.get_website_url()" class="btn btn-outline-primary btn-sm" target="_blank" rel="noopener">
                     <i class="fa fa-globe me-1"/>Visit
                 </a>
                 <span t-else="" class="btn btn-outline-secondary btn-sm disabled">

@@ -1,3 +1,13 @@
+## 19.0.7.1.0 (2026-07-09)
+
+* **Card website URL fixed**: the entry `website_url` used to stay at the
+  `website.published.mixin` placeholder (`#`) because redefining the field
+  without a compute does not cancel the inherited compute. The compute is
+  now overridden to read the company URL live
+  (`_get_directory_website_url`: extension hook > partner website > website
+  domain), so the "Visit website" button always points to the microsite.
+  The company sync no longer writes the field.
+
 ## 19.0.5.0.0 (2026-07-04)
 
 OCA-style rewrite of the module.

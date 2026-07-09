@@ -1,7 +1,7 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import fields, models
+from odoo import api, fields, models
 
 # Zone values are kept as plain data: the legacy zone cluster is retired and
 # its replacement is not decided yet. See readme/ROADMAP.md.
@@ -62,10 +62,16 @@ class WebsiteDirectoryEntry(models.Model):
     city = fields.Char()
     vat = fields.Char(string="VAT")
     # Deliberately overrides the computed field of website.published.mixin:
-    # the entry links to an external microsite, not to an internal page.
+    # the entry links to the external microsite of the business, not to an
+    # internal page. Redefining the field WITHOUT a compute is not enough
+    # (the mixin compute attribute is inherited and keeps overwriting the
+    # value with '#'), so the compute method itself is overridden below to
+    # read the URL from the company data.
     website_url = fields.Char(
         string="Website URL",
-        help="External microsite or website of the business.",
+        compute="_compute_website_url",
+        help="External microsite or website of the business, taken from the "
+        "company (microsite modules > partner website > website domain).",
     )
 
     # Partial unique index: at most ONE active entry per company, while
@@ -77,6 +83,26 @@ class WebsiteDirectoryEntry(models.Model):
         "This company already has an active directory entry.",
     )
 
+    @api.depends(
+        "company_id.partner_id.website",
+        "company_id.website_id.domain",
+    )
+    def _compute_website_url(self):
+        """Point the card link to the external site of the business.
+
+        Overrides ``website.published.mixin`` (which would always leave
+        '#'): the URL comes from the company through
+        :meth:`res.company._get_directory_website_url` (extension hook >
+        partner website > website domain), so the value shown on the card
+        always follows the current company/partner data.
+        """
+        super()._compute_website_url()
+        for record in self:
+            if record.company_id:
+                record.website_url = (
+                    record.company_id._get_directory_website_url() or "#"
+                )
+
     def get_image_url(self):
         """URL of the public image route (entry image or company logo)."""
         self.ensure_one()
@@ -85,11 +111,17 @@ class WebsiteDirectoryEntry(models.Model):
     def get_website_url(self):
         """External URL of the business, always with a scheme."""
         self.ensure_one()
-        if not self.website_url:
+        if not self.has_external_website():
             return "#"
         if self.website_url.startswith(("http://", "https://")):
             return self.website_url
         return f"https://{self.website_url}"
+
+    def has_external_website(self):
+        """Whether the business has a real external URL (templates use it
+        to hide the 'Visit' button instead of linking to '#')."""
+        self.ensure_one()
+        return bool(self.website_url and self.website_url != "#")
 
     def get_display_name(self):
         """Public name: trade name > partner name > entry name.

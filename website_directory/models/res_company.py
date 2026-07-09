@@ -91,7 +91,8 @@ class ResCompany(models.Model):
             "street": partner.street or "",
             "city": partner.city or "",
             "vat": partner.vat or "",
-            "website_url": self._get_directory_website_url(),
+            # website_url is NOT written: it is a non-stored computed field
+            # on the entry that reads _get_directory_website_url() live.
             "active": self.show_in_directory,
         }
         if self.logo:
