@@ -44,16 +44,26 @@ class WebsiteLocalContent(http.Controller):
             raise request.not_found()
         return content_type
 
-    def _get_search_domain(
-        self, content_type, category_id, subcategory_id, search, decade
-    ):
-        domain = Domain(
+    def _get_base_domain(self, content_type):
+        """Published items of the type, visible on the current website.
+
+        Items without websites are visible everywhere; items scoped to
+        other websites are excluded (per-zone scoping, as in the legacy
+        modules where each vertical belonged to a single microsite).
+        """
+        item_model = request.env["website.local.content.item"]
+        return Domain(
             [
                 ("type_id", "=", content_type.id),
                 ("state", "=", "approved"),
                 ("is_published", "=", True),
             ]
-        )
+        ) & Domain(item_model._get_website_visibility_domain(request.website))
+
+    def _get_search_domain(
+        self, content_type, category_id, subcategory_id, search, decade
+    ):
+        domain = self._get_base_domain(content_type)
         if category_id:
             domain &= Domain("category_id", "=", category_id)
         if subcategory_id:
@@ -71,11 +81,7 @@ class WebsiteLocalContent(http.Controller):
         item_model = request.env["website.local.content.item"].sudo()
         counts = dict(
             item_model._read_group(
-                [
-                    ("type_id", "=", content_type.id),
-                    ("state", "=", "approved"),
-                    ("is_published", "=", True),
-                ],
+                self._get_base_domain(content_type),
                 ["category_id"],
                 ["__count"],
             )
@@ -103,12 +109,7 @@ class WebsiteLocalContent(http.Controller):
             return []
         item_model = request.env["website.local.content.item"].sudo()
         groups = item_model._read_group(
-            [
-                ("type_id", "=", content_type.id),
-                ("state", "=", "approved"),
-                ("is_published", "=", True),
-                ("decade", ">", 0),
-            ],
+            self._get_base_domain(content_type) & Domain("decade", ">", 0),
             ["decade"],
             ["__count"],
         )
@@ -183,6 +184,9 @@ class WebsiteLocalContent(http.Controller):
         return request.render(
             "website_local_content.content_index",
             {
+                # Page <title>: "<type name> | <website name>" (the website
+                # name is appended by website.layout).
+                "additional_title": content_type.name,
                 "content_type": content_type,
                 "items": items,
                 "items_count": items_count,
@@ -216,12 +220,7 @@ class WebsiteLocalContent(http.Controller):
             request.env["website.local.content.item"]
             .sudo()
             .search(
-                [
-                    ("type_id", "=", content_type.id),
-                    ("slug", "=", item_slug),
-                    ("state", "=", "approved"),
-                    ("is_published", "=", True),
-                ],
+                self._get_base_domain(content_type) & Domain("slug", "=", item_slug),
                 limit=1,
             )
         )
@@ -231,6 +230,8 @@ class WebsiteLocalContent(http.Controller):
         return request.render(
             "website_local_content.content_detail",
             {
+                # Page <title>: "<item> - <type> | <website name>".
+                "additional_title": f"{item.name} - {content_type.name}",
                 "content_type": content_type,
                 "item": item,
                 "already_liked": item.has_session_liked(session_key),
@@ -257,7 +258,12 @@ class WebsiteLocalContent(http.Controller):
         self._get_content_type(type_slug)
         item = request.env["website.local.content.item"].sudo().browse(item_id)
         item = item.exists()
-        if not item or item.state != "approved" or not item.is_published:
+        if (
+            not item
+            or item.state != "approved"
+            or not item.is_published
+            or not item._is_visible_on_website(request.website)
+        ):
             return request.not_found()
         record = item
         if image_id:
@@ -284,7 +290,12 @@ class WebsiteLocalContent(http.Controller):
         self._get_content_type(type_slug)
         item = request.env["website.local.content.item"].sudo().browse(item_id)
         item = item.exists()
-        if not item or item.state != "approved" or not item.is_published:
+        if (
+            not item
+            or item.state != "approved"
+            or not item.is_published
+            or not item._is_visible_on_website(request.website)
+        ):
             return request.not_found()
         session_key = self._get_visitor_session_key()
         is_new_session = not session_key

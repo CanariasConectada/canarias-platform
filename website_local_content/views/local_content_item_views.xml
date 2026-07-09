@@ -12,6 +12,7 @@
                 <field name="type_id"/>
                 <field name="category_id"/>
                 <field name="photo_year" optional="hide"/>
+                <field name="website_ids" widget="many2many_tags" optional="hide"/>
                 <field name="like_count"/>
                 <field name="state" widget="badge" decoration-success="state == 'approved'" decoration-info="state == 'pending'"/>
                 <field name="is_published"/>
@@ -43,6 +44,7 @@
                             <field name="category_id"/>
                             <field name="subcategory_id"/>
                             <field name="slug"/>
+                            <field name="website_ids" widget="many2many_tags"/>
                             <field name="photo_year"/>
                             <field name="decade"/>
                             <field name="active" invisible="1"/>

@@ -117,3 +117,24 @@ class TestLocalContentModels(TransactionCase):
     def test_image_mixin_resizes(self):
         item = self._create_item(image_1920=make_test_image())
         self.assertTrue(item.image_128)
+
+    def test_website_visibility(self):
+        website_a = self.env["website"].create({"name": "WLC Site A"})
+        website_b = self.env["website"].create({"name": "WLC Site B"})
+        everywhere = self._create_item(state="approved", is_published=True)
+        only_a = self._create_item(
+            state="approved",
+            is_published=True,
+            website_ids=[(6, 0, website_a.ids)],
+        )
+        # Empty website_ids means visible on every website.
+        self.assertTrue(everywhere._is_visible_on_website(website_a))
+        self.assertTrue(everywhere._is_visible_on_website(website_b))
+        # A scoped item is only visible on its own website(s).
+        self.assertTrue(only_a._is_visible_on_website(website_a))
+        self.assertFalse(only_a._is_visible_on_website(website_b))
+        # The search domain matches the per-record helper.
+        domain_b = self.Item._get_website_visibility_domain(website_b)
+        visible_on_b = self.Item.search(domain_b)
+        self.assertIn(everywhere, visible_on_b)
+        self.assertNotIn(only_a, visible_on_b)

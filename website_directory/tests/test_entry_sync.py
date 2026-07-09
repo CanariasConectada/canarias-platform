@@ -145,19 +145,30 @@ class TestDirectoryEntrySync(TransactionCase):
 
     def test_get_website_url_scheme(self):
         entry = self._get_entry(self.company)
-        entry.website_url = "example.com"
-        self.assertEqual(entry.get_website_url(), "https://example.com")
-        entry.website_url = "http://example.com"
-        self.assertEqual(entry.get_website_url(), "http://example.com")
-        entry.website_url = False
+        # No website anywhere on the company: placeholder, button hidden.
+        self.assertEqual(entry.website_url, "#")
         self.assertEqual(entry.get_website_url(), "#")
+        self.assertFalse(entry.has_external_website())
+        self.company.partner_id.website = "http://wd-scheme.example.com"
+        self.assertEqual(entry.get_website_url(), "http://wd-scheme.example.com")
+        self.assertTrue(entry.has_external_website())
 
     def test_website_url_from_partner(self):
         # res.partner sanitizes bare domains by prefixing http://.
         self.company.write({"website": "https://wd-partner.example.com"})
-        self._flush(self.company)
         entry = self._get_entry(self.company)
+        # No sync/flush needed: website_url is computed live from the
+        # company, so the card URL can never go stale.
         self.assertEqual(entry.website_url, "https://wd-partner.example.com")
+
+    def test_website_url_scheme_added(self):
+        # A bare domain coming from the website record gets https:// added.
+        website = self.env["website"].create(
+            {"name": "WD Site", "domain": "wd-site.example.com"}
+        )
+        self.company.website_id = website
+        entry = self._get_entry(self.company)
+        self.assertEqual(entry.website_url, "https://wd-site.example.com")
 
     # ------------------------------------------------------------------
     # Async behaviour: create/write flag pending, the cron drains it
