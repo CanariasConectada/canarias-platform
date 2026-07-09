@@ -35,6 +35,22 @@ class TestLocalContentController(HttpCase):
             }
         )
         cls.index_url = "/explora/test-type-c"
+        # A website that never matches the test HTTP requests: items or
+        # types scoped to it must disappear from the default website.
+        cls.other_website = cls.env["website"].create(
+            {"name": "WLC Other Site", "domain": "https://wlc-other.example.com"}
+        )
+        cls.item_other_site = Item.create(
+            {
+                "name": "WLC Other Site Item",
+                "type_id": cls.type_a.id,
+                "category_id": cls.category_a.id,
+                "state": "approved",
+                "is_published": True,
+                "website_ids": [(6, 0, cls.other_website.ids)],
+                "image_1920": make_test_image(),
+            }
+        )
 
     def test_index_ok(self):
         response = self.url_open(self.index_url)
@@ -77,6 +93,35 @@ class TestLocalContentController(HttpCase):
     def test_unknown_type_404(self):
         response = self.url_open("/explora/no-such-type")
         self.assertEqual(response.status_code, 404)
+
+    # ------------------------------------------------------------------
+    # Per-website scoping (parity with the legacy per-zone modules)
+    # ------------------------------------------------------------------
+    def test_index_hides_other_website_items(self):
+        response = self.url_open(self.index_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("WLC Public Cinema", response.text)
+        self.assertNotIn("WLC Other Site Item", response.text)
+
+    def test_detail_other_website_404(self):
+        response = self.url_open(f"{self.index_url}/{self.item_other_site.slug}")
+        self.assertEqual(response.status_code, 404)
+
+    def test_image_other_website_404(self):
+        response = self.url_open(f"{self.index_url}/img/{self.item_other_site.id}")
+        self.assertEqual(response.status_code, 404)
+
+    def test_type_scoped_to_other_website_404(self):
+        self.type_a.website_ids = [(6, 0, self.other_website.ids)]
+        self.addCleanup(setattr, self.type_a, "website_ids", [(5, 0, 0)])
+        response = self.url_open(self.index_url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_page_titles(self):
+        response = self.url_open(self.index_url)
+        self.assertIn("<title>Test Type C", response.text)
+        response = self.url_open(f"{self.index_url}/{self.item_public.slug}")
+        self.assertIn("<title>WLC Public Cinema - Test Type C", response.text)
 
     def test_image_ok(self):
         response = self.url_open(f"{self.index_url}/img/{self.item_public.id}")

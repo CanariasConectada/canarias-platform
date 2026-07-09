@@ -64,6 +64,13 @@ class LocalContentItem(models.Model):
     )
     sequence = fields.Integer(default=10)
     active = fields.Boolean(default=True)
+    website_ids = fields.Many2many(
+        comodel_name="website",
+        string="Websites",
+        help="Websites (microsites) where this item is visible. Empty means "
+        "every website on which its content type is available, matching "
+        "the per-zone scoping of the legacy modules.",
+    )
 
     # --- Editorial content ----------------------------------------------
     description = fields.Text(
@@ -255,6 +262,25 @@ class LocalContentItem(models.Model):
 
     def action_submit_for_approval(self):
         self.write({"state": "pending"})
+
+    # --- Website scoping -----------------------------------------------
+    @api.model
+    def _get_website_visibility_domain(self, website):
+        """Domain of the items visible on the given website.
+
+        An item without websites is visible everywhere (the migrated rows
+        keep their current behaviour until websites are assigned).
+        """
+        return [
+            "|",
+            ("website_ids", "=", False),
+            ("website_ids", "in", website.id),
+        ]
+
+    def _is_visible_on_website(self, website):
+        """Whether this item is published on the given website."""
+        self.ensure_one()
+        return not self.website_ids or website in self.website_ids
 
     # --- Public rendering helpers -----------------------------------------
     def get_image_url(self):
