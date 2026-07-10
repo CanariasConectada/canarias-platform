@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Auto Microsite Generator",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.1.0",
     "category": "Website",
     "summary": "Provision a website, homepage and menu when a company is created",
     "author": "MikeColangelo",
@@ -22,4 +22,5 @@
     "installable": True,
     "application": False,
     "auto_install": False,
+    "uninstall_hook": "uninstall_hook",
 }

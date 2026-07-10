@@ -1,3 +1,24 @@
+## 19.0.1.1.0 (2026-07-10)
+
+Robustness fixes from the OCA audit:
+
+* **Fixed** `company.website_id` never refreshing after a microsite website was
+  auto-generated. The core field is a stored compute without `@api.depends`, so
+  the previous `invalidate_recordset` only cleared the cache without
+  rescheduling the recompute; the field now stays truthy on a fresh browse.
+* **Idempotent homepage**: the homepage view is only rewritten when its arch or
+  key actually changed (and `is_published` only when it was `False`), so
+  re-running generation no longer churns the view (write_date bumps, COW).
+* **Resilient creation**: microsite generation runs inside a savepoint wrapped
+  in `try/except`; a failure is logged and no longer rolls back the company
+  creation.
+* **Clean uninstall**: an `uninstall_hook` removes the runtime-generated
+  homepage pages/views (keyed `auto_microsite_generator.homepage_*`) that are
+  not tracked in `ir.model.data`, preventing a 500 after the shared template is
+  dropped.
+* Subdomain generation now transliterates accents
+  (e.g. "Panadería Ñandú" -> "panaderianandu").
+
 ## 19.0.1.0.0 (2026-07-08)
 
 Full OCA-style rebuild of the legacy `auto_microsite_generator` (1.0.0) for
