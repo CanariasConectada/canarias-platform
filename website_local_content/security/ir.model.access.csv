@@ -15,11 +15,7 @@ access_local_content_item_public,website.local.content.item.public,model_website
 access_local_content_item_portal,website.local.content.item.portal,model_website_local_content_item,base.group_portal,1,0,0,0
 access_local_content_item_user,website.local.content.item.user,model_website_local_content_item,base.group_user,1,0,0,0
 access_local_content_item_manager,website.local.content.item.manager,model_website_local_content_item,group_local_content_manager,1,1,1,1
-access_local_content_image_public,website.local.content.image.public,model_website_local_content_image,base.group_public,1,0,0,0
-access_local_content_image_portal,website.local.content.image.portal,model_website_local_content_image,base.group_portal,1,0,0,0
 access_local_content_image_user,website.local.content.image.user,model_website_local_content_image,base.group_user,1,0,0,0
 access_local_content_image_manager,website.local.content.image.manager,model_website_local_content_image,group_local_content_manager,1,1,1,1
-access_local_content_like_public,website.local.content.like.public,model_website_local_content_like,base.group_public,1,0,0,0
-access_local_content_like_portal,website.local.content.like.portal,model_website_local_content_like,base.group_portal,1,0,0,0
 access_local_content_like_user,website.local.content.like.user,model_website_local_content_like,base.group_user,1,0,0,0
 access_local_content_like_manager,website.local.content.like.manager,model_website_local_content_like,group_local_content_manager,1,1,1,1
