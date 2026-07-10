@@ -1,1 +1,1 @@
-from . import res_company, res_partner, website
+from . import res_company, res_config_settings, res_partner, website

@@ -1,12 +1,17 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, urlsplit
 
 from odoo import _, api, fields, models
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import AccessError, UserError, ValidationError
 
 from ..tools.opening_hours import MAX_RANGES_PER_DAY, parse_opening_hours
+
+# Only https map URLs are embeddable in the microsite contact iframe. A
+# 'javascript:' or 'data:' src would run in the visitor's page context
+# (stored XSS), so any explicit non-https scheme is refused at write time.
+_ALLOWED_MAP_URL_SCHEMES = ("https",)
 
 # Weekday names shown on the public microsite, indexed like date.weekday().
 # They are template terms in views/microsite_templates.xml as well, but the
@@ -103,9 +108,46 @@ class ResCompany(models.Model):
                         )
                     )
 
+    @api.constrains("microsite_map_url")
+    def _check_microsite_map_url(self):
+        for company in self:
+            url = company.microsite_map_url
+            if not url:
+                continue
+            # urlsplit strips tab/newline characters first, so obfuscated
+            # 'java\tscript:' payloads are normalised before the check.
+            scheme = urlsplit(url.strip()).scheme.lower()
+            # An empty scheme is a relative URL that _get_microsite_map_url()
+            # upgrades to https at render time, so it is allowed here.
+            if scheme and scheme not in _ALLOWED_MAP_URL_SCHEMES:
+                raise ValidationError(
+                    _(
+                        "The map URL must be an https:// address; "
+                        "'%(scheme)s:' links are not allowed.",
+                        scheme=scheme,
+                    )
+                )
+
     # ------------------------------------------------------------------
     # Template helpers (called from QWeb at render time)
     # ------------------------------------------------------------------
+    @staticmethod
+    def _normalize_map_url(url):
+        """Return ``url`` with a default https scheme when it has none.
+
+        The ``_check_microsite_map_url`` constraint guarantees the stored
+        value is either scheme-less or already https, so this only ever
+        prepends a scheme; it never turns a rejected link into a valid one.
+        """
+        url = (url or "").strip()
+        if not url:
+            return ""
+        if url.startswith("//"):
+            return "https:" + url
+        if not urlsplit(url).scheme:
+            return "https://" + url
+        return url
+
     def _get_microsite_opening_hours_lines(self):
         """Weekly schedule as ``[(day_label, 'HH:MM - HH:MM / ...'), ...]``.
 
@@ -132,8 +174,9 @@ class ResCompany(models.Model):
         template hides the map block entirely.
         """
         self.ensure_one()
-        if self.microsite_map_url:
-            return self.microsite_map_url
+        custom_url = self._normalize_map_url(self.microsite_map_url)
+        if custom_url:
+            return custom_url
         partner = self.partner_id
         address = " ".join(
             part for part in (partner.street, partner.city, partner.zip) if part
@@ -174,7 +217,18 @@ class ResCompany(models.Model):
         backoffice user pushes the button, and only the company's own
         website can be touched (``website_id`` is the website whose
         ``company_id`` is this company).
+
+        Publishing overwrites a public website homepage through ``sudo`` in
+        ``_publish_microsite_homepage``, so it must be gated: only website
+        designers may push content live, and only if they can write the
+        company record itself. Without this check any authenticated user
+        could replace the homepage.
         """
+        if not self.env.user.has_group("website.group_website_designer"):
+            raise AccessError(
+                _("Only website designers can publish a microsite homepage.")
+            )
+        self.check_access("write")
         for company in self:
             website = company.website_id
             if not website:

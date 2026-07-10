@@ -25,6 +25,9 @@
     <record id="demo_microsite_website" model="website">
         <field name="name">Demo Microsite Bakery Website</field>
         <field name="company_id" ref="demo_microsite_company"/>
+        <!-- Turn on the corporate footer so the microsite look is
+             demonstrable out of the box (it is off by default). -->
+        <field name="is_microsite_themed" eval="True"/>
     </record>
 
 </odoo>
