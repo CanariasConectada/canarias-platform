@@ -1,6 +1,8 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import re
+
 from odoo import fields, models
 
 
@@ -25,8 +27,19 @@ class ReviewForbiddenWord(models.Model):
     )
 
     def _match(self, text):
-        """Return the forbidden words of ``self`` found inside ``text``."""
+        """Return the forbidden words of ``self`` found inside ``text``.
+
+        The match is anchored on word boundaries over the lower-cased text,
+        not a raw substring: this avoids flagging legitimate words that merely
+        contain a forbidden one (``especialista`` must not match ``cialis``)
+        and the trivial evasion that a substring check invites. ``re.escape``
+        keeps entries with regex metacharacters literal.
+        """
         if not text:
             return self.browse()
-        lowered = text.lower()
-        return self.filtered(lambda word: word.name.lower() in lowered)
+        normalized = text.lower()
+        return self.filtered(
+            lambda word: re.search(
+                r"\b" + re.escape(word.name.lower()) + r"\b", normalized
+            )
+        )

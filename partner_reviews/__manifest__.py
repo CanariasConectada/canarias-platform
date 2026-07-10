@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Merchant Reviews",
-    "version": "19.0.2.0.0",
+    "version": "19.0.2.1.0",
     "category": "Website",
     "summary": "Customer reviews for merchant websites, built on rating.rating",
     "author": "MikeColangelo",

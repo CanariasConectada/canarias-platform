@@ -33,3 +33,24 @@ class PartnerReviewsCase(TransactionCase):
                 "consumed": True,
             }
         )
+
+    def _create_moderator(self, login, company=None):
+        """A review moderator scoped to ``company`` (defaults to the bakery)."""
+        company = company or self.company
+        return self.env["res.users"].create(
+            {
+                "name": "PR Moderator %s" % login,
+                "login": login,
+                "email": "%s@example.com" % login,
+                "company_id": company.id,
+                "company_ids": [(6, 0, [company.id])],
+                "group_ids": [
+                    (
+                        4,
+                        self.env.ref(
+                            "partner_reviews.group_partner_reviews_moderator"
+                        ).id,
+                    )
+                ],
+            }
+        )

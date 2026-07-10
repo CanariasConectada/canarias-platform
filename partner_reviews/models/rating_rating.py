@@ -4,6 +4,9 @@
 from markupsafe import Markup
 
 from odoo import _, api, fields, models
+from odoo.exceptions import AccessError
+
+MODERATOR_GROUP = "partner_reviews.group_partner_reviews_moderator"
 
 # Merchant reviews are native rating.rating records attached to res.company.
 MERCHANT_REVIEW_MODEL = "res.company"
@@ -64,13 +67,46 @@ class RatingRating(models.Model):
         return ratings
 
     def write(self, vals):
+        if "moderation_status" in vals:
+            self._check_moderation_write_access()
+        feedback_changed = "feedback" in vals
+        if feedback_changed:
+            merchant_reviews = self.filtered(lambda r: r._is_merchant_review())
+            # Snapshot the status BEFORE re-moderation so we only notify on a
+            # real transition into ``pending``. A review that was already
+            # ``pending`` must not spawn a fresh email + activity on every
+            # edit, otherwise an author could flood every moderator by
+            # re-saving forbidden feedback N times (DoS).
+            previous_status = {
+                review.id: review.moderation_status for review in merchant_reviews
+            }
         result = super().write(vals)
-        if "feedback" in vals:
-            reviews = self.filtered(lambda r: r._is_merchant_review())
-            reviews._apply_moderation()
-            for review in reviews.filtered(lambda r: r.moderation_status == "pending"):
-                review._notify_moderators()
+        if feedback_changed:
+            merchant_reviews._apply_moderation()
+            for review in merchant_reviews:
+                if (
+                    review.moderation_status == "pending"
+                    and previous_status.get(review.id) != "pending"
+                ):
+                    review._notify_moderators()
         return result
+
+    def _check_moderation_write_access(self):
+        """Only review moderators may change ``moderation_status`` directly.
+
+        The native ``rating.rating`` ACL grants write to every internal user
+        (see ``security/partner_reviews_rules.xml``), so without this guard any
+        employee could approve a held review over RPC and bypass moderation.
+        The moderation engine itself (``_apply_moderation``) writes through
+        ``sudo`` and is therefore always allowed, as is any superuser flow.
+        """
+        if self.env.su:
+            return
+        if self.env.user.has_group(MODERATOR_GROUP):
+            return
+        raise AccessError(
+            _("Only review moderators can change the moderation status.")
+        )
 
     # ------------------------------------------------------------------
     # Moderation
@@ -91,7 +127,10 @@ class RatingRating(models.Model):
             if review.moderation_status == "rejected":
                 continue
             flagged = bool(words._match(review.feedback))
-            review.write(
+            # Written through ``sudo``: ``moderation_status`` is a system-managed
+            # field (guarded by ``_check_moderation_write_access``); only the
+            # moderation engine and explicit moderator actions may set it.
+            review.sudo().write(
                 {
                     "requires_moderation": flagged,
                     "moderation_status": "pending" if flagged else "approved",
@@ -110,13 +149,24 @@ class RatingRating(models.Model):
     # Notifications
     # ------------------------------------------------------------------
     def _get_moderator_users(self):
-        group = self.env.ref(
-            "partner_reviews.group_partner_reviews_moderator",
-            raise_if_not_found=False,
-        )
+        """Active moderators allowed on this review's merchant company.
+
+        A merchant review stores the company id in ``res_id``; only moderators
+        who have that company among their allowed ones (``company_ids``) are
+        notified, so a review of company A never leaks to a moderator scoped to
+        company B.
+        """
+        self.ensure_one()
+        group = self.env.ref(MODERATOR_GROUP, raise_if_not_found=False)
         if not group:
             return self.env["res.users"]
-        return group.user_ids.filtered(lambda user: user.active)
+        moderators = group.user_ids.filtered(lambda user: user.active)
+        if self._is_merchant_review():
+            company_id = self.res_id
+            moderators = moderators.filtered(
+                lambda user: company_id in user.company_ids.ids
+            )
+        return moderators
 
     def _notify_moderators(self):
         """Email + to-do activity for every review moderator.
@@ -139,7 +189,13 @@ class RatingRating(models.Model):
             self.env[MERCHANT_REVIEW_MODEL].sudo().browse(self.res_id).partner_id
         )
         for user in moderators:
-            if activity_type_id and merchant_partner:
+            if (
+                activity_type_id
+                and merchant_partner
+                and not self._pending_activity_exists(
+                    activity_type_id, user, merchant_partner
+                )
+            ):
                 self.env["mail.activity"].sudo().create(
                     {
                         "activity_type_id": activity_type_id,
@@ -162,6 +218,25 @@ class RatingRating(models.Model):
                     self.id,
                     email_values={"email_to": user.email},
                 )
+
+    def _pending_activity_exists(self, activity_type_id, user, merchant_partner):
+        """Whether a moderation to-do is already open for this moderator.
+
+        Deduplicates the to-do per (moderator, merchant partner): a second
+        notification while the previous one is still open must not pile up
+        another activity on the moderator's dashboard.
+        """
+        return bool(
+            self.env["mail.activity"].sudo().search_count(
+                [
+                    ("activity_type_id", "=", activity_type_id),
+                    ("user_id", "=", user.id),
+                    ("res_model", "=", merchant_partner._name),
+                    ("res_id", "=", merchant_partner.id),
+                ],
+                limit=1,
+            )
+        )
 
     def _notify_merchant(self):
         """Plain email to the merchant when an approved review arrives."""

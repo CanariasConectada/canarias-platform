@@ -11,6 +11,9 @@ from odoo.tools import str2bool
 from odoo.addons.portal.controllers.portal import pager as portal_pager
 
 REVIEWS_PER_PAGE = 10
+# Upper bound for a customer comment. The field is unbounded in the DB, so the
+# public endpoint caps it to keep a single review from storing megabytes.
+MAX_FEEDBACK_LENGTH = 2000
 
 
 class PartnerReviewsController(http.Controller):
@@ -83,13 +86,21 @@ class PartnerReviewsController(http.Controller):
         if not company:
             raise werkzeug.exceptions.NotFound()
 
+        # ``page`` comes from the query string of a public route: never trust
+        # it to be a valid positive integer.
+        try:
+            page = int(page)
+        except (TypeError, ValueError):
+            page = 1
+        page = max(page, 1)
+
         Rating = request.env["rating.rating"].sudo()
         domain = company._get_review_domain()
         total = Rating.search_count(domain)
         pager = portal_pager(
             url="/resenas",
             total=total,
-            page=int(page),
+            page=page,
             step=REVIEWS_PER_PAGE,
         )
         reviews = Rating.search(
@@ -131,7 +142,7 @@ class PartnerReviewsController(http.Controller):
         if not 1 <= rating_value <= 5:
             return self._redirect_with_status("invalid_rating")
 
-        feedback = (feedback or "").strip()
+        feedback = (feedback or "").strip()[:MAX_FEEDBACK_LENGTH]
         if not self._comments_allowed():
             feedback = ""
         review = self._get_user_review(company)
