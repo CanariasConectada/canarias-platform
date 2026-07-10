@@ -191,7 +191,7 @@
                                 <li t-if="item.tiktok"><i class="fa fa-music me-2"/><t t-esc="item.tiktok"/></li>
                                 <li t-if="item.external_website">
                                     <i class="fa fa-globe me-2"/>
-                                    <a t-att-href="item.external_website" target="_blank" rel="noopener" t-esc="item.external_website"/>
+                                    <a t-att-href="item.get_external_website_url()" target="_blank" rel="noopener nofollow" t-esc="item.external_website"/>
                                 </li>
                                 <li t-if="item.opening_hours"><i class="fa fa-clock-o me-2"/><span class="wlc-pre-line" t-esc="item.opening_hours"/></li>
                             </ul>

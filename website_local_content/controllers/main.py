@@ -2,6 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 import uuid
+from urllib.parse import urlsplit
 
 from odoo import http
 from odoo.fields import Domain
@@ -123,6 +124,24 @@ class WebsiteLocalContent(http.Controller):
 
     def _get_visitor_session_key(self):
         return request.httprequest.cookies.get(LIKE_COOKIE)
+
+    def _is_safe_local_path(self, url):
+        """Whether ``url`` is a same-site absolute path, safe to redirect to.
+
+        Rejects absolute URLs (``http://evil``), protocol-relative URLs
+        (``//evil``) and the backslash variant browsers normalize to the
+        latter (``/\\evil`` -> ``//evil``), closing the open-redirect hole
+        independently of Odoo's own ``request.redirect(local=True)`` guard.
+        """
+        if not url or not isinstance(url, str):
+            return False
+        # Browsers treat backslashes as forward slashes; normalize before
+        # parsing so ``/\evil.com`` cannot masquerade as a local path.
+        normalized = url.replace("\\", "/")
+        parsed = urlsplit(normalized)
+        if parsed.scheme or parsed.netloc:
+            return False
+        return normalized.startswith("/") and not normalized.startswith("//")
 
     # ------------------------------------------------------------------
     # Index and category browsing
@@ -309,9 +328,10 @@ class WebsiteLocalContent(http.Controller):
                     "ip_address": request.httprequest.remote_addr,
                 }
             )
-        redirect_url = kw.get("redirect") or item.website_url
-        # Only redirect within the current site.
-        if not redirect_url.startswith("/") or redirect_url.startswith("//"):
+        # Only redirect within the current site; anything else (external,
+        # protocol-relative or the backslash bypass) falls back to the item.
+        redirect_url = kw.get("redirect")
+        if not self._is_safe_local_path(redirect_url):
             redirect_url = item.website_url
         response = request.redirect(redirect_url)
         response.set_cookie(

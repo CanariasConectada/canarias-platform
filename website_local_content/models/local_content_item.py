@@ -4,11 +4,15 @@
 import re
 import unicodedata
 from datetime import date
+from urllib.parse import urlsplit
 
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
 MIN_PHOTO_YEAR = 1840  # First photographs of the Canary Islands era.
+# Only these schemes may reach an ``href``. Anything else (``javascript:``,
+# ``data:``, ``vbscript:`` ...) is a stored-XSS vector once clicked.
+ALLOWED_URL_SCHEMES = ("http", "https")
 
 
 def slugify(value):
@@ -194,6 +198,29 @@ class LocalContentItem(models.Model):
             if record.longitude and not -180 <= record.longitude <= 180:
                 raise ValidationError(_("Longitude must be between -180 and 180."))
 
+    @api.constrains("external_website")
+    def _check_external_website(self):
+        """Reject explicit non-http(s) schemes on the external link.
+
+        The value is rendered into an ``href`` on the public detail page, so
+        a ``javascript:``/``data:`` URI would be stored XSS on click. A
+        scheme-less value (``www.example.com``) is allowed and normalized to
+        https at render time (see ``get_external_website_url``).
+        """
+        for record in self:
+            url = (record.external_website or "").strip()
+            if not url:
+                continue
+            scheme = urlsplit(url).scheme
+            if scheme and scheme.lower() not in ALLOWED_URL_SCHEMES:
+                raise ValidationError(
+                    _(
+                        "The external website must be an http(s) address or a "
+                        "scheme-less URL; the %(scheme)s scheme is not allowed.",
+                        scheme=scheme,
+                    )
+                )
+
     @api.constrains("type_id", "category_id", "subcategory_id")
     def _check_taxonomy_consistency(self):
         for record in self:
@@ -287,6 +314,23 @@ class LocalContentItem(models.Model):
         """URL of the streamed public image (see the ``/img`` route)."""
         self.ensure_one()
         return f"/explora/{self.type_id.url_slug}/img/{self.id}"
+
+    def get_external_website_url(self):
+        """Safe ``href`` for the external link shown on the detail page.
+
+        Scheme-less values (``www.example.com``) are normalized to https so
+        the browser opens them as an absolute URL instead of resolving them
+        as a same-site relative path. ``_check_external_website`` guarantees
+        any explicit scheme is http/https, so the result is never a
+        ``javascript:``/``data:`` URI.
+        """
+        self.ensure_one()
+        url = (self.external_website or "").strip()
+        if not url:
+            return ""
+        if not urlsplit(url).scheme:
+            url = f"https://{url}"
+        return url
 
     def has_session_liked(self, session_key):
         """Whether the given anonymous session already liked this item."""

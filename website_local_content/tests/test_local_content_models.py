@@ -76,6 +76,31 @@ class TestLocalContentModels(TransactionCase):
         with self.assertRaises(ValidationError):
             self._create_item(subcategory_id=self.subcategory_b.id)
 
+    def test_external_website_rejects_dangerous_scheme(self):
+        for bad in (
+            "javascript:alert(1)",
+            "JavaScript:alert(document.cookie)",
+            "data:text/html,<script>alert(1)</script>",
+            "vbscript:msgbox(1)",
+        ):
+            with self.assertRaises(ValidationError), self.env.cr.savepoint():
+                self._create_item(external_website=bad)
+
+    def test_external_website_accepts_http_schemes(self):
+        for good in ("http://example.com", "https://example.com/path"):
+            item = self._create_item(external_website=good)
+            self.assertEqual(item.get_external_website_url(), good)
+
+    def test_external_website_schemeless_normalized_to_https(self):
+        item = self._create_item(external_website="www.example.com/place")
+        self.assertEqual(
+            item.get_external_website_url(), "https://www.example.com/place"
+        )
+
+    def test_external_website_empty_getter(self):
+        item = self._create_item()
+        self.assertEqual(item.get_external_website_url(), "")
+
     def test_workflow_actions(self):
         item = self._create_item()
         self.assertEqual(item.state, "draft")
