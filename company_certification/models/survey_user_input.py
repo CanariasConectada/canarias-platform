@@ -67,6 +67,7 @@ class SurveyUserInput(models.Model):
     # ------------------------------------------------------------------
     @api.depends(
         "scoring_total",
+        "survey_id.scoring_type",
         "certification_type_id",
         "is_manually_overridden",
         "manual_certification_level",
@@ -240,6 +241,23 @@ class SurveyUserInput(models.Model):
         cooldown of the last attempt is still running.
         """
         user = self.env.user
+        # Authorization gate: only members of the vertical's user group may
+        # run an evaluation. This guards both the website controller and the
+        # RPC-exposed action_start_certification() against any authenticated
+        # user (including portal users) silently obtaining a seal via sudo
+        # create below. The gating group is read as sudo so the check itself
+        # is never blocked by the caller's own access rights.
+        cert_type_sudo = cert_type.sudo()
+        if (
+            cert_type_sudo.group_user_id
+            and cert_type_sudo.group_user_id not in user.all_group_ids
+        ):
+            raise UserError(
+                _(
+                    "You are not allowed to run the %s evaluation.",
+                    cert_type_sudo.name,
+                )
+            )
         if not user.company_id:
             raise UserError(
                 _("You need a company on your user profile to run an evaluation.")

@@ -48,7 +48,23 @@
         </record>
 
         <!-- Vertical managers see every evaluation of the verticals they
-             manage; the generic manager group sees them all. -->
+             manage; the generic manager group sees them all.
+
+             DESIGN DECISION (multi-tenant audit, 2026-07): this rule is
+             INTENTIONALLY not scoped by company. A vertical "manager" is a
+             platform/program operator that runs a certification program
+             (e.g. Silver Economy) across every participating company, so it
+             must read/award/override evaluations of companies it does not
+             belong to. Adding ('company_id','in',user.company_ids.ids) here
+             would break that documented role (see group_manager_id help and
+             test_manager_sees_all_evaluations_of_managed_vertical). Cross-
+             company visibility is a consequence of granting the manager
+             group, not a self-service escalation: the unauthenticated/plain
+             path is closed by the group check in
+             survey.user_input._start_certification_evaluation. If a future
+             requirement needs per-company managers, split this into a
+             company-scoped manager rule plus an unscoped rule limited to
+             base.group_system, and revisit the group_manager_id semantics. -->
         <record id="survey_user_input_rule_certification_manager" model="ir.rule">
             <field name="name">Certification: manager sees managed verticals' evaluations</field>
             <field name="model_id" ref="survey.model_survey_user_input"/>

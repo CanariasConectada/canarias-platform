@@ -16,16 +16,20 @@ class ResCompany(models.Model):
     )
 
     def _compute_certification_evaluation_count(self):
-        for company in self:
-            company.certification_evaluation_count = self.env[
-                "survey.user_input"
-            ].search_count(
-                [
+        # Single grouped query instead of one search_count per company.
+        counts = dict(
+            self.env["survey.user_input"]._read_group(
+                domain=[
                     ("certification_type_id", "!=", False),
-                    ("company_id", "=", company.id),
+                    ("company_id", "in", self.ids),
                     ("test_entry", "=", False),
-                ]
+                ],
+                groupby=["company_id"],
+                aggregates=["__count"],
             )
+        )
+        for company in self:
+            company.certification_evaluation_count = counts.get(company, 0)
 
     def action_open_certification_evaluations(self):
         self.ensure_one()

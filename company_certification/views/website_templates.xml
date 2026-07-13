@@ -182,8 +182,10 @@
     <template id="certification_microsite_section" inherit_id="website.layout" name="Certification - Microsite Section">
         <xpath expr="//footer[@id='bottom']" position="before">
             <t t-set="cc_company" t-value="website.company_id"/>
-            <t t-set="cc_certifications" t-value="cc_company._get_valid_certifications()"/>
             <t t-set="cc_is_homepage" t-value="request.httprequest.path == (website.homepage_url or '/')"/>
+            <!-- Only resolve the (sudo + filtered) certifications on the
+                 homepage, where the section is actually rendered. -->
+            <t t-set="cc_certifications" t-value="cc_company._get_valid_certifications() if (cc_is_homepage and not suppress_certification_section) else []"/>
             <section t-if="cc_is_homepage and cc_certifications and not suppress_certification_section"
                      class="o_cc o_cc2 pt32 pb32 o_colored_level">
                 <div class="container">

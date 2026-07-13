@@ -118,3 +118,54 @@ class TestCertificationFlow(CertificationCase):
         self.assertFalse(menu.exists())
         self.assertFalse(action.exists())
         self.assertFalse(start_action.exists())
+
+    def test_start_evaluation_denied_for_non_group_user(self):
+        """A user outside the vertical's group cannot start an evaluation.
+
+        Regression for the sudo-create escalation: any authenticated user
+        could reach action_start_certification (RPC) or the controller and
+        silently create a real evaluation for a vertical they do not belong
+        to. Both entry points now go through the group check.
+        """
+        with self.assertRaises(UserError):
+            self.env["survey.user_input"].with_user(
+                self.plain_user
+            ).action_start_certification(self.cert_type.id)
+        with self.assertRaises(UserError):
+            self.env["survey.user_input"].with_user(
+                self.plain_user
+            )._start_certification_evaluation(self.cert_type)
+        # No evaluation leaked through despite the sudo create.
+        self.assertFalse(
+            self.env["survey.user_input"].search(
+                [
+                    ("survey_id", "=", self.survey.id),
+                    ("partner_id", "=", self.plain_user.partner_id.id),
+                ]
+            )
+        )
+
+    def test_group_member_can_start_evaluation(self):
+        """The positive counterpart: a vertical member is allowed through."""
+        url = (
+            self.env["survey.user_input"]
+            .with_user(self.user)
+            ._start_certification_evaluation(self.cert_type)
+        )
+        self.assertIn("/survey/start/", url)
+
+    def test_no_scoring_survey_yields_no_level(self):
+        """Switching the questionnaire to non-scoring recomputes the level."""
+        answer = self._run_evaluation(3)
+        self.assertEqual(answer.certification_level, "gold")
+        # The scoring_type dependency must trigger a recompute to 'none'.
+        self.survey.scoring_type = "no_scoring"
+        self.assertEqual(answer.certification_level, "none")
+
+    def test_certification_evaluation_count(self):
+        """The company counter aggregates real evaluations in one query."""
+        self.assertEqual(self.company.certification_evaluation_count, 0)
+        self._run_evaluation(3)
+        self._run_evaluation(0)
+        self.company.invalidate_recordset(["certification_evaluation_count"])
+        self.assertEqual(self.company.certification_evaluation_count, 2)
