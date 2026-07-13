@@ -11,6 +11,10 @@ class TestMicrositeCompany(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        # auto_microsite_generator (co-installed in the full image) overrides
+        # res.company.create() to auto-provision a website per company, which
+        # perturbs the website ids/microsite state these tests assert on.
+        cls.env = cls.env(context=dict(cls.env.context, no_microsite_auto=True))
         cls.company = cls.env["res.company"].create(
             {
                 "name": "Microsite Test Company",
