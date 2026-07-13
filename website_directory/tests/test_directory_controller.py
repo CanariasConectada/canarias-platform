@@ -41,6 +41,11 @@ class TestDirectoryController(HttpCase):
             [("company_id", "=", cls.company_unpublished.id)]
         )
         cls.entry_unpublished.is_published = False
+        # The hidden company's entry exists but is archived (active mirrors
+        # show_in_directory), so active_test must be off to fetch it.
+        cls.entry_hidden = Entry.with_context(active_test=False).search(
+            [("company_id", "=", cls.company_hidden.id)]
+        )
 
     def test_directory_page_ok(self):
         response = self.url_open("/comercio")
@@ -129,6 +134,20 @@ class TestDirectoryController(HttpCase):
     def test_image_route_unpublished_not_found(self):
         response = self.url_open(f"/comercio/img/{self.entry_unpublished.id}")
         self.assertEqual(response.status_code, 404)
+
+    def test_image_route_hidden_company_not_found(self):
+        # IDOR guard: the entry of a company with show_in_directory=False
+        # (hence an archived entry) must not leak its logo through the
+        # enumerable public image route.
+        self.assertFalse(self.entry_hidden.company_id.show_in_directory)
+        response = self.url_open(f"/comercio/img/{self.entry_hidden.id}")
+        self.assertEqual(response.status_code, 404)
+
+    def test_image_route_visible_ok(self):
+        # The counterpart of the IDOR guard: a fully visible entry serves
+        # its image with a 200.
+        response = self.url_open(f"/comercio/img/{self.entry_a.id}")
+        self.assertEqual(response.status_code, 200)
 
     def test_shuffle_cookie_set(self):
         response = self.url_open("/comercio")

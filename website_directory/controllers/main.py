@@ -349,7 +349,17 @@ class WebsiteDirectory(http.Controller):
         """
         entry = request.env["website.directory.entry"].sudo().browse(entry_id)
         entry = entry.exists()
-        if not entry or not entry.is_published:
+        # Enumerable ids: re-check the SAME visibility conditions as the
+        # directory listing domain (see ``_get_search_domain``) so this public
+        # route can never leak the logo of a hidden, archived or unpublished
+        # business.
+        if (
+            not entry
+            or not entry.is_published
+            or not entry.active
+            or not entry.company_id.show_in_directory
+            or not entry.company_id.active
+        ):
             return request.not_found()
         if entry.image_1920:
             record, field_name = entry, "image_1920"

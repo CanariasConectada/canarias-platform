@@ -19,6 +19,10 @@ class TestDirectoryEntrySync(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        # auto_microsite_generator (co-installed in the full image) would give
+        # each new company a website, and core forbids archiving a company that
+        # owns one; disable it so this suite tests directory sync in isolation.
+        cls.env = cls.env(context=dict(cls.env.context, no_microsite_auto=True))
         cls.Entry = cls.env["website.directory.entry"]
         cls.Company = cls.env["res.company"]
         cls.root_category = cls.env["res.company.category"].create(
@@ -182,6 +186,24 @@ class TestDirectoryEntrySync(TransactionCase):
         self.assertFalse(self.company.directory_sync_pending)
         self.company.write({"name": "WD Touched Co"})
         self.assertTrue(self.company.directory_sync_pending)
+
+    def test_partner_write_flags_company_pending(self):
+        # Editing the partner directly (Contacts/l10n/programmatic) must flag
+        # its company pending, even though res.company.write never runs.
+        self._flush(self.company)
+        self.assertFalse(self.company.directory_sync_pending)
+        self.company.partner_id.write({"phone": "+34 928 111 222"})
+        self.assertTrue(self.company.directory_sync_pending)
+        # After the cron drains it, the public entry shows the fresh data.
+        self._flush(self.company)
+        entry = self._get_entry(self.company)
+        self.assertEqual(entry.phone, "+34 928 111 222")
+
+    def test_partner_write_non_sync_field_does_not_flag(self):
+        # A partner write that touches no synced field must stay inert.
+        self._flush(self.company)
+        self.company.partner_id.write({"comment": "internal note"})
+        self.assertFalse(self.company.directory_sync_pending)
 
     def test_write_non_trigger_does_not_flag(self):
         self._flush(self.company)
