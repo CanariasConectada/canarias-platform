@@ -19,6 +19,10 @@ class TestDirectoryEntrySync(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        # auto_microsite_generator (co-installed in the full image) would give
+        # each new company a website, and core forbids archiving a company that
+        # owns one; disable it so this suite tests directory sync in isolation.
+        cls.env = cls.env(context=dict(cls.env.context, no_microsite_auto=True))
         cls.Entry = cls.env["website.directory.entry"]
         cls.Company = cls.env["res.company"]
         cls.root_category = cls.env["res.company.category"].create(
