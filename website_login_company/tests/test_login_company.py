@@ -73,6 +73,10 @@ class TestLoginCompanyCookie(HttpCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        # auto_microsite_generator (co-installed in the full image) auto-creates
+        # a website per company; the extra websites collide on the unique domain
+        # constraint these tests exercise, so disable it here.
+        cls.env = cls.env(context=dict(cls.env.context, no_microsite_auto=True))
         cls.company_main = cls.env.ref("base.main_company")
         cls.company_shop = cls.env["res.company"].create({"name": "Shop Co"})
         cls.website = cls.env["website"].search([], limit=1)
