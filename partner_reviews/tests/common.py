@@ -10,7 +10,14 @@ class PartnerReviewsCase(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.env = cls.env(context=dict(cls.env.context, no_reset_password=True))
+        # no_microsite_auto keeps auto_microsite_generator (co-installed in the
+        # full image) from provisioning a website per company, which would
+        # perturb the website_id these tests assert on.
+        cls.env = cls.env(
+            context=dict(
+                cls.env.context, no_reset_password=True, no_microsite_auto=True
+            )
+        )
         cls.company = cls.env["res.company"].create(
             {"name": "PR Test Bakery", "enable_reviews": True}
         )
