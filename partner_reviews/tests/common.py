@@ -10,7 +10,14 @@ class PartnerReviewsCase(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.env = cls.env(context=dict(cls.env.context, no_reset_password=True))
+        # no_microsite_auto keeps auto_microsite_generator (co-installed in the
+        # full image) from provisioning a website per company, which would
+        # perturb the website_id these tests assert on.
+        cls.env = cls.env(
+            context=dict(
+                cls.env.context, no_reset_password=True, no_microsite_auto=True
+            )
+        )
         cls.company = cls.env["res.company"].create(
             {"name": "PR Test Bakery", "enable_reviews": True}
         )
@@ -31,5 +38,26 @@ class PartnerReviewsCase(TransactionCase):
                 "rating": rating,
                 "feedback": feedback,
                 "consumed": True,
+            }
+        )
+
+    def _create_moderator(self, login, company=None):
+        """A review moderator scoped to ``company`` (defaults to the bakery)."""
+        company = company or self.company
+        return self.env["res.users"].create(
+            {
+                "name": "PR Moderator %s" % login,
+                "login": login,
+                "email": "%s@example.com" % login,
+                "company_id": company.id,
+                "company_ids": [(6, 0, [company.id])],
+                "group_ids": [
+                    (
+                        4,
+                        self.env.ref(
+                            "partner_reviews.group_partner_reviews_moderator"
+                        ).id,
+                    )
+                ],
             }
         )
