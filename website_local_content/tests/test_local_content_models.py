@@ -5,8 +5,9 @@ from datetime import date
 
 from psycopg2.errors import UniqueViolation
 
-from odoo.exceptions import ValidationError
+from odoo.exceptions import AccessError, ValidationError
 from odoo.tests import TransactionCase
+from odoo.tests.common import new_test_user
 from odoo.tools import mute_logger
 
 from .common import create_taxonomy, make_test_image
@@ -138,3 +139,43 @@ class TestLocalContentModels(TransactionCase):
         visible_on_b = self.Item.search(domain_b)
         self.assertIn(everywhere, visible_on_b)
         self.assertNotIn(only_a, visible_on_b)
+
+
+class TestLocalContentAccess(TransactionCase):
+    """Anonymous and portal visitors must never read visitor PII (like:
+    ip_address/session_key) nor gallery images through the ORM/RPC. The public
+    site renders via sudo() controllers, so no public/portal ACL is needed on
+    these models; this locks the leak closed against future regressions.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.type_a, cls.category_a, cls.subcategory_a = create_taxonomy(cls.env, "A")
+        item = cls.env["website.local.content.item"].sudo().create(
+            {
+                "name": "Casa del Niño",
+                "type_id": cls.type_a.id,
+                "category_id": cls.category_a.id,
+            }
+        )
+        cls.like = cls.env["website.local.content.like"].sudo().create(
+            {"item_id": item.id, "session_key": "sess-1", "ip_address": "203.0.113.9"}
+        )
+        cls.image = cls.env["website.local.content.image"].sudo().create(
+            {"item_id": item.id, "name": "gallery"}
+        )
+        cls.portal_user = new_test_user(
+            cls.env, login="wlc_portal", groups="base.group_portal"
+        )
+        cls.public_user = cls.env.ref("base.public_user")
+
+    def test_visitor_cannot_read_like_pii(self):
+        for user in (self.public_user, self.portal_user):
+            with self.assertRaises(AccessError):
+                self.like.with_user(user).read(["ip_address", "session_key"])
+
+    def test_visitor_cannot_read_gallery_image(self):
+        for user in (self.public_user, self.portal_user):
+            with self.assertRaises(AccessError):
+                self.image.with_user(user).read(["name"])
