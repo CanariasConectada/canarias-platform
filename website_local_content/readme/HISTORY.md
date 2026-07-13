@@ -1,3 +1,16 @@
+## 19.0.1.3.0 (2026-07-10)
+
+Security hardening of the public link and like flows:
+
+- The `external_website` field now rejects any explicit scheme other than
+  http/https (`javascript:`, `data:`, ...), removing a stored-XSS vector on
+  the detail page. Scheme-less values (`www.example.com`) are allowed and
+  normalized to https at render time, and the external link carries
+  `rel="noopener nofollow"`.
+- The like route validates the `redirect` parameter as a same-site absolute
+  path before redirecting, closing the `/\evil.com` open-redirect bypass
+  independently of Odoo's own `local=True` guard.
+
 ## 19.0.1.1.0 (2026-07-09)
 
 Per-website scoping of the public pages, restoring the parity with the

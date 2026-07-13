@@ -145,6 +145,42 @@ class TestLocalContentController(HttpCase):
         self.env.invalidate_all()
         self.assertEqual(self.item_public.like_count, 1)
 
+    def test_like_open_redirect_blocked(self):
+        """A crafted `redirect` (incl. the `/\\evil.com` backslash bypass)
+        must never send the visitor off-site; it falls back to the item URL.
+        """
+        like_url = f"{self.index_url}/like/{self.item_public.id}"
+        csrf_token = self._get_csrf_token()
+        for hostile in ("http://evil.com", "//evil.com", "/\\evil.com"):
+            response = self.url_open(
+                like_url,
+                data={"csrf_token": csrf_token, "redirect": hostile},
+                allow_redirects=False,
+            )
+            self.assertIn(response.status_code, (302, 303))
+            location = response.headers["Location"]
+            self.assertNotIn("evil.com", location)
+            self.assertTrue(location.endswith(self.item_public.website_url))
+
+    def test_detail_external_website_is_safe(self):
+        """A scheme-less external link renders as an https href with
+        rel="noopener nofollow" (getter callable from QWeb, no XSS).
+        """
+        item = self.env["website.local.content.item"].create(
+            {
+                "name": "WLC Linked Place",
+                "type_id": self.type_a.id,
+                "category_id": self.category_a.id,
+                "state": "approved",
+                "is_published": True,
+                "external_website": "www.example.com",
+            }
+        )
+        response = self.url_open(f"{self.index_url}/{item.slug}")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('href="https://www.example.com"', response.text)
+        self.assertIn('rel="noopener nofollow"', response.text)
+
     def _get_csrf_token(self):
         """Fetch a page first so the session gets a CSRF-capable cookie."""
         response = self.url_open(self.index_url)
