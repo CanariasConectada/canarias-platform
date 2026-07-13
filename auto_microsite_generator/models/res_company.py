@@ -3,6 +3,7 @@
 
 import logging
 import re
+import unicodedata
 
 from odoo import _, api, models
 
@@ -33,8 +34,18 @@ PROTECTED_NAME_PATTERNS = (
 
 
 def _normalize_subdomain(name):
-    """Return a DNS-safe subdomain built from a company name."""
-    subdomain = re.sub(r"[^a-z0-9\s]", "", (name or "").lower())
+    """Return a DNS-safe subdomain built from a company name.
+
+    Accented characters are transliterated to their closest ASCII form
+    (e.g. "Panadería Ñandú" -> "panaderianandu") so real business names keep a
+    meaningful subdomain instead of having their accented letters dropped.
+    """
+    ascii_name = (
+        unicodedata.normalize("NFKD", name or "")
+        .encode("ascii", "ignore")
+        .decode("ascii")
+    )
+    subdomain = re.sub(r"[^a-z0-9\s]", "", ascii_name.lower())
     subdomain = re.sub(r"\s+", "", subdomain)[:30]
     return subdomain or "empresa"
 
@@ -61,7 +72,17 @@ class ResCompany(models.Model):
         if new_ids:
             generation = companies.with_context(allowed_company_ids=allowed + new_ids)
         for company in generation:
-            company._auto_generate_microsite()
+            # A microsite failure must NEVER abort the company creation. Each
+            # generation runs in its own savepoint so a partial write is rolled
+            # back cleanly -- otherwise the aborted DB state would also doom the
+            # outer create at flush time -- while the company itself survives.
+            try:
+                with self.env.cr.savepoint():
+                    company._auto_generate_microsite()
+            except Exception:  # noqa: BLE001 - defensive: log and keep going
+                _logger.exception(
+                    "auto-microsite failed for %s", company.display_name
+                )
         return companies
 
     # ------------------------------------------------------------------
@@ -160,9 +181,12 @@ class ResCompany(models.Model):
         if domain:
             values["domain"] = domain
         website = self.env["website"].sudo().create(values)
-        # res.company.website_id is a stored compute keyed on website.company_id;
-        # website.create() already recomputes it, but refresh to be explicit.
-        self.invalidate_recordset(["website_id"])
+        # res.company.website_id is a stored compute WITHOUT @api.depends, so a
+        # bare cache invalidation would clear the value but never reschedule the
+        # recompute, leaving website_id stale (False) forever. Flag the field for
+        # recomputation instead: the next read runs _compute_website_id and
+        # resolves the freshly created website.
+        self.env.add_to_compute(self._fields["website_id"], self)
         return website
 
     def _microsite_default_domain(self):
@@ -227,7 +251,12 @@ class ResCompany(models.Model):
     # Homepage
     # ------------------------------------------------------------------
     def _get_microsite_homepage_arch(self):
-        """Thin homepage wrapper calling the shared microsite content template."""
+        """Thin homepage wrapper calling the shared microsite content template.
+
+        Returned as canonical XML (no trailing newline): ir.ui.view re-serializes
+        arch_db on write, so keeping this a fixed point of that serialization is
+        what makes :meth:`_ensure_microsite_homepage` a true idempotent no-op.
+        """
         self.ensure_one()
         return (
             f'<t name="Homepage" t-name="auto_microsite_generator.homepage_{self.id}">\n'
@@ -237,7 +266,7 @@ class ResCompany(models.Model):
             '"auto_microsite_generator.default_homepage_content"/>\n'
             "        </div>\n"
             "    </t>\n"
-            "</t>\n"
+            "</t>"
         )
 
     def _ensure_microsite_homepage(self, website):
@@ -263,8 +292,19 @@ class ResCompany(models.Model):
         arch = self._get_microsite_homepage_arch()
         view_key = f"auto_microsite_generator.homepage_{self.id}"
         if page:
-            page.view_id.write({"arch_db": arch, "key": view_key})
-            page.is_published = True
+            # Idempotent refresh: only write what actually changed so re-runs do
+            # not churn the view (needless write_date bumps, COW copies, ...).
+            # ``arch`` is canonical XML, so it round-trips equal to the stored
+            # arch_db and this comparison stays a reliable no-op.
+            vals = {}
+            if page.view_id.arch_db != arch:
+                vals["arch_db"] = arch
+            if page.view_id.key != view_key:
+                vals["key"] = view_key
+            if vals:
+                page.view_id.write(vals)
+            if not page.is_published:
+                page.is_published = True
             return page
         view = View.create(
             {
