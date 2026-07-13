@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website Login Company",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     "category": "Website",
     "summary": "Select the website company as active company at login",
     "author": "MikeColangelo",

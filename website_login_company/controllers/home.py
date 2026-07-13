@@ -50,21 +50,30 @@ class WebsiteLoginCompanyHome(Home):
     def _find_login_website(self):
         """Return the website the user is logging in from, if any.
 
-        ``request.website`` is only bound on website-routed requests, so we
-        fall back to matching the HTTP host against the website domains,
-        exactly as the legacy core patch did for ``/web/login`` (which is
-        not a ``website=True`` route).
+        ``request.website`` is only bound on website-routed requests, so for
+        ``/web/login`` (which is not a ``website=True`` route) we resolve the
+        HTTP host through the canonical core resolver
+        (:meth:`website._get_current_website_id`). ``fallback=False`` keeps
+        the strict no-op contract: a host that matches no website domain
+        exactly yields no website (and therefore no forced company).
         """
         website = getattr(request, "website", None)
         if website:
             return website
         httprequest = getattr(request, "httprequest", None)
-        host = (getattr(httprequest, "host", "") or "").partition(":")[0]
+        # Keep the host exactly as received: the core normalizes the netloc
+        # (scheme, IDNA/punycode and port) on its own.
+        host = getattr(httprequest, "host", "") or ""
         if not host:
             return None
-        return (
-            request.env["website"].sudo().search([("domain", "ilike", host)], limit=1)
-        )
+        # Delegate to the canonical resolver instead of a hand-rolled substring
+        # ``ilike`` + ``limit=1``: that match was non-deterministic and produced
+        # false positives when one configured domain was a substring of another
+        # (e.g. ``example.com`` inside ``shop.example.com``), letting the
+        # client-controlled Host header force the wrong company at login.
+        website = request.env["website"].sudo()
+        website_id = website._get_current_website_id(host, fallback=False)
+        return website.browse(website_id) if website_id else None
 
     def _set_website_company_cookie(self, uid):
         """Force the ``cids`` cookie to the login website company.
