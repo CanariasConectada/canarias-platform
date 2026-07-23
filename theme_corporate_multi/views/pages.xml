@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Homepage Template -->
-    <template id="corporate_homepage" name="Corporate Homepage" track="1">
+    <template id="corporate_homepage" name="Corporate Homepage">
         <t t-call="website.layout">
             <div id="wrap" class="oe_structure oe_empty">
                 <section class="s_banner pt96 pb96" data-snippet="s_banner" data-name="Banner">
@@ -35,7 +35,7 @@
     </template>
 
     <!-- Services Page Template (mantenido por compatibilidad, no se usa en menú) -->
-    <template id="corporate_services" name="Corporate Services" track="1">
+    <template id="corporate_services" name="Corporate Services">
         <t t-call="website.layout">
             <div id="wrap" class="oe_structure oe_empty">
                 <section class="s_title pt32 pb32" data-snippet="s_title" data-name="Title">

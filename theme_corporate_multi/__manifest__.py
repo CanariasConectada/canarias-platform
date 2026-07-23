@@ -17,8 +17,6 @@
         "views/layout.xml",
         "views/pages.xml",
         "views/clean_menus.xml",
-        "data/menu_config.xml",
-        "data/theme_data.xml",
     ],
     "installable": True,
     "application": False,

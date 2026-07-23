@@ -125,7 +125,6 @@
         <xpath expr="//head" position="inside">
             <link rel="stylesheet" type="text/css" href="/theme_corporate_multi/static/css/correcciones_pt7.css"/>
             <script type="text/javascript" src="/theme_corporate_multi/static/js/horario_dinamico.js"/>
-            <script type="text/javascript" src="/theme_corporate_multi/static/src/js/footer_certificaciones.js"/>
             <style>
                 /* Ocultar elemento de teléfono en el header */
                 header .o_header_text_element a[href^="tel:"],
