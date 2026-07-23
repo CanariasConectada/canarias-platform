@@ -45,7 +45,7 @@ SHOP HEADER
                     <div class="row justify-content-center">
                         <div class="col-lg-8 text-center">
                             <h1 class="display-5 mb-3 fw-bold">
-                                Tienda <t t-esc="website.name or ''"/>
+                                Tienda <t t-out="website.name or ''"/>
                             </h1>
                             <p class="lead mb-4 text-muted">
                                 Descubre nuestros productos y servicios
