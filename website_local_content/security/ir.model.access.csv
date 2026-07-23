@@ -11,6 +11,10 @@ access_local_content_subcategory_public,website.local.content.subcategory.public
 access_local_content_subcategory_portal,website.local.content.subcategory.portal,model_website_local_content_subcategory,base.group_portal,1,0,0,0
 access_local_content_subcategory_user,website.local.content.subcategory.user,model_website_local_content_subcategory,base.group_user,1,0,0,0
 access_local_content_subcategory_manager,website.local.content.subcategory.manager,model_website_local_content_subcategory,group_local_content_manager,1,1,1,1
+access_local_content_tag_public,website.local.content.tag.public,model_website_local_content_tag,base.group_public,1,0,0,0
+access_local_content_tag_portal,website.local.content.tag.portal,model_website_local_content_tag,base.group_portal,1,0,0,0
+access_local_content_tag_user,website.local.content.tag.user,model_website_local_content_tag,base.group_user,1,0,0,0
+access_local_content_tag_manager,website.local.content.tag.manager,model_website_local_content_tag,group_local_content_manager,1,1,1,1
 access_local_content_item_public,website.local.content.item.public,model_website_local_content_item,base.group_public,1,0,0,0
 access_local_content_item_portal,website.local.content.item.portal,model_website_local_content_item,base.group_portal,1,0,0,0
 access_local_content_item_user,website.local.content.item.user,model_website_local_content_item,base.group_user,1,0,0,0

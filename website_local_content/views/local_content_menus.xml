@@ -32,4 +32,10 @@
               action="local_content_category_action"
               sequence="20"/>
 
+    <menuitem id="menu_local_content_tags"
+              name="Tags"
+              parent="menu_local_content_configuration"
+              action="local_content_tag_action"
+              sequence="30"/>
+
 </odoo>

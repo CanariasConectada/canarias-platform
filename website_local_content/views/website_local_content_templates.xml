@@ -177,6 +177,9 @@
                             <div class="mb-3">
                                 <span t-if="item.category_id" class="badge text-bg-primary me-1" t-esc="item.category_id.name"/>
                                 <span t-if="item.subcategory_id" class="badge text-bg-info me-1" t-esc="item.subcategory_id.name"/>
+                                <t t-if="item.tag_ids">
+                                    <span t-foreach="item.tag_ids" t-as="tag" class="badge text-bg-secondary fw-normal me-1" t-esc="tag.name"/>
+                                </t>
                                 <span t-if="content_type.use_photo_year and item.photo_year" class="badge text-bg-dark">
                                     <i class="fa fa-camera me-1"/><t t-esc="item.photo_year"/>
                                 </span>

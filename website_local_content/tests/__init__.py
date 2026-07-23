@@ -1,1 +1,5 @@
-from . import test_local_content_controller, test_local_content_models
+from . import (
+    test_local_content_controller,
+    test_local_content_models,
+    test_local_content_tag,
+)
