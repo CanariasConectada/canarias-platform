@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SHOP HEADER
+- "Tienda [website name]" title
+- Search box with purple button (#714B67)
+-->
+<odoo>
+
+    <!-- HEADER STYLES -->
+    <template id="shop_header_styles" inherit_id="website_sale.products"
+              name="Shop Header Styles" priority="95">
+        <xpath expr="." position="inside">
+            <style type="text/css">
+                .shop-directory-header {
+                    padding: 3rem 0 !important;
+                    background-color: #f8f9fa !important;
+                    border-bottom: 1px solid #dee2e6 !important;
+                    margin-bottom: 2rem !important;
+                }
+                .shop-directory-header h1 {
+                    font-size: 2.5rem !important;
+                    font-weight: 700 !important;
+                    margin-bottom: 1rem !important;
+                    color: #212529 !important;
+                }
+                .shop-directory-header .lead {
+                    font-size: 1.15rem !important;
+                    color: #6c757d !important;
+                    margin-bottom: 2rem !important;
+                }
+                .shop-directory-header .btn-primary {
+                    background-color: #714B67 !important;
+                    border-color: #714B67 !important;
+                }
+            </style>
+        </xpath>
+    </template>
+
+    <!-- HEADER HTML -->
+    <template id="shop_header" inherit_id="website_sale.products"
+              name="Shop Header" priority="96">
+        <xpath expr="//div[@id='oe_structure_website_sale_products_1']" position="after">
+            <section class="shop-directory-header py-5 bg-light border-bottom mb-4">
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8 text-center">
+                            <h1 class="display-5 mb-3 fw-bold">
+                                Tienda <t t-esc="website.name or ''"/>
+                            </h1>
+                            <p class="lead mb-4 text-muted">
+                                Descubre nuestros productos y servicios
+                            </p>
+                            <form action="/shop" method="get" class="input-group input-group-lg">
+                                <input type="text" name="search" class="form-control border-end-0"
+                                       placeholder="Buscar productos..."
+                                       t-att-value="search"/>
+                                <button type="submit" class="btn btn-primary px-4"
+                                        style="background-color: #714B67; border-color: #714B67;">
+                                    <i class="fa fa-search me-2"></i> Buscar
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </xpath>
+    </template>
+
+</odoo>
