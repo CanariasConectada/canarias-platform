@@ -1,3 +1,24 @@
+## 19.0.1.1.0 (2026-07-23)
+
+Closes the last gap against the legacy modules: their public landing pages
+(`/silver-economy`, `/sostenibilidad`) and the training material merchants
+read before taking the questionnaire.
+
+- New `certification.material`: a titled, ordered document of one vertical,
+  backed by a plain `ir.attachment` so Odoo serves it through `/web/content`
+  with no controller of our own. Attaching a file publishes it, since the
+  landing page is public and a private file would answer 403 to exactly the
+  visitors it exists for.
+- `certification.type` gains `landing_published` and `landing_description`,
+  plus a **Landing Page** and a **Training Material** tab in the backend.
+- New public route `/certification/<code>`, replacing the two hardcoded
+  routes per vertical of the legacy modules. Unpublished or unknown verticals
+  answer 404 rather than an indexable empty page.
+
+The content stays DATA, deliberately: the legacy modules carried 12 MB of
+PDFs and 1562 lines of hand-written marketing HTML inside the code. Adding a
+vertical still requires zero code.
+
 ## 19.0.1.0.0 (2026-07-07)
 
 First release. Fusion of the legacy `silver_economy` and `sustainability`

@@ -54,6 +54,30 @@
                             <field name="website_description"/>
                         </group>
                     </group>
+                    <notebook>
+                        <page string="Landing Page" name="landing">
+                            <group>
+                                <field name="landing_published"/>
+                            </group>
+                            <field name="landing_description"
+                                   widget="html"
+                                   placeholder="What this certification is about, shown at /certification/&lt;code&gt;"/>
+                        </page>
+                        <page string="Training Material" name="material">
+                            <field name="material_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="description"/>
+                                    <field name="attachment_id"/>
+                                </list>
+                            </field>
+                            <p class="text-muted mt-2">
+                                Files listed here are published automatically so
+                                visitors can download them from the landing page.
+                            </p>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>

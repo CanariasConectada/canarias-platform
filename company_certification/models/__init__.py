@@ -1,4 +1,5 @@
 from . import (
+    certification_material,
     certification_positive_item,
     certification_type,
     res_company,
