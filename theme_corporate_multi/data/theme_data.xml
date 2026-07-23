@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================ -->
+    <!-- PÁGINAS PRINCIPALES -->
+    <!-- ============================================ -->
+
+    <!-- Default Homepage Page -->
+    <record id="theme_corporate_homepage_page" model="website.page">
+        <field name="name">Inicio</field>
+        <field name="url">/</field>
+        <field name="view_id" ref="corporate_homepage"/>
+        <field name="is_published">True</field>
+        <field name="key">theme_corporate_multi.corporate_homepage_page</field>
+    </record>
+
+    <!-- Services Page Template (mantenido por compatibilidad pero NO en menú) -->
+    <!-- El template corporate_services existe en pages.xml pero no se agrega al menú -->
+
+    <!-- ============================================ -->
+    <!-- PÁGINAS LEGALES -->
+    <!-- ============================================ -->
+
+    <!-- Política de Privacidad Page -->
+    <record id="theme_corporate_privacy_page" model="website.page">
+        <field name="name">Política de Privacidad</field>
+        <field name="url">/politica-privacidad</field>
+        <field name="view_id" ref="corporate_privacy_policy"/>
+        <field name="is_published">True</field>
+        <field name="key">theme_corporate_multi.corporate_privacy_page</field>
+    </record>
+
+    <!-- Política de Cookies Page -->
+    <record id="theme_corporate_cookies_page" model="website.page">
+        <field name="name">Política de Cookies</field>
+        <field name="url">/politica-cookies</field>
+        <field name="view_id" ref="corporate_cookies_policy"/>
+        <field name="is_published">True</field>
+        <field name="key">theme_corporate_multi.corporate_cookies_page</field>
+    </record>
+
+    <!-- Términos y Condiciones Page -->
+    <record id="theme_corporate_terms_page" model="website.page">
+        <field name="name">Términos y Condiciones</field>
+        <field name="url">/terminos-condiciones</field>
+        <field name="view_id" ref="corporate_terms_conditions"/>
+        <field name="is_published">True</field>
+        <field name="key">theme_corporate_multi.corporate_terms_page</field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- CONFIGURACIÓN: Solo Inicio y Tienda en menú -->
+    <!-- ============================================ -->
+
+    <!-- NOTA: Los menús deben configurarse por website/microsite individualmente.
+         Este tema asume que cada microsite tendrá configurado su menú así:
+
+         Inicio (/)
+         Tienda (/shop)
+
+         Sin: Servicios, Contáctanos, teléfono
+         Con: Carrito, Búsqueda, Login (sin registro)
+    -->
+</odoo>

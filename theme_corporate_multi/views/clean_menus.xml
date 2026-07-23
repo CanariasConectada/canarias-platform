@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Cargar script para limpiar menús duplicados -->
+    <template id="clean_directory_menus_assets" inherit_id="website.layout" name="Clean Directory Menus Assets">
+        <xpath expr="//head/meta[last()]" position="after">
+            <script type="text/javascript" src="/theme_corporate_multi/static/src/js/clean_directory_menus.js"></script>
+        </xpath>
+    </template>
+</odoo>

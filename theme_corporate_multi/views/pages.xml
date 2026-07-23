@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Homepage Template -->
+    <template id="corporate_homepage" name="Corporate Homepage" track="1">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure oe_empty">
+                <section class="s_banner pt96 pb96" data-snippet="s_banner" data-name="Banner">
+                    <div class="container">
+                        <div class="row s_nb_column_fixed">
+                            <div class="col-lg-6 jumbotron rounded pt64 pb64 o_cc o_cc1" data-name="Jumbotron">
+                                <h1>Bienvenidos a <span t-field="res_company.name"/></h1>
+                                <p class="lead">Tu establecimiento de confianza en la zona.</p>
+                                <a href="/shop" class="btn btn-primary btn-lg">Ver Tienda</a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="s_text_image pt32 pb32" data-snippet="s_text_image" data-name="Text - Image">
+                    <div class="container">
+                        <div class="row align-items-center">
+                            <div class="col-lg-6 pt16 pb16">
+                                <h2>Nuestros Servicios</h2>
+                                <p>Ofrecemos la mejor calidad y atención personalizada para todos nuestros clientes.</p>
+                                <a href="/servicios" class="btn btn-secondary">Leer más</a>
+                            </div>
+                            <div class="col-lg-6 pt16 pb16 text-center">
+                                <img src="/web/static/img/website/s_text_image_default.jpg" class="img img-fluid mx-auto" alt="Servicios"/>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <!-- Services Page Template (mantenido por compatibilidad, no se usa en menú) -->
+    <template id="corporate_services" name="Corporate Services" track="1">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure oe_empty">
+                <section class="s_title pt32 pb32" data-snippet="s_title" data-name="Title">
+                    <div class="container">
+                        <h1 class="text-center">Nuestros Servicios</h1>
+                    </div>
+                </section>
+                <section class="s_three_columns pt32 pb32" data-snippet="s_three_columns" data-name="Columns">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-4 s_col_no_bgcolor pt16 pb16">
+                                <div class="card bg-white h-100 border">
+                                    <div class="card-body">
+                                        <h3 class="card-title">Calidad Garantizada</h3>
+                                        <p class="card-text">Solo trabajamos con los mejores productos del mercado.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 s_col_no_bgcolor pt16 pb16">
+                                <div class="card bg-white h-100 border">
+                                    <div class="card-body">
+                                        <h3 class="card-title">Atención Personalizada</h3>
+                                        <p class="card-text">Cada cliente es único y merece un trato especial.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 s_col_no_bgcolor pt16 pb16">
+                                <div class="card bg-white h-100 border">
+                                    <div class="card-body">
+                                        <h3 class="card-title">Ubicación Estratégica</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <!-- ============================================ -->
+    <!-- POLÍTICA DE PRIVACIDAD -->
+    <!-- ============================================ -->
+    <template id="corporate_privacy_policy" name="Política de Privacidad">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <section class="s_title pt48 pb24" data-snippet="s_title" data-name="Title">
+                    <div class="container">
+                        <h1 class="text-center">Política de Privacidad</h1>
+                    </div>
+                </section>
+                <section class="s_text_block pt24 pb48" data-snippet="s_text_block" data-name="Text">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <h2>Introducción</h2>
+                                <p>Mediante la presente Política de Privacidad, <strong t-field="res_company.name"/> pretende mostrar su compromiso respecto al cumplimiento de las normativas y legislaciones que se deriva del tratamiento de la información necesaria para la prestación de sus servicios.</p>
+                                <p>En particular, se consideran como marco de referencia:</p>
+                                <ul>
+                                    <li>Reglamento (UE) 2016/679 del Parlamento Europeo y del Consejo (RGPD)</li>
+                                    <li>Ley Orgánica 3/2018 de Protección de Datos Personales y garantía de los derechos digitales</li>
+                                    <li>Ley 34/2002, de servicios de la sociedad de la información y de comercio electrónico (LSSI)</li>
+                                </ul>
+
+                                <h2 class="mt-4">1. Sobre Nosotros</h2>
+                                <p>El responsable del tratamiento de datos es:</p>
+                                <ul>
+                                    <li><strong>Nombre:</strong> <span t-field="res_company.name"/></li>
+                                    <li><strong>Dirección:</strong> <span t-field="res_company.street"/>, <span t-field="res_company.city"/></li>
+                                    <li><strong>Correo electrónico:</strong> <span t-field="res_company.email"/></li>
+                                </ul>
+
+                                <h2 class="mt-4">2. Información y Datos Personales que Recopilamos</h2>
+                                <p>La información de carácter personal se refiere a cualquier información que se relacione con una persona física identificada o identificable.</p>
+                                <p>En este sitio web recopilamos:</p>
+                                <ul>
+                                    <li>Información de contacto (nombre, email, teléfono)</li>
+                                    <li>Datos necesarios para la prestación de nuestros servicios</li>
+                                    <li>Información de navegación (cookies, dirección IP)</li>
+                                </ul>
+
+                                <h2 class="mt-4">3. Cómo Protegemos la Información</h2>
+                                <p>Implementamos medidas de seguridad técnicas y organizativas para proteger sus datos personales contra accesos no autorizados, alteraciones, pérdidas o destrucción.</p>
+
+                                <h2 class="mt-4">4. Derechos de los Titulares de los Datos</h2>
+                                <p>Usted tiene derecho a:</p>
+                                <ul>
+                                    <li><strong>Acceso:</strong> Obtener confirmación de si se están tratando sus datos</li>
+                                    <li><strong>Rectificación:</strong> Modificar datos inexactos o erróneos</li>
+                                    <li><strong>Supresión:</strong> Solicitar la eliminación de sus datos</li>
+                                    <li><strong>Oposición:</strong> Oponerse al tratamiento de sus datos</li>
+                                    <li><strong>Limitación:</strong> Solicitar la limitación del tratamiento</li>
+                                    <li><strong>Portabilidad:</strong> Recibir sus datos en formato estructurado</li>
+                                </ul>
+                                <p>Para ejercer estos derechos, contacte con nosotros a través del email: <span t-field="res_company.email"/>.</p>
+
+                                <h2 class="mt-4">5. Conservación de los Datos</h2>
+                                <p>Conservamos sus datos personales durante el tiempo necesario para cumplir con la finalidad para la cual fueron obtenidos, así como para atender posibles responsabilidades derivadas del tratamiento.</p>
+
+                                <h2 class="mt-4">6. Ley Aplicable y Jurisdicción</h2>
+                                <p>La resolución de conflictos se regirá por la legislación española. Nos sometemos a los Jueces y Tribunales de Las Palmas de Gran Canaria.</p>
+
+                                <p class="text-muted mt-5"><small>Esta política puede ser actualizada periódicamente. Le recomendamos revisarla con frecuencia.</small></p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <!-- ============================================ -->
+    <!-- POLÍTICA DE COOKIES -->
+    <!-- ============================================ -->
+    <template id="corporate_cookies_policy" name="Política de Cookies">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <section class="s_title pt48 pb24" data-snippet="s_title" data-name="Title">
+                    <div class="container">
+                        <h1 class="text-center">Política de Cookies</h1>
+                    </div>
+                </section>
+                <section class="s_text_block pt24 pb48" data-snippet="s_text_block" data-name="Text">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <h2>¿Qué son las cookies?</h2>
+                                <p>Las cookies son pequeños archivos de datos que se envían al ordenador del Usuario, teléfono móvil u otro dispositivo de acceso cuando visita una página web y que permiten obtener y recopilar información relativa a su navegación.</p>
+                                <p>Las cookies son esenciales para el funcionamiento de Internet, aportando innumerables ventajas en la prestación de servicios interactivos, facilitando la navegación y usabilidad de las páginas web.</p>
+
+                                <h2 class="mt-4">¿Qué cookies utilizamos?</h2>
+
+                                <h4 class="mt-3">1. Cookies propias</h4>
+                                <p><strong>Cookies técnicas estrictamente necesarias:</strong> Son aquellas que permiten al usuario la navegación a través de una página web, plataforma o aplicación y la utilización de las diferentes opciones o servicios que en ella existan como, por ejemplo, controlar el tráfico y la comunicación de datos, identificar la sesión, acceder a partes de acceso restringido, realizar el proceso de compra de un pedido.</p>
+
+                                <p><strong>Cookies de personalización:</strong> Son aquellas que permiten al usuario acceder al servicio con algunas características generales predefinidas en función de una serie de criterios en el terminal del usuario, como por ejemplo idioma, tipo de navegador, configuración regional, etc.</p>
+
+                                <h4 class="mt-3">2. Cookies de terceros</h4>
+                                <p><strong>Analíticas:</strong> Utilizamos Google Analytics para recopilar información anónima sobre la navegación de los usuarios y mejorar nuestros servicios. Estas cookies recogen información sobre el número de visitantes, páginas visitadas, tiempo de navegación, etc.</p>
+
+                                <p><strong>Redes sociales:</strong> Las cookies de este tipo permiten la interacción con redes sociales. Cada red social utiliza sus propias cookies para que el Usuario pueda compartir información o actividad en ellas.</p>
+
+                                <h2 class="mt-4">Bloqueo de cookies</h2>
+                                <p>El usuario puede permitir, bloquear o eliminar las cookies instaladas en su equipo mediante la configuración de las opciones del navegador instalado en su ordenador o dispositivo móvil:</p>
+                                <ul>
+                                    <li><a href="https://support.google.com/chrome/answer/95647" target="_blank">Google Chrome</a></li>
+                                    <li><a href="https://support.mozilla.org/es/kb/habilitar-y-deshabilitar-cookies-sitio-web" target="_blank">Mozilla Firefox</a></li>
+                                    <li><a href="https://support.microsoft.com/es-es/help/17442" target="_blank">Internet Explorer</a></li>
+                                    <li><a href="https://support.apple.com/es-es/guide/safari/sfri11471/mac" target="_blank">Safari</a></li>
+                                </ul>
+
+                                <h2 class="mt-4">Consentimiento</h2>
+                                <p>Al navegar por nuestro sitio web, usted acepta el uso de cookies conforme a esta política. Si desea revocar su consentimiento, puede hacerlo eliminando las cookies almacenadas en su navegador y configurándolo para rechazar cookies.</p>
+
+                                <p class="text-muted mt-5"><small>Esta política de cookies puede ser modificada en cualquier momento. Le recomendamos revisarla periódicamente.</small></p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <!-- ============================================ -->
+    <!-- TÉRMINOS Y CONDICIONES -->
+    <!-- ============================================ -->
+    <template id="corporate_terms_conditions" name="Términos y Condiciones">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <section class="s_title pt48 pb24" data-snippet="s_title" data-name="Title">
+                    <div class="container">
+                        <h1 class="text-center">Términos y Condiciones</h1>
+                    </div>
+                </section>
+                <section class="s_text_block pt24 pb48" data-snippet="s_text_block" data-name="Text">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <h2>1. Introducción</h2>
+                                <p>Las presentes condiciones generales de uso regulan los términos y condiciones de acceso y uso de este sitio web, propiedad de <strong t-field="res_company.name"/>, que el usuario deberá leer y aceptar para usar todos los servicios e información que se facilitan desde el sitio.</p>
+                                <p>El mero acceso y/o utilización del sitio web significa la plena aceptación de las presentes condiciones generales de uso.</p>
+
+                                <h2 class="mt-4">2. Condiciones de Uso</h2>
+                                <p><strong>Exención de Responsabilidad para Productos y Servicios de Terceros:</strong></p>
+                                <ul>
+                                    <li>El sitio web actúa únicamente como intermediario de información sobre productos y servicios.</li>
+                                    <li>No garantizamos la exactitud, integridad o actualidad de la información proporcionada.</li>
+                                    <li>No asumimos responsabilidad por la calidad, disponibilidad, precio o cualquier otro aspecto de los productos o servicios ofrecidos por terceros.</li>
+                                    <li>Cualquier transacción que realice con establecimientos terceros se realiza bajo su propio riesgo.</li>
+                                </ul>
+
+                                <h2 class="mt-4">3. Modificaciones</h2>
+                                <p><span t-field="res_company.name"/> se reserva la facultad de modificar en cualquier momento las condiciones generales de uso del sitio web. Se recomienda consultar periódicamente estos términos.</p>
+
+                                <h2 class="mt-4">4. Obligaciones del Usuario</h2>
+                                <p>El usuario deberá respetar en todo momento los términos y condiciones establecidos. De forma expresa el usuario manifiesta que:</p>
+                                <ul>
+                                    <li>Utilizará el sitio web de forma diligente</li>
+                                    <li>No transmitirá virus o código dañino</li>
+                                    <li>No realizará actividades ilícitas o lesivas</li>
+                                    <li>No interferirá en el funcionamiento normal del sitio</li>
+                                </ul>
+
+                                <h2 class="mt-4">5. Propiedad Intelectual e Industrial</h2>
+                                <p>Todos los contenidos, marcas, logos, dibujos, documentación, programas informáticos o cualquier otro elemento susceptible de protección por la legislación de propiedad intelectual o industrial, que sean accesibles en el sitio web corresponden exclusivamente a <span t-field="res_company.name"/> o a sus legítimos titulares.</p>
+                                <p>Queda expresamente prohibida la reproducción, distribución o transformación de cualquier contenido sin autorización previa.</p>
+
+                                <h2 class="mt-4">6. Privacidad y Protección de Datos</h2>
+                                <p>El tratamiento de datos personales se realiza de conformidad con nuestra <a href="/politica-privacidad">Política de Privacidad</a> y la normativa vigente en materia de protección de datos.</p>
+
+                                <h2 class="mt-4">7. Cookies</h2>
+                                <p>Este sitio web utiliza cookies. Para más información, consulte nuestra <a href="/politica-cookies">Política de Cookies</a>.</p>
+
+                                <h2 class="mt-4">8. Legislación Aplicable y Jurisdicción</h2>
+                                <p>Las presentes condiciones se rigen y se interpretan de acuerdo con las Leyes de España. Para cualquier reclamación serán competentes los jueces y tribunales de Las Palmas de Gran Canaria.</p>
+
+                                <h2 class="mt-4">9. Contacto</h2>
+                                <p>Para cualquier consulta relacionada con estos términos y condiciones, puede contactarnos en:</p>
+                                <ul>
+                                    <li><strong>Email:</strong> <span t-field="res_company.email"/></li>
+                                    <li><strong>Dirección:</strong> <span t-field="res_company.street"/>, <span t-field="res_company.city"/></li>
+                                </ul>
+
+                                <p class="text-muted mt-5"><small>Última actualización: Enero 2026</small></p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+</odoo>

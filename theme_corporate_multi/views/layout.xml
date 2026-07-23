@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================ -->
+    <!-- FOOTER ESTILO DISOFT - ZCAGUANARTEME -->
+    <!-- Centrado, saltos de línea, sin Icons8, con redes sociales -->
+    <!-- Redes: Facebook, Instagram, X/Twitter, YouTube, LinkedIn -->
+    <!-- ============================================ -->
+    <template id="corporate_footer" inherit_id="website.layout" name="Corporate Multi Footer" priority="100">
+        <xpath expr="//div[@id='footer']" position="replace">
+            <div id="footer" class="oe_structure oe_structure_solo text-break" t-ignore="true" t-if="not no_footer">
+                <footer class="bg-black text-light py-4">
+                    <div class="container">
+                        <!-- REDES SOCIALES -->
+                        <div class="row justify-content-center mb-3">
+                            <div class="col-auto d-flex gap-3 align-items-center">
+                                <t t-if="website.social_facebook">
+                                    <a t-att-href="website.social_facebook" target="_blank" class="link-light" title="Facebook">
+                                        <i class="fa fa-facebook fa-lg"/>
+                                    </a>
+                                </t>
+                                <t t-if="website.social_instagram">
+                                    <a t-att-href="website.social_instagram" target="_blank" class="link-light" title="Instagram">
+                                        <i class="fa fa-instagram fa-lg"/>
+                                    </a>
+                                </t>
+                                <t t-if="website.social_twitter">
+                                    <a t-att-href="website.social_twitter" target="_blank" class="link-light" title="X/Twitter">
+                                        <i class="fa fa-twitter fa-lg"/>
+                                    </a>
+                                </t>
+                                <t t-if="website.social_youtube">
+                                    <a t-att-href="website.social_youtube" target="_blank" class="link-light" title="YouTube">
+                                        <i class="fa fa-youtube-play fa-lg"/>
+                                    </a>
+                                </t>
+                                <t t-if="website.social_linkedin">
+                                    <a t-att-href="website.social_linkedin" target="_blank" class="link-light" title="LinkedIn">
+                                        <i class="fa fa-linkedin fa-lg"/>
+                                    </a>
+                                </t>
+                            </div>
+                        </div>
+
+                        <!-- DATOS Y ENLACES -->
+                        <div class="row justify-content-center text-center mb-3">
+                            <div class="col-lg-10">
+                                <!-- Línea 1: Nombre del comercio -->
+                                <h6 class="fw-bold mb-2">
+                                    <span t-field="res_company.name"/>
+                                </h6>
+
+                                <!-- Línea 2: Copyright -->
+                                <p class="mb-2">© 2025 Todos los derechos reservados</p>
+
+                                <!-- Línea 3: Enlaces a políticas -->
+                                <p class="small mb-3">
+                                    <i class="fa fa-shield me-1"/>
+                                    <a href="/politica-privacidad" class="link-light text-decoration-none">
+                                        Política de privacidad
+                                    </a>
+                                    <span class="mx-2">·</span>
+                                    <a href="/terminos-condiciones" class="link-light text-decoration-none">
+                                        Términos y condiciones
+                                    </a>
+                                    <span class="mx-2">·</span>
+                                    <a href="/politica-cookies" class="link-light text-decoration-none">
+                                        Política de Cookies
+                                    </a>
+                                </p>
+
+                                <!-- Línea 4: Certificaciones (solo si tiene) -->
+                                <t t-set="certs" t-value="website.get_certifications()"/>
+                                <t t-if="certs.get('has_silver') or certs.get('has_sostenible')">
+                                    <div id="footer-certificaciones-container" style="display:flex;justify-content:center;gap:0.5rem;flex-wrap:wrap;margin-top:10px;">
+                                        <t t-if="certs.get('has_silver')">
+                                            <a href="https://canariasconectada.es/silver-economy" target="_blank" style="display:inline-flex;align-items:center;background:rgba(192,192,192,0.2);border:1px solid #C0C0C0;color:#C0C0C0;padding:0.25rem 0.75rem;border-radius:0.25rem;text-decoration:none;font-size:0.8rem;">
+                                                <img src="/theme_corporate_multi/static/img/sello_silver.jpg" style="width:20px;height:20px;object-fit:contain;margin-right:0.5rem;border-radius:50%;" alt="Silver"/>
+                                                Comercio Silver Economy
+                                            </a>
+                                        </t>
+                                        <t t-if="certs.get('has_sostenible')">
+                                            <a href="https://canariasconectada.es/sostenible" target="_blank" style="display:inline-flex;align-items:center;background:rgba(40,167,69,0.2);border:1px solid #28a745;color:#28a745;padding:0.25rem 0.75rem;border-radius:0.25rem;text-decoration:none;font-size:0.8rem;">
+                                                <img src="/theme_corporate_multi/static/img/sello_sostenible.jpg" style="width:20px;height:20px;object-fit:contain;margin-right:0.5rem;border-radius:50%;" alt="Sostenible"/>
+                                                Comercio Sostenible
+                                            </a>
+                                        </t>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+
+                    </div>
+                </footer>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Desactivar el footer por defecto de Odoo -->
+    <template id="disable_default_footer" inherit_id="website.footer_custom" name="Disable Default Footer" active="False"/>
+
+    <!-- ============================================ -->
+    <!-- HEADER - Logo de la empresa -->
+    <!-- ============================================ -->
+    <template id="corporate_header" inherit_id="website.option_header_brand_logo" name="Corporate Multi Header">
+        <xpath expr="//a[@data-name='Navbar Logo']" position="replace">
+            <a data-name="Navbar Logo" t-att-href="request.httprequest.host_url or '/'" t-attf-class="navbar-brand logo #{_link_class}">
+                <t t-if="res_company.logo">
+                    <img t-att-src="'/logo.png?company=%s' % res_company.id"
+                         t-att-alt="'Logo de %s' % res_company.name"
+                         t-att-title="res_company.name"
+                         style="max-height: 40px; width: auto;"/>
+                </t>
+                <t t-if="not res_company.logo">
+                    <span t-field="website.logo" t-options="{'widget': 'image'}" role="img" t-att-aria-label="'Logo de %s' % website.name" t-att-title="website.name"/>
+                </t>
+            </a>
+        </xpath>
+    </template>
+
+    <!-- ============================================ -->
+    <!-- CSS PARA OCULTAR ELEMENTOS DEL HEADER -->
+    <!-- Teléfono y botón Contáctenos -->
+    <!-- ============================================ -->
+    <template id="hide_header_elements_css" inherit_id="website.layout" name="Hide Header Elements CSS" priority="99">
+        <xpath expr="//head" position="inside">
+            <link rel="stylesheet" type="text/css" href="/theme_corporate_multi/static/css/correcciones_pt7.css"/>
+            <script type="text/javascript" src="/theme_corporate_multi/static/js/horario_dinamico.js"/>
+            <script type="text/javascript" src="/theme_corporate_multi/static/src/js/footer_certificaciones.js"/>
+            <style>
+                /* Ocultar elemento de teléfono en el header */
+                header .o_header_text_element a[href^="tel:"],
+                header a[href^="tel:"],
+                header .nav-link[href^="tel:"] {
+                    display: none !important;
+                }
+
+                /* Ocultar botón Contáctenos CTA en el header */
+                header .btn_cta[href*="contactus"],
+                header a.btn[href*="contactus"],
+                header .oe_structure a[href*="contactus"].btn {
+                    display: none !important;
+                }
+
+                /* Ocultar elementos específicos del header de texto */
+                header .s_text_block a[href^="tel:"] {
+                    display: none !important;
+                }
+
+                /* Ocultar header call to action section */
+                header .oe_structure:has(.btn_cta[href*="contactus"]),
+                header section.s_text_block:has(.btn_cta[href*="contactus"]) {
+                    display: none !important;
+                }
+
+                /* Iconos y enlaces del menú del header visibles (tono oscuro) - FORZADO */
+                header#top .navbar .navbar-nav .nav-link,
+                header#top .navbar .navbar-nav li a,
+                header#top #o_main_nav .navbar-nav .nav-link,
+                header#top #o_main_nav .navbar-nav li a,
+                header#top .o_wsale_my_cart a,
+                header#top .o_wsale_my_cart .fa,
+                header#top .o_wsale_my_cart i,
+                header#top .navbar-nav li .fa,
+                header#top .navbar-nav li i,
+                header#top .nav-item a,
+                header#top .nav-item i,
+                header#top .navbar a,
+                header#top .navbar i,
+                header#top a.nav-link,
+                header#top .fa,
+                header#top i,
+                header#top i.fa,
+                header#top .fa-shopping-cart,
+                header#top .fa-user,
+                header#top [class*="fa-"] {
+                    color: #212529 !important;
+                }
+                /* Forzar color oscuro en todos los iconos del header */
+                body header#top i,
+                body header#top .fa,
+                body header#top a i,
+                body header#top a .fa {
+                    color: #212529 !important;
+                }
+            </style>
+        </xpath>
+    </template>
+
+    <!-- ============================================ -->
+    <!-- OCULTAR REGISTRO DE USUARIOS - DESHABILITADO TEMPORALMENTE -->
+    <!-- Causa error de xpath no encontrado en algunas vistas -->
+
+    <!-- ============================================ -->
+    <!-- BANNER DE COOKIES ACTIVO -->
+    <!-- ============================================ -->
+    <template id="corporate_cookies_bar_active" inherit_id="website.cookies_bar" name="Corporate Cookies Bar Active" active="True">
+        <xpath expr="//div[@id='website_cookies_bar']" position="attributes">
+            <attribute name="class">s_popup o_snippet_invisible o_no_save</attribute>
+        </xpath>
+    </template>
+
+    <!-- ============================================ -->
+    <!-- DESACTIVAR HEADER CALL TO ACTION (BOTÓN CONTÁCTENOS) -->
+    <!-- ============================================ -->
+    <!-- Desactivado temporalmente - causa error 500
+    <template id="disable_header_call_to_action" inherit_id="website.header_call_to_action" name="Disable Header CTA" active="True" priority="99">
+        <xpath expr="//div[@data-name='Header Call to Action']" position="replace">
+        </xpath>
+    </template>
+    -->
+
+    <!-- ============================================ -->
+    <!-- ELIMINAR COPYRIGHT DE ODOO BASE -->
+    <!-- ============================================ -->
+    <template id="corporate_remove_copyright" inherit_id="website.layout" name="Corporate Remove Copyright" priority="99">
+        <xpath expr="//div[hasclass('o_footer_copyright')]" position="replace">
+            <!-- Copyright eliminado - tema corporate multi -->
+        </xpath>
+    </template>
+
+</odoo>
