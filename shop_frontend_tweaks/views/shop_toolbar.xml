@@ -112,12 +112,12 @@ SHOP TOOLBAR
     <!-- TOOLBAR HTML -->
     <template id="shop_toolbar" inherit_id="website_sale.products"
               name="Shop Toolbar" priority="94">
-        <xpath expr="//div[contains(@class, 'o_wsale_products_main_row')]" position="before">
+        <xpath expr="//div[hasclass('o_wsale_products_main_row')]" position="before">
             <div id="shop-directory-toolbar" class="mb-3">
                 <div class="d-flex align-items-center justify-content-between bg-light rounded p-3">
                     <!-- Product counter -->
                     <div class="products-count">
-                        <strong t-esc="search_count or len(products) or 0"/>
+                        <strong t-out="search_count or len(products) or 0"/>
                         <span class="text-muted ms-1">productos</span>
                     </div>
                     <!-- Controls -->

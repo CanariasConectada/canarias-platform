@@ -22,7 +22,7 @@ SHOP SEARCHABLE CATEGORIES
                     </option>
                     <t t-foreach="categories" t-as="c">
                         <option t-att-value="c.id" t-att-selected="category and category.id == c.id">
-                            <t t-esc="c.name"/>
+                            <t t-out="c.name"/>
                         </option>
                     </t>
                 </select>
