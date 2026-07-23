@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website Local Content",
-    "version": "19.0.1.3.0",
+    "version": "19.0.1.4.0",
     "category": "Website",
     "summary": "Parameterizable local content galleries (places, memories, ...)",
     "author": "MikeColangelo",
@@ -20,6 +20,7 @@
         "data/local_content_type_data.xml",
         "views/local_content_type_views.xml",
         "views/local_content_category_views.xml",
+        "views/local_content_tag_views.xml",
         "views/local_content_item_views.xml",
         "views/local_content_menus.xml",
         "views/website_local_content_templates.xml",

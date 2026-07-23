@@ -66,6 +66,15 @@ class LocalContentItem(models.Model):
         ondelete="restrict",
         domain="[('category_id', '=', category_id)]",
     )
+    tag_ids = fields.Many2many(
+        comodel_name="website.local.content.tag",
+        relation="website_local_content_item_tag_rel",
+        column1="item_id",
+        column2="tag_id",
+        string="Tags",
+        help="Transversal themes of the item, independent of the "
+        "category taxonomy (legacy theme level).",
+    )
     sequence = fields.Integer(default=10)
     active = fields.Boolean(default=True)
     website_ids = fields.Many2many(

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="local_content_tag_view_list" model="ir.ui.view">
+        <field name="name">website.local.content.tag.view.list</field>
+        <field name="model">website.local.content.tag</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="type_id"/>
+                <field name="color" widget="color_picker"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="local_content_tag_view_form" model="ir.ui.view">
+        <field name="name">website.local.content.tag.view.form</field>
+        <field name="model">website.local.content.tag</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <group>
+                        <field name="name"/>
+                        <field name="type_id"/>
+                        <field name="sequence"/>
+                        <field name="color" widget="color_picker"/>
+                        <field name="active" invisible="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="local_content_tag_view_search" model="ir.ui.view">
+        <field name="name">website.local.content.tag.view.search</field>
+        <field name="model">website.local.content.tag</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="type_id"/>
+                <separator/>
+                    <filter name="group_by_type" string="Content Type" context="{'group_by': 'type_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="local_content_tag_action" model="ir.actions.act_window">
+        <field name="name">Tags</field>
+        <field name="res_model">website.local.content.tag</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>
