@@ -1,0 +1,178 @@
+// Copyright 2026 Canarias Conectada
+// License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+// Visual corrections rescued from the legacy `theme_corporate_multi` stylesheet
+// (static/css/correcciones_pt7.css). In the legacy platform that sheet was
+// injected only on themed microsites; here every rule is scoped under
+// `body:has(.o_pmm_footer)` so it reaches exactly the same set of sites — the
+// ones with `is_microsite_themed` on — and the directory and main website keep
+// the stock Odoo look.
+//
+// Only the rules with no equivalent elsewhere were kept:
+//   * the header phone/CTA hiding and the copyright bar already live in
+//     microsite_footer.scss;
+//   * the legacy `#footer .commerce-label` badges are obsolete — the reformed
+//     footer renders `.badge.rounded-pill` with its own inline colour.
+//
+// `!important` is preserved from the original: this sheet exists to override
+// Odoo's own component styles, and the scoping above — not the absence of
+// `!important` — is what keeps non-themed websites untouched.
+
+body:has(.o_pmm_footer) {
+    // -- Cookies bar ------------------------------------------------------
+    // Odoo renders the consent buttons as plain links. Legacy promoted them to
+    // primary-styled buttons; merchants recognise that call to action.
+    #website_cookies_bar {
+        .modal-content .col-lg-4.text-end a,
+        .modal-footer a,
+        .js_close_popup {
+            display: inline-block !important;
+            padding: 0.75rem 1.5rem !important;
+            border-radius: 0.375rem !important;
+            font-weight: 500 !important;
+            text-decoration: none !important;
+            color: #fff !important;
+            background-color: var(--color-primary) !important;
+            border-color: var(--color-primary) !important;
+            transition: all 0.3s ease !important;
+
+            &:hover {
+                color: #fff !important;
+                background-color: #0052a3 !important;
+                border-color: #0052a3 !important;
+                transform: translateY(-2px) !important;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+            }
+        }
+    }
+
+    // -- Certification card (s_company_team snippet) ----------------------
+    // Merchant pages build the Silver / Sostenible card with the standard
+    // `s_company_team` snippet. Legacy reflowed it to a single centred column
+    // and freed the seal image from the snippet's fixed aspect ratio.
+    .s_company_team {
+        margin-bottom: 40px !important;
+        padding-bottom: 40px !important;
+
+        .o_grid {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            gap: 16px !important;
+            justify-items: center !important;
+            width: 100% !important;
+            margin-bottom: 0 !important;
+        }
+
+        .o_grid_item {
+            width: 450px !important;
+            max-width: 100% !important;
+            margin: 0 auto !important;
+        }
+
+        .s_card {
+            width: 100% !important;
+            cursor: pointer !important;
+            background: #fff !important;
+            border: 1px solid rgba(0, 0, 0, 0.08) !important;
+            border-radius: 8px !important;
+            overflow: hidden !important;
+            transition: all 0.3s ease !important;
+
+            &:hover {
+                transform: translateY(-8px) !important;
+                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
+            }
+
+            .o_card_img_wrapper {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                position: relative !important;
+                min-height: 200px !important;
+                padding: 30px 20px !important;
+                text-align: center !important;
+                background: #fff !important;
+                // The snippet reserves space with a ratio pseudo-element; the
+                // seal is not a fixed-ratio photo, so release it.
+                --bs-aspect-ratio: auto !important;
+
+                &::before {
+                    display: none !important;
+                    padding-top: 0 !important;
+                }
+
+                img {
+                    display: block !important;
+                    position: relative !important;
+                    max-height: 150px !important;
+                    width: auto !important;
+                    max-width: 80% !important;
+                    margin: auto !important;
+                }
+            }
+
+            .card-body {
+                padding: 20px !important;
+                text-align: center !important;
+                background: #fff !important;
+            }
+
+            .card-title {
+                font-size: 1.25rem !important;
+                font-weight: 600 !important;
+                line-height: 1.4 !important;
+                margin-bottom: 12px !important;
+                color: #212529 !important;
+                text-align: center !important;
+            }
+
+            .card-text {
+                font-size: 1rem !important;
+                line-height: 1.6 !important;
+                margin-bottom: 0 !important;
+                color: #6c757d !important;
+                text-align: center !important;
+            }
+        }
+
+        .card-body .btn-certificacion {
+            display: inline-block !important;
+            margin-top: 15px !important;
+            padding: 0.75rem 1.5rem !important;
+            font-size: 1rem !important;
+            font-weight: 500 !important;
+            border-radius: 0.375rem !important;
+            text-decoration: none !important;
+            color: #fff !important;
+            background-color: var(--color-primary) !important;
+            border: 1px solid var(--color-primary) !important;
+            transition: all 0.3s ease !important;
+
+            &:hover {
+                background-color: #0052a3 !important;
+                border-color: #0052a3 !important;
+                transform: translateY(-2px) !important;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+            }
+        }
+    }
+
+    @media (max-width: 768px) {
+        #website_cookies_bar {
+            .modal-content section.o_colored_level .col-lg-4.text-end {
+                text-align: center !important;
+                padding-top: 1rem !important;
+            }
+
+            .btn {
+                display: block !important;
+                width: 100% !important;
+                margin-bottom: 0.5rem !important;
+            }
+        }
+
+        .s_company_team .o_grid .o_grid_item {
+            max-width: 100% !important;
+        }
+    }
+}
