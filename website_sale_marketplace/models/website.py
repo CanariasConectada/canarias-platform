@@ -2,6 +2,13 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 from odoo import api, fields, models
+from odoo.tools import split_every
+
+# Products to link per write during the marketplace backfill. One write per
+# bounded batch of ids (identical vals) keeps the ORM cache/flush footprint
+# flat regardless of catalog size, while producing the exact same end state
+# as a single unbounded write.
+BACKFILL_BATCH_SIZE = 1000
 
 
 class Website(models.Model):
@@ -34,11 +41,21 @@ class Website(models.Model):
         """
         Product = self.env["product.template"].sudo()
         for company in self.filtered("is_marketplace").company_id:
-            products = Product.search([("company_ids", "not in", company.ids)])
-            if products:
-                products.write(
-                    {"company_ids": [fields.Command.link(company.id)]}
-                )
+            # The many2many "not in" leaf compiles to a single SQL anti-join
+            # (NOT EXISTS (SELECT 1 FROM product_company_rel ...)), so the
+            # products already linked to the marketplace company are excluded
+            # by PostgreSQL itself: the backfill only ever writes the missing
+            # products (O(missing), not O(catalog)) and re-syncing an already
+            # synced marketplace touches no product at all.
+            missing_ids = Product.search([("company_ids", "not in", company.ids)]).ids
+            vals = {"company_ids": [fields.Command.link(company.id)]}
+            # Same vals for every product: write per bounded batch of ids and
+            # flush each batch, instead of one unbounded write, so memory and
+            # SQL statement size stay constant on large catalogs. The end
+            # state is identical to a single global write.
+            for batch_ids in split_every(BACKFILL_BATCH_SIZE, missing_ids):
+                Product.browse(batch_ids).write(vals)
+                Product.flush_model(["company_ids"])
 
     @api.model_create_multi
     def create(self, vals_list):

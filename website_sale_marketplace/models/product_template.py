@@ -16,9 +16,15 @@ class ProductTemplate(models.Model):
         # company_ids); the marketplace company is only an extra scope.
         companies = self.env["website"]._marketplace_companies()
         if companies:
-            # Command.link is idempotent, so re-linking an owner company is a
-            # no-op.
-            products.sudo().write(
-                {"company_ids": [fields.Command.link(c.id) for c in companies]}
-            )
+            # Only write on the products actually missing a marketplace
+            # company (company_ids is already in cache right after create, so
+            # this filter costs no extra SQL). Command.link is idempotent, but
+            # the write itself is not free (write_date, recomputes), so skip
+            # products created with every marketplace company already linked
+            # — e.g. products created by the marketplace company itself.
+            missing = products.filtered(lambda product: companies - product.company_ids)
+            if missing:
+                missing.sudo().write(
+                    {"company_ids": [fields.Command.link(c.id) for c in companies]}
+                )
         return products

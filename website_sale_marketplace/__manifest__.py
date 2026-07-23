@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website Sale Marketplace",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     "category": "Website/eCommerce",
     "summary": "Aggregate the published products of every company on a "
     "marketplace website while merchant sites stay isolated",
