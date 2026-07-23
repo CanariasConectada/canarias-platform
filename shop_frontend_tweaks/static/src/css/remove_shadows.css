@@ -1,0 +1,26 @@
+/* Eliminar sombras y efectos de hover en tarjetas de producto */
+.oe_product_cart,
+.oe_product_cart:hover,
+.oe_product_cart:focus,
+.oe_product_cart:active {
+    box-shadow: none !important;
+    transform: none !important;
+    transition: none !important;
+}
+
+/* Eliminar sombras de imágenes de producto */
+.oe_product_cart .oe_product_image,
+.oe_product_cart .oe_product_image:hover,
+.oe_product_cart .oe_product_image img,
+.oe_product_cart .oe_product_image img:hover {
+    box-shadow: none !important;
+    transform: none !important;
+    transition: none !important;
+}
+
+/* Asegurar que el contenedor del producto no tenga sombra */
+#o_wsale_products_grid .oe_product,
+#o_wsale_products_grid .oe_product:hover {
+    box-shadow: none !important;
+    transform: none !important;
+}
