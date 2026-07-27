@@ -131,7 +131,11 @@ class TestLoginCompanyCookie(HttpCase):
 
     def test_login_without_matching_website(self):
         """No website matches the host: login still works (historic 500)."""
-        self.env["website"].search([]).write({"domain": "unrelated.example"})
+        # Point every website at a domain that cannot match the test host.
+        # Domains must stay unique (``website_domain_unique``), so give each
+        # website its own suffix instead of writing one shared value to all.
+        for index, website in enumerate(self.env["website"].search([])):
+            website.domain = "https://unrelated-%d.example" % index
         response = self._post_login("merchant@example.test", "merchant-password")
         self.assertEqual(response.status_code, 200)
 
