@@ -1,10 +1,14 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import logging
+
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
+
+_logger = logging.getLogger(__name__)
 
 
 class SurveyUserInput(models.Model):
@@ -244,7 +248,20 @@ class SurveyUserInput(models.Model):
         if template:
             for evaluation in evaluations:
                 if evaluation.partner_id.email:
-                    template.send_mail(evaluation.id, force_send=True)
+                    try:
+                        # No force_send: queue in mail.mail so the core mail
+                        # queue handles delivery and retries.
+                        template.send_mail(evaluation.id)
+                    except Exception:
+                        # Poison-record isolation: one failing evaluation must
+                        # not abort the reminders for the rest of the queue.
+                        _logger.exception(
+                            "Silver retry reminder failed for evaluation %s "
+                            "(company %s)",
+                            evaluation.id,
+                            evaluation.company_id.id,
+                        )
+                        continue
 
     @api.model
     def _cron_silver_renewal_reminder(self):
@@ -266,7 +283,20 @@ class SurveyUserInput(models.Model):
         if template:
             for evaluation in evaluations:
                 if evaluation.partner_id.email:
-                    template.send_mail(evaluation.id, force_send=True)
+                    try:
+                        # No force_send: queue in mail.mail so the core mail
+                        # queue handles delivery and retries.
+                        template.send_mail(evaluation.id)
+                    except Exception:
+                        # Poison-record isolation: one failing evaluation must
+                        # not abort the reminders for the rest of the queue.
+                        _logger.exception(
+                            "Silver renewal reminder failed for evaluation %s "
+                            "(company %s)",
+                            evaluation.id,
+                            evaluation.company_id.id,
+                        )
+                        continue
 
     @api.model
     def _cron_silver_expiry_alert(self):
@@ -283,7 +313,20 @@ class SurveyUserInput(models.Model):
         if template:
             for evaluation in evaluations:
                 if evaluation.survey_id.user_id.email:
-                    template.send_mail(evaluation.id, force_send=True)
+                    try:
+                        # No force_send: queue in mail.mail so the core mail
+                        # queue handles delivery and retries.
+                        template.send_mail(evaluation.id)
+                    except Exception:
+                        # Poison-record isolation: one failing evaluation must
+                        # not abort the alerts for the rest of the queue.
+                        _logger.exception(
+                            "Silver expiry alert failed for evaluation %s "
+                            "(company %s)",
+                            evaluation.id,
+                            evaluation.company_id.id,
+                        )
+                        continue
 
     def _send_new_badge_notification(self):
         """Envía notificación de nuevo sello obtenido al completar evaluación"""
