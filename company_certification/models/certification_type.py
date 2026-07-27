@@ -88,6 +88,23 @@ class CertificationType(models.Model):
     website_description = fields.Text(
         translate=True, help="Text of the microsite certification section."
     )
+    # Public landing page (/certification/<code>) ------------------------
+    landing_published = fields.Boolean(
+        string="Publish Landing Page",
+        default=False,
+        help="Serve the public page at /certification/<code> where merchants "
+        "read what the certification is about and download its training "
+        "material. Off by default: an empty page helps nobody.",
+    )
+    landing_description = fields.Html(
+        translate=True,
+        sanitize=True,
+        help="Body of the public landing page. Plain content, editable "
+        "without touching code.",
+    )
+    material_ids = fields.One2many(
+        "certification.material", "type_id", string="Training Material"
+    )
     # Auto-generated backend menu ----------------------------------------
     menu_id = fields.Many2one("ir.ui.menu", readonly=True, copy=False)
     action_id = fields.Many2one("ir.actions.act_window", readonly=True, copy=False)

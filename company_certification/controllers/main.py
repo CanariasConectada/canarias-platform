@@ -21,6 +21,32 @@ class CompanyCertificationController(http.Controller):
         )
 
     @http.route(
+        "/certification/<string:code>",
+        type="http",
+        auth="public",
+        website=True,
+        sitemap=True,
+    )
+    def certification_landing(self, code, **kwargs):
+        """Public page of one vertical: what it is, and its training material.
+
+        Read as sudo on purpose — visitors have no access to
+        ``certification.type``, and only the handful of presentation fields
+        below ever reach the template. An unpublished or unknown vertical is
+        a plain 404: answering 200 with an empty page would get it indexed.
+        """
+        cert_type = self._get_certification_type(code)
+        if not cert_type or not cert_type.landing_published:
+            return request.not_found()
+        return request.render(
+            "company_certification.certification_landing",
+            {
+                "cert_type": cert_type,
+                "materials": cert_type.material_ids.filtered("attachment_id"),
+            },
+        )
+
+    @http.route(
         "/certification/<string:code>/start",
         type="http",
         auth="user",
