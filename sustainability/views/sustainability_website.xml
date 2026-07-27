@@ -26,30 +26,28 @@
         </t>
     </template>
 
-    <!-- Grid View (carga inicial) -->
-    <template id="directory_grid_badge_sust" inherit_id="website_directory.directory_index">
-        <xpath expr="//div[@class='card h-100 border-0 shadow-sm directory-card position-relative']//h5[@class='card-title mb-1 fs-6']" position="after">
+    <!--
+        website_directory refactored the card/list markup out of
+        directory_index / directory_search_results into shared sub-templates
+        (directory_entry_card, directory_entry_list_item), t-called by both the
+        initial page and the AJAX partial. XPath view inheritance only sees the
+        inherited template's own arch (not t-called sub-templates), so we must
+        inherit the sub-templates directly. Inheriting each once also covers
+        both the initial and AJAX render, so the previous four inherits collapse
+        into two (avoiding duplicate badges). Selectors use hasclass() instead
+        of literal @class strings for robustness against Bootstrap class churn.
+    -->
+
+    <!-- Grid card (initial + AJAX render) -->
+    <template id="directory_grid_badge_sust" inherit_id="website_directory.directory_entry_card">
+        <xpath expr="//h5[hasclass('card-title')]" position="after">
             <t t-call="sustainability.directory_sust_badge"/>
         </xpath>
     </template>
 
-    <!-- List View (carga inicial) -->
-    <template id="directory_list_badge_sust" inherit_id="website_directory.directory_index">
-        <xpath expr="//div[@class='list-group-item d-flex align-items-center gap-3 py-3']//h5[@class='mb-0 fs-6']" position="after">
-            <t t-call="sustainability.directory_sust_badge"/>
-        </xpath>
-    </template>
-
-    <!-- Grid View (AJAX) -->
-    <template id="directory_search_grid_badge_sust" inherit_id="website_directory.directory_search_results">
-        <xpath expr="//div[@class='card h-100 border-0 shadow-sm directory-card position-relative']//h5[@class='card-title mb-1 fs-6']" position="after">
-            <t t-call="sustainability.directory_sust_badge"/>
-        </xpath>
-    </template>
-
-    <!-- List View (AJAX) -->
-    <template id="directory_search_list_badge_sust" inherit_id="website_directory.directory_search_results">
-        <xpath expr="//div[@class='list-group-item d-flex align-items-center gap-3 py-3']//h5[@class='mb-0 fs-6']" position="after">
+    <!-- List row (initial + AJAX render) -->
+    <template id="directory_list_badge_sust" inherit_id="website_directory.directory_entry_list_item">
+        <xpath expr="//h5[hasclass('fs-6')]" position="after">
             <t t-call="sustainability.directory_sust_badge"/>
         </xpath>
     </template>
