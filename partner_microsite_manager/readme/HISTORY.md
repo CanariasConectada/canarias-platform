@@ -1,3 +1,18 @@
+## 19.0.1.3.0 (2026-07-23)
+
+* Rescued the last visual corrections that only existed in the legacy
+  `theme_corporate_multi` stylesheet (`correcciones_pt7.css`): the cookies
+  bar consent buttons and the `s_company_team` certification card layout,
+  in `microsite_corrections.scss`. Like the rest of the microsite look they
+  are scoped to themed sites via `body:has(.o_pmm_footer)`, so the
+  directory and the main website are untouched.
+* This closes the migration of the legacy theme: the header phone/CTA
+  hiding, the copyright bar and the footer certification badges were
+  already reimplemented here, so the theme has no remaining purpose. It
+  must NOT be installed alongside this module — both replace
+  `//div[@id='footer']` at priority 100, they cancel each other out and the
+  corporate footer silently disappears.
+
 ## 19.0.1.2.0 (2026-07-10)
 
 * Security: **Publish Homepage** now requires the *Website / Editor and
