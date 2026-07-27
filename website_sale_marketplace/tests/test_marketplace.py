@@ -105,6 +105,27 @@ class TestMarketplaceSync(MarketplaceCommon, TransactionCase):
             fresh_website._sync_marketplace_products()
         self.assertFalse(calls)
 
+    def test_backfill_skips_global_products(self):
+        # A product with an empty company_ids is global: already visible on
+        # every website, marketplace included. The backfill must leave it
+        # alone — linking the marketplace company would RESTRICT it to the
+        # marketplace alone and trip product_multi_company_stock's constraint
+        # whenever another company holds stock for it (the CI database ships
+        # demo products exactly like that).
+        global_prod = self._make_product("MP Widget Global", self.company_b)
+        # Clear instead of creating without companies: co-installed modules
+        # (product_company_default) may inject a default company at create.
+        global_prod.company_ids = [fields.Command.clear()]
+        fresh_company, fresh_website = self._make_fresh_marketplace("MP Global Co")
+        spy, calls = self._spy_company_ids_writes()
+        with spy:
+            fresh_website.is_marketplace = True
+        written_ids = [pid for ids in calls for pid in ids]
+        self.assertNotIn(global_prod.id, written_ids)
+        self.assertFalse(global_prod.company_ids)
+        # Non-global products still receive the marketplace link.
+        self.assertIn(fresh_company, self.prod_b.company_ids)
+
     def test_backfill_batched_writes_same_end_state(self):
         fresh_company, fresh_website = self._make_fresh_marketplace("MP Fresh Batch Co")
         extra_d = self._make_product("MP Widget Delta", self.company_b)
