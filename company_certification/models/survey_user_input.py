@@ -1,5 +1,7 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+import logging
+
 from datetime import timedelta
 
 from dateutil.relativedelta import relativedelta
@@ -8,6 +10,8 @@ from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 from .certification_type import CERTIFICATION_LEVELS
+
+_logger = logging.getLogger(__name__)
 
 # Fields that impact the company certification status when they change.
 _STATUS_TRIGGER_FIELDS = (
@@ -345,7 +349,20 @@ class SurveyUserInput(models.Model):
         )
         if template:
             for evaluation in evaluations.filtered(lambda e: e.partner_id.email):
-                template.send_mail(evaluation.id, force_send=True)
+                try:
+                    # No force_send: queue in mail.mail so the core mail
+                    # queue handles delivery and retries.
+                    template.send_mail(evaluation.id)
+                except Exception:
+                    # Poison-record isolation: one failing evaluation must
+                    # not abort the reminders for the rest of the queue.
+                    _logger.exception(
+                        "Certification retry reminder failed for "
+                        "evaluation %s (company %s)",
+                        evaluation.id,
+                        evaluation.company_id.id,
+                    )
+                    continue
 
     @api.model
     def _cron_certification_renewal_reminder(self):
@@ -371,7 +388,20 @@ class SurveyUserInput(models.Model):
                 ]
             )
             for evaluation in evaluations.filtered(lambda e: e.partner_id.email):
-                template.send_mail(evaluation.id, force_send=True)
+                try:
+                    # No force_send: queue in mail.mail so the core mail
+                    # queue handles delivery and retries.
+                    template.send_mail(evaluation.id)
+                except Exception:
+                    # Poison-record isolation: one failing evaluation must
+                    # not abort the reminders for the rest of the queue.
+                    _logger.exception(
+                        "Certification renewal reminder failed for "
+                        "evaluation %s (company %s)",
+                        evaluation.id,
+                        evaluation.company_id.id,
+                    )
+                    continue
 
     @api.model
     def _cron_certification_expiry(self):
@@ -387,5 +417,18 @@ class SurveyUserInput(models.Model):
         for status in expired_statuses:
             evaluation = status.user_input_id
             if template and evaluation and evaluation.survey_id.user_id.email:
-                template.send_mail(evaluation.id, force_send=True)
+                try:
+                    # No force_send: queue in mail.mail so the core mail
+                    # queue handles delivery and retries.
+                    template.send_mail(evaluation.id)
+                except Exception:
+                    # Poison-record isolation: one failing alert must not
+                    # abort the expiry processing for the rest of the queue.
+                    _logger.exception(
+                        "Certification expiry alert failed for "
+                        "evaluation %s (company %s)",
+                        evaluation.id,
+                        evaluation.company_id.id,
+                    )
+                    continue
         expired_statuses.unlink()

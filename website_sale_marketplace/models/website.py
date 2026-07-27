@@ -1,8 +1,12 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import logging
+
 from odoo import api, fields, models
 from odoo.tools import split_every
+
+_logger = logging.getLogger(__name__)
 
 # Products to link per write during the marketplace backfill. One write per
 # bounded batch of ids (identical vals) keeps the ORM cache/flush footprint
@@ -40,7 +44,8 @@ class Website(models.Model):
         between merchants is preserved.
         """
         Product = self.env["product.template"].sudo()
-        for company in self.filtered("is_marketplace").company_id:
+        for website in self.filtered("is_marketplace"):
+            company = website.company_id
             # The many2many "not in" leaf compiles to a single SQL anti-join
             # (NOT EXISTS (SELECT 1 FROM product_company_rel ...)), so the
             # products already linked to the marketplace company are excluded
@@ -66,8 +71,33 @@ class Website(models.Model):
             # SQL statement size stay constant on large catalogs. The end
             # state is identical to a single global write.
             for batch_ids in split_every(BACKFILL_BATCH_SIZE, missing_ids):
-                Product.browse(batch_ids).write(vals)
-                Product.flush_model(["company_ids"])
+                try:
+                    Product.browse(batch_ids).write(vals)
+                    Product.flush_model(["company_ids"])
+                except Exception:
+                    # Log-and-reraise: keep the abort-on-failure semantics but
+                    # leave enough diagnostics to pinpoint the failing batch.
+                    _logger.exception(
+                        "Marketplace backfill failed on website %s (id %s), "
+                        "company %s (id %s), batch of %s products "
+                        "(first ids: %s)",
+                        website.name,
+                        website.id,
+                        company.name,
+                        company.id,
+                        len(batch_ids),
+                        batch_ids[:10],
+                    )
+                    raise
+            _logger.info(
+                "Marketplace backfill done for website %s (id %s), "
+                "company %s (id %s): %s product(s) linked",
+                website.name,
+                website.id,
+                company.name,
+                company.id,
+                len(missing_ids),
+            )
 
     @api.model_create_multi
     def create(self, vals_list):
