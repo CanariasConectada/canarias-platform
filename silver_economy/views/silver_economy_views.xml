@@ -199,7 +199,7 @@ action = model.action_start_new_silver_evaluation()
                         </group>
                     </group>
                     <separator string="Items positivos del microsite"/>
-                    <field name="positive_item_ids" nolabel="1" context="{'default_survey_id': id}"/>
+                    <field name="silver_positive_item_ids" nolabel="1" context="{'default_survey_id': id}"/>
                 </page>
             </xpath>
         </field>

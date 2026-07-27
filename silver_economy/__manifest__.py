@@ -3,7 +3,7 @@
 
 {
     "name": "Silver Economy Certification",
-    "version": "19.0.1.4.2",
+    "version": "19.0.1.4.3",
     "category": "Marketing/Surveys",
     "summary": "Sistema de evaluación y certificación Silver Economy para empresas",
     "description": """
