@@ -62,17 +62,36 @@ class SurveyUserInput(models.Model):
         digits=(10, 2)
     )
 
+    # NOTE on the delegation pattern used below: the certification fields
+    # (certification_level, next_attempt_date, expiry_date) and their
+    # compute methods are also defined by other certification engines
+    # inheriting survey.user_input (e.g. company_certification). When those
+    # modules are co-installed, this class shadows their compute methods
+    # for EVERY record, so records that do not belong to a Silver Economy
+    # survey are handed back to the shadowed implementation with
+    # ``super(SurveyUserInput, other_inputs)``. The super() call is inlined
+    # (not factored into a shared helper) on purpose: a helper with the
+    # same name in several verticals would always dispatch from the top of
+    # the MRO again and recurse forever.
     @api.depends('scoring_total', 'survey_id', 'is_manually_overridden')
     def _compute_certification_level(self):
-        for user_input in self:
-            if not user_input.survey_id or user_input.survey_id.scoring_type == 'no_scoring':
+        silver_inputs = self.filtered(lambda ui: ui.survey_id.is_silver_economy)
+        other_inputs = self - silver_inputs
+        if other_inputs:
+            parent = super(SurveyUserInput, other_inputs)
+            if hasattr(parent, '_compute_certification_level'):
+                parent._compute_certification_level()
+            else:
+                other_inputs.certification_level = 'none'
+        for user_input in silver_inputs:
+            if user_input.survey_id.scoring_type == 'no_scoring':
                 user_input.certification_level = 'none'
                 continue
-            
+
             survey = user_input.survey_id
             score = user_input.scoring_total
             max_score = survey.silver_max_score or 80.0
-            
+
             if max_score <= 0 or score < (survey.silver_bronze_min or 40):
                 user_input.certification_level = 'none'
             elif score <= (survey.silver_silver_min or 55):
@@ -84,7 +103,15 @@ class SurveyUserInput(models.Model):
 
     @api.depends('create_date', 'certification_level', 'state', 'survey_id')
     def _compute_next_attempt_date(self):
-        for user_input in self:
+        silver_inputs = self.filtered(lambda ui: ui.survey_id.is_silver_economy)
+        other_inputs = self - silver_inputs
+        if other_inputs:
+            parent = super(SurveyUserInput, other_inputs)
+            if hasattr(parent, '_compute_next_attempt_date'):
+                parent._compute_next_attempt_date()
+            else:
+                other_inputs.next_attempt_date = False
+        for user_input in silver_inputs:
             if user_input.state != 'done':
                 user_input.next_attempt_date = False
                 continue
@@ -100,7 +127,15 @@ class SurveyUserInput(models.Model):
 
     @api.depends('create_date', 'certification_level', 'state', 'survey_id')
     def _compute_expiry_date(self):
-        for user_input in self:
+        silver_inputs = self.filtered(lambda ui: ui.survey_id.is_silver_economy)
+        other_inputs = self - silver_inputs
+        if other_inputs:
+            parent = super(SurveyUserInput, other_inputs)
+            if hasattr(parent, '_compute_expiry_date'):
+                parent._compute_expiry_date()
+            else:
+                other_inputs.expiry_date = False
+        for user_input in silver_inputs:
             if user_input.state != 'done' or user_input.certification_level == 'none':
                 user_input.expiry_date = False
             else:
@@ -242,6 +277,13 @@ class SurveyUserInput(models.Model):
     def _send_new_badge_notification(self):
         """Envía notificación de nuevo sello obtenido al completar evaluación"""
         self.ensure_one()
+        if not self.survey_id.is_silver_economy:
+            # Not a Silver Economy evaluation: let the shadowed engine
+            # (e.g. company_certification) send its own notification.
+            parent = super()
+            if hasattr(parent, '_send_new_badge_notification'):
+                return parent._send_new_badge_notification()
+            return
         if self.certification_level == 'none':
             return
         template = self.env.ref('silver_economy.mail_template_silver_new_badge', raise_if_not_found=False)
@@ -310,6 +352,12 @@ class SurveyUserInput(models.Model):
     def action_reset_override(self):
         """Restaura la puntuación original"""
         self.ensure_one()
+        if not self.survey_id.is_silver_economy:
+            # Not a Silver Economy evaluation: this method name is shared
+            # with other certification engines, delegate when one exists.
+            parent = super()
+            if hasattr(parent, 'action_reset_override'):
+                return parent.action_reset_override()
         if not self.env.user.has_group('silver_economy.group_silver_manager'):
             raise UserError(_('Solo administradores pueden revertir ediciones.'))
         

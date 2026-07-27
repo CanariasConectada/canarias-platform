@@ -51,7 +51,10 @@ class SurveySurvey(models.Model):
         help='Días antes de la expiración para enviar recordatorio de renovación'
     )
 
-    positive_item_ids = fields.One2many(
+    # Named silver_positive_item_ids (not positive_item_ids) to avoid
+    # colliding with company_certification's One2many of the same name on
+    # survey.survey, which points to a different comodel.
+    silver_positive_item_ids = fields.One2many(
         'silver.positive.item',
         'survey_id',
         string='Items positivos',
