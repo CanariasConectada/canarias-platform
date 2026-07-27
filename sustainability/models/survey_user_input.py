@@ -146,6 +146,17 @@ class SurveyUserInput(models.Model):
     def action_override_score(self, new_score, reason=False):
         """Permite a un admin sobrescribir la puntuación con auditoría"""
         self.ensure_one()
+        if not self.survey_id.is_sustainability:
+            # Not a Sustainability evaluation: this method name is shared
+            # with other certification engines, delegate when one exists.
+            parent = super()
+            if hasattr(parent, 'action_override_score'):
+                return parent.action_override_score(new_score, reason=reason)
+            # No other engine implements it either: refuse instead of
+            # stamping Sustainability override fields on a foreign
+            # evaluation (they share columns with company_certification
+            # and would silently downgrade its computed level to 'none').
+            raise UserError(_('Esta evaluación no pertenece a Sostenibilidad.'))
         if not self.env.user.has_group('sustainability.group_sustainability_manager'):
             raise UserError(_('Solo administradores pueden editar puntuaciones.'))
         
