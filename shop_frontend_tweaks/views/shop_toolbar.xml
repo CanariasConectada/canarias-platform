@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SHOP TOOLBAR
+- Product counter
+- Grid/List toggle
+- 12/24/48 products-per-page selector
+- View mode persisted in localStorage
+-->
+<odoo>
+
+    <!-- TOOLBAR JAVASCRIPT -->
+    <template id="shop_toolbar_js" inherit_id="website_sale.products"
+              name="Shop Toolbar JS" priority="91">
+        <xpath expr="." position="inside">
+            <script type="text/javascript">
+                // Persist view mode (grid/list) in localStorage
+                function setViewMode(mode) {
+                    var grid = document.getElementById('o_wsale_products_grid');
+                    if (grid) {
+                        if (mode === 'list') {
+                            grid.classList.add('view-mode-list');
+                            grid.classList.remove('view-mode-grid');
+                        } else {
+                            grid.classList.add('view-mode-grid');
+                            grid.classList.remove('view-mode-list');
+                        }
+                        document.querySelectorAll('.view-mode-toggle button').forEach(function(btn) {
+                            btn.classList.remove('active');
+                            if (btn.dataset.view === mode) btn.classList.add('active');
+                        });
+                        localStorage.setItem('microsite_view_mode', mode);
+                    }
+                }
+                document.addEventListener('DOMContentLoaded', function() {
+                    var savedMode = localStorage.getItem('microsite_view_mode');
+                    if (savedMode) setViewMode(savedMode);
+                });
+            </script>
+        </xpath>
+    </template>
+
+    <!-- RESPONSIVE CONTAINER -->
+    <template id="shop_container_styles" inherit_id="website_sale.products"
+              name="Shop Container Styles" priority="92">
+        <xpath expr="." position="inside">
+            <style type="text/css">
+                #o_wsale_container {
+                    max-width: 1320px !important;
+                    margin-left: auto !important;
+                    margin-right: auto !important;
+                    padding-left: 12px !important;
+                    padding-right: 12px !important;
+                }
+                @media (min-width: 576px) { #o_wsale_container { max-width: 540px !important; } }
+                @media (min-width: 768px) { #o_wsale_container { max-width: 720px !important; } }
+                @media (min-width: 992px) { #o_wsale_container { max-width: 960px !important; } }
+                @media (min-width: 1200px) { #o_wsale_container { max-width: 1140px !important; } }
+                @media (min-width: 1400px) { #o_wsale_container { max-width: 1320px !important; } }
+            </style>
+        </xpath>
+    </template>
+
+    <!-- TOOLBAR STYLES -->
+    <template id="shop_toolbar_styles" inherit_id="website_sale.products"
+              name="Shop Toolbar Styles" priority="93">
+        <xpath expr="." position="inside">
+            <style type="text/css">
+                #shop-directory-toolbar {
+                    width: 100% !important;
+                }
+                #shop-directory-toolbar .btn-primary {
+                    background-color: #714B67 !important;
+                    border-color: #714B67 !important;
+                    color: #fff !important;
+                }
+                #shop-directory-toolbar .btn-outline-secondary {
+                    color: #6c757d !important;
+                    border-color: #dee2e6 !important;
+                }
+                #shop-directory-toolbar .btn-outline-secondary:hover,
+                #shop-directory-toolbar .btn-outline-secondary.active {
+                    background-color: #714B67 !important;
+                    border-color: #714B67 !important;
+                    color: #fff !important;
+                }
+                #shop-directory-toolbar strong {
+                    color: #714B67;
+                    font-size: 1.25rem;
+                }
+                /* List view */
+                #o_wsale_products_grid.view-mode-list .oe_product {
+                    display: block !important;
+                    width: 100% !important;
+                    margin-bottom: 1rem !important;
+                }
+                #o_wsale_products_grid.view-mode-list .oe_product_cart {
+                    flex-direction: row !important;
+                    display: flex !important;
+                }
+                #o_wsale_products_grid.view-mode-list .oe_product_image {
+                    width: 200px !important;
+                    flex-shrink: 0 !important;
+                }
+                #o_wsale_products_grid.view-mode-list .o_wsale_product_information {
+                    flex: 1 !important;
+                    padding-left: 1rem !important;
+                }
+            </style>
+        </xpath>
+    </template>
+
+    <!-- TOOLBAR HTML -->
+    <template id="shop_toolbar" inherit_id="website_sale.products"
+              name="Shop Toolbar" priority="94">
+        <xpath expr="//div[hasclass('o_wsale_products_main_row')]" position="before">
+            <div id="shop-directory-toolbar" class="mb-3">
+                <div class="d-flex align-items-center justify-content-between bg-light rounded p-3">
+                    <!-- Product counter -->
+                    <div class="products-count">
+                        <strong t-out="search_count or len(products) or 0"/>
+                        <span class="text-muted ms-1">productos</span>
+                    </div>
+                    <!-- Controls -->
+                    <div class="d-flex align-items-center gap-3">
+                        <!-- Grid/List toggle -->
+                        <div class="btn-group view-mode-toggle" role="group">
+                            <button type="button" class="btn btn-outline-secondary btn-sm active"
+                                    data-view="grid" onclick="setViewMode('grid')" title="Vista de cuadrícula">
+                                <i class="fa fa-th"/>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm"
+                                    data-view="list" onclick="setViewMode('list')" title="Vista de lista">
+                                <i class="fa fa-list"/>
+                            </button>
+                        </div>
+                        <!-- PPG selector -->
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-muted small">Mostrar:</span>
+                            <div class="btn-group" role="group">
+                                <t t-set="current_ppg" t-value="request.httprequest.args.get('ppg') and int(request.httprequest.args.get('ppg')) or 12"/>
+                                <a t-att-href="keep(ppg=12, page=1)"
+                                   t-attf-class="btn btn-sm {{current_ppg == 12 and 'btn-primary' or 'btn-outline-secondary'}}"
+                                   t-attf-style="{{current_ppg == 12 and 'background-color:#714B67;border-color:#714B67;' or ''}}">12</a>
+                                <a t-att-href="keep(ppg=24, page=1)"
+                                   t-attf-class="btn btn-sm {{current_ppg == 24 and 'btn-primary' or 'btn-outline-secondary'}}"
+                                   t-attf-style="{{current_ppg == 24 and 'background-color:#714B67;border-color:#714B67;' or ''}}">24</a>
+                                <a t-att-href="keep(ppg=48, page=1)"
+                                   t-attf-class="btn btn-sm {{current_ppg == 48 and 'btn-primary' or 'btn-outline-secondary'}}"
+                                   t-attf-style="{{current_ppg == 48 and 'background-color:#714B67;border-color:#714B67;' or ''}}">48</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

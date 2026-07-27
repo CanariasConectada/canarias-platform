@@ -1,0 +1,125 @@
+/**
+ * Shop AJAX Loading Styles
+ * Estilos para el estado de carga durante navegación AJAX
+ */
+
+/* Estado de carga del grid */
+#o_wsale_products_grid.o_ajax_loading {
+    position: relative;
+    min-height: 300px;
+}
+
+/* Spinner de carga */
+.o_ajax_spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Transición suave para productos */
+#o_wsale_products_grid {
+    transition: opacity 0.3s ease;
+}
+
+/* Deshabilitar interacción durante carga */
+#o_wsale_products_grid.o_ajax_loading {
+    pointer-events: none;
+}
+
+/* Estilos para botones toggle activos */
+.o_wsale_grid_list .btn.active {
+    background-color: #714B67;
+    border-color: #714B67;
+    color: white;
+}
+
+/* Cursor pointer para elementos clickeables */
+#o_wsale_grid_toggle,
+#o_wsale_list_toggle {
+    cursor: pointer;
+}
+
+/* Efecto hover para selects */
+select[name="ppg"],
+select[name="category"] {
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+select[name="ppg"]:hover,
+select[name="category"]:hover {
+    border-color: #714B67;
+}
+
+/* Mensaje de sin resultados - OCUPAR TODO EL ANCHO DEL GRID */
+.canarias-no-results {
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 4rem 2rem;
+    margin: 0;
+    width: 100% !important;
+    min-width: 100% !important;
+    box-sizing: border-box;
+    display: block !important;
+    /* Ocupar todas las columnas del grid */
+    grid-column: 1 / -1 !important;
+    grid-row: 1 !important;
+}
+
+/* Asegurar que el contenido interno también ocupe todo el ancho */
+.canarias-no-results > * {
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+.canarias-no-results i.fa-search {
+    color: #714B67;
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.canarias-no-results h3 {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.canarias-no-results p {
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+/* Botones con color MORADO de Canarias Conectada */
+.canarias-no-results .btn-primary {
+    background-color: #714B67 !important;
+    border-color: #714B67 !important;
+    color: white !important;
+}
+
+.canarias-no-results .btn-primary:hover {
+    background-color: #5a3d52 !important;
+    border-color: #5a3d52 !important;
+}
+
+.canarias-no-results .btn-outline-primary {
+    color: #714B67 !important;
+    border-color: #714B67 !important;
+    background-color: transparent !important;
+}
+
+.canarias-no-results .btn-outline-primary:hover {
+    background-color: #714B67 !important;
+    border-color: #714B67 !important;
+    color: white !important;
+}
+
+/* Centrar botones */
+.canarias-no-results .d-flex {
+    justify-content: center !important;
+}
