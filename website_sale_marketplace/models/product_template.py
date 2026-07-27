@@ -22,7 +22,12 @@ class ProductTemplate(models.Model):
             # the write itself is not free (write_date, recomputes), so skip
             # products created with every marketplace company already linked
             # — e.g. products created by the marketplace company itself.
-            missing = products.filtered(lambda product: companies - product.company_ids)
+            # Products created with an EMPTY company_ids are global (visible
+            # everywhere, marketplace included); linking a company would
+            # restrict them instead of widening them, so skip those too.
+            missing = products.filtered(
+                lambda product: product.company_ids and companies - product.company_ids
+            )
             if missing:
                 missing.sudo().write(
                     {"company_ids": [fields.Command.link(c.id) for c in companies]}

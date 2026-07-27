@@ -47,7 +47,19 @@ class Website(models.Model):
             # by PostgreSQL itself: the backfill only ever writes the missing
             # products (O(missing), not O(catalog)) and re-syncing an already
             # synced marketplace touches no product at all.
-            missing_ids = Product.search([("company_ids", "not in", company.ids)]).ids
+            #
+            # Products with an EMPTY company_ids are global: visible to every
+            # company (marketplace included), so there is nothing to add.
+            # Linking the marketplace company to them would actually RESTRICT
+            # them to the marketplace alone, hiding them from every other
+            # website and tripping product_multi_company_stock's constraint
+            # when another company holds stock for them. Skip them.
+            missing_ids = Product.search(
+                [
+                    ("company_ids", "!=", False),
+                    ("company_ids", "not in", company.ids),
+                ]
+            ).ids
             vals = {"company_ids": [fields.Command.link(company.id)]}
             # Same vals for every product: write per bounded batch of ids and
             # flush each batch, instead of one unbounded write, so memory and
