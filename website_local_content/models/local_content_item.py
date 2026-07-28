@@ -9,6 +9,8 @@ from urllib.parse import urlsplit
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
+from odoo.addons.rating.models import rating_data
+
 MIN_PHOTO_YEAR = 1840  # First photographs of the Canary Islands era.
 # Only these schemes may reach an ``href``. Anything else (``javascript:``,
 # ``data:``, ``vbscript:`` ...) is a stored-XSS vector once clicked.
@@ -177,6 +179,30 @@ class LocalContentItem(models.Model):
     )
     like_count = fields.Integer(compute="_compute_like_count", store=True)
 
+    # --- Ratings (read-only display of the migrated legacy reviews) -------
+    # The item does NOT inherit ``rating.mixin``: in Odoo 19 that mixin
+    # extends ``mail.thread`` (chatter, followers, subtypes), a heavy
+    # behavioural change this read-only display does not need. The fields
+    # below mirror the mixin's stats with one ``_read_group`` per batch.
+    rating_ids = fields.One2many(
+        comodel_name="rating.rating",
+        inverse_name="res_id",
+        string="Ratings",
+        groups="base.group_user",
+        domain=lambda self: [("res_model", "=", self._name)],
+    )
+    rating_avg = fields.Float(
+        string="Average Rating",
+        digits=(3, 2),
+        compute="_compute_rating_stats",
+        compute_sudo=True,
+    )
+    rating_count = fields.Integer(
+        string="Rating Count",
+        compute="_compute_rating_stats",
+        compute_sudo=True,
+    )
+
     _slug_type_uniq = models.Constraint(
         "unique(slug, type_id)",
         "The slug must be unique within the same content type.",
@@ -255,6 +281,33 @@ class LocalContentItem(models.Model):
     def _compute_like_count(self):
         for record in self:
             record.like_count = len(record.like_ids)
+
+    def _rating_domain(self):
+        """Domain of the ratings that count for the public statistics.
+
+        Same normalization as ``rating.mixin._rating_domain``: only consumed
+        (filled) ratings with a real value; empty/unfilled rows never count.
+        """
+        return [
+            ("res_model", "=", self._name),
+            ("res_id", "in", self.ids),
+            ("consumed", "=", True),
+            ("rating", ">=", rating_data.RATING_LIMIT_MIN),
+        ]
+
+    @api.depends("rating_ids.rating", "rating_ids.consumed")
+    def _compute_rating_stats(self):
+        """Average and count of the consumed ratings, one query per batch."""
+        groups = self.env["rating.rating"]._read_group(
+            self._rating_domain(),
+            ["res_id"],
+            ["__count", "rating:avg"],
+        )
+        stats = {res_id: (count, avg) for res_id, count, avg in groups}
+        for record in self:
+            count, avg = stats.get(record.id, (0, 0.0))
+            record.rating_count = count
+            record.rating_avg = avg
 
     def _compute_website_url(self):
         super()._compute_website_url()
@@ -340,6 +393,26 @@ class LocalContentItem(models.Model):
         if not urlsplit(url).scheme:
             url = f"https://{url}"
         return url
+
+    def get_public_ratings(self):
+        """Consumed ratings shown on the public detail page, newest first.
+
+        Returns an empty recordset when the item itself is not publicly
+        visible (unpublished or not approved), so a caller can never leak
+        the reviews of a hidden item.
+        """
+        self.ensure_one()
+        rating_model = self.env["rating.rating"].sudo()
+        if not self.is_published or self.state != "approved":
+            return rating_model.browse()
+        return rating_model.search(
+            self._rating_domain(), order="write_date desc, id desc"
+        )
+
+    @api.model
+    def get_rating_author_name(self, rating):
+        """Public display name of a review author (anonymous fallback)."""
+        return rating.partner_id.name or _("Visitor")
 
     def has_session_liked(self, session_key):
         """Whether the given anonymous session already liked this item."""

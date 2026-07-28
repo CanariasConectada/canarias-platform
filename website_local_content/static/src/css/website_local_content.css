@@ -45,3 +45,17 @@
 .wlc-pre-line {
     white-space: pre-line;
 }
+
+/* Read-only rating stars (same look as the merchant reviews module). */
+.wlc-rating-stars .wlc-rating-star {
+    color: #d5d5d5;
+    font-size: 1.25rem;
+}
+
+.wlc-rating-stars .wlc-rating-star.filled {
+    color: #f5b301;
+}
+
+.wlc-card-rating .wlc-rating-star {
+    font-size: 0.9rem;
+}

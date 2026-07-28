@@ -253,6 +253,7 @@ class WebsiteLocalContent(http.Controller):
                 "additional_title": f"{item.name} - {content_type.name}",
                 "content_type": content_type,
                 "item": item,
+                "reviews": item.get_public_ratings(),
                 "already_liked": item.has_session_liked(session_key),
                 "index_url": f"/explora/{content_type.url_slug}",
             },
