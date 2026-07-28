@@ -21,6 +21,18 @@
         </span>
     </template>
 
+    <!-- Read-only star row (0..5 filled stars). Expects `stars`.
+         Same visual pattern as partner_reviews.review_stars, duplicated
+         here to keep this module independent from the merchant reviews
+         module. -->
+    <template id="content_rating_stars" name="Local Content Rating Stars">
+        <span class="wlc-rating-stars" t-att-aria-label="'%s/5' % int(stars)">
+            <t t-foreach="range(1, 6)" t-as="star">
+                <span t-attf-class="wlc-rating-star #{'filled' if star &lt;= int(stars) else ''}">★</span>
+            </t>
+        </span>
+    </template>
+
     <!-- One grid card. Expects `item`, `content_type`, `liked_item_ids`. -->
     <template id="content_item_card" name="Local Content Item Card">
         <div class="col-6 col-md-4 col-xl-3">
@@ -38,6 +50,13 @@
                     <p t-if="item.description" class="card-text text-muted small mb-2 wlc-card-teaser" t-esc="item.description"/>
                     <span t-if="item.category_id" class="badge text-bg-primary fw-normal me-1" t-esc="item.category_id.name"/>
                     <span t-if="item.subcategory_id" class="badge text-bg-info fw-normal" t-esc="item.subcategory_id.name"/>
+                    <div t-if="item.rating_count" class="small text-muted mt-1 wlc-card-rating">
+                        <t t-call="website_local_content.content_rating_stars">
+                            <t t-set="stars" t-value="round(item.rating_avg)"/>
+                        </t>
+                        <span t-esc="'%.1f' % item.rating_avg"/>
+                        (<t t-esc="item.rating_count"/>)
+                    </div>
                 </div>
                 <div class="card-footer bg-transparent border-0 pt-0 pb-3 d-flex justify-content-between align-items-center">
                     <t t-call="website_local_content.content_like_button">
@@ -184,6 +203,15 @@
                                     <i class="fa fa-camera me-1"/><t t-esc="item.photo_year"/>
                                 </span>
                             </div>
+                            <div t-if="item.rating_count" class="mb-3 wlc-rating-summary">
+                                <t t-call="website_local_content.content_rating_stars">
+                                    <t t-set="stars" t-value="round(item.rating_avg)"/>
+                                </t>
+                                <span class="ms-1 fw-semibold" t-esc="'%.1f' % item.rating_avg"/>
+                                <span class="text-muted">
+                                    (<t t-esc="item.rating_count"/> <t t-if="item.rating_count == 1">review</t><t t-else="">reviews</t>)
+                                </span>
+                            </div>
                             <p t-if="item.description" class="lead" t-esc="item.description"/>
                             <ul class="list-unstyled wlc-detail-meta">
                                 <li t-if="item.address"><i class="fa fa-map-marker me-2"/><t t-esc="item.address"/></li>
@@ -208,6 +236,28 @@
                             <div t-field="item.body"/>
                         </div>
                     </div>
+                    <section t-if="reviews" id="wlc_reviews" class="row mt-4 wlc-reviews">
+                        <div class="col-12 col-lg-9">
+                            <h3 class="mb-3">
+                                Reviews
+                                <span class="badge text-bg-secondary align-middle" t-esc="len(reviews)"/>
+                            </h3>
+                            <t t-foreach="reviews" t-as="review">
+                                <div class="card border-0 shadow-sm mb-3 wlc-review-card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <strong t-esc="item.get_rating_author_name(review)"/>
+                                            <small class="text-muted" t-esc="review.write_date.strftime('%d/%m/%Y')"/>
+                                        </div>
+                                        <t t-call="website_local_content.content_rating_stars">
+                                            <t t-set="stars" t-value="round(review.rating)"/>
+                                        </t>
+                                        <p class="mb-0 mt-2" t-if="review.feedback" t-esc="review.feedback"/>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </section>
                     <a t-att-href="index_url" class="btn btn-outline-secondary mt-4">
                         <i class="fa fa-arrow-left me-1"/>Back to <t t-esc="content_type.name"/>
                     </a>

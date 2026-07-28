@@ -264,3 +264,39 @@ msgstr "El slug debe ser único dentro del mismo tipo de contenido."
 #: model:ir.model.constraint,message:website_local_content.constraint_website_local_content_like_item_session_uniq
 msgid "This visitor already liked this item."
 msgstr "Este visitante ya ha dado «me gusta» a este elemento."
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__rating_ids
+msgid "Ratings"
+msgstr "Valoraciones"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__rating_avg
+msgid "Average Rating"
+msgstr "Valoración media"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__rating_count
+msgid "Rating Count"
+msgstr "Número de valoraciones"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "Reviews"
+msgstr "Valoraciones"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "review"
+msgstr "valoración"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "reviews"
+msgstr "valoraciones"
+
+#. module: website_local_content
+#. odoo-python
+#: code:addons/website_local_content/models/local_content_item.py:0
+msgid "Visitor"
+msgstr "Visitante"
