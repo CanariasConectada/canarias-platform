@@ -173,7 +173,13 @@ class RatingRating(models.Model):
 
         ``rating.rating`` is not a ``mail.thread``, so the to-do activity is
         scheduled on the merchant's partner record instead of on the review.
+
+        ``skip_review_notifications`` in the context silences the whole
+        notification (email + activity): bulk flows such as the data
+        migration import historical reviews and must never spam moderators.
         """
+        if self.env.context.get("skip_review_notifications"):
+            return
         self.ensure_one()
         moderators = self._get_moderator_users()
         if not moderators:
@@ -239,7 +245,13 @@ class RatingRating(models.Model):
         )
 
     def _notify_merchant(self):
-        """Plain email to the merchant when an approved review arrives."""
+        """Plain email to the merchant when an approved review arrives.
+
+        ``skip_review_notifications`` in the context silences the email (see
+        ``_notify_moderators``): historical reviews are not news.
+        """
+        if self.env.context.get("skip_review_notifications"):
+            return
         self.ensure_one()
         company = self.env[MERCHANT_REVIEW_MODEL].sudo().browse(self.res_id)
         if not company.exists() or not company.email:

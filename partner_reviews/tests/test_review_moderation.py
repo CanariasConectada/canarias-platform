@@ -135,6 +135,68 @@ class TestReviewModeration(PartnerReviewsCase):
         with self.assertRaises(UniqueViolation), self.env.cr.savepoint():
             self._create_review(self.customer_1, 2, "Changed my mind")
 
+    def _create_review_with_context(self, partner, rating, feedback="", **ctx):
+        return (
+            self.env["rating.rating"]
+            .with_context(**ctx)
+            .create(
+                {
+                    "res_model_id": self.company_model_id,
+                    "res_id": self.company.id,
+                    "partner_id": partner.id,
+                    "rating": rating,
+                    "feedback": feedback,
+                    "consumed": True,
+                }
+            )
+        )
+
+    def test_skip_context_silences_merchant_email(self):
+        """skip_review_notifications must prevent the merchant mail.mail:
+        bulk flows (data migration) import historical reviews silently."""
+        self.company.email = "pr.merchant@example.com"
+        mails_before = self.env["mail.mail"].sudo().search_count([])
+        review = self._create_review_with_context(
+            self.customer_1, 5, "Historic review",
+            skip_review_notifications=True,
+        )
+        self.assertEqual(review.moderation_status, "approved")
+        self.assertEqual(
+            self.env["mail.mail"].sudo().search_count([]),
+            mails_before,
+            "No mail.mail may be created under skip_review_notifications",
+        )
+
+    def test_skip_context_silences_moderator_notifications(self):
+        """A pending (forbidden-word) review created under the skip context
+        must raise neither the moderator email nor the to-do activity."""
+        moderator = self._create_moderator("pr_mod_skip")
+        self.env["review.forbidden.word"].create({"name": "swindle"})
+        mails_before = self.env["mail.mail"].sudo().search_count([])
+        review = self._create_review_with_context(
+            self.customer_1, 1, "a swindle",
+            skip_review_notifications=True,
+        )
+        self.assertEqual(review.moderation_status, "pending")
+        self.assertEqual(
+            self.env["mail.mail"].sudo().search_count([]), mails_before
+        )
+        self.assertFalse(
+            self._merchant_activities(moderator),
+            "No moderation activity may be created under the skip context",
+        )
+
+    @mute_logger("odoo.addons.mail.models.mail_mail")
+    def test_merchant_email_still_sent_without_skip_context(self):
+        """Control: without the context the merchant mail.mail IS created
+        (proves the skip tests are not vacuously green)."""
+        self.company.email = "pr.merchant@example.com"
+        mails_before = self.env["mail.mail"].sudo().search_count([])
+        self._create_review(self.customer_2, 4, "Great bakery")
+        self.assertEqual(
+            self.env["mail.mail"].sudo().search_count([]), mails_before + 1
+        )
+
     def test_non_merchant_ratings_untouched(self):
         """Ratings of other apps must keep the default approved status and
         never enter the merchant moderation flow."""
