@@ -160,7 +160,7 @@ class SurveyUserInput(models.Model):
             # stamping Silver override fields on a foreign evaluation
             # (they share columns with company_certification and would
             # silently downgrade its computed level to 'none').
-            raise UserError(_('Esta evaluación no pertenece a Silver Economy.'))
+            raise UserError(_('Esta evaluación no pertenece a un motor que soporte la sobreescritura de puntuación.'))
         if not self.env.user.has_group('silver_economy.group_silver_manager'):
             raise UserError(_('Solo administradores pueden editar puntuaciones.'))
         
