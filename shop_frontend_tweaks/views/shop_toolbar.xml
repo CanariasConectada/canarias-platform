@@ -137,7 +137,7 @@ SHOP TOOLBAR
                         <div class="d-flex align-items-center gap-2">
                             <span class="text-muted small">Mostrar:</span>
                             <div class="btn-group" role="group">
-                                <t t-set="current_ppg" t-value="(request.httprequest.args.get('ppg') or '').isdigit() and int(request.httprequest.args.get('ppg')) or 12"/>
+                                <t t-set="current_ppg" t-value="(request.httprequest.args.get('ppg') or '').isdecimal() and int(request.httprequest.args.get('ppg')) or 12"/>
                                 <a t-att-href="keep(ppg=12, page=1)"
                                    t-attf-class="btn btn-sm {{current_ppg == 12 and 'btn-primary' or 'btn-outline-secondary'}}"
                                    t-attf-style="{{current_ppg == 12 and 'background-color:#714B67;border-color:#714B67;' or ''}}">12</a>

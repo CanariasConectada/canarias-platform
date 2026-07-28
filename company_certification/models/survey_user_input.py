@@ -414,6 +414,7 @@ class SurveyUserInput(models.Model):
             "company_certification.mail_template_certification_expiry_alert",
             raise_if_not_found=False,
         )
+        failed = self.env["res.company.certification"]
         for status in expired_statuses:
             evaluation = status.user_input_id
             if template and evaluation and evaluation.survey_id.user_id.email:
@@ -424,11 +425,14 @@ class SurveyUserInput(models.Model):
                 except Exception:
                     # Poison-record isolation: one failing alert must not
                     # abort the expiry processing for the rest of the queue.
+                    # Keep the status so the alert is retried tomorrow —
+                    # unlinking it here would drop the alert forever.
                     _logger.exception(
                         "Certification expiry alert failed for "
                         "evaluation %s (company %s)",
                         evaluation.id,
                         evaluation.company_id.id,
                     )
+                    failed |= status
                     continue
-        expired_statuses.unlink()
+        (expired_statuses - failed).unlink()
