@@ -33,16 +33,24 @@
         <field name="model">survey.user_input</field>
         <field name="inherit_id" ref="survey.survey_user_input_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//notebook" position="inside">
-                <page string="Auditoría" name="audit" invisible="not is_manually_overridden">
-                    <group>
-                        <field name="is_manually_overridden"/>
-                        <field name="original_scoring_total"/>
-                        <field name="override_user_id"/>
-                        <field name="override_date"/>
-                        <field name="override_reason"/>
-                    </group>
-                </page>
+            <!-- The override audit trail is OWNED by company_certification's
+                 "Certification" page, whose Manual Override group is gated to
+                 certification managers. The old "Auditoría" page here showed
+                 the same four fields a second time — and with NO group gate,
+                 leaking the audit trail to every backoffice user. Only
+                 original_scoring_total is added, because the base module
+                 cannot know it: the field belongs to this vertical. Inserted
+                 inside the gated group, it inherits the manager-only
+                 visibility. -->
+            <xpath
+                expr="//page[@name='certification']//field[@name='is_manually_overridden']"
+                position="after"
+            >
+                <field
+                    name="original_scoring_total"
+                    readonly="1"
+                    invisible="not is_manually_overridden"
+                />
             </xpath>
         </field>
     </record>
