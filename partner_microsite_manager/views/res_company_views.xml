@@ -39,6 +39,11 @@
                             <field name="microsite_delivery_info"/>
                             <field name="microsite_parking_info"/>
                             <field name="microsite_map_url"/>
+                            <field name="microsite_phone"/>
+                            <field
+                                name="microsite_phone2"
+                                invisible="not microsite_phone"
+                            />
                         </group>
                         <group string="Banners">
                             <field name="microsite_intro_title"/>

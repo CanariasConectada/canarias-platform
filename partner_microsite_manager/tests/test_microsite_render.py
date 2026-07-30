@@ -69,3 +69,43 @@ class TestMicrositeRender(TransactionCase):
         html = self._render_homepage_content()
         self.assertNotIn("Opening Hours", html)
         self.assertNotIn("About Us", html)
+
+    # -- public phones --------------------------------------------------------
+    def test_public_phone_wins_over_the_partner_phone(self):
+        # The shop publishes its counter line; the partner record keeps the
+        # administrative one. Showing the latter is what the origin never did.
+        self.company.partner_id.phone = "928000000"
+        self.company.microsite_phone = "928111111"
+        html = self._render_homepage_content()
+        self.assertIn("928111111", html)
+        self.assertNotIn("928000000", html)
+
+    def test_partner_phone_is_the_fallback(self):
+        self.company.partner_id.phone = "928000000"
+        self.company.microsite_phone = False
+        html = self._render_homepage_content()
+        self.assertIn("928000000", html)
+
+    def test_second_phone_renders_below_the_first(self):
+        self.company.microsite_phone = "928111111"
+        self.company.microsite_phone2 = "603222222"
+        html = self._render_homepage_content()
+        self.assertIn("928111111", html)
+        self.assertIn("603222222", html)
+        self.assertLess(html.index("928111111"), html.index("603222222"))
+
+    def test_no_phone_at_all_renders_no_phone_line(self):
+        self.company.partner_id.phone = False
+        self.company.write({"microsite_phone": False, "microsite_phone2": False})
+        html = self._render_homepage_content()
+        self.assertNotIn("fa-phone", html)
+
+    def test_second_phone_alone_is_still_shown(self):
+        # phone2 does not depend on phone1 at render time: the form hides the
+        # field when the first is empty, but data migrated from the origin
+        # must never vanish because of a UI rule.
+        self.company.partner_id.phone = False
+        self.company.microsite_phone = False
+        self.company.microsite_phone2 = "603222222"
+        html = self._render_homepage_content()
+        self.assertIn("603222222", html)
