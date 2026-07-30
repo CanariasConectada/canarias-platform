@@ -70,6 +70,22 @@ class ResCompany(models.Model):
         help="Embeddable map URL. When empty, a Google Maps embed is built "
         "from the company address.",
     )
+    # Public contact numbers, separate from the partner's own ``phone``.
+    # A shop often publishes a counter number while the partner record keeps
+    # the number used for orders and paperwork; the origin platform modelled
+    # exactly that with two dedicated microsite fields, and the microsite
+    # showed ``microsite_phone or partner.phone`` plus an optional second
+    # line. Both are kept here so publishing a homepage never has to choose
+    # between the public number and the administrative one.
+    microsite_phone = fields.Char(
+        string="Public Phone",
+        help="Phone shown on the microsite. Falls back to the company "
+        "contact's phone when empty.",
+    )
+    microsite_phone2 = fields.Char(
+        string="Public Phone 2",
+        help="Second phone shown on the microsite, below the first one.",
+    )
     microsite_homepage_page_id = fields.Many2one(
         "website.page",
         string="Microsite Homepage",

@@ -126,9 +126,21 @@
                             <i class="fa fa-map-marker fa-fw me-2"/>
                             <span t-esc="company.partner_id.contact_address"/>
                         </p>
-                        <p t-if="company.partner_id.phone" class="mb-2">
+                        <!-- The public number wins over the partner's own:
+                             a shop publishes its counter line, not the one
+                             it uses for paperwork. Same rule as the origin
+                             platform (``microsite_phone or phone``). -->
+                        <t
+                            t-set="microsite_phone"
+                            t-value="company.microsite_phone or company.partner_id.phone"
+                        />
+                        <p t-if="microsite_phone" class="mb-2">
                             <i class="fa fa-phone fa-fw me-2"/>
-                            <span t-esc="company.partner_id.phone"/>
+                            <span t-esc="microsite_phone"/>
+                        </p>
+                        <p t-if="company.microsite_phone2" class="mb-2">
+                            <i class="fa fa-phone fa-fw me-2"/>
+                            <span t-esc="company.microsite_phone2"/>
                         </p>
                         <p t-if="company.partner_id.email" class="mb-2">
                             <i class="fa fa-envelope fa-fw me-2"/>
