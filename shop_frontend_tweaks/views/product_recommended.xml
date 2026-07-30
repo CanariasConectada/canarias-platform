@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl).
+
+RECOMMENDED PRODUCTS
+Odoo already renders a carousel under the product description whenever a
+product has alternative products set (website_sale.alternative_products, active
+by default). Two things make it unusable as shipped on this platform:
+
+- Its headings read "Alternative Products" / "These other products might
+  interest you". Odoo's own Spanish catalogue leaves both untranslated, so the
+  es_ES arch of that view still says "Alternative Products" in English.
+- "Alternative" is the wrong word for a directory of independent local shops:
+  the block is not offering a substitute, it is recommending more of what this
+  shop sells.
+
+So the headings are replaced with our own — which do get translated, through
+this module's i18n/es.po — and the title picks up the platform colour.
+-->
+<odoo>
+
+    <template id="recommended_products_heading"
+              inherit_id="website_sale.alternative_products"
+              name="Recommended Products Heading">
+        <!-- data-name is the label the website editor shows for the block; keep
+             it in step with what the visitor reads. -->
+        <xpath expr="//section[hasclass('s_dynamic_snippet_products')]" position="attributes">
+            <attribute name="data-name">Recommended Products</attribute>
+        </xpath>
+        <xpath expr="//section[hasclass('s_dynamic_snippet_title')]//h4" position="replace">
+            <h4 class="shop-recommended-title">You may also like</h4>
+        </xpath>
+        <xpath expr="//section[hasclass('s_dynamic_snippet_title')]//p[hasclass('lead')]"
+               position="replace">
+            <p class="lead">Other products from this shop that may interest you</p>
+        </xpath>
+    </template>
+
+    <template id="recommended_products_styles"
+              inherit_id="website_sale.alternative_products"
+              name="Recommended Products Styles">
+        <xpath expr="//section[hasclass('s_dynamic_snippet_title')]" position="before">
+            <style type="text/css">
+                .o_wsale_alternative_products {
+                    border-top: 1px solid #dee2e6 !important;
+                }
+                .o_wsale_alternative_products .shop-recommended-title {
+                    color: #714B67 !important;
+                    font-weight: 700 !important;
+                }
+                .o_wsale_alternative_products .lead {
+                    font-size: 1rem !important;
+                    color: #6c757d !important;
+                }
+            </style>
+        </xpath>
+    </template>
+
+</odoo>
