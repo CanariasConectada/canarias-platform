@@ -17,9 +17,12 @@
                 <button name="action_continue_sustainability_evaluation" type="object" icon="fa-play" title="Continuar evaluación"
                         invisible="state != 'in_progress' or not context.get('is_sustainability')"/>
             </xpath>
-            <xpath expr="//field[@name='survey_id']" position="after">
-                <field name="is_manually_overridden" optional="hide" invisible="not context.get('is_sustainability')"/>
-            </xpath>
+            <!-- is_manually_overridden is OWNED by company_certification's
+                 inherited list (gated behind certification_display, set by
+                 the action context). Re-adding it here put a third copy of
+                 the column on screen: in Odoo list views a context condition
+                 only hides a column through column_invisible, never through
+                 invisible. -->
         </field>
     </record>
 

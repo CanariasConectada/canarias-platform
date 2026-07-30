@@ -18,16 +18,16 @@
                         invisible="state not in ('new', 'in_progress') or not context.get('certification_display')"/>
             </xpath>
             <xpath expr="//field[@name='survey_id']" position="after">
-                <field name="company_id" optional="show" invisible="not context.get('certification_display')"/>
+                <field name="company_id" optional="show" column_invisible="not context.get('certification_display')"/>
                 <field name="certification_level" optional="show" widget="badge"
                        decoration-muted="certification_level == 'none'"
                        decoration-info="certification_level == 'bronze'"
                        decoration-primary="certification_level == 'silver'"
                        decoration-warning="certification_level == 'gold'"
-                       invisible="not context.get('certification_display')"/>
-                <field name="next_attempt_date" optional="show" invisible="not context.get('certification_display')"/>
-                <field name="expiry_date" optional="show" invisible="not context.get('certification_display')"/>
-                <field name="is_manually_overridden" optional="hide" invisible="not context.get('certification_display')"/>
+                       column_invisible="not context.get('certification_display')"/>
+                <field name="next_attempt_date" optional="show" column_invisible="not context.get('certification_display')"/>
+                <field name="expiry_date" optional="show" column_invisible="not context.get('certification_display')"/>
+                <field name="is_manually_overridden" optional="hide" column_invisible="not context.get('certification_display')"/>
             </xpath>
         </field>
     </record>

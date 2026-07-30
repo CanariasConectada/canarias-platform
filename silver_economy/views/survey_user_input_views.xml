@@ -17,18 +17,13 @@
                 <button name="action_continue_silver_evaluation" type="object" icon="fa-play" title="Continuar evaluación"
                         invisible="state != 'in_progress' or not context.get('is_silver_economy') or context.get('is_sustainability')"/>
             </xpath>
-            <xpath expr="//field[@name='survey_id']" position="after">
-                <field name="company_id" optional="show" invisible="not context.get('is_silver_economy')"/>
-                <field name="certification_level" optional="show" widget="badge"
-                       decoration-muted="certification_level == 'none'"
-                       decoration-info="certification_level == 'bronze'"
-                       decoration-primary="certification_level == 'silver'"
-                       decoration-warning="certification_level == 'gold'"
-                       invisible="not context.get('is_silver_economy')"/>
-                <field name="next_attempt_date" optional="show" invisible="not context.get('is_silver_economy')"/>
-                <field name="expiry_date" optional="show" invisible="not context.get('is_silver_economy')"/>
-                <field name="is_manually_overridden" optional="hide" invisible="not context.get('is_silver_economy')"/>
-            </xpath>
+            <!-- The certification columns (company, level, dates, override
+                 flag) are OWNED by company_certification's inherited list,
+                 gated behind context key certification_display. Re-adding
+                 them here duplicated every column on screen: in Odoo list
+                 views a context condition only hides a column through
+                 column_invisible, never through invisible. The action
+                 context sets certification_display instead. -->
         </field>
     </record>
 
