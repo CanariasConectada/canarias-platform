@@ -19,6 +19,15 @@
 // `!important` — is what keeps non-themed websites untouched.
 
 body:has(.o_pmm_footer) {
+    // The legacy sheet leaned on --color-primary, but the variable was only
+    // ever defined inside an inline <style> of TWO legacy COW homepages —
+    // everywhere else the declaration was invalid at computed-value time and
+    // the buttons rendered transparent until :hover, whose colour is
+    // hard-coded. Define it here so the sheet is self-sufficient. #0066cc is
+    // the platform blue those two pages declared (the hover shade #0052a3
+    // below is its darker step).
+    --color-primary: #0066cc;
+
     // -- Cookies bar ------------------------------------------------------
     // Odoo renders the consent buttons as plain links. Legacy promoted them to
     // primary-styled buttons; merchants recognise that call to action.
