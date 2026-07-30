@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl). -->
+<odoo>
+
+    <record id="product_template_form_return_warranty" model="ir.ui.view">
+        <field name="name">product.template.form.return.warranty</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='general_information']//group[@name='internal_notes']"
+                   position="after">
+                <group name="return_warranty_group" string="Return warranty">
+                    <field name="return_warranty"/>
+                    <field name="return_warranty_custom_value"
+                           invisible="return_warranty != 'custom'"/>
+                    <field name="return_warranty_custom_period"
+                           invisible="return_warranty != 'custom'"/>
+                </group>
+                <group name="delivery_days_group" string="Delivery time">
+                    <field name="delivery_days"/>
+                    <field name="delivery_days_custom_value"
+                           invisible="delivery_days != 'custom'"/>
+                    <field name="delivery_days_custom_period"
+                           invisible="delivery_days != 'custom'"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

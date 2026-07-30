@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl). -->
+<odoo>
+
+    <!-- Odoo ships "30-day money-back guarantee" and "Shipping: 2-3 Business
+         Days" hardcoded in website_sale.product_terms_and_conditions, so every
+         product of every website makes the same promise whether or not the shop
+         can keep it. Replace that text with the values each shop sets on its
+         own products and keep only the Terms and Conditions link.
+
+         The block is replaced rather than the whole template deactivated: the
+         product page calls it under is_view_active(), so switching the template
+         off would hide our own information with it.
+
+         The sentences come from computed fields (see models/product_template.py)
+         so nothing here needs translating. -->
+    <template id="product_terms_warranty_and_delivery"
+              inherit_id="website_sale.product_terms_and_conditions"
+              name="Return warranty and delivery time">
+        <xpath expr="//small" position="replace">
+
+            <small class="text-muted mb-0">
+                <a href="/terms" class="o_translate_inline text-muted">
+                    <u>Terms and Conditions</u>
+                </a>
+            </small>
+
+            <div t-if="product.return_warranty_display"
+                 class="product_return_warranty mt-2">
+                <small class="text-muted">
+                    <i t-attf-class="fa me-1 {{'fa-times-circle' if product.return_warranty == 'none' else 'fa-undo'}}"
+                       aria-hidden="true"/>
+                    <t t-out="product.return_warranty_display"/>
+                </small>
+            </div>
+
+            <div t-if="product.delivery_days_display"
+                 class="product_delivery_days mt-1">
+                <small class="text-muted">
+                    <i class="fa fa-truck me-1" aria-hidden="true"/>
+                    <t t-out="product.delivery_days_display"/>
+                </small>
+            </div>
+
+        </xpath>
+    </template>
+
+</odoo>
