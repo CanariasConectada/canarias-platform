@@ -2,9 +2,10 @@
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl).
 {
     "name": "Shop Frontend Tweaks",
-    "version": "19.0.1.0.2",
+    "version": "19.0.1.1.0",
     "category": "Website/Website",
-    "summary": "Shop visual tweaks: header, toolbar and searchable categories",
+    "summary": "Shop tweaks: header, toolbar, searchable categories and "
+    "recommended products",
     "author": "MikeColangelo",
     "website": "https://github.com/CanariasConectada/canarias-platform",
     "license": "LGPL-3",
@@ -17,6 +18,7 @@
         "views/shop_toolbar.xml",
         "views/shop_searchable.xml",
         "views/shop_styles.xml",
+        "views/product_recommended.xml",
     ],
     "assets": {
         "web.assets_frontend": [
