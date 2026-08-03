@@ -193,4 +193,91 @@
         <field name="is_published">True</field>
     </record>
 
+    <!-- Aviso legal. /aviso-legal answered 404 on all 218 microsites, which
+         is the one legal page LSSI-CE article 10 makes mandatory: the
+         provider's identity, tax number and contact must be permanently
+         available. The identity block below is data-driven like the other
+         pages, so it is correct per microsite from day one. The clauses the
+         asesoría still has to supply are marked in the page itself instead
+         of being invented here — a placeholder that says so is honest,
+         inventing legal text is not. -->
+    <template id="microsite_legal_notice" name="Aviso Legal">
+        <t t-call="website.layout">
+            <t t-set="pmm_company" t-value="website.company_id.sudo()"/>
+            <div id="wrap" class="oe_structure">
+                <section class="s_title pt48 pb24" data-name="Title">
+                    <div class="container">
+                        <h1 class="text-center">Aviso Legal</h1>
+                    </div>
+                </section>
+                <section class="pb48" data-name="Text">
+                    <div class="container">
+                        <h2>Titular del sitio web</h2>
+                        <p>
+                            En cumplimiento del artículo 10 de la Ley 34/2002,
+                            de servicios de la sociedad de la información y de
+                            comercio electrónico (LSSI-CE), se informa de los
+                            siguientes datos identificativos:
+                        </p>
+                        <ul>
+                            <li>
+                                <strong>Denominación: </strong>
+                                <span t-field="pmm_company.name"/>
+                            </li>
+                            <li t-if="pmm_company.vat">
+                                <strong>NIF/CIF: </strong>
+                                <span t-field="pmm_company.vat"/>
+                            </li>
+                            <li t-if="pmm_company.partner_id.contact_address">
+                                <strong>Domicilio: </strong>
+                                <span
+                                    t-field="pmm_company.partner_id.contact_address"
+                                />
+                            </li>
+                            <li t-if="pmm_company.email">
+                                <strong>Correo electrónico: </strong>
+                                <span t-field="pmm_company.email"/>
+                            </li>
+                            <li t-if="pmm_company.phone">
+                                <strong>Teléfono: </strong>
+                                <span t-field="pmm_company.phone"/>
+                            </li>
+                            <li t-if="website.domain">
+                                <strong>Sitio web: </strong>
+                                <span t-field="website.domain"/>
+                            </li>
+                        </ul>
+                        <h2>Condiciones de uso</h2>
+                        <p class="text-muted">
+                            <em>
+                                Pendiente del texto definitivo de la asesoría
+                                jurídica. Hasta que se incorpore, siguen siendo
+                                de aplicación la
+                                <a href="/politica-privacidad">
+                                    Política de Privacidad
+                                </a>
+                                , la
+                                <a href="/politica-cookies">
+                                    Política de Cookies
+                                </a>
+                                y los
+                                <a href="/terminos-condiciones">
+                                    Términos y Condiciones
+                                </a>
+                                de este sitio.
+                            </em>
+                        </p>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <record id="microsite_legal_notice_page" model="website.page">
+        <field name="name">Aviso Legal</field>
+        <field name="url">/aviso-legal</field>
+        <field name="view_id" ref="microsite_legal_notice"/>
+        <field name="is_published">True</field>
+    </record>
+
 </odoo>
