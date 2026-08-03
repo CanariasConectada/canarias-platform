@@ -4,6 +4,7 @@
 import logging
 
 from odoo import api, fields, models
+from odoo.fields import Domain
 from odoo.tools import split_every
 
 _logger = logging.getLogger(__name__)
@@ -33,6 +34,29 @@ class Website(models.Model):
     def _marketplace_companies(self):
         """Companies that own at least one marketplace website."""
         return self.sudo().search([("is_marketplace", "=", True)]).company_id
+
+    def sale_product_domain(self):
+        """Drop the per-website pin from the shop domain on a marketplace.
+
+        ``website_sale`` builds the shop domain as
+        ``sale_ok AND website_id in (False, this) AND company_id in (...)``.
+        The ``website_id`` leaf is the same restriction the ``ir.rule`` on
+        ``website_published`` applies (see ``product_template.py``), and it has
+        to go for the same reason: a product a merchant pinned to their own
+        site would otherwise never reach the marketplace, however many
+        companies are allowed to see it.
+
+        The leaf is rewritten to TRUE rather than the domain rebuilt from
+        scratch, so every other condition core adds — now or in a future
+        version — keeps applying untouched.
+        """
+        domain = super().sale_product_domain()
+        website = self or self.get_current_website()
+        if not website.is_marketplace:
+            return domain
+        return domain.map_conditions(
+            lambda cond: Domain.TRUE if cond.field_expr == "website_id" else cond
+        )
 
     def _sync_marketplace_products(self):
         """Ensure every product is visible to this record's marketplace

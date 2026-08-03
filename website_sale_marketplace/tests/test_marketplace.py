@@ -217,4 +217,41 @@ class TestMarketplaceShop(MarketplaceCommon, HttpCase):
         self.website.is_marketplace = True
         res = self.url_open(self.prod_b.website_url)
         self.assertEqual(res.status_code, 200)
+
+    def test_shop_shows_product_pinned_to_another_website(self):
+        """A merchant pinning a product to their own site must not hide it
+        from the marketplace.
+
+        This is the case that broke in production: 1044 of 1576 products
+        carried a ``website_id``, and ``website_published`` — the field the
+        public reads through — ANDs publication with that pin, so widening
+        ``company_ids`` was not enough. The portal listed 59 products instead
+        of 1100.
+        """
+        other_site = self.env["website"].create(
+            {"name": "MP Other Site", "company_id": self.company_c.id}
+        )
+        self.prod_b.website_id = other_site
+        self.website.is_marketplace = True
+
+        res = self.url_open("/shop?search=MP+Widget")
+        self.assertEqual(res.status_code, 200)
+        self.assertIn("MP Widget Bravo", res.text)
+        # Publication is still the gate: pinning does not resurrect a draft.
+        self.assertNotIn("MP Widget Hidden", res.text)
+
+    def test_pin_still_hides_on_a_plain_merchant_site(self):
+        """The same product stays hidden on a non-marketplace website that is
+        not the one it is pinned to, so dropping the pin is scoped to the
+        marketplace and does not leak between merchants."""
+        other_site = self.env["website"].create(
+            {"name": "MP Other Site", "company_id": self.company_c.id}
+        )
+        self.prod_b.website_id = other_site
+        self.website.is_marketplace = False
+        self.prod_b.company_ids = [fields.Command.link(self.website.company_id.id)]
+
+        res = self.url_open("/shop?search=MP+Widget")
+        self.assertEqual(res.status_code, 200)
+        self.assertNotIn("MP Widget Bravo", res.text)
         self.assertIn("MP Widget Bravo", res.text)
