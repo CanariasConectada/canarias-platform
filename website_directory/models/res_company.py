@@ -3,7 +3,8 @@
 
 import logging
 
-from odoo import api, fields, models
+from odoo import _, api, fields, models
+from odoo.exceptions import AccessError, UserError
 
 _logger = logging.getLogger(__name__)
 
@@ -184,6 +185,74 @@ class ResCompany(models.Model):
             )
             if cron:
                 cron._trigger()
+
+    # ------------------------------------------------------------------
+    # Merchant self-service: set your own category
+    # ------------------------------------------------------------------
+    def _get_own_company_for_directory(self):
+        """The company the current user may edit, or an empty recordset.
+
+        A merchant here is a portal user (``share=True``) with no backend, and
+        their link to a business is ``res.users.company_id``. That is the
+        single source of truth for "their own company": not the partner, and
+        not the allowed-companies list, which a portal user does not really
+        control.
+
+        Returns empty instead of raising so a caller can render "you have no
+        shop" rather than an error page.
+        """
+        user = self.env.user
+        if not user or user._is_public():
+            return self.browse()
+        company = user.company_id
+        if not company or not company.active:
+            return self.browse()
+        # The platform's own company is nobody's shop. Letting whoever holds a
+        # portal account on it recategorise Canarias Conectada would be a
+        # privilege escalation dressed up as a form field.
+        main = self.env.ref("base.main_company", raise_if_not_found=False)
+        if main and company == main:
+            return self.browse()
+        return company.sudo()
+
+    def set_own_directory_category(self, category_id):
+        """Set the directory category of the CALLER's own company.
+
+        Writing ``category_id`` on ``res.company`` needs Administration
+        rights — a merchant gets ``AccessError: No puede modificar
+        'Compañías'``. Handing a portal user those rights so they can fix a
+        dropdown would be absurd, so the write is escalated here instead. The
+        escalation is worth exactly as much as the checks around it:
+
+        * the company is resolved from the SESSION, never from the request, so
+          no id sent from outside can aim this at somebody else's shop;
+        * only ``category_id`` is written, never a second field;
+        * the category has to exist and be active.
+
+        ``self`` is deliberately ignored: the caller does not get to choose
+        the company. That is the entire point of the method.
+        """
+        company = self._get_own_company_for_directory()
+        if not company:
+            raise AccessError(
+                _(
+                    "Your user is not linked to a business, so there is no "
+                    "category to set."
+                )
+            )
+
+        if not category_id:
+            company.category_id = False
+            return company
+
+        category = (
+            self.env["res.company.category"].sudo().browse(int(category_id)).exists()
+        )
+        if not category or not category.active:
+            raise UserError(_("That category does not exist."))
+
+        company.category_id = category.id
+        return company
 
     # ------------------------------------------------------------------
     # ORM overrides — flag pending instead of syncing inline
