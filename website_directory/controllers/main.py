@@ -107,13 +107,31 @@ class WebsiteDirectory(http.Controller):
     def _get_text_search_domain(self, search):
         """Free text search on the entry and its partner names.
 
+        The query is split into words and every word must appear in one of the
+        searched fields, instead of matching the whole string as a single
+        ``ilike``. With the whole string, word order decided the result:
+        "muebles siony" found the shop and "siony muebles" found nothing,
+        because ``%siony muebles%`` never occurs in "MUEBLES SIONY".
+
+        Accents are already handled by PostgreSQL — the database has the
+        ``unaccent`` extension and Odoo runs with ``unaccent = true``, so
+        "cafeteria" and "cafetería" match each other.
+
         The l10n_es trade name (``comercial``) is included only when the
         field exists: it is not a dependency of this module.
         """
         search_fields = ["name", "company_id.partner_id.name"]
         if "comercial" in request.env["res.partner"]._fields:
             search_fields.append("company_id.partner_id.comercial")
-        return Domain.OR([(f, "ilike", search)] for f in search_fields)
+        words = search.split()
+        if not words:
+            return Domain.TRUE
+        return Domain.AND(
+            [
+                Domain.OR([(field, "ilike", word)] for field in search_fields)
+                for word in words
+            ]
+        )
 
     def _get_search_domain(self, zone=None, category_id=None, search="", kw=None):
         """Domain of the published entries matching the current filters."""
