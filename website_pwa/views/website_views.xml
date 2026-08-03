@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="view_website_form_pwa" model="ir.ui.view">
+        <field name="name">website.form.pwa</field>
+        <field name="model">website</field>
+        <field name="inherit_id" ref="website.view_website_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <group
+                    string="App instalable (PWA)"
+                    name="pwa"
+                    col="2"
+                >
+                    <field name="pwa_enabled" />
+                    <field name="pwa_name" invisible="not pwa_enabled" />
+                    <field name="pwa_short_name" invisible="not pwa_enabled" />
+                    <field
+                        name="pwa_theme_color"
+                        widget="color"
+                        invisible="not pwa_enabled"
+                    />
+                    <field
+                        name="pwa_background_color"
+                        widget="color"
+                        invisible="not pwa_enabled"
+                    />
+                    <field
+                        name="pwa_icon"
+                        widget="image"
+                        options="{'size': [128, 128]}"
+                        invisible="not pwa_enabled"
+                    />
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
