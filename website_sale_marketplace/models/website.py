@@ -31,11 +31,11 @@ class Website(models.Model):
     )
 
     marketplace_zone = fields.Selection(
-        selection=lambda self: self.env["res.company"]
-        ._fields["commercial_zone"]
-        .selection
-        if "commercial_zone" in self.env["res.company"]._fields
-        else [],
+        selection=lambda self: (
+            self.env["res.company"]._fields["commercial_zone"].selection
+            if "commercial_zone" in self.env["res.company"]._fields
+            else []
+        ),
         string="Zona del marketplace",
         help="Restrict this marketplace to the businesses of one commercial "
         "zone. Empty means the whole platform, which is what the main portal "
@@ -74,10 +74,9 @@ class Website(models.Model):
         # shops listed nothing because no product was ever linked to a zone
         # company — and linking them would have been the wrong fix, since a
         # merchant belongs to a zone, not a product.
-        if website.marketplace_zone and self._zone_field_available():
-            domain &= Domain(
-                "company_ids.commercial_zone", "=", website.marketplace_zone
-            )
+        zone_companies = website._zone_company_ids()
+        if zone_companies:
+            domain &= Domain("company_ids", "in", zone_companies)
         return domain
 
     @api.model
@@ -89,6 +88,25 @@ class Website(models.Model):
         database that only wants the aggregated shop.
         """
         return "commercial_zone" in self.env["res.company"]._fields
+
+    def _zone_company_ids(self):
+        """Ids of the businesses in this website's zone, resolved as sudo.
+
+        Written as an explicit id list instead of the obvious
+        ``company_ids.commercial_zone = zone`` leaf because that dotted path
+        walks into ``res.company``, where the shop's public user may only read
+        its own company. The subquery came back empty and the zone shop listed
+        nothing, with no error to explain why.
+        """
+        self.ensure_one()
+        if not self.marketplace_zone or not self._zone_field_available():
+            return []
+        return (
+            self.env["res.company"]
+            .sudo()
+            .search([("commercial_zone", "=", self.marketplace_zone)])
+            .ids
+        )
 
     def _sync_marketplace_products(self):
         """Ensure every product is visible to this record's marketplace

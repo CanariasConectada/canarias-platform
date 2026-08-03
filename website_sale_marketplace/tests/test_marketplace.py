@@ -240,6 +240,42 @@ class TestMarketplaceShop(MarketplaceCommon, HttpCase):
         # Publication is still the gate: pinning does not resurrect a draft.
         self.assertNotIn("MP Widget Hidden", res.text)
 
+    def test_zone_marketplace_lists_only_its_neighbourhood(self):
+        """A zone shop shows the businesses of its zone and nobody else's.
+
+        This needed the isolation rule widening, not a data change: a product
+        belongs to its merchant, not to a neighbourhood. Measured on the real
+        database, Guanarteme went from 0 to 671 products with 0 from outside
+        the zone.
+        """
+        if "commercial_zone" not in self.env["res.company"]._fields:
+            self.skipTest("res_company_zone no instalado")
+        self.company_b.commercial_zone = "guanarteme"
+        self.company_c.commercial_zone = "tamaraceite"
+        prod_c = self._make_product("MP Widget Charlie", self.company_c)
+        self.website.write({"is_marketplace": True, "marketplace_zone": "guanarteme"})
+
+        res = self.url_open("/shop?search=MP+Widget")
+        self.assertEqual(res.status_code, 200)
+        self.assertIn("MP Widget Bravo", res.text)  # Guanarteme
+        self.assertNotIn(prod_c.name, res.text)  # Tamaraceite: fuera de zona
+        self.assertNotIn("MP Widget Hidden", res.text)  # sigue sin publicar
+
+    def test_zone_marketplace_skips_the_company_backfill(self):
+        """Linking every product to the zone company is the wrong fix and it
+        also explodes: the write recomputes the delivery carriers and
+        website_sale_collect refuses when a business has no pickup carrier."""
+        if "commercial_zone" not in self.env["res.company"]._fields:
+            self.skipTest("res_company_zone no instalado")
+        zone_company, zone_website = self._make_fresh_marketplace("MP Zona Co")
+        spy, calls = self._spy_company_ids_writes()
+        with spy:
+            zone_website.write(
+                {"is_marketplace": True, "marketplace_zone": "guanarteme"}
+            )
+        self.assertFalse(calls, "un marketplace de zona no debe hacer backfill")
+        self.assertNotIn(zone_company, self.prod_b.company_ids)
+
     def test_pin_still_hides_on_a_plain_merchant_site(self):
         """The same product stays hidden on a non-marketplace website that is
         not the one it is pinned to, so dropping the pin is scoped to the
