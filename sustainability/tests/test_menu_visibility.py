@@ -16,7 +16,9 @@ class TestMenuVisibility(TransactionCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.menu = cls.env.ref("sustainability.menu_sustainability_root")
-        cls.survey = cls.env.ref("sustainability.sust_economy_master_survey")
+        # El cuestionario ya no es de este módulo: su dueño único es
+        # company_certification y aquí sólo se le pone la marca.
+        cls.survey = cls.env.ref("company_certification.survey_sustainability")
         cls.group = cls.env.ref("sustainability.group_sustainability_user")
         # Evita el envío/render del correo de bienvenida al crear el usuario.
         no_mail_ctx = {

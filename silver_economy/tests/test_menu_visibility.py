@@ -16,7 +16,9 @@ class TestMenuVisibility(TransactionCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.menu = cls.env.ref("silver_economy.menu_silver_economy_root")
-        cls.survey = cls.env.ref("silver_economy.silver_economy_master_survey")
+        # El cuestionario ya no es de este módulo: su dueño único es
+        # company_certification y aquí sólo se le pone la marca.
+        cls.survey = cls.env.ref("company_certification.survey_silver_economy")
         cls.group = cls.env.ref("silver_economy.group_silver_user")
         # Evita el envío/render del correo de bienvenida al crear el usuario.
         no_mail_ctx = {
