@@ -177,6 +177,21 @@ class TestMarketplaceSync(MarketplaceCommon, TransactionCase):
         self.assertIn(self.mp_company, prelinked.company_ids)
         self.assertIn(self.company_b, prelinked.company_ids)
 
+    def test_zone_marketplace_skips_the_company_backfill(self):
+        """Linking every product to the zone company is the wrong fix and it
+        also explodes: the write recomputes the delivery carriers and
+        website_sale_collect refuses when a business has no pickup carrier."""
+        if "commercial_zone" not in self.env["res.company"]._fields:
+            self.skipTest("res_company_zone no instalado")
+        zone_company, zone_website = self._make_fresh_marketplace("MP Zona Co")
+        spy, calls = self._spy_company_ids_writes()
+        with spy:
+            zone_website.write(
+                {"is_marketplace": True, "marketplace_zone": "guanarteme"}
+            )
+        self.assertFalse(calls, "un marketplace de zona no debe hacer backfill")
+        self.assertNotIn(zone_company, self.prod_b.company_ids)
+
     def test_isolation_between_merchants_preserved(self):
         self.website.is_marketplace = True
         # A company-C user must NOT see company-B's product even though it is
@@ -302,21 +317,6 @@ class TestMarketplaceShop(MarketplaceCommon, HttpCase):
                 set(product.company_ids.ids) & zone_ids,
                 f"{product.name} no es de Guanarteme y aparece en su tienda",
             )
-
-    def test_zone_marketplace_skips_the_company_backfill(self):
-        """Linking every product to the zone company is the wrong fix and it
-        also explodes: the write recomputes the delivery carriers and
-        website_sale_collect refuses when a business has no pickup carrier."""
-        if "commercial_zone" not in self.env["res.company"]._fields:
-            self.skipTest("res_company_zone no instalado")
-        zone_company, zone_website = self._make_fresh_marketplace("MP Zona Co")
-        spy, calls = self._spy_company_ids_writes()
-        with spy:
-            zone_website.write(
-                {"is_marketplace": True, "marketplace_zone": "guanarteme"}
-            )
-        self.assertFalse(calls, "un marketplace de zona no debe hacer backfill")
-        self.assertNotIn(zone_company, self.prod_b.company_ids)
 
     def test_pin_still_hides_on_a_plain_merchant_site(self):
         """The same product stays hidden on a non-marketplace website that is
