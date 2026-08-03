@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- The invitation to install. It is a snippet rather than a fixed block
+         so each site decides where it goes: the portal and the three zones
+         want it prominent, a merchant microsite may want it in the footer. -->
+    <template id="s_pwa_install" name="Instalar la app">
+        <section class="s_pwa_install pt32 pb32" data-name="Instalar la app">
+            <div class="container">
+                <div
+                    class="o_pwa_install_card d-none p-4 rounded-3 text-center"
+                >
+                    <h3 class="mb-2">Llévate la tienda en el móvil</h3>
+                    <p class="mb-3 text-muted">
+                        Instala esta web como una app y entra de un toque,
+                        sin buscarla en el navegador.
+                    </p>
+                    <!-- Android/Chrome: shown only once the browser has
+                         fired beforeinstallprompt, i.e. once it considers
+                         the site installable. Showing it earlier would be a
+                         button that does nothing. -->
+                    <button
+                        type="button"
+                        class="btn btn-primary o_pwa_install_button d-none"
+                    >
+                        Instalar la app
+                    </button>
+                    <!-- iOS has no prompt to trigger, so the only honest
+                         option is telling the visitor where the button is. -->
+                    <div class="o_pwa_ios_hint d-none small text-muted">
+                        En iPhone o iPad: pulsa
+                        <strong>Compartir</strong>
+                        y luego
+                        <strong>Añadir a pantalla de inicio</strong>.
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <template
+        id="snippet_pwa_install"
+        inherit_id="website.snippets"
+        name="PWA: snippet de instalación"
+    >
+        <xpath expr="//snippets[@id='snippet_groups']" position="inside">
+            <t t-snippet="website_pwa.s_pwa_install" string="Instalar la app" />
+        </xpath>
+    </template>
+
+</odoo>

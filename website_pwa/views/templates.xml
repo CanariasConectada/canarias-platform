@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- Hooks into the public layout. Everything here is conditional on
+         website.pwa_enabled, so a website with the app switched off serves
+         exactly the same HTML it served before this module existed. -->
+    <template
+        id="pwa_layout_head"
+        inherit_id="website.layout"
+        name="PWA: manifest y meta en la cabecera"
+    >
+        <xpath expr="//head" position="inside">
+            <t t-if="website.pwa_enabled">
+                <link
+                    rel="manifest"
+                    href="/website_pwa/manifest.webmanifest"
+                />
+                <meta
+                    name="theme-color"
+                    t-att-content="website.pwa_theme_color or '#1a7f5a'"
+                />
+                <!-- iOS ignores the manifest entirely: without these three
+                     tags "Añadir a pantalla de inicio" produces a bookmark
+                     that opens Safari with its chrome, not an app. -->
+                <meta name="apple-mobile-web-app-capable" content="yes" />
+                <meta
+                    name="apple-mobile-web-app-status-bar-style"
+                    content="default"
+                />
+                <meta
+                    name="apple-mobile-web-app-title"
+                    t-att-content="website._pwa_short_name()"
+                />
+                <link
+                    rel="apple-touch-icon"
+                    sizes="192x192"
+                    href="/website_pwa/icon/192.png"
+                />
+            </t>
+        </xpath>
+    </template>
+
+</odoo>
