@@ -4,6 +4,7 @@
 import logging
 
 from odoo import api, fields, models
+from odoo.fields import Domain
 from odoo.tools import split_every
 
 _logger = logging.getLogger(__name__)
@@ -29,10 +30,83 @@ class Website(models.Model):
         "visibility scope.",
     )
 
+    marketplace_zone = fields.Selection(
+        selection=lambda self: (
+            self.env["res.company"]._fields["commercial_zone"].selection
+            if "commercial_zone" in self.env["res.company"]._fields
+            else []
+        ),
+        string="Zona del marketplace",
+        help="Restrict this marketplace to the businesses of one commercial "
+        "zone. Empty means the whole platform, which is what the main portal "
+        "wants; the neighbourhood shops set their own zone.",
+    )
+
     @api.model
     def _marketplace_companies(self):
         """Companies that own at least one marketplace website."""
         return self.sudo().search([("is_marketplace", "=", True)]).company_id
+
+    def sale_product_domain(self):
+        """Drop the per-website pin from the shop domain on a marketplace.
+
+        ``website_sale`` builds the shop domain as
+        ``sale_ok AND website_id in (False, this) AND company_id in (...)``.
+        The ``website_id`` leaf is the same restriction the ``ir.rule`` on
+        ``website_published`` applies (see ``product_template.py``), and it has
+        to go for the same reason: a product a merchant pinned to their own
+        site would otherwise never reach the marketplace, however many
+        companies are allowed to see it.
+
+        The leaf is rewritten to TRUE rather than the domain rebuilt from
+        scratch, so every other condition core adds — now or in a future
+        version — keeps applying untouched.
+        """
+        domain = super().sale_product_domain()
+        website = self or self.get_current_website()
+        if not website.is_marketplace:
+            return domain
+        domain = domain.map_conditions(
+            lambda cond: Domain.TRUE if cond.field_expr == "website_id" else cond
+        )
+        # A zone marketplace is the same mechanism, narrowed: show the
+        # products of the businesses in that neighbourhood. The three zone
+        # shops listed nothing because no product was ever linked to a zone
+        # company — and linking them would have been the wrong fix, since a
+        # merchant belongs to a zone, not a product.
+        zone_companies = website._zone_company_ids()
+        if zone_companies:
+            domain &= Domain("company_ids", "in", zone_companies)
+        return domain
+
+    @api.model
+    def _zone_field_available(self):
+        """True when res_company_zone is installed.
+
+        Checked rather than depended on: the marketplace is useful without
+        zones, and a hard dependency would drag the directory stack into any
+        database that only wants the aggregated shop.
+        """
+        return "commercial_zone" in self.env["res.company"]._fields
+
+    def _zone_company_ids(self):
+        """Ids of the businesses in this website's zone, resolved as sudo.
+
+        Written as an explicit id list instead of the obvious
+        ``company_ids.commercial_zone = zone`` leaf because that dotted path
+        walks into ``res.company``, where the shop's public user may only read
+        its own company. The subquery came back empty and the zone shop listed
+        nothing, with no error to explain why.
+        """
+        self.ensure_one()
+        if not self.marketplace_zone or not self._zone_field_available():
+            return []
+        return (
+            self.env["res.company"]
+            .sudo()
+            .search([("commercial_zone", "=", self.marketplace_zone)])
+            .ids
+        )
 
     def _sync_marketplace_products(self):
         """Ensure every product is visible to this record's marketplace
@@ -44,7 +118,18 @@ class Website(models.Model):
         between merchants is preserved.
         """
         Product = self.env["product.template"].sudo()
-        for website in self.filtered("is_marketplace"):
+        # A ZONE marketplace is skipped on purpose. It does not need the link:
+        # it selects products through their merchant's zone, and the isolation
+        # rule reads product.company_id (empty on every product here), so
+        # nothing is blocking those reads in the first place. Running the
+        # backfill anyway would add three more companies to all 1576 products
+        # and, worse, blow up: writing company_ids recomputes the delivery
+        # carriers and website_sale_collect then refuses with "el método de
+        # entrega y el almacén deben compartir la misma compañía", because 68
+        # businesses have no pickup carrier of their own.
+        for website in self.filtered(
+            lambda w: w.is_marketplace and not w.marketplace_zone
+        ):
             company = website.company_id
             # The many2many "not in" leaf compiles to a single SQL anti-join
             # (NOT EXISTS (SELECT 1 FROM product_company_rel ...)), so the
