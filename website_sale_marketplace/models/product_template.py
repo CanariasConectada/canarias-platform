@@ -73,9 +73,16 @@ class ProductTemplate(models.Model):
         zone_companies = website._zone_company_ids()
         if not zone_companies:
             return domain
-        # Only widen a positive membership test; a negative one ("products NOT
-        # in these companies") must stay exactly as strict as it was.
-        if operator not in ("parent_of", "child_of", "in", "="):
+        # Only the membership tests the isolation rule actually uses, and only
+        # the positive ones — a negative test ("products NOT in these
+        # companies") must stay exactly as strict as it was.
+        #
+        # ``=`` is deliberately NOT in the list, even though the rule's second
+        # leaf is ``company_id = False``. Widening that one would make a
+        # search for "products with no company" answer with the zone's
+        # products, which is a lie about the data; and it buys nothing,
+        # because the first leaf is already widened and the rule ORs them.
+        if operator not in ("parent_of", "child_of", "in"):
             return domain
         return Domain.OR([domain, Domain("company_ids", "in", zone_companies)])
 
