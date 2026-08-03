@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================================================================
+         PIE CORPORATIVO
+         Sustituye el pie de Odoo por el de la plataforma: redes sociales,
+         identidad del comercio, enlaces legales y sellos de certificación.
+         ================================================================== -->
+    <template id="corporate_footer" inherit_id="website.layout"
+              name="Corporate Multi Footer" priority="100">
+        <xpath expr="//div[@id='footer']" position="replace">
+            <div id="footer" class="oe_structure oe_structure_solo text-break"
+                 t-ignore="true" t-if="not no_footer">
+                <footer class="bg-black text-light py-4">
+                    <div class="container">
+
+                        <!-- Redes sociales del sitio -->
+                        <div class="row justify-content-center mb-3">
+                            <div class="col-auto d-flex gap-3 align-items-center">
+                                <a t-if="website.social_facebook" t-att-href="website.social_facebook"
+                                   target="_blank" rel="noopener" class="link-light" title="Facebook">
+                                    <i class="fa fa-facebook fa-lg"/>
+                                </a>
+                                <a t-if="website.social_instagram" t-att-href="website.social_instagram"
+                                   target="_blank" rel="noopener" class="link-light" title="Instagram">
+                                    <i class="fa fa-instagram fa-lg"/>
+                                </a>
+                                <a t-if="website.social_twitter" t-att-href="website.social_twitter"
+                                   target="_blank" rel="noopener" class="link-light" title="X/Twitter">
+                                    <i class="fa fa-twitter fa-lg"/>
+                                </a>
+                                <a t-if="website.social_youtube" t-att-href="website.social_youtube"
+                                   target="_blank" rel="noopener" class="link-light" title="YouTube">
+                                    <i class="fa fa-youtube-play fa-lg"/>
+                                </a>
+                                <a t-if="website.social_linkedin" t-att-href="website.social_linkedin"
+                                   target="_blank" rel="noopener" class="link-light" title="LinkedIn">
+                                    <i class="fa fa-linkedin fa-lg"/>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Identidad y enlaces legales -->
+                        <div class="row justify-content-center text-center mb-3">
+                            <div class="col-lg-10">
+                                <h6 class="fw-bold mb-2">
+                                    <span t-field="res_company.name"/>
+                                </h6>
+
+                                <!-- The original hard-coded "© 2025". A footer that
+                                     states the wrong year on every page of 200+ public
+                                     sites is a small thing that looks abandoned. -->
+                                <p class="mb-2">
+                                    © <span t-out="website.get_footer_year()"/> Todos los derechos reservados
+                                </p>
+
+                                <p class="small mb-3">
+                                    <i class="fa fa-shield me-1"/>
+                                    <a href="/politica-privacidad" class="link-light text-decoration-none">
+                                        Política de privacidad
+                                    </a>
+                                    <span class="mx-2">·</span>
+                                    <a href="/terminos-condiciones" class="link-light text-decoration-none">
+                                        Términos y condiciones
+                                    </a>
+                                    <span class="mx-2">·</span>
+                                    <a href="/politica-cookies" class="link-light text-decoration-none">
+                                        Política de Cookies
+                                    </a>
+                                    <span class="mx-2">·</span>
+                                    <!-- Added here because the legal notice is a legal
+                                         requirement (LSSI art. 10) and it was reachable
+                                         only from the menu. -->
+                                    <a href="/aviso-legal" class="link-light text-decoration-none">
+                                        Aviso legal
+                                    </a>
+                                </p>
+
+                                <!-- Sellos de certificación -->
+                                <t t-set="certs" t-value="website.get_certifications()"/>
+                                <div t-if="certs.get('has_silver') or certs.get('has_sostenible')"
+                                     class="o_cc_footer_badges d-flex justify-content-center flex-wrap gap-2 mt-2">
+                                    <a t-if="certs.get('has_silver')"
+                                       href="https://canariasconectada.es/silver-economy"
+                                       target="_blank" rel="noopener"
+                                       class="o_cc_badge o_cc_badge_silver">
+                                        <img src="/theme_corporate_multi/static/src/img/sello_silver.jpg"
+                                             alt="Comercio Silver Economy"/>
+                                        Comercio Silver Economy
+                                    </a>
+                                    <a t-if="certs.get('has_sostenible')"
+                                       href="https://canariasconectada.es/sostenible"
+                                       target="_blank" rel="noopener"
+                                       class="o_cc_badge o_cc_badge_sostenible">
+                                        <img src="/theme_corporate_multi/static/src/img/sello_sostenible.jpg"
+                                             alt="Comercio Sostenible"/>
+                                        Comercio Sostenible
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </footer>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- El pie por defecto de Odoo sobra: lo sustituye el de arriba. -->
+    <template id="disable_default_footer" inherit_id="website.footer_custom"
+              name="Disable Default Footer" active="False"/>
+
+    <!-- ==================================================================
+         CABECERA: el logotipo es el del comercio, no el del sitio
+         ================================================================== -->
+    <template id="corporate_header" inherit_id="website.option_header_brand_logo"
+              name="Corporate Multi Header">
+        <xpath expr="//a[@data-name='Navbar Logo']" position="replace">
+            <a data-name="Navbar Logo"
+               t-att-href="request.httprequest.host_url or '/'"
+               t-attf-class="navbar-brand logo #{_link_class}">
+                <img t-if="res_company.logo"
+                     t-att-src="'/logo.png?company=%s' % res_company.id"
+                     t-att-alt="'Logo de %s' % res_company.name"
+                     t-att-title="res_company.name"
+                     class="o_cc_navbar_logo"/>
+                <span t-if="not res_company.logo" t-field="website.logo"
+                      t-options="{'widget': 'image'}" role="img"
+                      t-att-aria-label="'Logo de %s' % website.name"
+                      t-att-title="website.name"/>
+            </a>
+        </xpath>
+    </template>
+
+    <!-- Barra de cookies activa en todos los microsites. -->
+    <template id="corporate_cookies_bar_active" inherit_id="website.cookies_bar"
+              name="Corporate Cookies Bar Active" active="True">
+        <xpath expr="//div[@id='website_cookies_bar']" position="attributes">
+            <attribute name="class">s_popup o_snippet_invisible o_no_save</attribute>
+        </xpath>
+    </template>
+
+    <!-- Quita el "Powered by Odoo" del pie base. -->
+    <template id="corporate_remove_copyright" inherit_id="website.layout"
+              name="Corporate Remove Copyright" priority="99">
+        <xpath expr="//div[hasclass('o_footer_copyright')]" position="replace"/>
+    </template>
+
+</odoo>

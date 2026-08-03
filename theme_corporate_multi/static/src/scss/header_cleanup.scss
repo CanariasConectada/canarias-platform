@@ -1,0 +1,86 @@
+// Header and footer corrections for the corporate microsites.
+//
+// This used to live as an inline <style> block inside a QWeb template that
+// injected it into <head> on every single page render. Moving it to the asset
+// bundle means it is served once, cached, and minified — and it stops being
+// re-parsed by the template engine on every request of every microsite.
+
+// --- Elements of the default header the microsites must not show ------------
+// The phone number and the "Contact us" call to action come from the base
+// theme; these shops publish neither.
+header {
+    .o_header_text_element a[href^="tel:"],
+    a[href^="tel:"],
+    .nav-link[href^="tel:"],
+    .s_text_block a[href^="tel:"] {
+        display: none !important;
+    }
+
+    .btn_cta[href*="contactus"],
+    a.btn[href*="contactus"],
+    .oe_structure a[href*="contactus"].btn {
+        display: none !important;
+    }
+
+    .oe_structure:has(.btn_cta[href*="contactus"]),
+    section.s_text_block:has(.btn_cta[href*="contactus"]) {
+        display: none !important;
+    }
+}
+
+// --- Legibility of the header links and icons -------------------------------
+// The corporate header sits on a light background, so links and icons must be
+// dark. The original rule was a 20-selector list ending in `!important`; the
+// nesting below covers the same ground and stays readable.
+header#top {
+    .navbar,
+    #o_main_nav,
+    .o_wsale_my_cart {
+        a,
+        i,
+        .fa,
+        .nav-link,
+        [class*="fa-"] {
+            color: #212529 !important;
+        }
+    }
+}
+
+// --- Company logo in the navbar ---------------------------------------------
+.o_cc_navbar_logo {
+    max-height: 40px;
+    width: auto;
+}
+
+// --- Certification badges in the footer -------------------------------------
+// Inline styles on the anchors made these impossible to restyle per site.
+.o_cc_footer_badges {
+    .o_cc_badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.25rem;
+        text-decoration: none;
+        font-size: 0.8rem;
+
+        img {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+            margin-right: 0.5rem;
+            border-radius: 50%;
+        }
+    }
+
+    .o_cc_badge_silver {
+        background: rgba(192, 192, 192, 0.2);
+        border: 1px solid #c0c0c0;
+        color: #c0c0c0;
+    }
+
+    .o_cc_badge_sostenible {
+        background: rgba(40, 167, 69, 0.2);
+        border: 1px solid #28a745;
+        color: #28a745;
+    }
+}
