@@ -3,7 +3,7 @@
 
 {
     "name": "Silver Economy Certification",
-    "version": "19.0.1.4.8",
+    "version": "19.0.1.5.0",
     "category": "Marketing/Surveys",
     "summary": "Sistema de evaluación y certificación Silver Economy para empresas",
     "description": """
@@ -22,6 +22,8 @@
     "author": "MikeColangelo",
     "depends": [
         "survey",
+        # The questionnaire lives here now; this module only flags it.
+        "company_certification",
         "contacts",
         "website",
         "website_directory",
