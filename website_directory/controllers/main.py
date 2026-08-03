@@ -6,6 +6,7 @@ import logging
 import random
 
 from odoo import http
+from odoo.exceptions import AccessError, UserError
 from odoo.fields import Domain
 from odoo.http import request
 
@@ -412,3 +413,65 @@ class WebsiteDirectory(http.Controller):
         path = request.httprequest.path.replace("/directorio", "/comercio", 1)
         query = request.httprequest.query_string.decode()
         return request.redirect(path + (f"?{query}" if query else ""), code=301)
+
+    # ------------------------------------------------------------------
+    # Merchant self-service
+    # ------------------------------------------------------------------
+    @http.route(
+        "/mi-comercio",
+        type="http",
+        auth="user",
+        website=True,
+        sitemap=False,
+    )
+    def my_business(self, saved=None, error=None, **kw):
+        """Where a merchant sets the category their shop is listed under.
+
+        This page exists because a merchant could not do it anywhere: they are
+        portal users, they have no backend, and writing ``category_id`` on
+        ``res.company`` needs Administration rights. Measured on a real
+        merchant account: reading the category worked, saving it raised
+        ``AccessError``.
+
+        That gap is why 49 businesses have no category at all and 40 sit under
+        "Tienda de animales" — a bucket inherited from the old system, where
+        the exact same 40 are. Whoever knows what a shop sells is the shop.
+        """
+        company = request.env["res.company"]._get_own_company_for_directory()
+        return request.render(
+            "website_directory.my_business",
+            {
+                "company": company,
+                "categories": self._get_category_tree(),
+                "selected_path": self._get_selected_category_path(
+                    company.category_id.id if company else None
+                ),
+                "saved": saved,
+                "error": error,
+            },
+        )
+
+    @http.route(
+        "/mi-comercio/categoria",
+        type="http",
+        auth="user",
+        website=True,
+        methods=["POST"],
+        csrf=True,
+        sitemap=False,
+    )
+    def my_business_set_category(self, category_id=None, **kw):
+        """Save the category. The company comes from the session, not the form.
+
+        The form never carries a company id, so there is nothing to tamper
+        with: ``set_own_directory_category`` resolves the company from the
+        logged-in user and writes that one or none.
+        """
+        try:
+            request.env["res.company"].set_own_directory_category(category_id)
+        except (AccessError, UserError) as exc:
+            _logger.info(
+                "Rejected category change by user %s: %s", request.env.uid, exc
+            )
+            return request.redirect("/mi-comercio?error=1")
+        return request.redirect("/mi-comercio?saved=1")

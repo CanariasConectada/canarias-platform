@@ -295,4 +295,100 @@
         </t>
     </template>
 
+    <!-- ==================================================================
+         AUTOSERVICIO DEL COMERCIO: /mi-comercio
+
+         Existe porque el comerciante no podía poner su categoría en ningún
+         sitio. Son usuarios portal, no tienen backend, y escribir
+         `category_id` en `res.company` exige permisos de Administración.
+         Medido sobre una cuenta real: leía la categoría, y al guardarla
+         saltaba AccessError.
+
+         Ese hueco es la razón de que 49 negocios no tengan categoría y de
+         que 40 estén bajo "Tienda de animales" — un cajón heredado del
+         sistema antiguo, donde están exactamente los mismos 40. Quien sabe
+         lo que vende un comercio es el comercio.
+         ================================================================== -->
+    <template id="my_business" name="Mi comercio">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <div class="container my-5">
+
+                    <div t-if="not company" class="alert alert-warning">
+                        Tu usuario no está vinculado a ningún comercio, así que
+                        no hay categoría que asignar. Si crees que es un error,
+                        escríbenos.
+                    </div>
+
+                    <div t-if="company">
+                        <h1 class="mb-1"><span t-field="company.name"/></h1>
+                        <p class="text-muted mb-4">
+                            Elige la categoría con la que tu negocio aparece en
+                            el directorio. Es la que usan los clientes para
+                            encontrarte.
+                        </p>
+
+                        <div t-if="saved" class="alert alert-success">
+                            Categoría guardada.
+                        </div>
+                        <div t-if="error" class="alert alert-danger">
+                            No se pudo guardar la categoría. Vuelve a intentarlo.
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h6 class="text-muted mb-1">Categoría actual</h6>
+                                <p class="h5 mb-0">
+                                    <span t-if="company.category_id"
+                                          t-field="company.category_id.name"/>
+                                    <span t-if="not company.category_id"
+                                          class="text-danger">Sin categoría</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <form action="/mi-comercio/categoria" method="post" class="mb-3">
+                            <input type="hidden" name="csrf_token"
+                                   t-att-value="request.csrf_token()"/>
+                            <!-- El formulario NO lleva id de compañía: se
+                                 resuelve de la sesión en el servidor, así que
+                                 no hay nada que manipular desde fuera. -->
+                            <label for="category_id" class="form-label">
+                                Nueva categoría
+                            </label>
+                            <select name="category_id" id="category_id"
+                                    class="form-select mb-3">
+                                <option value="">— Sin categoría —</option>
+                                <t t-foreach="categories" t-as="level1">
+                                    <option t-att-value="level1['id']"
+                                            t-att-selected="level1['id'] == selected_path[0] and 'selected' or None"
+                                            t-esc="level1['name']"/>
+                                    <t t-foreach="level1['children']" t-as="level2">
+                                        <option t-att-value="level2['id']"
+                                                t-att-selected="level2['id'] == selected_path[1] and 'selected' or None">
+                                            &#160;&#160;&#160;<t t-esc="level2['name']"/>
+                                        </option>
+                                        <t t-foreach="level2['children']" t-as="level3">
+                                            <option t-att-value="level3['id']"
+                                                    t-att-selected="level3['id'] == selected_path[2] and 'selected' or None">
+                                                &#160;&#160;&#160;&#160;&#160;&#160;<t t-esc="level3['name']"/>
+                                            </option>
+                                        </t>
+                                    </t>
+                                </t>
+                            </select>
+                            <button type="submit" class="btn btn-primary">
+                                Guardar
+                            </button>
+                            <a href="/comercio" class="btn btn-link">
+                                Ver el directorio
+                            </a>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </t>
+    </template>
+
 </odoo>
