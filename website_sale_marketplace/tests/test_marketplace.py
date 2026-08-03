@@ -218,6 +218,33 @@ class TestMarketplaceShop(MarketplaceCommon, HttpCase):
         res = self.url_open(self.prod_b.website_url)
         self.assertEqual(res.status_code, 200)
 
+    def _shop_products(self, website=None):
+        """Products the shop of ``website`` would list, as its public visitor.
+
+        Asserting on the rendered /shop HTML turned out to be the wrong level:
+        the page depends on the theme, on the fuzzy search index and on how
+        many demo products crowd the first page of 21, so a correct domain
+        could still fail the assertion. This asks the same question the
+        controller asks — the shop domain, evaluated as the public user — and
+        nothing else.
+        """
+        website = website or self.website
+        public = website.user_id or self.env.ref("base.public_user")
+        penv = (
+            self.env["base"]
+            .with_user(public)
+            .with_context(
+                website_id=website.id,
+                allowed_company_ids=public.company_ids.ids or website.company_id.ids,
+            )
+            .env
+        )
+        psite = penv["website"].browse(website.id)
+        return penv["product.template"].search(psite.sale_product_domain())
+
+    def _shop_names(self, website=None):
+        return self._shop_products(website).sudo().mapped("name")
+
     def test_shop_shows_product_pinned_to_another_website(self):
         """A merchant pinning a product to their own site must not hide it
         from the marketplace.
@@ -234,11 +261,12 @@ class TestMarketplaceShop(MarketplaceCommon, HttpCase):
         self.prod_b.website_id = other_site
         self.website.is_marketplace = True
 
-        res = self.url_open("/shop?search=MP+Widget")
-        self.assertEqual(res.status_code, 200)
-        self.assertIn("MP Widget Bravo", res.text)
+        names = self._shop_names()
+        self.assertIn("MP Widget Bravo", names)
         # Publication is still the gate: pinning does not resurrect a draft.
-        self.assertNotIn("MP Widget Hidden", res.text)
+        self.assertNotIn("MP Widget Hidden", names)
+        # And the page itself still renders.
+        self.assertEqual(self.url_open("/shop").status_code, 200)
 
     def test_zone_marketplace_lists_only_its_neighbourhood(self):
         """A zone shop shows the businesses of its zone and nobody else's.
@@ -255,11 +283,25 @@ class TestMarketplaceShop(MarketplaceCommon, HttpCase):
         prod_c = self._make_product("MP Widget Charlie", self.company_c)
         self.website.write({"is_marketplace": True, "marketplace_zone": "guanarteme"})
 
-        res = self.url_open("/shop?search=MP+Widget")
-        self.assertEqual(res.status_code, 200)
-        self.assertIn("MP Widget Bravo", res.text)  # Guanarteme
-        self.assertNotIn(prod_c.name, res.text)  # Tamaraceite: fuera de zona
-        self.assertNotIn("MP Widget Hidden", res.text)  # sigue sin publicar
+        names = self._shop_names()
+        self.assertIn("MP Widget Bravo", names)  # Guanarteme
+        self.assertNotIn(prod_c.name, names)  # Tamaraceite: fuera de zona
+        self.assertNotIn("MP Widget Hidden", names)  # sigue sin publicar
+
+        # Nothing listed may belong to a business outside the zone. This is
+        # the property that matters; a name check alone would pass even if the
+        # rule had opened up to the whole platform.
+        zone_ids = set(
+            self.env["res.company"]
+            .sudo()
+            .search([("commercial_zone", "=", "guanarteme")])
+            .ids
+        )
+        for product in self._shop_products().sudo():
+            self.assertTrue(
+                set(product.company_ids.ids) & zone_ids,
+                f"{product.name} no es de Guanarteme y aparece en su tienda",
+            )
 
     def test_zone_marketplace_skips_the_company_backfill(self):
         """Linking every product to the zone company is the wrong fix and it
@@ -287,7 +329,4 @@ class TestMarketplaceShop(MarketplaceCommon, HttpCase):
         self.website.is_marketplace = False
         self.prod_b.company_ids = [fields.Command.link(self.website.company_id.id)]
 
-        res = self.url_open("/shop?search=MP+Widget")
-        self.assertEqual(res.status_code, 200)
-        self.assertNotIn("MP Widget Bravo", res.text)
-        self.assertIn("MP Widget Bravo", res.text)
+        self.assertNotIn("MP Widget Bravo", self._shop_names())
