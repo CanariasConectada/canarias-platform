@@ -9,6 +9,7 @@
         <field name="arch" type="xml">
             <field name="domain" position="after">
                 <field name="is_marketplace" />
+                <field name="marketplace_zone" invisible="not is_marketplace" />
             </field>
         </field>
     </record>

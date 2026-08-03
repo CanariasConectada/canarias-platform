@@ -30,6 +30,18 @@ class Website(models.Model):
         "visibility scope.",
     )
 
+    marketplace_zone = fields.Selection(
+        selection=lambda self: self.env["res.company"]
+        ._fields["commercial_zone"]
+        .selection
+        if "commercial_zone" in self.env["res.company"]._fields
+        else [],
+        string="Zona del marketplace",
+        help="Restrict this marketplace to the businesses of one commercial "
+        "zone. Empty means the whole platform, which is what the main portal "
+        "wants; the neighbourhood shops set their own zone.",
+    )
+
     @api.model
     def _marketplace_companies(self):
         """Companies that own at least one marketplace website."""
@@ -54,9 +66,29 @@ class Website(models.Model):
         website = self or self.get_current_website()
         if not website.is_marketplace:
             return domain
-        return domain.map_conditions(
+        domain = domain.map_conditions(
             lambda cond: Domain.TRUE if cond.field_expr == "website_id" else cond
         )
+        # A zone marketplace is the same mechanism, narrowed: show the
+        # products of the businesses in that neighbourhood. The three zone
+        # shops listed nothing because no product was ever linked to a zone
+        # company — and linking them would have been the wrong fix, since a
+        # merchant belongs to a zone, not a product.
+        if website.marketplace_zone and self._zone_field_available():
+            domain &= Domain(
+                "company_ids.commercial_zone", "=", website.marketplace_zone
+            )
+        return domain
+
+    @api.model
+    def _zone_field_available(self):
+        """True when res_company_zone is installed.
+
+        Checked rather than depended on: the marketplace is useful without
+        zones, and a hard dependency would drag the directory stack into any
+        database that only wants the aggregated shop.
+        """
+        return "commercial_zone" in self.env["res.company"]._fields
 
     def _sync_marketplace_products(self):
         """Ensure every product is visible to this record's marketplace
@@ -68,7 +100,18 @@ class Website(models.Model):
         between merchants is preserved.
         """
         Product = self.env["product.template"].sudo()
-        for website in self.filtered("is_marketplace"):
+        # A ZONE marketplace is skipped on purpose. It does not need the link:
+        # it selects products through their merchant's zone, and the isolation
+        # rule reads product.company_id (empty on every product here), so
+        # nothing is blocking those reads in the first place. Running the
+        # backfill anyway would add three more companies to all 1576 products
+        # and, worse, blow up: writing company_ids recomputes the delivery
+        # carriers and website_sale_collect then refuses with "el método de
+        # entrega y el almacén deben compartir la misma compañía", because 68
+        # businesses have no pickup carrier of their own.
+        for website in self.filtered(
+            lambda w: w.is_marketplace and not w.marketplace_zone
+        ):
             company = website.company_id
             # The many2many "not in" leaf compiles to a single SQL anti-join
             # (NOT EXISTS (SELECT 1 FROM product_company_rel ...)), so the
