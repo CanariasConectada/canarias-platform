@@ -69,6 +69,26 @@ class TestDirectoryController(HttpCase):
         self.assertIn("WDC Alpha Bakery", response.text)
         self.assertNotIn("WDC Beta Cafe", response.text)
 
+    def test_search_is_word_order_independent(self):
+        """Words typed in any order must find the same shop.
+
+        Matching the whole query as one ``ilike`` made order decide the
+        result: on production "muebles siony" found the shop and "siony
+        muebles" found nothing, because the substring never occurs that way.
+        """
+        for query in ("Alpha+Bakery", "Bakery+Alpha"):
+            response = self.url_open(f"/comercio?search={query}")
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("WDC Alpha Bakery", response.text, f"query: {query}")
+
+    def test_search_requires_every_word(self):
+        """Words are ANDed, so an extra word that matches nothing excludes the
+        entry instead of widening the result set."""
+        response = self.url_open("/comercio?search=Alpha+Cafe")
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("WDC Alpha Bakery", response.text)
+        self.assertNotIn("WDC Beta Cafe", response.text)
+
     def test_category_filter_includes_descendants(self):
         # Filtering by the root (view) category must include the companies
         # of all descendant categories (child_of semantics).
