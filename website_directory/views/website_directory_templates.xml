@@ -359,17 +359,25 @@
                             <select name="category_id" id="category_id"
                                     class="form-select mb-3">
                                 <option value="">— Sin categoría —</option>
+                                <!-- Las categorías de tipo "vista" son
+                                     carpetas: el modelo se niega a asignarlas,
+                                     así que aquí se pintan como rótulo del
+                                     grupo (disabled) y no como opción. Lo que
+                                     el servidor rechaza no se ofrece. -->
                                 <t t-foreach="categories" t-as="level1">
                                     <option t-att-value="level1['id']"
+                                            t-att-disabled="not level1['selectable'] and 'disabled' or None"
                                             t-att-selected="level1['id'] == selected_path[0] and 'selected' or None"
                                             t-esc="level1['name']"/>
                                     <t t-foreach="level1['children']" t-as="level2">
                                         <option t-att-value="level2['id']"
+                                                t-att-disabled="not level2['selectable'] and 'disabled' or None"
                                                 t-att-selected="level2['id'] == selected_path[1] and 'selected' or None">
                                             &#160;&#160;&#160;<t t-esc="level2['name']"/>
                                         </option>
                                         <t t-foreach="level2['children']" t-as="level3">
                                             <option t-att-value="level3['id']"
+                                                    t-att-disabled="not level3['selectable'] and 'disabled' or None"
                                                     t-att-selected="level3['id'] == selected_path[2] and 'selected' or None">
                                                 &#160;&#160;&#160;&#160;&#160;&#160;<t t-esc="level3['name']"/>
                                             </option>

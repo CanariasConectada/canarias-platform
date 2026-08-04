@@ -227,10 +227,16 @@ class ResCompany(models.Model):
         * the company is resolved from the SESSION, never from the request, so
           no id sent from outside can aim this at somebody else's shop;
         * only ``category_id`` is written, never a second field;
-        * the category has to exist and be active.
+        * the category has to exist, be active and be assignable.
 
         ``self`` is deliberately ignored: the caller does not get to choose
         the company. That is the entire point of the method.
+
+        Every rejection is a ``UserError`` (or ``AccessError``) on purpose:
+        those are the only exceptions the controller catches to redirect with
+        ``?error=1``. Anything else escapes as a 500. The checks live HERE and
+        not only in the controller because this is a public ORM method: it is
+        also reachable over XML-RPC, where there is no controller at all.
         """
         company = self._get_own_company_for_directory()
         if not company:
@@ -245,11 +251,35 @@ class ResCompany(models.Model):
             company.category_id = False
             return company
 
-        category = (
-            self.env["res.company.category"].sudo().browse(int(category_id)).exists()
-        )
+        # ``category_id`` arrives straight from a form field, so it can be
+        # anything: "abc", "1.5", "  ". A bare ``int()`` raises ValueError,
+        # which nobody catches, so a typo in a POST became a 500 instead of
+        # the "we could not save it" page. Non-integer numbers are rejected
+        # too instead of being truncated: ``int(1.5)`` would silently write a
+        # DIFFERENT category than the one asked for.
+        try:
+            category_id = int(str(category_id).strip())
+        except (TypeError, ValueError) as exc:
+            raise UserError(_("That category does not exist.")) from exc
+
+        category = self.env["res.company.category"].sudo().browse(category_id).exists()
         if not category or not category.active:
             raise UserError(_("That category does not exist."))
+
+        # A "view" category is a folder that only groups other categories:
+        # ``res.company.category_id`` is declared with
+        # ``domain=[("type", "=", "normal")]``, but a domain is a UI hint that
+        # nothing enforces on write. Assigning a folder also corrupts
+        # ``company_qty``, which counts companies on normal categories and
+        # only sums its children on view ones — the company would be counted
+        # nowhere on the public directory.
+        if category.type != "normal":
+            raise UserError(
+                _(
+                    "That category only groups other categories. "
+                    "Choose one of its subcategories."
+                )
+            )
 
         company.category_id = category.id
         return company

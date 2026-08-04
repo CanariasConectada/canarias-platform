@@ -28,6 +28,10 @@ class TestSelfServiceCategory(TransactionCase):
         cls.other_shop = Company.create({"name": "Comercio de OTRO"})
         cls.cat_a = Category.create({"name": "Categoría A de prueba"})
         cls.cat_b = Category.create({"name": "Categoría B de prueba"})
+        # Una categoría "vista" es una carpeta: agrupa a otras y no se
+        # asigna a nadie (res.company.category_id se declara con
+        # domain=[("type", "=", "normal")]).
+        cls.cat_view = Category.create({"name": "Carpeta de prueba", "type": "view"})
         cls.other_shop.category_id = cls.cat_b
 
         cls.merchant = new_test_user(
@@ -84,6 +88,51 @@ class TestSelfServiceCategory(TransactionCase):
         self.cat_a.active = False
         with self.assertRaises(UserError):
             self._as_merchant().set_own_directory_category(self.cat_a.id)
+
+    def test_a_malformed_category_id_is_rejected_as_user_error(self):
+        """Lo que llega de un POST puede ser cualquier cosa, y no puede reventar.
+
+        `int("abc")` lanza ValueError, y el controlador sólo captura
+        AccessError y UserError: un valor con basura se escapaba como un 500
+        en vez de acabar en el redirect "?error=1" que sí está diseñado. Se
+        prueba también "1.5": `int()` lo truncaría a otra categoría
+        DISTINTA de la pedida, que es peor que fallar.
+        """
+        self.shop.category_id = self.cat_a
+        for value in ("abc", "1.5", "  ", "1e3", "3,5", 1.5, {"id": 1}):
+            with self.subTest(value=value):
+                with self.assertRaises(UserError):
+                    self._as_merchant().set_own_directory_category(value)
+                self.assertEqual(
+                    self.shop.category_id,
+                    self.cat_a,
+                    "un valor con basura no debe escribir nada",
+                )
+
+    def test_the_empty_value_of_the_form_clears_instead_of_failing(self):
+        """La opción "— Sin categoría —" del formulario manda "" y debe limpiar.
+
+        Es el contrario del test de arriba: "" no es basura, es el valor con
+        el que el desplegable dice "ninguna". Se fija aquí para que endurecer
+        la validación no convierta en error lo que es una opción legítima.
+        """
+        self.shop.category_id = self.cat_a
+        self._as_merchant().set_own_directory_category("")
+        self.assertFalse(self.shop.category_id)
+
+    def test_a_view_category_is_rejected(self):
+        """Una carpeta no es un comercio: rompería el recuento del directorio.
+
+        `company_qty` cuenta compañías en las categorías normales y en las de
+        tipo vista sólo suma las de sus hijas. Un comercio colgado de una
+        carpeta no lo cuenta nadie: desaparece del recuento público. El
+        dominio del campo ya lo dice, pero un dominio es una pista de
+        interfaz, no una comprobación de escritura.
+        """
+        self.shop.category_id = self.cat_a
+        with self.assertRaises(UserError):
+            self._as_merchant().set_own_directory_category(self.cat_view.id)
+        self.assertEqual(self.shop.category_id, self.cat_a)
 
     def test_a_user_with_no_shop_gets_nothing_and_writes_nothing(self):
         orphan = new_test_user(
@@ -206,3 +255,28 @@ class TestSelfServicePage(HttpCase):
         self.assertEqual(self.shop.category_id, self.category)
         # Y la pagina ya la muestra.
         self.assertIn("Categoria de la pagina", response.text)
+
+    def test_a_post_without_a_valid_csrf_token_changes_nothing(self):
+        """Sin token bueno no se escribe: la ruta va con csrf=True por algo.
+
+        La escritura es un POST con sudo detras. Si valiera un POST desde
+        fuera, cualquier pagina podria recategorizar el comercio de un
+        comerciante con la sesion que el ya tiene abierta. Odoo responde 400
+        ("Session expired (invalid CSRF token)") y no llega a la ruta.
+        """
+        self.authenticate("comerciante-pagina", "comerciante-pagina")
+        for label, data in (
+            ("sin token", {"category_id": str(self.category.id)}),
+            (
+                "token falsificado",
+                {"category_id": str(self.category.id), "csrf_token": "no-soy-el-token"},
+            ),
+        ):
+            with self.subTest(case=label):
+                response = self.url_open("/mi-comercio/categoria", data=data)
+                self.assertEqual(response.status_code, 400, label)
+                self.shop.invalidate_recordset(["category_id"])
+                self.assertFalse(
+                    self.shop.category_id,
+                    f"{label}: la categoria no debe cambiar",
+                )
