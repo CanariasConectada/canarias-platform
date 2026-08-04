@@ -3,8 +3,11 @@
 
 import base64
 import json
+from unittest.mock import patch
 
 from odoo.tests import HttpCase, tagged
+
+from odoo.addons.website_pwa.controllers.main import WebsitePWA
 
 # 1x1 red PNG. Small enough to inline, real enough for image_process.
 TINY_PNG = base64.b64decode(
@@ -74,6 +77,41 @@ class TestWebsitePWA(HttpCase):
         self.assertEqual(res.status_code, 200)
         self.assertIn("javascript", res.headers["Content-Type"])
         self.assertEqual(res.headers.get("Service-Worker-Allowed"), "/")
+
+    def test_service_worker_serves_the_hook_verbatim(self):
+        """The route must serve exactly what ``_pwa_service_worker_content``
+        returns, byte for byte.
+
+        Two things break if it does not: an override added by another module
+        never reaches the browser, and the worker's bytes drift, which forces
+        every phone that already installed the app to update for nothing.
+        """
+        expected = WebsitePWA()._pwa_service_worker_content(self.website)
+        res = self.url_open("/service-worker.js")
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.content, expected.encode())
+
+    def test_service_worker_keeps_the_root_scope_header(self):
+        """Without ``Service-Worker-Allowed: /`` some proxies narrow the scope
+        to the directory the file is served from, and the worker then controls
+        nothing."""
+        res = self.url_open("/service-worker.js")
+        self.assertEqual(res.headers.get("Service-Worker-Allowed"), "/")
+
+    def test_extension_modules_can_append_to_the_worker(self):
+        """An override of ``_pwa_service_worker_content`` must reach the
+        response; that hook is how later modules add their own handlers."""
+        marker = "\n// appended by a downstream module\n"
+        original = WebsitePWA._pwa_service_worker_content
+
+        def _extended(controller, website):
+            return original(controller, website) + marker
+
+        before = self.url_open("/service-worker.js").content
+        with patch.object(WebsitePWA, "_pwa_service_worker_content", _extended):
+            after = self.url_open("/service-worker.js").content
+        self.assertNotIn(marker.encode(), before)
+        self.assertEqual(after, before + marker.encode())
 
     def test_layout_links_the_manifest(self):
         res = self.url_open("/")

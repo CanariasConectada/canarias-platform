@@ -122,12 +122,8 @@ class WebsitePWA(http.Controller):
         website = request.env["website"]._pwa_current()
         if not website:
             return request.not_found()
-        body = SERVICE_WORKER_TEMPLATE % {
-            "cache": f"{CACHE_VERSION}-{website.id}",
-            "offline": "/website_pwa/offline",
-        }
         return request.make_response(
-            body,
+            self._pwa_service_worker_content(website),
             headers=[
                 ("Content-Type", "application/javascript"),
                 # The worker itself must never be cached for long or a fix
@@ -138,6 +134,25 @@ class WebsitePWA(http.Controller):
                 ("Service-Worker-Allowed", "/"),
             ],
         )
+
+    def _pwa_service_worker_content(self, website):
+        """Body of the service worker, as a single string.
+
+        Split out of the route so extension modules can override it and
+        append their own handlers, exactly the way ``mail`` extends the
+        backend worker in ``mail/controllers/webmanifest.py``:
+
+            def _pwa_service_worker_content(self, website):
+                body = super()._pwa_service_worker_content(website)
+                return body + MY_EXTRA_HANDLERS
+
+        Anything appended here ships to phones that already installed the
+        app, so keep the output byte-stable unless CACHE_VERSION moves too.
+        """
+        return SERVICE_WORKER_TEMPLATE % {
+            "cache": f"{CACHE_VERSION}-{website.id}",
+            "offline": "/website_pwa/offline",
+        }
 
     @http.route(
         "/website_pwa/offline",
