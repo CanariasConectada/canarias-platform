@@ -3,4 +3,5 @@ from . import (
     test_landing,
     test_menu_gating,
     test_override,
+    test_type_timing_change,
 )

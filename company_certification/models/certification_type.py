@@ -10,6 +10,10 @@ CERTIFICATION_LEVELS = [
     ("gold", "Gold"),
 ]
 
+# Timing fields whose edition moves deadlines that were already computed on
+# past evaluations, and therefore the validity of the seals derived from them.
+_TIMING_FIELDS = ("validity_years", "cooldown_months")
+
 
 class CertificationType(models.Model):
     """A certification vertical (e.g. Silver Economy, Sustainability).
@@ -128,7 +132,45 @@ class CertificationType(models.Model):
             self._sync_menu()
         if "survey_id" in vals:
             self._sync_survey_link(previous_surveys)
+        if set(vals) & set(_TIMING_FIELDS):
+            self._refresh_certification_statuses()
         return res
+
+    def _refresh_certification_statuses(self):
+        """Push a timing change down to the seals already awarded.
+
+        Recomputing ``survey.user_input.expiry_date`` is necessary but not
+        sufficient. ``res.company.certification`` holds a *copy* of that date,
+        and that copy — not the evaluation — is what the public badge
+        (``_is_valid()``) and ``_cron_certification_expiry()`` read. The copy
+        is only refreshed from ``survey.user_input.write()``, and the ORM
+        flushes a recomputed stored field through ``_write_multi()``, which
+        never goes through ``write()``. So the recompute alone would leave the
+        company rows frozen on the OLD deadline and the cron would keep
+        revoking seals that are perfectly valid.
+
+        Hence this explicit push from the side that was actually edited: the
+        evaluations are recomputed first, then the company rows are rebuilt
+        from them by the single method that owns that copy, ``_refresh()``.
+        """
+        evaluations = (
+            self.env["survey.user_input"]
+            .sudo()
+            .search(
+                [
+                    ("certification_type_id", "in", self.ids),
+                    ("state", "=", "done"),
+                    ("test_entry", "=", False),
+                    ("company_id", "!=", False),
+                ]
+            )
+        )
+        if not evaluations:
+            return
+        # Land the pending recompute before the company rows copy the dates
+        # back out of the evaluations.
+        evaluations.flush_recordset(["expiry_date", "next_attempt_date"])
+        evaluations._refresh_company_certification()
 
     def unlink(self):
         menus = self.menu_id

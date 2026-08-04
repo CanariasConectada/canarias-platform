@@ -10,15 +10,50 @@ from odoo.exceptions import AccessError, UserError
 from odoo.fields import Domain
 from odoo.http import request
 
-from odoo.addons.website_directory.models.website_directory_entry import ZONE_ALIASES
+from odoo.addons.website_directory.models.website_directory_entry import (
+    ZONE_ALIASES,
+    ZONE_SELECTION,
+)
 
 _logger = logging.getLogger(__name__)
 
 PPG_OPTIONS = (12, 21, 24, 48)
 DEFAULT_PPG = 21
+# "canarias" is the global zone: no neighbourhood filter, every business shows.
+DEFAULT_ZONE = "canarias"
+KNOWN_ZONES = frozenset(key for key, _label in ZONE_SELECTION)
+# FALLBACK ONLY (see _get_zone_from_website): substring of the website domain
+# mapped to a zone. Unchanged on purpose — every website that is not a zone
+# marketplace has to keep resolving exactly as it does today.
+DOMAIN_ZONE_HINTS = (
+    ("guanarteme", "guanarteme"),
+    ("tamaraceite", "tamaraceite"),
+    ("frailes", "lomolosfrailes"),
+)
 VIEW_TYPES = ("grid", "list")
 SHUFFLE_COOKIE = "directory_seed"
 SHUFFLE_COOKIE_MAX_AGE = 86400  # 24h: everyone gets a fresh order every day
+
+
+def _normalise_zone(raw):
+    """Canonical zone key for a stored value, or ``None`` when unknown.
+
+    Migrated rows still carry legacy spellings ("lomo_los_frailes", "lomo los
+    frailes"), which is why ``ZONE_ALIASES`` exists in the first place.
+    ``res_company_zone.res.company._normalise_zone`` applies the very same
+    mapping to the company field; both read ``ZONE_ALIASES``/``ZONE_SELECTION``
+    from this module, so the two cannot drift apart.
+
+    Unknown values return ``None`` rather than the global zone, so the caller
+    can tell "nothing usable here" from "explicitly global".
+    """
+    value = (raw or "").strip().lower()
+    if not value:
+        return None
+    for canonical, aliases in ZONE_ALIASES.items():
+        if value in aliases:
+            return canonical
+    return value if value in KNOWN_ZONES else None
 
 
 class WebsiteDirectory(http.Controller):
@@ -36,18 +71,96 @@ class WebsiteDirectory(http.Controller):
     # ------------------------------------------------------------------
     # Zone helpers
     # ------------------------------------------------------------------
+    def _get_marketplace_zone(self, website):
+        """Zone this website's marketplace is pinned to, or ``None``.
+
+        ``website.marketplace_zone`` belongs to ``website_sale_marketplace``,
+        which is checked for instead of depended on: the directory is useful
+        without the aggregated shop, and the dependency would run the wrong
+        way (the marketplace does not need the directory either).
+
+        This is the *declared* zone of the website, set on the website itself.
+        It is what the three neighbourhood portals already carry, and it is the
+        whole point of this resolution: it survives a domain rename, a ``www.``
+        variant or a staging URL, all of which used to make a neighbourhood
+        portal silently list the entire platform.
+
+        No ``sudo()`` here, deliberately. This runs in a PUBLIC controller, but
+        ``request.website`` is already readable by the public user: core grants
+        ``base.group_public`` read access on the ``website`` model
+        (``website/security/ir.model.access.csv``) and no ``ir.rule`` narrows
+        it for that group. Reading one stored field off the website record is
+        the same unprivileged read the domain heuristic below has always done.
+        The trap documented in
+        ``website_sale_marketplace.website._zone_company_ids()`` is a different
+        one: it walks into ``res.company``, where the public user only sees its
+        own company. We never leave the website record.
+        """
+        if "marketplace_zone" not in website._fields:
+            return None
+        raw = website.marketplace_zone
+        if not raw:
+            # The global marketplace (the main portal) has no zone: it is meant
+            # to list every business. Nothing anomalous, nothing to log.
+            return None
+        zone = _normalise_zone(raw)
+        if not zone:
+            # Only genuinely broken state reaches this: ``marketplace_zone``
+            # takes its selection from ``res.company.commercial_zone``, which
+            # takes it from ZONE_SELECTION, so the ORM cannot store an unknown
+            # value — only a bad migration or a manual UPDATE can. Worth a
+            # WARNING because the portal silently goes global; unreachable on
+            # any normal request, so it cannot flood the log.
+            _logger.warning(
+                "Website %s (%s) has an unknown marketplace zone %r: it is not "
+                "one of %s, so /comercio falls back and lists EVERY business.",
+                website.id,
+                website.domain or "",
+                raw,
+                sorted(KNOWN_ZONES),
+            )
+        return zone
+
+    def _get_domain_zone(self, website):
+        """Zone guessed from the website domain, or ``None``."""
+        domain = (website.domain or "").lower()
+        if not domain:
+            return None
+        for hint, zone in DOMAIN_ZONE_HINTS:
+            if hint in domain:
+                return zone
+        return None
+
     def _get_zone_from_website(self, website):
-        """Infer the current zone from the website domain."""
-        if not website or not website.domain:
-            return "canarias"
-        domain = website.domain.lower()
-        if "guanarteme" in domain:
-            return "guanarteme"
-        if "tamaraceite" in domain:
-            return "tamaraceite"
-        if "frailes" in domain:
-            return "lomolosfrailes"
-        return "canarias"
+        """Zone whose businesses this website's directory lists.
+
+        Resolution order:
+
+        1. ``website.marketplace_zone`` — the zone declared on the website
+           itself. Authoritative: the three neighbourhood portals carry it and
+           it keeps working through a domain rename.
+        2. the domain substring heuristic — unchanged, so every website that
+           declares no zone (the ~180 business microsites, among others) keeps
+           resolving exactly as it always has.
+        3. the global zone, i.e. no neighbourhood filter.
+
+        The company zone is deliberately NOT consulted. Measured on the live
+        database: the companies behind the three portals sit in ``canarias``
+        (they are platform companies, not neighbourhood businesses), so it
+        fixes nothing there, while the business microsites do carry a real
+        zone — reading it would have narrowed 83% of the live sites from the
+        whole platform down to their own street, a change nobody asked for.
+
+        Nothing is logged on any path reached by a normal request: ``/comercio``
+        is a high-traffic page and this deployment has no log rotation.
+        """
+        if not website:
+            return DEFAULT_ZONE
+        return (
+            self._get_marketplace_zone(website)
+            or self._get_domain_zone(website)
+            or DEFAULT_ZONE
+        )
 
     def _get_zone_options(self):
         """Zone selection (value, label) pairs for the sidebar filter."""
@@ -144,7 +257,7 @@ class WebsiteDirectory(http.Controller):
                 ("company_id.active", "=", True),
             ]
         )
-        if zone and zone != "canarias":
+        if zone and zone != DEFAULT_ZONE:
             domain &= Domain("zone", "in", ZONE_ALIASES.get(zone, [zone]))
         if category_id:
             # res.company.category is _parent_store: child_of is one query.
@@ -292,7 +405,7 @@ class WebsiteDirectory(http.Controller):
         current_zone = self._get_zone_from_website(request.website)
         values = self._prepare_directory_values(
             page=page,
-            zone=current_zone if current_zone != "canarias" else None,
+            zone=current_zone if current_zone != DEFAULT_ZONE else None,
             url="/comercio",
             **kw,
         )
@@ -336,7 +449,7 @@ class WebsiteDirectory(http.Controller):
         kw["category"] = category_id
         values = self._prepare_directory_values(
             page=page,
-            zone=current_zone if current_zone != "canarias" else None,
+            zone=current_zone if current_zone != DEFAULT_ZONE else None,
             url=f"/comercio/categoria/{category_id}",
             **kw,
         )
@@ -356,7 +469,7 @@ class WebsiteDirectory(http.Controller):
         """Partial rendering (cards + pager) for the async filters."""
         current_zone = self._get_zone_from_website(request.website)
         values = self._prepare_directory_values(
-            zone=current_zone if current_zone != "canarias" else None,
+            zone=current_zone if current_zone != DEFAULT_ZONE else None,
             url="/comercio",
             **kw,
         )
