@@ -3,7 +3,7 @@
 
 {
     "name": "Sostenibilidad Certification",
-    "version": "19.0.1.5.0",
+    "version": "19.0.1.6.0",
     "category": "Marketing/Surveys",
     "summary": "Sistema de evaluación y certificación Sostenibilidad para empresas",
     "description": """
@@ -50,6 +50,9 @@
             "sustainability/static/src/scss/sustainability_public.scss",
         ],
     },
+    # Deja la marca is_sustainability puesta tras un -i; del resto de la vida
+    # del módulo se encarga SurveySurvey._register_hook.
+    "post_init_hook": "post_init_hook",
     "installable": True,
     "application": True,
     "auto_install": False,

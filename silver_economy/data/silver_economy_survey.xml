@@ -25,7 +25,20 @@
 
          Del cuestionario jubilado se ocupa
          migrations/19.0.1.5.0/post-migration.py, que solo lo borra si no
-         tiene ninguna respuesta. -->
+         tiene ninguna respuesta.
+
+         OJO CON LO QUE ESTE FICHERO NO HACE: es un `noupdate="1"`, y el
+         registro ya existe (lo publica company_certification), así que Odoo
+         se lo salta en TODA actualización -convert.py sale sin escribir
+         cuando el registro existe y el modo no es 'init'-. Es decir, esto
+         solo pone la marca en una instalación limpia, y ni siquiera hace
+         falta para eso: el post_init_hook del módulo cubre el `-i`. Se
+         mantiene porque es la forma declarativa de decir cuál es el
+         cuestionario y no cuesta nada, no porque mantenga nada en sintonía.
+
+         Quien mantiene la marca correcta es
+         SurveySurvey._register_hook -> _ensure_silver_economy_flag(), que
+         corre en cada carga del registro: cada `-u` y cada arranque. -->
     <data noupdate="1">
         <record id="company_certification.survey_silver_economy" model="survey.survey">
             <field name="is_silver_economy">True</field>

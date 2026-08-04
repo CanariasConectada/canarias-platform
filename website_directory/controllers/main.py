@@ -170,7 +170,18 @@ class WebsiteDirectory(http.Controller):
                     for child in category.child_ids.sorted("name")
                     if child.active
                 ]
-            return {"id": category.id, "name": category.name, "children": children}
+            return {
+                "id": category.id,
+                "name": category.name,
+                "children": children,
+                # A "view" category is a folder: it groups other categories
+                # and ``set_own_directory_category`` refuses to assign it. The
+                # merchant form must not offer as a choice something the model
+                # rejects, so it renders those nodes as plain group labels.
+                # The public filter is unaffected: it filters with ``child_of``
+                # and a folder is a perfectly good filter there.
+                "selectable": category.type == "normal",
+            }
 
         roots = (
             request.env["res.company.category"]
