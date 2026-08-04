@@ -1,7 +1,6 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 import logging
-
 from datetime import timedelta
 
 from dateutil.relativedelta import relativedelta
@@ -14,6 +13,14 @@ from .certification_type import CERTIFICATION_LEVELS
 _logger = logging.getLogger(__name__)
 
 # Fields that impact the company certification status when they change.
+#
+# Careful: this set is only consulted by ``write()``, so it only ever fires on
+# an EXPLICIT write. A stored computed field that the ORM recomputes on its own
+# is flushed through ``_write_multi()``, which never goes through ``write()``.
+# That is why ``expiry_date`` being listed here is not enough to keep
+# ``res.company.certification`` in sync when the recompute is triggered from
+# the certification type: that propagation is pushed explicitly by
+# ``certification.type._refresh_certification_statuses()``.
 _STATUS_TRIGGER_FIELDS = (
     "state",
     "certification_level",
@@ -90,7 +97,14 @@ class SurveyUserInput(models.Model):
                     user_input.scoring_total
                 )
 
-    @api.depends("create_date", "certification_level", "state")
+    @api.depends(
+        "create_date",
+        "certification_level",
+        "state",
+        "certification_type_id",
+        "certification_type_id.cooldown_months",
+        "certification_type_id.validity_years",
+    )
     def _compute_next_attempt_date(self):
         for user_input in self:
             cert_type = user_input.certification_type_id
@@ -104,7 +118,13 @@ class SurveyUserInput(models.Model):
                 delta = relativedelta(years=cert_type.validity_years or 1)
             user_input.next_attempt_date = start + delta
 
-    @api.depends("create_date", "certification_level", "state")
+    @api.depends(
+        "create_date",
+        "certification_level",
+        "state",
+        "certification_type_id",
+        "certification_type_id.validity_years",
+    )
     def _compute_expiry_date(self):
         for user_input in self:
             cert_type = user_input.certification_type_id
