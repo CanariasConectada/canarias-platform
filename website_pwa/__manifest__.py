@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website PWA",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.1.0",
     "category": "Website",
     "summary": "Installable app for the public website, one per microsite",
     "description": """
