@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="discuss_channel_moderation_view_list" model="ir.ui.view">
+        <field name="name">discuss.channel.moderation.list</field>
+        <field name="model">discuss.channel.moderation</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="channel_id"/>
+                <field name="moderate_guests"/>
+                <field name="moderate_portal"/>
+                <field name="moderator_user_ids" widget="many2many_tags"/>
+                <field name="pending_count" widget="badge" decoration-warning="pending_count &gt; 0"/>
+                <field name="active" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="discuss_channel_moderation_view_form" model="ir.ui.view">
+        <field name="name">discuss.channel.moderation.form</field>
+        <field name="model">discuss.channel.moderation</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(action_pending_message)d"
+                                type="action"
+                                class="oe_stat_button"
+                                icon="fa-clock-o"
+                                context="{'search_default_moderation_id': id}">
+                            <field name="pending_count" widget="statinfo" string="Pending"/>
+                        </button>
+                    </div>
+                    <group>
+                        <group string="Channel">
+                            <field name="channel_id"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                        <group string="Hold messages from">
+                            <field name="moderate_guests"/>
+                            <field name="moderate_portal"/>
+                        </group>
+                    </group>
+                    <group string="Moderators">
+                        <field name="moderator_user_ids" nolabel="1"
+                               widget="many2many_tags"
+                               options="{'no_create': True}"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="discuss_channel_moderation_view_search" model="ir.ui.view">
+        <field name="name">discuss.channel.moderation.search</field>
+        <field name="model">discuss.channel.moderation</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="channel_id"/>
+                <field name="moderator_user_ids"/>
+                <filter name="filter_my_channels" string="My Channels"
+                        domain="[('moderator_user_ids', 'in', [uid])]"/>
+                <filter name="filter_inactive" string="Archived"
+                        domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_channel_moderation" model="ir.actions.act_window">
+        <field name="name">Moderated Channels</field>
+        <field name="res_model">discuss.channel.moderation</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Moderate a channel
+            </p>
+            <p>
+                Comments posted by guests (and optionally by portal users) on a
+                moderated channel are held until one of its moderators approves
+                them. Nobody but their author knows they exist meanwhile.
+            </p>
+        </field>
+    </record>
+
+</odoo>

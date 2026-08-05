@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_pending_message_moderator,discuss.channel.pending.message moderator,model_discuss_channel_pending_message,group_moderation_user,1,1,0,0
+access_pending_message_manager,discuss.channel.pending.message manager,model_discuss_channel_pending_message,group_moderation_manager,1,1,1,1
+access_moderation_moderator,discuss.channel.moderation moderator,model_discuss_channel_moderation,group_moderation_user,1,0,0,0
+access_moderation_manager,discuss.channel.moderation manager,model_discuss_channel_moderation,group_moderation_manager,1,1,1,1
