@@ -15,6 +15,7 @@
         18.0 and 19.0. Nothing covered the public side, hence this module.
 
         What it adds:
+
         - A manifest per website, built from the website's own name, logo and
           colours, scoped to / so the installed app opens the microsite.
         - A service worker with an offline fallback page.
