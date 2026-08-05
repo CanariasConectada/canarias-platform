@@ -61,6 +61,30 @@ Both actions are idempotent: deciding an already-decided message does nothing.
 approved messages and the reasons given for the rejected ones. Held messages
 cannot be created or deleted from the backend: the history is immutable.
 
+## When nobody works the queue
+
+A held comment is invisible to everyone but its author, so a queue nobody opens
+is not a backlog — it is a visitor watching a blank space and deciding the site
+is broken. After **30 minutes** the moderators of the channel get one email
+listing every message of theirs that is still waiting, how long the oldest has
+waited, and a link straight to the queue.
+
+- **The delay is configurable.** Settings > Technical > System Parameters,
+  key `discuss_channel_moderation.late_alert_minutes`. It is in minutes and it
+  applies to the whole platform. The sweep runs every five minutes, so setting
+  it below five buys nothing.
+- **One email per channel, not per message.** Six overdue comments produce one
+  email with six lines in it.
+- **Each message is announced once.** A moderator who has been told and has not
+  acted is not reminded again; new messages crossing the threshold do produce
+  new emails. The **Escalated** filter on the queue shows which rows already
+  cost somebody an email.
+- **A channel with no moderators sends nothing and logs a warning naming the
+  channel.** If you see that line in the log, the queue on that channel can
+  never be emptied by anyone — fix the moderator list, not the alert.
+- The email never contains the held text itself. It is, by definition, the text
+  nobody has approved yet.
+
 ## Front-end integration
 
 The module pushes three bus notifications a JS client can listen to:

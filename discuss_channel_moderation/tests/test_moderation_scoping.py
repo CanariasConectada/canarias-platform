@@ -88,8 +88,12 @@ class TestModerationScoping(DiscussModerationMixin, TransactionCase):
             self.moderation_b.with_user(self.moderator_a).read(["moderate_guests"])
 
     def test_administrator_sees_every_queue(self):
+        # Subconjunto, no igualdad: esta suite corre también sobre copias de
+        # producción, donde ya hay filas retenidas de canales que este test no
+        # creó. Exigir igualdad la haría fallar por el contenido de la base,
+        # no por las reglas de registro, que es lo único que se prueba aquí.
         visible = self.Pending.with_user(self.manager).search([])
-        self.assertEqual(visible, self.pending_a + self.pending_b)
+        self.assertLessEqual(self.pending_a + self.pending_b, visible)
 
     def test_administrator_can_approve_any_channel(self):
         self.pending_b.with_user(self.manager).action_approve()
@@ -101,5 +105,6 @@ class TestModerationScoping(DiscussModerationMixin, TransactionCase):
         Si se combinasen con AND, dar el grupo de administrador a un moderador
         concreto le RESTARÍA acceso en vez de sumárselo.
         """
+        # Subconjunto por el mismo motivo que en el test del administrador.
         visible = self.Pending.with_user(self.both_groups).search([])
-        self.assertEqual(visible, self.pending_a + self.pending_b)
+        self.assertLessEqual(self.pending_a + self.pending_b, visible)

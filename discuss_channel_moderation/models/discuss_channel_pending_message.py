@@ -122,6 +122,20 @@ class DiscussChannelPendingMessage(models.Model):
         copy=False,
     )
     moderation_date = fields.Datetime(string="Decided On", readonly=True, copy=False)
+    late_alert_date = fields.Datetime(
+        string="Escalated On",
+        readonly=True,
+        copy=False,
+        help="When the channel's moderators were emailed about this message "
+        "still waiting. Set once and never cleared: a moderator who has been "
+        "told and has not acted does not need the same email every few "
+        "minutes.",
+        # Deliberately NOT indexed. The escalation sweep filters on ``state``
+        # first, which is indexed, and this column is NULL for almost every row
+        # -- a plain btree on it would be a second index of the same rows for
+        # nothing. ``index="btree_not_null"`` would be worse still: the query
+        # looks for the NULLs, which is exactly what that variant leaves out.
+    )
     rejection_reason = fields.Text(
         help="Shown to the author when their message is rejected."
     )

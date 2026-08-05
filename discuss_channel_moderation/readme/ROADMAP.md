@@ -1,5 +1,24 @@
 ## Known limits of the guarantee
 
+- **The late-moderation alert fires ONCE per held message and never escalates
+  further.** A channel with one message stuck on it is announced once and then
+  goes quiet; only a NEW message earns a new alert. That is the deliberate
+  trade-off — re-alerting every five minutes teaches the moderator to filter the
+  sender, and the alert would then be loudest exactly when it stops being read —
+  but it does mean the module cannot tell the difference between "handled" and
+  "ignored forever". The escalation ladder that would (alert the manager after
+  two hours, page somebody after four) is an on-call feature with an on-call
+  rota behind it, not a mail template, and it does not belong here. What covers
+  the worst case meanwhile is the warning logged for a moderated channel with no
+  reachable moderator.
+- **The alert measures `create_date`, not "unread".** A moderator who opened the
+  queue, read everything and decided nothing still gets the mail. Distinguishing
+  "seen" from "acted on" would need per-moderator read tracking on a model that
+  is deliberately history-only.
+- **The cron's own period is added to the threshold.** It runs every five
+  minutes, so a 30-minute SLA alerts somewhere between 30 and 35 minutes.
+  Lowering the parameter below the cron interval does not make the alert faster.
+
 - **A portal account is the documented way out of moderation.**
   `moderate_portal` defaults to False and the platform has self-signup enabled,
   so a visitor who registers posts straight through. This is intended, not an
