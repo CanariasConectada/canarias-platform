@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- The switch that decides which of the 218 websites serves /chat.
+         Placed next to the PWA block on purpose: the chat is a page of the
+         app, and an administrator turning one on almost always wants to check
+         the other. -->
+    <record id="view_website_form_chat" model="ir.ui.view">
+        <field name="name">website.form.chat</field>
+        <field name="model">website</field>
+        <field name="inherit_id" ref="website.view_website_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <group string="Comunidad" name="community_chat" col="2">
+                    <field name="chat_enabled" />
+                    <!-- Mutually exclusive in practice, not by constraint: a
+                         site that serves the chat links to its own /chat
+                         already, so offering the second switch there would be
+                         a way of asking for the same entry twice. -->
+                    <field name="chat_link_enabled" invisible="chat_enabled" />
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Which channels the chat page offers. Read-only-ish on purpose: the
+         four community channels are seeded published by this module's data
+         file, and this box is how a fifth one is added later without a
+         migration. It grants nothing; see the field's help. -->
+    <record id="view_discuss_channel_form_website_chat" model="ir.ui.view">
+        <field name="name">discuss.channel.form.website.chat</field>
+        <field name="model">discuss.channel</field>
+        <field name="inherit_id" ref="mail.discuss_channel_view_form" />
+        <field name="arch" type="xml">
+            <field name="description" position="after">
+                <field name="website_chat_published" />
+            </field>
+        </field>
+    </record>
+
+</odoo>

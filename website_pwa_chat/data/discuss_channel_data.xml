@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!--
+        Publishes the four community channels on the website chat.
+
+        These are `discuss_channel_zone`'s records, addressed by their xmlid;
+        that module is not edited and does not know this one exists. Writing
+        one boolean on somebody else's record is the whole coupling, and it
+        runs in the right direction: a platform that installs the chat gets the
+        channels published, a platform that does not keeps them Discuss-only.
+
+        noupdate="1" for the same reason the channels themselves carry it. An
+        administrator who unpublishes a channel, to close a neighbourhood
+        conversation for a week, must not have that decision undone by the
+        next module upgrade.
+
+        Publishing GRANTS NOTHING. The three zone channels stay closed to
+        visitors by `group_public_id`, and the page lists them through a
+        `search()` the record rule filters. Publishing only means "the chat
+        page knows about this channel"; who may open it is still the channel's
+        own business.
+    -->
+    <data noupdate="1">
+
+        <record id="discuss_channel_zone.channel_canarias" model="discuss.channel">
+            <field name="website_chat_published" eval="True" />
+        </record>
+
+        <record id="discuss_channel_zone.channel_guanarteme" model="discuss.channel">
+            <field name="website_chat_published" eval="True" />
+        </record>
+
+        <record
+            id="discuss_channel_zone.channel_tamaraceite"
+            model="discuss.channel"
+        >
+            <field name="website_chat_published" eval="True" />
+        </record>
+
+        <record
+            id="discuss_channel_zone.channel_lomolosfrailes"
+            model="discuss.channel"
+        >
+            <field name="website_chat_published" eval="True" />
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- A snippet, like website_pwa's install card and for the same reason:
+         the right place for this button is not the same on a marketplace, on
+         a zone portal and on a merchant microsite, and only the editor knows.
+
+         The whole card starts hidden. Every branch below is revealed by the
+         script, never by the server, because what to show depends on things
+         only the browser knows: whether push is supported at all, whether the
+         visitor already granted or already refused permission, and (on iOS)
+         whether the site is running as an installed app. -->
+    <template id="s_pwa_push" name="Activar avisos">
+        <section class="s_pwa_push pt32 pb32" data-name="Activar avisos">
+            <div class="container">
+                <div class="o_pwa_push_card d-none p-4 rounded-3 text-center">
+                    <h3 class="mb-2">No te pierdas ningún mensaje</h3>
+                    <p class="mb-3 text-muted">
+                        Activa los avisos y te llegará una notificación al
+                        móvil cuando te escriban, aunque no tengas la web
+                        abierta.
+                    </p>
+                    <!-- Permission is requested from this click and nowhere
+                         else: an unprompted request is an abuse signal in
+                         Chrome and does nothing at all in Safari. -->
+                    <button
+                        type="button"
+                        class="btn btn-primary o_pwa_push_button d-none"
+                    >
+                        Activar avisos
+                    </button>
+                    <div class="o_pwa_push_done d-none small text-muted">
+                        Avisos activados en este dispositivo.
+                    </div>
+                    <!-- Already refused: the browser will not ask again, so
+                         showing the button would be showing a button that
+                         does nothing. -->
+                    <div class="o_pwa_push_denied d-none small text-muted">
+                        Has bloqueado los avisos para esta web. Puedes
+                        volver a permitirlos desde los ajustes del navegador,
+                        en el candado de la barra de direcciones.
+                    </div>
+                    <!-- iOS: Safari only grants a subscription when the site
+                         is running as an app installed on the home screen. -->
+                    <div class="o_pwa_push_ios_hint d-none small text-muted">
+                        En iPhone o iPad, los avisos solo funcionan con la web
+                        instalada: pulsa
+                        <strong>Compartir</strong>
+                        , luego
+                        <strong>Añadir a pantalla de inicio</strong>
+                        y abre la app desde ahí para activarlos.
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <template
+        id="snippet_pwa_push"
+        inherit_id="website.snippets"
+        name="PWA Push: snippet de activación"
+    >
+        <xpath expr="//snippets[@id='snippet_groups']" position="inside">
+            <t t-snippet="website_pwa_push.s_pwa_push" string="Activar avisos" />
+        </xpath>
+    </template>
+
+</odoo>

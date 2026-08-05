@@ -1,0 +1,41 @@
+// Copyright 2026 Canarias Conectada
+// License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+//
+// Deliberately thin. The page is built from the theme's own Bootstrap
+// utilities so it looks like the rest of the site; what is left here is only
+// what utilities cannot express: the scroll box and the "this one is mine"
+// alignment.
+
+.o_cc_chat {
+    .o_cc_chat_messages {
+        // A bounded, scrollable log. Without a height the composer walks off
+        // the bottom of a phone screen as soon as the conversation grows.
+        max-height: 60vh;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    .o_cc_chat_message {
+        padding: 0.5rem 0.75rem;
+        margin-bottom: 0.5rem;
+        border-radius: 0.75rem;
+        background-color: var(--o-cc-bg-light, rgba(0, 0, 0, 0.04));
+    }
+
+    .o_cc_chat_mine {
+        // The author's own messages, nudged to the other side. It is the
+        // cheapest possible "which of these is mine" and it survives any
+        // theme, which a colour would not.
+        margin-left: 15%;
+    }
+
+    .o_cc_chat_meta {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: space-between;
+    }
+
+    .o_cc_chat_body {
+        overflow-wrap: anywhere;
+    }
+}

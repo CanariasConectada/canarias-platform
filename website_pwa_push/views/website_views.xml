@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- Inherits website_pwa's own inherited view rather than the base form,
+         so the switch lands inside the PWA group instead of starting a second
+         one somewhere else on the sheet. -->
+    <record id="view_website_form_pwa_push" model="ir.ui.view">
+        <field name="name">website.form.pwa.push</field>
+        <field name="model">website</field>
+        <field name="inherit_id" ref="website_pwa.view_website_form_pwa" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='pwa_enabled']" position="after">
+                <!-- Hidden while the app is off: the push handlers live inside
+                     the service worker, which is not served at all then. -->
+                <field name="pwa_push_enabled" invisible="not pwa_enabled" />
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <data noupdate="1">
+
+        <!-- Every 5 minutes, NOT hourly. The cron's own period is added to the
+             SLA: with a 30-minute threshold and an hourly sweep, the first mail
+             could land 89 minutes after the visitor posted, which is well past
+             the point where the alert still buys anything. Five minutes caps
+             the worst case at 35. The sweep itself is one indexed search over
+             `state = 'pending'` and returns nothing on an empty queue, so the
+             cost of the short period is a query, not a job. -->
+        <record id="ir_cron_moderation_late_alert" model="ir.cron">
+            <field name="name">Moderation: Alert Late Pending Messages</field>
+            <field name="model_id" ref="discuss_channel_moderation.model_discuss_channel_moderation"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_alert_late_pending()</field>
+            <field name="interval_number">5</field>
+            <field name="interval_type">minutes</field>
+        </record>
+
+    </data>
+</odoo>

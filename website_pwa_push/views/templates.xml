@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- The page has to tell the frontend script whether push is on here, and
+         it cannot work it out on its own: the manifest link says the app is
+         enabled, not that push is. Without this tag the button would appear on
+         websites whose worker has no push handler, and a visitor who accepted
+         would be subscribed to notifications that are never displayed.
+
+         Nothing is emitted when push is off, so a website without it serves
+         exactly the HTML it served before this module existed. -->
+    <template
+        id="pwa_push_layout_head"
+        inherit_id="website.layout"
+        name="PWA Push: marca de avisos activos"
+    >
+        <xpath expr="//head" position="inside">
+            <meta
+                t-if="website._pwa_push_active()"
+                name="cc-pwa-push"
+                content="1"
+            />
+        </xpath>
+    </template>
+
+</odoo>

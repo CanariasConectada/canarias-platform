@@ -56,6 +56,11 @@
                         <group string="Decision">
                             <field name="moderator_id" readonly="1"/>
                             <field name="moderation_date" readonly="1"/>
+                            <!-- Visible only once it happened: on a row decided
+                                 in time it would be a permanently empty field
+                                 saying nothing. -->
+                            <field name="late_alert_date" readonly="1"
+                                   invisible="not late_alert_date"/>
                             <field name="message_id" readonly="1"
                                    invisible="state != 'approved'"/>
                             <field name="rejection_reason"
@@ -88,6 +93,11 @@
                         domain="[('state', '=', 'approved')]"/>
                 <filter name="filter_rejected" string="Rejected"
                         domain="[('state', '=', 'rejected')]"/>
+                <separator/>
+                <!-- "Which ones already cost somebody an email" is the question
+                     an administrator asks when the queue is not being emptied. -->
+                <filter name="filter_escalated" string="Escalated"
+                        domain="[('late_alert_date', '!=', False)]"/>
                 <group>
                     <filter name="group_by_channel" string="Channel"
                             context="{'group_by': 'channel_id'}"/>
