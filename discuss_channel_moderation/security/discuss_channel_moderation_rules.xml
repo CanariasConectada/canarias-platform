@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- A moderator sees ONLY the queue of the channels they were listed on.
+         The rule applies to read AND write (perm_* default to True on all four
+         operations): scoping reads alone would still let a moderator of
+         channel A flip the state of channel B's rows over RPC.
+         create/unlink are denied at ACL level, held messages are history. -->
+    <record id="rule_pending_message_moderator" model="ir.rule">
+        <field name="name">Held messages: own channels (Moderator)</field>
+        <field name="model_id" ref="model_discuss_channel_pending_message"/>
+        <field name="domain_force">[('moderation_id.moderator_user_ids', 'in', [user.id])]</field>
+        <field name="groups" eval="[(4, ref('group_moderation_user'))]"/>
+    </record>
+
+    <!-- Administrators moderate every channel. Rules of different groups are
+         ORed, so a user holding both groups keeps the broad access. -->
+    <record id="rule_pending_message_manager" model="ir.rule">
+        <field name="name">Held messages: all channels (Administrator)</field>
+        <field name="model_id" ref="model_discuss_channel_pending_message"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_moderation_manager'))]"/>
+    </record>
+
+    <!-- Same scoping on the configuration itself. Combined with the read-only
+         ACL (1,0,0,0) this stops a moderator from adding themselves to another
+         channel's moderator list and inheriting its queue. -->
+    <record id="rule_moderation_moderator" model="ir.rule">
+        <field name="name">Channel moderation: own channels (Moderator)</field>
+        <field name="model_id" ref="model_discuss_channel_moderation"/>
+        <field name="domain_force">[('moderator_user_ids', 'in', [user.id])]</field>
+        <field name="groups" eval="[(4, ref('group_moderation_user'))]"/>
+    </record>
+
+    <record id="rule_moderation_manager" model="ir.rule">
+        <field name="name">Channel moderation: all channels (Administrator)</field>
+        <field name="model_id" ref="model_discuss_channel_moderation"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_moderation_manager'))]"/>
+    </record>
+
+</odoo>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- NOTE (Odoo 19): the groups attribute ADDS groups, it never replaces
+         them. These menus are new, so the list below is the whole gate. -->
+    <menuitem id="menu_moderation_root"
+              name="Moderation"
+              parent="mail.menu_root_discuss"
+              sequence="20"
+              groups="group_moderation_user,group_moderation_manager"/>
+
+    <menuitem id="menu_pending_message"
+              name="Pending Messages"
+              parent="menu_moderation_root"
+              action="action_pending_message"
+              sequence="10"/>
+
+    <menuitem id="menu_moderation_history"
+              name="History"
+              parent="menu_moderation_root"
+              action="action_moderation_history"
+              sequence="20"/>
+
+    <menuitem id="menu_channel_moderation"
+              name="Moderated Channels"
+              parent="menu_moderation_root"
+              action="action_channel_moderation"
+              sequence="30"/>
+
+</odoo>

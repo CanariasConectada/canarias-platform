@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!--
+        Both forms hang the field on `<group name="other_preferences"/>`, which
+        base declares with the comment "This group is meant to be used in
+        overrides" (odoo/addons/base/views/res_users_views.xml:181 and :449).
+        Using the documented extension point rather than an xpath on a layout
+        div is what keeps this from breaking on the next Odoo layout change.
+    -->
+
+    <record id="view_users_form_chat_zone" model="ir.ui.view">
+        <field name="name">res.users.form.chat.zone</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='other_preferences']" position="inside">
+                <!--
+                    Always shown, never conditioned on `company_id`:
+                    `company_id` is REQUIRED on `res.users`, so "has a company"
+                    is not the question — "has a company that counts" is, and
+                    that answer lives in `_get_chat_zone` (the platform's own
+                    company and archived companies resolve to none). Encoding
+                    half of that rule in a view attribute would be a second,
+                    wrong copy of it. The field's own help says which one wins.
+                -->
+                <field name="chat_zone"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_users_form_simple_modif_chat_zone" model="ir.ui.view">
+        <field name="name">res.users.preferences.form.chat.zone</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form_simple_modif"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='other_preferences']" position="inside">
+                <!--
+                    THE form where a resident picks their own neighbourhood.
+                    It only works because `chat_zone` is in
+                    `SELF_WRITEABLE_FIELDS` (models/res_users.py): without that
+                    the save is refused however the view is drawn.
+                -->
+                <field name="chat_zone" readonly="0"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

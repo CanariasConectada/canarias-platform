@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!--
+        noupdate="1": these four channels carry conversations. A module update
+        must never rewrite a name somebody renamed, and must NEVER reset
+        `group_public_id` on a channel an administrator deliberately re-gated.
+    -->
+    <data noupdate="1">
+
+        <!--
+            The general channel. `group_public_id` is passed EXPLICITLY as
+            False and that is not decoration: `_compute_group_public_id`
+            (mail/models/discuss/discuss_channel.py:351-358) fills the field
+            with `base.group_user` as soon as the type is "channel" and the
+            value is falsy, which would shut visitors AND residents out of the
+            one channel that is supposed to be open to everybody.
+
+            The field is `compute` + `readonly=False` + `store=True`, so a
+            value handed to `create` is protected from the compute
+            (odoo/orm/models.py:4682-4686) and the False survives.
+        -->
+        <record id="channel_canarias" model="discuss.channel">
+            <field name="name">Canarias Conectada</field>
+            <field name="channel_type">channel</field>
+            <field name="description">Community channel of the whole platform.
+                Open to everyone, visitors included.</field>
+            <field name="group_public_id" eval="False"/>
+        </record>
+
+        <!--
+            The three neighbourhood channels. Closed to visitors by group: see
+            security/discuss_channel_zone_groups.xml for why this particular
+            group, and why omitting it or using `base.group_portal` would both
+            be wrong.
+        -->
+        <record id="channel_guanarteme" model="discuss.channel">
+            <field name="name">Guanarteme</field>
+            <field name="channel_type">channel</field>
+            <field name="description">Neighbourhood channel of Guanarteme.
+                An account is required to take part.</field>
+            <field name="group_public_id" ref="group_zone_channel_member"/>
+        </record>
+
+        <record id="channel_tamaraceite" model="discuss.channel">
+            <field name="name">Tamaraceite</field>
+            <field name="channel_type">channel</field>
+            <field name="description">Neighbourhood channel of Tamaraceite.
+                An account is required to take part.</field>
+            <field name="group_public_id" ref="group_zone_channel_member"/>
+        </record>
+
+        <record id="channel_lomolosfrailes" model="discuss.channel">
+            <field name="name">Lomo los Frailes</field>
+            <field name="channel_type">channel</field>
+            <field name="description">Neighbourhood channel of Lomo los
+                Frailes. An account is required to take part.</field>
+            <field name="group_public_id" ref="group_zone_channel_member"/>
+        </record>
+
+        <!--
+            Pre-moderation on all four. The general one is the only channel a
+            visitor can reach, so it is the only one where `moderate_guests`
+            can fire today — the other three carry the same row so that
+            re-gating a zone channel can never quietly open an unmoderated door
+            to anonymous posting.
+
+            `moderate_portal` is left at its default (off): a resident with an
+            account is identified, and holding every neighbourhood comment for
+            review would make the channels useless. Flip it per channel from
+            the moderation form if a zone needs it.
+        -->
+        <record id="moderation_canarias" model="discuss.channel.moderation">
+            <field name="channel_id" ref="channel_canarias"/>
+            <field name="moderate_guests" eval="True"/>
+        </record>
+
+        <record id="moderation_guanarteme" model="discuss.channel.moderation">
+            <field name="channel_id" ref="channel_guanarteme"/>
+            <field name="moderate_guests" eval="True"/>
+        </record>
+
+        <record id="moderation_tamaraceite" model="discuss.channel.moderation">
+            <field name="channel_id" ref="channel_tamaraceite"/>
+            <field name="moderate_guests" eval="True"/>
+        </record>
+
+        <record id="moderation_lomolosfrailes" model="discuss.channel.moderation">
+            <field name="channel_id" ref="channel_lomolosfrailes"/>
+            <field name="moderate_guests" eval="True"/>
+        </record>
+
+    </data>
+</odoo>
