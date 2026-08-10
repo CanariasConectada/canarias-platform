@@ -144,10 +144,24 @@ class Website(models.Model):
             # them to the marketplace alone, hiding them from every other
             # website and tripping product_multi_company_stock's constraint
             # when another company holds stock for them. Skip them.
+            #
+            # Products whose owners are ALL archived are skipped too: an
+            # archived business is out of the platform, and the aggregated
+            # shop advertising its catalogue was exactly the bug reported on
+            # 2026-08-10 — 283 products of retired merchants on the portal.
+            # The zone shops never had it (they resolve companies through an
+            # active-only search); this brings the portal in line.
+            active_owner_ids = (
+                self.env["res.company"]
+                .sudo()
+                .search([("id", "not in", self._marketplace_companies().ids)])
+                .ids
+            )
             missing_ids = Product.search(
                 [
                     ("company_ids", "!=", False),
                     ("company_ids", "not in", company.ids),
+                    ("company_ids", "in", active_owner_ids),
                 ]
             ).ids
             vals = {"company_ids": [fields.Command.link(company.id)]}
