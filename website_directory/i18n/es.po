@@ -119,7 +119,7 @@ msgstr "Todas las zonas"
 #. module: website_directory
 #: model_terms:ir.ui.view,arch_db:website_directory.directory_index
 msgid "Business Directory"
-msgstr "Directorio de Empresas"
+msgstr "Directorio Canarias Conectada"
 
 #. module: website_directory
 #: model:ir.model.fields,help:website_directory.field_website_directory_entry__category_id

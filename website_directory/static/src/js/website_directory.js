@@ -50,6 +50,143 @@
         initAsyncSearch();
         initToolbar();
         initPagination();
+        ["wd_zone_select", "wd_cat_l1", "wd_cat_l2", "wd_cat_l3"].forEach(
+            function (id) {
+                enhanceSelect(byId(id));
+            }
+        );
+    }
+
+    // ------------------------------------------------------------------
+    // Enhanced selects (the select2-style dropdowns of the old directory,
+    // rebuilt without jQuery): custom panel, search box on long lists,
+    // keyboard support. The native select stays as the source of truth —
+    // options are re-read every time the panel opens, so the category
+    // cascade repopulating a select never leaves the panel stale.
+    // ------------------------------------------------------------------
+    var SEARCH_FROM = 8; // options; below this a search box is just noise
+
+    function enhanceSelect(select) {
+        if (!select || select.dataset.wdEnhanced) {
+            return;
+        }
+        select.dataset.wdEnhanced = "1";
+        select.classList.add("wd-select-native");
+
+        var wrap = document.createElement("div");
+        wrap.className = "wd-select";
+        select.parentNode.insertBefore(wrap, select);
+        wrap.appendChild(select);
+
+        var toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "form-select text-start wd-select-toggle";
+        toggle.setAttribute("aria-haspopup", "listbox");
+        toggle.setAttribute("aria-expanded", "false");
+        wrap.appendChild(toggle);
+
+        var panel = document.createElement("div");
+        panel.className = "wd-select-panel d-none";
+        wrap.appendChild(panel);
+
+        function label() {
+            var option = select.options[select.selectedIndex];
+            toggle.textContent = option ? option.textContent : "";
+        }
+
+        function close() {
+            panel.classList.add("d-none");
+            toggle.setAttribute("aria-expanded", "false");
+        }
+
+        function pick(value) {
+            select.value = value;
+            select.dispatchEvent(new Event("change", {bubbles: true}));
+            label();
+            close();
+            toggle.focus();
+        }
+
+        function open() {
+            panel.innerHTML = "";
+            var options = Array.prototype.slice.call(select.options);
+            var search = null;
+            if (options.length >= SEARCH_FROM) {
+                search = document.createElement("input");
+                search.type = "text";
+                search.className = "form-control form-control-sm wd-select-search";
+                search.placeholder = "Buscar...";
+                panel.appendChild(search);
+            }
+            var list = document.createElement("div");
+            list.className = "wd-select-options";
+            list.setAttribute("role", "listbox");
+            panel.appendChild(list);
+
+            function render(filter) {
+                list.innerHTML = "";
+                var visible = options.filter(function (option) {
+                    return (
+                        !option.disabled &&
+                        (!filter ||
+                            option.textContent
+                                .toLowerCase()
+                                .indexOf(filter.toLowerCase()) !== -1)
+                    );
+                });
+                if (!visible.length) {
+                    var empty = document.createElement("div");
+                    empty.className = "wd-select-empty";
+                    empty.textContent = "Sin resultados";
+                    list.appendChild(empty);
+                    return;
+                }
+                visible.forEach(function (option) {
+                    var item = document.createElement("div");
+                    item.className =
+                        "wd-select-option" +
+                        (option.value === select.value ? " active" : "");
+                    item.setAttribute("role", "option");
+                    item.textContent = option.textContent;
+                    item.addEventListener("click", function () {
+                        pick(option.value);
+                    });
+                    list.appendChild(item);
+                });
+            }
+
+            render("");
+            if (search) {
+                search.addEventListener("input", function () {
+                    render(search.value.trim());
+                });
+            }
+            panel.classList.remove("d-none");
+            toggle.setAttribute("aria-expanded", "true");
+            if (search) {
+                search.focus();
+            }
+        }
+
+        toggle.addEventListener("click", function () {
+            if (panel.classList.contains("d-none")) {
+                open();
+            } else {
+                close();
+            }
+        });
+        toggle.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                close();
+            }
+        });
+        document.addEventListener("click", function (event) {
+            if (!wrap.contains(event.target)) {
+                close();
+            }
+        });
+        select.addEventListener("change", label);
+        label();
     }
 
     // ------------------------------------------------------------------
