@@ -191,13 +191,27 @@ class TestWebsiteChat(WebsiteChatMixin, HttpCase):
     # The way in
     # ------------------------------------------------------------------
 
+    def test_serving_the_chat_does_not_advertise_it(self):
+        """Serving a route and advertising it are separate decisions.
+
+        The platform launched with ``/chat`` live and the navbars mirroring
+        production, which has no Comunidad entry (user decision 2026-08-11).
+        The fixtures enable ``chat_enabled`` everywhere and leave
+        ``chat_link_enabled`` off — exactly that launch state — so the page
+        must serve while its own navbar stays silent about it.
+        """
+        response = self._get_index()
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("o_cc_chat_menu_link", response.text)
+
     def test_the_host_website_links_to_its_own_chat(self):
-        """The entry is named Comunidad, and on the portal it is a plain path.
+        """With the link opted in, on the portal it is a plain path.
 
         Same origin, so an absolute URL would be wrong here in exactly the
         deployments where it is hardest to notice: local and staging, where
         the stored domain is not the one the browser is on.
         """
+        self.websites.write({"chat_link_enabled": True})
         response = self._get_index()
         self.assertEqual(response.status_code, 200)
         self.assertIn("o_cc_chat_menu_link", response.text)
