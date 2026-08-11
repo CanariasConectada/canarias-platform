@@ -52,11 +52,12 @@ class Website(models.Model):
     chat_link_enabled = fields.Boolean(
         string="Enlace a Comunidad",
         help="When enabled, this website shows a Comunidad entry in its menu "
-        "pointing at the chat of the main portal. Meant for the three "
-        "neighbourhood portals, which are on their own subdomains: the link "
-        "is built as an absolute URL to whichever website actually serves "
-        "the chat. A merchant's microsite is a shop window, not a public "
-        "square, so leave it off there.",
+        "pointing at the chat. It gates the entry on every website, the one "
+        "serving /chat included: serving the route and advertising it are "
+        "separate decisions. On a site that does not serve the chat the link "
+        "is built as an absolute URL to whichever website does. A merchant's "
+        "microsite is a shop window, not a public square, so leave it off "
+        "there.",
     )
 
     @api.model
@@ -98,16 +99,20 @@ class Website(models.Model):
     def _chat_menu_url(self):
         """Where this website's "Comunidad" entry points, or False for none.
 
-        Three outcomes, in the order they are decided:
+        ``chat_link_enabled`` gates the entry on EVERY site, the one serving
+        the chat included: serving a route and advertising it are separate
+        decisions, and the platform launched with the route live but the menus
+        mirroring production, which has no such entry (user decision
+        2026-08-11 — announcing the chat is still an open question).
+
+        With the link opted in, two shapes of URL:
 
         - The site serves the chat itself: a plain ``/chat``. Same origin, so
           an absolute URL would only break in local and staging deployments.
-        - The site was opted in to LINK to it: an absolute URL to the host
-          website, because the neighbourhood portals live on their own
-          subdomains and a relative ``/chat`` there would 404 on a site that
-          does not serve the route.
-        - Anything else -- which is the 214 merchant microsites -- False, and
-          the template renders nothing at all.
+        - The site only links to it: an absolute URL to the host website,
+          because the neighbourhood portals live on their own subdomains and
+          a relative ``/chat`` there would 404 on a site that does not serve
+          the route.
 
         Returns False rather than raising when the host website is missing or
         its ``domain`` is blank. A menu is not the place to discover that a
@@ -115,10 +120,10 @@ class Website(models.Model):
         an exception costs every visitor of that microsite the whole page.
         """
         self.ensure_one()
-        if self.chat_enabled:
-            return "/chat"
         if not self.chat_link_enabled:
             return False
+        if self.chat_enabled:
+            return "/chat"
         host = self._chat_host_website()
         if not host:
             return False
