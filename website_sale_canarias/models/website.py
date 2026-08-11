@@ -41,10 +41,15 @@ class Website(models.Model):
         Computed from the shop domain rather than from all categories so a
         zone shop only offers the categories of its own neighbourhood — the
         same behaviour the legacy shop implemented per website type by hand.
+
+        Read as the CURRENT user, not sudo: the shop is a public page and the
+        ``website_published`` record rule is what keeps one merchant's
+        microsite from listing another's categories. sudo would drop that
+        second line of defence and lean the whole isolation on the domain
+        being exactly right — which is precisely the mistake to avoid on the
+        page a visitor reaches.
         """
         self.ensure_one()
-        products = (
-            self.env["product.template"].sudo().search(self._wsc_shop_domain())
-        )
+        products = self.env["product.template"].search(self._wsc_shop_domain())
         categories = products.public_categ_ids
         return categories.sorted(lambda category: (category.name or "").lower())

@@ -23,6 +23,12 @@ class WebsiteSaleCanarias(http.Controller):
     and the server-rendered page can never disagree about what is for sale.
     """
 
+    # Hard cap on how many products one AJAX response renders. The shop
+    # paginates server-side; the endpoint is a public, unauthenticated route,
+    # so an unbounded search+render is a cheap amplification primitive. The
+    # cap is generous (the largest shop lists ~800) yet bounds the worst case.
+    AJAX_LIMIT = 1000
+
     @http.route(
         "/shop/ajax/products",
         type="http",
@@ -50,10 +56,16 @@ class WebsiteSaleCanarias(http.Controller):
             if search:
                 domain &= Domain("name", "ilike", search)
 
-            products = (
-                request.env["product.template"]
-                .sudo()
-                .search(domain, order="website_sequence asc, id desc")
+            # NOT sudo: search as the public user so the website_published
+            # record rule applies. On the portal that rule permits every
+            # product (the backfill links them to the portal company); on a
+            # merchant microsite it permits only that merchant's — so a
+            # mis-built domain can never leak another merchant's catalogue.
+            # Verified identical to the sudo path on the live database
+            # (2026-08-11) precisely because the rule already allows the
+            # right set.
+            products = request.env["product.template"].search(
+                domain, order="website_sequence asc, id desc", limit=self.AJAX_LIMIT
             )
 
             # Price bounds are applied on the list price after the search,

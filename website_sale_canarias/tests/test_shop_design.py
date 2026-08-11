@@ -102,6 +102,46 @@ class TestShopDesign(HttpCase):
         result = self._ajax()
         self.assertIn("https://wsc-panaderia.example/shop/", result["html"])
 
+    def test_ajax_on_a_microsite_does_not_leak_other_merchants(self):
+        """The endpoint searches as the public user, so the record rule — not
+        the domain alone — bounds a microsite to its own catalogue. A second
+        merchant's published product must never reach the first's shop AJAX.
+        """
+        other = self.env["res.company"].create({"name": "WSC Otra SL"})
+        other_site = self.env["website"].create(
+            {"name": "WSC Otra", "company_id": other.id,
+             "domain": "https://wsc-otra.example"}
+        )
+        self.env["product.template"].create({
+            "name": "WSC Producto Ajeno",
+            "sale_ok": True,
+            "is_published": True,
+            "list_price": 7.0,
+            "company_ids": [(6, 0, [other.id])],
+        })
+        response = self.url_open(
+            "/shop/ajax/products", headers={"Host": "wsc-panaderia.example"}
+        )
+        body = json.loads(response.text)
+        self.assertNotIn("WSC Producto Ajeno", body["html"])
+        self.assertIn("WSC Pan de Millo", body["html"])
+
+    def test_ajax_excludes_products_of_an_archived_merchant(self):
+        """An archived merchant's catalogue must not come back through AJAX
+        even on the aggregating portal — the record rule hides it once the
+        marketplace links are gone, and the endpoint honours the rule."""
+        gone = self.env["res.company"].create({"name": "WSC Retirada SL"})
+        self.env["product.template"].create({
+            "name": "WSC Producto Retirado",
+            "sale_ok": True,
+            "is_published": True,
+            "list_price": 3.0,
+            "company_ids": [(6, 0, [gone.id])],
+        })
+        gone.active = False
+        result = self._ajax()
+        self.assertNotIn("WSC Producto Retirado", result["html"])
+
     # ------------------------------------------------------------------
     # A merchant microsite keeps its plain shop
     # ------------------------------------------------------------------

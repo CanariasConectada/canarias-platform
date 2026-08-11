@@ -345,6 +345,14 @@
         });
 
         rewriteMerchantLinks();
+
+        // Back/forward must not leave a grid that disagrees with the URL.
+        // The AJAX loader rewrites the URL with pushState but the browser
+        // restores the DOM from its own cache on history navigation, so the
+        // safe, simple answer is a full reload to whatever the URL now says.
+        window.addEventListener("popstate", function () {
+            window.location.reload();
+        });
     }
 
     if (document.readyState !== "loading") {
