@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- ================================================================
+         Hero header — portal and zone shops
+         ================================================================
+         The aggregated shops replace Odoo's toolbar-style header with a
+         hero: big title, one-line promise, one big search box. Merchant
+         microsites keep their own (headerless, see below) plain shop.
+
+         The <style> block travels with the hero on purpose: the aggregated
+         shops cannot sell directly (the cart lives on each merchant's own
+         site), so every add-to-cart affordance is hidden exactly where and
+         when the hero is rendered — same scoping the legacy used. -->
+    <template
+        id="shop_hero"
+        inherit_id="website_sale.products"
+        name="Canarias Shop: hero header"
+        priority="30"
+    >
+        <xpath expr="//div[@id='oe_structure_website_sale_products_1']" position="after">
+            <t t-if="website.is_marketplace">
+                <style>
+                    .o_wsale_my_cart, .o_wsale_cart_quantity { display: none !important; }
+                    .o_wsale_product_btn { display: none !important; }
+                    .o_wsale_products_add_to_cart { display: none !important; }
+                    .o_add_to_cart_button { display: none !important; }
+                </style>
+                <t t-set="wsc_zone_label" t-value="website._wsc_zone_label()"/>
+                <section class="o_wsc_shop_hero py-5 bg-light border-bottom mb-4">
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8 text-center">
+                                <t t-if="wsc_zone_label">
+                                    <h1 class="display-5 mb-3 fw-bold text-primary">Tienda <t t-esc="wsc_zone_label"/></h1>
+                                    <p class="lead mb-4 text-muted">Descubre los productos de las empresas de la zona</p>
+                                </t>
+                                <t t-else="">
+                                    <h1 class="display-5 mb-3 fw-bold text-primary">Tienda Canarias Conectada</h1>
+                                    <p class="lead mb-4 text-muted">Encuentra los mejores productos y servicios de nuestras zonas</p>
+                                </t>
+                                <form action="/shop" method="get" class="input-group input-group-lg">
+                                    <input
+                                        type="text"
+                                        name="search"
+                                        class="form-control border-end-0"
+                                        placeholder="Buscar productos..."
+                                        t-att-value="request.params.get('search', '')"
+                                    />
+                                    <button type="submit" class="btn btn-primary px-4">
+                                        <i class="fa fa-search me-2"/> Buscar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- ================================================================
+         One hero per shop, never two
+         ================================================================
+         shop_frontend_tweaks ships the generic "Tienda <website.name>" hero
+         at the same anchor. On a merchant microsite that is the right
+         header and it stays; on the aggregated shops this module's hero
+         took its place, so the generic one steps aside. -->
+    <template
+        id="shop_hero_no_generic"
+        inherit_id="shop_frontend_tweaks.shop_header"
+        name="Canarias Shop: generic hero steps aside"
+        priority="30"
+    >
+        <xpath expr="//section[hasclass('shop-directory-header')]" position="attributes">
+            <attribute name="t-if">not website.is_marketplace</attribute>
+        </xpath>
+    </template>
+
+    <!-- ================================================================
+         The stock shop toolbar goes — everywhere
+         ================================================================
+         Category pills, inline search and the sort dropdown. Production
+         removes them on every website, aggregated shops and microsites
+         alike; the sidebar carries the filters instead. -->
+    <template
+        id="shop_hide_stock_header"
+        inherit_id="website_sale.products"
+        name="Canarias Shop: no stock toolbar"
+        priority="30"
+    >
+        <xpath expr="//header[@id='o_wsale_products_header']" position="replace"/>
+    </template>
+
+    <!-- ================================================================
+         Sidebar: searchable category select + price range
+         ================================================================
+         One card per concern, the same visual language as /comercio (the
+         JS upgrades the plain <select> into the directory's wd-select).
+         The category set is the shop's real product set — a zone shop only
+         offers its neighbourhood's categories. -->
+    <template
+        id="shop_sidebar"
+        inherit_id="website_sale.products"
+        name="Canarias Shop: filter sidebar"
+        priority="30"
+    >
+        <xpath expr="//aside[@id='products_grid_before']" position="replace">
+            <aside
+                id="products_grid_before"
+                class="d-none d-lg-block position-sticky align-self-start col clearfix pt-2"
+            >
+                <t t-call="website_sale.sidebar_dropzone_at_top"/>
+                <div class="o_wsale_products_grid_before_rail vh-100 ms-n2 px-lg-2 ps-2 overflow-y-scroll">
+                    <div class="card border-0 shadow-sm mb-3 wd-filter-card o_wsc_category_card">
+                        <div class="card-header bg-white py-3">
+                            <h5 class="mb-0 fw-bold fs-6">
+                                <i class="fa fa-folder-open text-primary me-2"/>
+                                <t t-set="wsc_zone_label" t-value="website._wsc_zone_label()"/>
+                                <t t-if="wsc_zone_label">Categorías de <t t-esc="wsc_zone_label"/></t>
+                                <t t-else="">Categorías</t>
+                            </h5>
+                        </div>
+                        <div class="card-body" style="overflow: visible;">
+                            <select id="wsc_category_select" class="form-select" style="width: 100%;">
+                                <option value="" t-att-selected="'selected' if not category else None">Todas las categorías</option>
+                                <t t-foreach="website._wsc_shop_categories()" t-as="wsc_cat">
+                                    <option
+                                        t-att-value="wsc_cat.id"
+                                        t-att-selected="'selected' if category and category.id == wsc_cat.id else None"
+                                        t-esc="wsc_cat.name"
+                                    />
+                                </t>
+                            </select>
+                        </div>
+                    </div>
+                    <t t-call="website_sale.filter_products_price"/>
+                    <t t-call="website_sale.sidebar_dropzone_at_bottom"/>
+                </div>
+            </aside>
+        </xpath>
+    </template>
+
+    <!-- ================================================================
+         Merchant badge on every aggregated-shop card
+         ================================================================
+         The aggregated shops sell nothing themselves: every card says whose
+         shop window it is and links there. Merchant microsites show no
+         badge — a shop does not need to advertise itself on its own cards
+         (the legacy showed it everywhere as a side effect of editing the
+         core view in place; that is the one deliberate divergence). -->
+    <template
+        id="shop_product_card"
+        inherit_id="website_sale.products_item"
+        name="Canarias Shop: merchant badge"
+        priority="30"
+    >
+        <xpath expr="//*[hasclass('o_wsale_products_item_title')]" position="after">
+            <t t-if="website.is_marketplace">
+                <t t-set="wsc_owner_name" t-value="product._wsc_owner_display_name()"/>
+                <t t-set="wsc_owner_domain" t-value="product._wsc_owner_site_domain()"/>
+                <div t-if="wsc_owner_name" class="o_wsc_company_pill mt-1 mb-1">
+                    <a
+                        t-att-href="wsc_owner_domain or '#'"
+                        target="_blank"
+                        rel="noopener"
+                        class="text-decoration-none"
+                        title="Ver tienda del comercio"
+                    >
+                        <span class="badge rounded-pill bg-light text-secondary border fw-normal o_wsc_pill_badge">
+                            <i class="fa fa-shopping-bag me-1" aria-hidden="true"/>
+                            <t t-esc="wsc_owner_name"/>
+                        </span>
+                    </a>
+                </div>
+            </t>
+        </xpath>
+        <xpath expr="//form" position="attributes">
+            <attribute
+                name="t-att-data-wsc-merchant-domain"
+            >website.is_marketplace and product._wsc_owner_site_domain() or None</attribute>
+        </xpath>
+    </template>
+
+    <!-- ================================================================
+         AJAX grid — what /shop/ajax/products renders
+         ================================================================
+         Same card anatomy as the page: image, name, price, merchant badge.
+         On an aggregated shop image and title link to the merchant's own
+         site; without a domain they fall back to the local product page. -->
+    <template id="shop_grid_ajax" name="Canarias Shop: AJAX product grid">
+        <t t-if="products">
+            <t t-set="wsc_ppr" t-value="website.shop_ppr or 3"/>
+            <t t-set="wsc_col" t-value="12 // wsc_ppr"/>
+            <t t-foreach="products" t-as="product">
+                <t t-set="wsc_owner_name" t-value="product._wsc_owner_display_name()"/>
+                <t t-set="wsc_owner_domain" t-value="product._wsc_owner_site_domain()"/>
+                <t t-set="wsc_slug" t-value="(product.website_url or '').split('/')[-1]"/>
+                <t
+                    t-set="wsc_href"
+                    t-value="(wsc_owner_domain.rstrip('/') + '/shop/' + wsc_slug) if (website.is_marketplace and wsc_owner_domain and wsc_slug) else (product.website_url or '#')"
+                />
+                <div
+                    t-attf-class="o_wsale_grid_item g-col-6 g-col-lg-{{wsc_col}} {{'g-col-md-4' if wsc_ppr >= 4 else 'g-col-md-6'}}"
+                    t-att-data-wsc-merchant-domain="wsc_owner_domain or None"
+                >
+                    <div class="o_wsale_product_grid_wrapper h-100 position-relative d-flex">
+                        <div class="oe_product_cart h-100 w-100 d-flex flex-column">
+                            <div class="oe_product_image position-relative">
+                                <a
+                                    t-att-href="wsc_href"
+                                    t-att-target="'_blank' if website.is_marketplace and wsc_owner_domain else None"
+                                    rel="noopener"
+                                    class="d-flex h-100 align-items-center justify-content-center text-decoration-none"
+                                >
+                                    <img
+                                        t-att-src="'/web/image/product.template/%s/image_512' % product.id"
+                                        class="img-fluid"
+                                        t-att-alt="product.name"
+                                        loading="lazy"
+                                    />
+                                </a>
+                            </div>
+                            <div class="o_wsale_product_information p-3">
+                                <h5 class="o_wsale_products_item_title mb-1">
+                                    <a
+                                        t-att-href="wsc_href"
+                                        t-att-target="'_blank' if website.is_marketplace and wsc_owner_domain else None"
+                                        rel="noopener"
+                                        class="text-decoration-none text-dark"
+                                        t-esc="product.name"
+                                    />
+                                </h5>
+                                <div class="o_wsale_product_price mb-2" t-if="product.list_price &gt; 0">
+                                    <span
+                                        class="fw-bold"
+                                        t-esc="product.list_price"
+                                        t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"
+                                    />
+                                </div>
+                                <div t-if="website.is_marketplace and wsc_owner_name" class="o_wsc_company_pill mt-1 mb-1">
+                                    <a
+                                        t-att-href="wsc_owner_domain or '#'"
+                                        target="_blank"
+                                        rel="noopener"
+                                        class="text-decoration-none"
+                                        title="Ver tienda del comercio"
+                                    >
+                                        <span class="badge rounded-pill bg-light text-secondary border fw-normal o_wsc_pill_badge">
+                                            <i class="fa fa-shopping-bag me-1" aria-hidden="true"/>
+                                            <t t-esc="wsc_owner_name"/>
+                                        </span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+        <t t-else="">
+            <div class="alert alert-info text-center py-5">
+                <i class="fa fa-info-circle fa-2x mb-3 d-block"/>
+                <p class="mb-0">No se encontraron productos en esta categoría.</p>
+            </div>
+        </t>
+    </template>
+
+</odoo>

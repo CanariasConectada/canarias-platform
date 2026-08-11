@@ -1,0 +1,49 @@
+/* Copyright 2026 Canarias Conectada
+ * License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). */
+
+.o_wsc_pill_badge {
+    font-size: 0.75rem;
+}
+
+/* Mobile: filters above, products below, one card per row. Desktop keeps
+ * the classic two-column layout with a fixed-width sidebar. Same layout
+ * contract the legacy shop shipped. */
+@media (max-width: 991.98px) {
+    .o_wsale_products_main_row {
+        flex-wrap: wrap !important;
+    }
+    #products_grid_before {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        flex: 0 0 100% !important;
+        position: relative !important;
+        order: -1 !important;
+        margin-bottom: 20px !important;
+        display: block !important;
+    }
+    #products_grid {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        flex: 0 0 100% !important;
+    }
+    #products_grid .o_wsale_grid_item {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 0 0 100% !important;
+    }
+    .o_wsale_products_grid_before_rail {
+        height: auto !important;
+        max-height: none !important;
+    }
+}
+
+@media (min-width: 992px) {
+    #products_grid_before {
+        width: 260px !important;
+        min-width: 260px !important;
+        max-width: 280px !important;
+        flex: 0 0 260px !important;
+    }
+}
