@@ -127,3 +127,11 @@
     padding: 0.5rem 0.75rem;
     color: #6c757d;
 }
+
+/* The theme clips .card overflow for its rounded corners; on the filter
+ * cards that beheads the select panel at the card edge. Nothing else in
+ * them overflows, so visible is safe here. */
+.wd-filter-card,
+.wd-filter-card .card-body {
+    overflow: visible !important;
+}
