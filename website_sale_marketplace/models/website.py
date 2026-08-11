@@ -44,8 +44,28 @@ class Website(models.Model):
 
     @api.model
     def _marketplace_companies(self):
-        """Companies that own at least one marketplace website."""
+        """Companies that own at least one marketplace website (zones included)."""
         return self.sudo().search([("is_marketplace", "=", True)]).company_id
+
+    @api.model
+    def _portal_marketplace_companies(self):
+        """Companies of the PORTAL marketplaces only — zone shops excluded.
+
+        The portal aggregates the whole platform by holding its company in
+        every product's ``company_ids``; the zone shops do not (they select
+        through the merchant's ``commercial_zone``). Everything that WRITES a
+        marketplace link — the backfill and the create hook — must use this
+        set, not ``_marketplace_companies``, or a product ends up linked to
+        the zone companies and surfaces in every neighbourhood's shop.
+        """
+        return self.sudo().search(
+            [
+                ("is_marketplace", "=", True),
+                "|",
+                ("marketplace_zone", "=", False),
+                ("marketplace_zone", "=", ""),
+            ]
+        ).company_id
 
     def sale_product_domain(self):
         """Drop the per-website pin from the shop domain on a marketplace.

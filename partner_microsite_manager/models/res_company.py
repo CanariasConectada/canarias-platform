@@ -4,6 +4,9 @@
 from urllib.parse import quote_plus, urlsplit
 
 from odoo import _, api, fields, models
+from odoo.tools.translate import LazyTranslate
+
+_lt = LazyTranslate(__name__)
 from odoo.exceptions import AccessError, UserError, ValidationError
 
 from ..tools.opening_hours import MAX_RANGES_PER_DAY, parse_opening_hours
@@ -14,16 +17,17 @@ from ..tools.opening_hours import MAX_RANGES_PER_DAY, parse_opening_hours
 _ALLOWED_MAP_URL_SCHEMES = ("https",)
 
 # Weekday names shown on the public microsite, indexed like date.weekday().
-# They are template terms in views/microsite_templates.xml as well, but the
-# model needs them to build the schedule lines for QWeb.
+# Wrapped in _lt (lazy translation): these are module-level constants
+# evaluated at import time, so a plain _() would freeze the English source;
+# _lt defers the lookup to render time, when the visitor's es_ES is active.
 WEEKDAY_LABELS = (
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
+    _lt("Monday"),
+    _lt("Tuesday"),
+    _lt("Wednesday"),
+    _lt("Thursday"),
+    _lt("Friday"),
+    _lt("Saturday"),
+    _lt("Sunday"),
 )
 
 

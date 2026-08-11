@@ -2,7 +2,7 @@
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl).
 {
     "name": "Product Return Warranty",
-    "version": "19.0.2.0.0",
+    "version": "19.0.2.0.1",
     "category": "Website/Website",
     "summary": "Per-product return warranty and delivery time on the shop page",
     "author": "MikeColangelo",

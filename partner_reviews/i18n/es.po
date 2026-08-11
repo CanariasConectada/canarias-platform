@@ -278,3 +278,19 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:partner_reviews.reviews_page
 msgid "Your review"
 msgstr "Tu reseña"
+
+#. module: partner_reviews
+#. odoo-javascript
+#: code:addons/partner_reviews/views/website_templates.xml:0
+msgid "Answer from"
+msgstr "Respuesta de"
+
+#. module: partner_reviews
+#: model_terms:ir.ui.view,arch_db:partner_reviews.reviews_page
+msgid "Reviews of"
+msgstr "Reseñas de"
+
+#. module: partner_reviews
+#: model_terms:ir.ui.view,arch_db:partner_reviews.reviews_list
+msgid "Visitor"
+msgstr "Visitante"
