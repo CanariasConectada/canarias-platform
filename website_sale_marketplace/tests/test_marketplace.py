@@ -192,6 +192,63 @@ class TestMarketplaceSync(MarketplaceCommon, TransactionCase):
         self.assertFalse(calls, "un marketplace de zona no debe hacer backfill")
         self.assertNotIn(zone_company, self.prod_b.company_ids)
 
+    def test_new_product_is_not_linked_to_zone_companies(self):
+        """The create hook must add the PORTAL company only.
+
+        Linking a new product to the zone marketplace companies made it
+        visible in every neighbourhood's shop: the zone shop's public user is
+        allowed the zone company, the product carried it in company_ids, and
+        the record rule passed. A Guanarteme product surfaced in Tamaraceite
+        (confirmed on the live database, 2026-08-11).
+        """
+        if "commercial_zone" not in self.env["res.company"]._fields:
+            self.skipTest("res_company_zone no instalado")
+        self.website.is_marketplace = True
+        _zone_company, zone_website = self._make_fresh_marketplace("MP Zona Link")
+        zone_website.write(
+            {"is_marketplace": True, "marketplace_zone": "guanarteme"}
+        )
+        zone_companies = zone_website.company_id
+        product = self._make_product("MP Widget Nuevo", self.company_b)
+        self.assertIn(self.mp_company, product.company_ids, "sin la compañía del portal")
+        self.assertFalse(
+            zone_companies & product.company_ids,
+            "el producto quedó enlazado a una compañía de zona",
+        )
+
+    def test_archiving_a_merchant_sweeps_its_marketplace_links(self):
+        """Archiving a merchant must pull its products off the aggregated
+        shop by itself. Before, the portal link survived the archival and the
+        product kept showing until a manual SQL sweep (101racing, 2026-08-11).
+        """
+        self.website.is_marketplace = True
+        self.website.company_id = self.mp_company
+        sole = self.env["res.company"].create({"name": "MP Sole Owner"})
+        product = self._make_product("MP Widget Sole", sole)
+        self.assertIn(self.mp_company, product.company_ids, "sin backfill del portal")
+
+        sole.active = False
+        self.assertNotIn(
+            self.mp_company, product.company_ids,
+            "el enlace del portal sobrevivió al archivado",
+        )
+
+    def test_archiving_keeps_links_when_another_owner_stays_active(self):
+        """A product co-owned by two merchants must stay on the shop while one
+        of them is still active — the sweep only fires when EVERY real owner
+        is gone."""
+        self.website.is_marketplace = True
+        self.website.company_id = self.mp_company
+        owner_a = self.env["res.company"].create({"name": "MP Owner A"})
+        owner_b = self.env["res.company"].create({"name": "MP Owner B"})
+        product = self._make_product("MP Widget Shared", owner_a | owner_b)
+
+        owner_a.active = False
+        self.assertIn(
+            self.mp_company, product.company_ids,
+            "el barrido quitó el enlace con un dueño aún activo",
+        )
+
     def test_isolation_between_merchants_preserved(self):
         self.website.is_marketplace = True
         # A company-C user must NOT see company-B's product even though it is

@@ -1,8 +1,12 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import logging
+
 from odoo import api, fields, models
 from odoo.fields import Domain
+
+_logger = logging.getLogger(__name__)
 
 
 class ProductTemplate(models.Model):
@@ -101,14 +105,73 @@ class ProductTemplate(models.Model):
             return Domain("is_published", "=", True)
         return super()._search_website_published(operator, value)
 
+    @api.model
+    def _wsm_sweep_orphaned_marketplace_links(self):
+        """Remove portal/zone marketplace links from products whose every
+        active real owner is gone.
+
+        Pure SQL on the m2m: writing ``company_ids`` through the ORM
+        recomputes the delivery carriers, and the businesses without a pickup
+        carrier of their own make that blow up — the same reason the backfill
+        batches and the migration sweeps in SQL. The CTE is the one the
+        19.0.1.4.0 post-migration and fix f30 use, promoted here so archiving
+        a merchant cleans up after itself instead of needing a manual pass.
+        """
+        # The link this runs right after (the create-hook backfill, or the
+        # archival that triggered it) may still be in the ORM cache; the raw
+        # SQL reads the table, so flush first or it sweeps a stale snapshot.
+        self.env["product.template"].flush_model(["company_ids"])
+        self.env["res.company"].flush_model(["active"])
+        self.env.cr.execute(
+            """
+            WITH marketplace AS (
+                SELECT DISTINCT company_id FROM website WHERE is_marketplace
+            ),
+            doomed AS (
+                SELECT r.product_template_id, r.res_company_id
+                FROM product_template_res_company_rel r
+                JOIN marketplace m ON m.company_id = r.res_company_id
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM product_template_res_company_rel r2
+                    JOIN res_company c2 ON c2.id = r2.res_company_id
+                    WHERE r2.product_template_id = r.product_template_id
+                      AND c2.active
+                      AND c2.id NOT IN (SELECT company_id FROM marketplace)
+                )
+            )
+            DELETE FROM product_template_res_company_rel r
+            USING doomed d
+            WHERE r.product_template_id = d.product_template_id
+              AND r.res_company_id = d.res_company_id
+            """
+        )
+        if self.env.cr.rowcount:
+            self.invalidate_model(["company_ids"])
+            _logger.info(
+                "Marketplace links swept from %s product(s) of retired "
+                "merchants", self.env.cr.rowcount,
+            )
+
     @api.model_create_multi
     def create(self, vals_list):
         products = super().create(vals_list)
         # New products created by a merchant must also become visible on the
-        # marketplace, so add every marketplace company to their allowed
+        # marketplace, so add the PORTAL marketplace company to their allowed
         # companies. Ownership is unchanged (the merchant company stays in
         # company_ids); the marketplace company is only an extra scope.
-        companies = self.env["website"]._marketplace_companies()
+        #
+        # Zone marketplace companies are excluded, exactly as the backfill
+        # excludes them (_sync_marketplace_products): a zone shop selects its
+        # products through the merchant's commercial_zone, never through a
+        # link to the zone company. Linking every zone company here made a
+        # new product of ONE neighbourhood visible in EVERY zone shop — the
+        # public user of the Tamaraceite shop is allowed company 13, the
+        # product carried 13 in company_ids, so the record rule passed
+        # (confirmed 2026-08-11: a Guanarteme product surfaced in
+        # Tamaraceite). It also risked the delivery-carrier recompute the
+        # backfill batches around.
+        companies = self.env["website"]._portal_marketplace_companies()
         if companies:
             # Only write on the products actually missing a marketplace
             # company (company_ids is already in cache right after create, so

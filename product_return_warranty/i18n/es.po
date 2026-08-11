@@ -241,3 +241,8 @@ msgstr "semanas"
 #: code:addons/product_return_warranty/models/product_template.py:0
 msgid "years"
 msgstr "años"
+
+#. module: product_return_warranty
+#: model_terms:ir.ui.view,arch_db:product_return_warranty.product_return_warranty_display
+msgid "Terms and Conditions"
+msgstr "Términos y Condiciones"
