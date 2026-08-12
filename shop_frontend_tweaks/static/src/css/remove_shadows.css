@@ -1,26 +1,51 @@
-/* Eliminar sombras y efectos de hover en tarjetas de producto */
-.oe_product_cart,
+/* Product cards: keep the flat, shadow-free RESTING look this platform wants,
+ * but preserve the interactive affordance (hover/focus feedback and a visible
+ * keyboard-focus outline). The previous version forced
+ * `transform/transition/box-shadow: none !important` on the :hover/:focus/:active
+ * states too, which killed every affordance and hurt keyboard accessibility. */
+
+/* Resting state: flat, no shadow. A short transition is kept so the hover
+ * feedback below eases in instead of snapping. */
+.oe_product_cart {
+    box-shadow: none;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+/* Hover / focus: restore a subtle lift + shadow so the card reads as
+ * interactive. No `!important` overrides that would freeze these states. */
 .oe_product_cart:hover,
-.oe_product_cart:focus,
-.oe_product_cart:active {
-    box-shadow: none !important;
-    transform: none !important;
-    transition: none !important;
+.oe_product_cart:focus-within {
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
 }
 
-/* Eliminar sombras de imágenes de producto */
+/* Keyboard focus: a clearly visible outline on the card link so keyboard users
+ * can see where they are. Uses the platform brand primary (defined in
+ * recommended.css) with the brand hex as fallback. */
+.oe_product_cart a:focus-visible {
+    outline: 2px solid var(--scc-brand-primary, #714b67);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+/* Product images stay flat and shadow-free. */
 .oe_product_cart .oe_product_image,
-.oe_product_cart .oe_product_image:hover,
-.oe_product_cart .oe_product_image img,
-.oe_product_cart .oe_product_image img:hover {
-    box-shadow: none !important;
-    transform: none !important;
-    transition: none !important;
+.oe_product_cart .oe_product_image img {
+    box-shadow: none;
 }
 
-/* Asegurar que el contenedor del producto no tenga sombra */
-#o_wsale_products_grid .oe_product,
-#o_wsale_products_grid .oe_product:hover {
-    box-shadow: none !important;
-    transform: none !important;
+/* Grid product wrapper: flat at rest; hover affordance is left to the card. */
+#o_wsale_products_grid .oe_product {
+    box-shadow: none;
+}
+
+/* Respect users who prefer reduced motion: no transform animation for them. */
+@media (prefers-reduced-motion: reduce) {
+    .oe_product_cart {
+        transition: box-shadow 0.2s ease;
+    }
+    .oe_product_cart:hover,
+    .oe_product_cart:focus-within {
+        transform: none;
+    }
 }

@@ -15,44 +15,40 @@ by default). Two things make it unusable as shipped on this platform:
   shop sells.
 
 So the headings are replaced with our own — which do get translated, through
-this module's i18n/es.po — and the title picks up the platform colour.
+this module's i18n/es.po. The section styling (brand-coloured title, separator)
+now lives in static/src/css/recommended.css, in the web.assets_frontend bundle,
+rather than in an inline <style> block injected into the DOM.
 -->
 <odoo>
 
     <template id="recommended_products_heading"
               inherit_id="website_sale.alternative_products"
               name="Recommended Products Heading">
+        <!-- Open the section gate. Odoo only renders the carousel when the shop
+             curated alternatives by hand (t-if="product.alternative_product_ids").
+             The hybrid engine (see models/product_template.py) also returns
+             auto-recommendations from the same shop, so gate on the method that
+             accounts for both: an empty recordset stays falsy, so a shop with a
+             single product still shows no empty band. -->
+        <xpath expr="//div[@id='oe_structure_website_sale_recommended_products']"
+               position="attributes">
+            <attribute name="t-if">product._get_website_alternative_product()</attribute>
+        </xpath>
         <!-- data-name is the label the website editor shows for the block; keep
              it in step with what the visitor reads. -->
         <xpath expr="//section[hasclass('s_dynamic_snippet_products')]" position="attributes">
             <attribute name="data-name">Recommended Products</attribute>
         </xpath>
+        <!-- Section heading bumped from <h4> to <h2>. The product card titles
+             this section introduces are core <h2>, so an <h4> here dropped the
+             section below its own items in the accessibility outline; an <h2>
+             puts it back at the same level, ahead of them. Same visible text. -->
         <xpath expr="//section[hasclass('s_dynamic_snippet_title')]//h4" position="replace">
-            <h4 class="shop-recommended-title">You may also like</h4>
+            <h2 class="shop-recommended-title">You may also like</h2>
         </xpath>
         <xpath expr="//section[hasclass('s_dynamic_snippet_title')]//p[hasclass('lead')]"
                position="replace">
             <p class="lead">Other products from this shop that may interest you</p>
-        </xpath>
-    </template>
-
-    <template id="recommended_products_styles"
-              inherit_id="website_sale.alternative_products"
-              name="Recommended Products Styles">
-        <xpath expr="//section[hasclass('s_dynamic_snippet_title')]" position="before">
-            <style type="text/css">
-                .o_wsale_alternative_products {
-                    border-top: 1px solid #dee2e6 !important;
-                }
-                .o_wsale_alternative_products .shop-recommended-title {
-                    color: #714B67 !important;
-                    font-weight: 700 !important;
-                }
-                .o_wsale_alternative_products .lead {
-                    font-size: 1rem !important;
-                    color: #6c757d !important;
-                }
-            </style>
         </xpath>
     </template>
 
