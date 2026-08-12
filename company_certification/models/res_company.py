@@ -54,6 +54,37 @@ class ResCompany(models.Model):
         self.ensure_one()
         return self.sudo().certification_ids.filtered(lambda c: c._is_valid())
 
+    def _get_certification_amenities(self, cert_type):
+        """The icon list shown under a seal on the company microsite.
+
+        Prefers what THIS company actually scored well on, and falls back to
+        the vertical's curated highlights. The fallback is not cosmetic: a
+        seal imported from the previous platform has no evaluation behind it,
+        so the per-company list is empty for it and the microsite would show
+        a seal with no explanation at all.
+
+        Sudo: rendered in public website context.
+        """
+        self.ensure_one()
+        earned = self._get_certification_positive_items(cert_type)
+        if earned:
+            return earned
+        # Guarded rather than relying on the caller: the template only reaches
+        # here inside a loop over held seals, but the fallback is a list of
+        # public claims and must never be readable for a shop that has none.
+        if not self._get_valid_certifications().filtered(
+            lambda status: status.type_id == cert_type
+        ):
+            return []
+        return [
+            {
+                "label": highlight.label,
+                "description": highlight.description,
+                "icon": highlight.icon or "fa-check-circle",
+            }
+            for highlight in cert_type.sudo().highlight_ids
+        ]
+
     def _get_certification_positive_items(self, cert_type):
         """Positive highlights of the last awarding evaluation.
 
@@ -73,6 +104,13 @@ class ResCompany(models.Model):
             line = lines.filtered(lambda ln: ln.question_id == item.question_id)
             if line and max(line.mapped("answer_score")) >= item.min_score:
                 items.append(
-                    {"label": item.label, "icon": item.icon or "fa-check-circle"}
+                    {
+                        "label": item.label,
+                        # Same keys as the curated highlights so the template
+                        # renders one shape and never has to know which of
+                        # the two sources it is looping over.
+                        "description": None,
+                        "icon": item.icon or "fa-check-circle",
+                    }
                 )
         return items

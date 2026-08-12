@@ -93,6 +93,79 @@ class TestCertificationLanding(HttpCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("Orphan module", response.text)
 
+    # -- the certified-business list ------------------------------------
+    def _certify(self, name, level="gold", score=100, with_site=True):
+        """A company holding this seal, optionally with a microsite."""
+        company = self.env["res.company"].create({"name": name})
+        if with_site:
+            self.env["website"].create(
+                {
+                    "name": name,
+                    "company_id": company.id,
+                    "domain": "https://%s.example.com" % name.lower().replace(" ", ""),
+                }
+            )
+        return self.env["res.company.certification"].create(
+            {
+                "company_id": company.id,
+                "type_id": self.cert_type.id,
+                "level": level,
+                "score": score,
+                "expiry_date": "2099-01-01",
+            }
+        )
+
+    def test_certified_companies_are_listed_strongest_first(self):
+        self._certify("Bronze Shop", level="bronze", score=45)
+        self._certify("Gold Shop", level="gold", score=95)
+
+        response = self.url_open("/certification/landing-vertical")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertLess(
+            response.text.index("Gold Shop"),
+            response.text.index("Bronze Shop"),
+            "the strongest seals lead the list",
+        )
+
+    def test_level_filter_narrows_the_list(self):
+        self._certify("Bronze Shop", level="bronze", score=45)
+        self._certify("Gold Shop", level="gold", score=95)
+
+        response = self.url_open("/certification/landing-vertical?level=bronze")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Bronze Shop", response.text)
+        self.assertNotIn("Gold Shop", response.text)
+
+    def test_an_unknown_level_shows_everything_rather_than_nothing(self):
+        # The value arrives from the query string, so it is attacker-chosen;
+        # it must not become a domain leaf or an empty page.
+        self._certify("Gold Shop", level="gold", score=95)
+
+        response = self.url_open("/certification/landing-vertical?level=platinum")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Gold Shop", response.text)
+
+    def test_an_expired_seal_is_not_listed(self):
+        status = self._certify("Lapsed Shop")
+        status.expiry_date = "2000-01-01"
+
+        response = self.url_open("/certification/landing-vertical")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("Lapsed Shop", response.text)
+
+    def test_a_company_without_a_microsite_is_not_listed(self):
+        # The card is a link to the shop; with no site there is nowhere to go.
+        self._certify("Siteless Shop", with_site=False)
+
+        response = self.url_open("/certification/landing-vertical")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("Siteless Shop", response.text)
+
     # -- the download ---------------------------------------------------
     def test_attaching_material_publishes_the_file(self):
         # A private attachment would answer 403 to exactly the visitors this

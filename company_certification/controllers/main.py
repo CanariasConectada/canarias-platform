@@ -4,6 +4,10 @@ from odoo import _, fields, http
 from odoo.exceptions import UserError
 from odoo.http import request
 
+# Strongest first: this is the sort order of the public holder list and the
+# order the level filter is drawn in, not merely a set of valid values.
+LEVEL_ORDER = ["gold", "silver", "bronze"]
+
 
 class CompanyCertificationController(http.Controller):
     """Website entry points to start a certification evaluation.
@@ -38,13 +42,76 @@ class CompanyCertificationController(http.Controller):
         cert_type = self._get_certification_type(code)
         if not cert_type or not cert_type.landing_published:
             return request.not_found()
+        level = kwargs.get("level") if kwargs.get("level") in LEVEL_ORDER else None
+        holders = self._get_certified_companies(cert_type)
         return request.render(
             "company_certification.certification_landing",
             {
                 "cert_type": cert_type,
                 "materials": cert_type.material_ids.filtered("attachment_id"),
+                "holders": [h for h in holders if not level or h["level"] == level],
+                "level_counts": self._count_by_level(holders),
+                "level": level,
+                "base_url": "/certification/%s" % cert_type.code,
             },
         )
+
+    def _get_certified_companies(self, cert_type):
+        """The companies currently holding this seal, ready for the template.
+
+        Flattened to plain dicts on purpose: the template runs in a public
+        request whose user cannot read ``res.company``, and handing it a sudo
+        recordset would put every field of every company one dotted attribute
+        away from being rendered. Only what the card shows crosses over.
+
+        Ordered by level then score so the strongest seals lead, which is what
+        makes the page worth landing on.
+        """
+        statuses = (
+            request.env["res.company.certification"]
+            .sudo()
+            .search([("type_id", "=", cert_type.id)])
+            .filtered(lambda status: status._is_valid())
+        )
+        website = request.env["website"].sudo()
+        holders = []
+        for status in statuses:
+            company = status.company_id
+            # A company with no microsite has nowhere to send the visitor;
+            # a card that links to the shop it is about is the whole point.
+            #
+            # Filtered on the domain inside the search rather than after it:
+            # ``auto_microsite_generator`` creates a website the moment a
+            # company is created and only fills the domain in later, so a
+            # company can own both a blank placeholder and its real site. A
+            # plain limit=1 returns whichever was created first and silently
+            # dropped the shop from this list.
+            site = website.search(
+                [("company_id", "=", company.id), ("domain", "!=", False)],
+                limit=1,
+            )
+            if not site:
+                continue
+            holders.append(
+                {
+                    "name": company.name,
+                    "url": site.domain,
+                    "level": status.level,
+                    "level_label": status._get_level_label(),
+                    "score": int(status.score),
+                    "logo": company.logo,
+                    "company_id": company.id,
+                }
+            )
+        holders.sort(key=lambda h: (LEVEL_ORDER.index(h["level"]), -h["score"]))
+        return holders
+
+    @staticmethod
+    def _count_by_level(holders):
+        counts = {level: 0 for level in LEVEL_ORDER}
+        for holder in holders:
+            counts[holder["level"]] = counts.get(holder["level"], 0) + 1
+        return counts
 
     @http.route(
         "/certification/<string:code>/start",

@@ -90,7 +90,19 @@ class TestCertificationFlow(CertificationCase):
         )
         self._run_evaluation(3)
         items = self.company._get_certification_positive_items(self.cert_type)
-        self.assertEqual(items, [{"label": "First question OK", "icon": "fa-heart"}])
+        # `description` is always present, and empty here: the microsite
+        # template loops over these and over the vertical's curated
+        # highlights with one body, so both sources hand it the same keys.
+        self.assertEqual(
+            items,
+            [
+                {
+                    "label": "First question OK",
+                    "description": None,
+                    "icon": "fa-heart",
+                }
+            ],
+        )
         # Below min_score the item disappears.
         self.company.certification_ids.user_input_id.user_input_line_ids.unlink()
         self.assertFalse(self.company._get_certification_positive_items(self.cert_type))

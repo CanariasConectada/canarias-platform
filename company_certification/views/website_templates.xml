@@ -84,6 +84,79 @@
                     </div>
                 </section>
 
+                <!-- Who holds the seal: sidebar filter + card grid, the same
+                     shape as the Lugares de Interes / Memoria Viva index.
+                     Without it the page explains a seal and never shows a
+                     single business wearing one. -->
+                <section t-if="holders or level" class="o_cc_landing_section o_cc_holders py-5">
+                    <div class="container">
+                        <div class="row">
+                            <aside class="col-12 col-lg-3 mb-4">
+                                <h2 class="o_cc_landing_section__title h5 mb-3">Nivel del sello</h2>
+                                <div class="list-group">
+                                    <a t-att-href="base_url"
+                                       t-attf-class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {{ '' if level else 'active' }}">
+                                        <span>Todos</span>
+                                        <span class="badge text-bg-secondary rounded-pill"
+                                              t-out="sum(level_counts.values())"/>
+                                    </a>
+                                    <t t-foreach="['gold', 'silver', 'bronze']" t-as="level_code">
+                                        <a t-if="level_counts.get(level_code)"
+                                           t-attf-href="{{ base_url }}?level={{ level_code }}"
+                                           t-attf-class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {{ 'active' if level == level_code else '' }}">
+                                            <span>
+                                                <i t-attf-class="fa fa-certificate me-2 o_cc_level_dot o_cc_level_dot--{{ level_code }}"
+                                                   aria-hidden="true"/>
+                                                <t t-out="{'gold': 'Oro', 'silver': 'Plata', 'bronze': 'Bronce'}.get(level_code)"/>
+                                            </span>
+                                            <span class="badge text-bg-secondary rounded-pill"
+                                                  t-out="level_counts.get(level_code)"/>
+                                        </a>
+                                    </t>
+                                </div>
+                            </aside>
+                            <div class="col-12 col-lg-9">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h2 class="o_cc_landing_section__title h5 mb-0">Comercios certificados</h2>
+                                    <span class="text-muted">
+                                        <t t-out="len(holders)"/> resultados
+                                    </span>
+                                </div>
+                                <div t-if="holders" class="row g-3">
+                                    <div t-foreach="holders" t-as="holder"
+                                         class="col-6 col-md-4 col-xl-3">
+                                        <a t-att-href="holder['url']"
+                                           class="o_cc_holder_card card h-100 border-0 shadow-sm text-decoration-none">
+                                            <div class="o_cc_holder_card__imgwrap">
+                                                <img t-if="holder['logo']"
+                                                     t-attf-src="/web/image/res.company/{{ holder['company_id'] }}/logo"
+                                                     class="o_cc_holder_card__img"
+                                                     t-att-alt="holder['name']"
+                                                     loading="lazy"/>
+                                                <span t-else="" class="o_cc_holder_card__placeholder">
+                                                    <i class="fa fa-shopping-bag" aria-hidden="true"/>
+                                                </span>
+                                                <span t-attf-class="badge o_cc_holder_card__level o_cc_holder_card__level--{{ holder['level'] }}"
+                                                      t-out="holder['level_label']"/>
+                                            </div>
+                                            <div class="card-body">
+                                                <span class="o_cc_holder_card__name d-block fw-bold"
+                                                      t-out="holder['name']"/>
+                                                <small class="text-muted">
+                                                    <t t-out="holder['score']"/>% de cumplimiento
+                                                </small>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div t-else="" class="alert alert-info mb-0">
+                                    Todavía no hay comercios con este nivel.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 <!-- Training material as a lift-on-hover card grid. -->
                 <section t-if="materials"
                          class="o_cc_landing_section o_cc_landing_materials py-5">
@@ -312,14 +385,31 @@
                                    t-esc="cert_type.website_description"/>
                             </div>
                         </div>
-                        <t t-set="positive_items" t-value="cc_company._get_certification_positive_items(cert_type)"/>
-                        <div class="row" t-if="positive_items">
+                        <!-- What the seal means, as an icon grid: the pattern
+                             a visitor already knows from a lodging site's
+                             "what this place offers". A centered single
+                             column made ten short items read as one long
+                             sentence; a grid lets the eye scan icons. -->
+                        <t t-set="amenities" t-value="cc_company._get_certification_amenities(cert_type)"/>
+                        <div class="row" t-if="amenities">
                             <div class="col-12">
-                                <div class="d-flex flex-column align-items-center mb-4">
-                                    <div t-foreach="positive_items" t-as="item" class="d-flex align-items-center mb-2">
-                                        <i t-attf-class="fa {{ item['icon'] }} me-2"
-                                           t-attf-style="color: {{ bar_color }}; font-size: 1.1rem;"/>
-                                        <span style="font-size: 1rem;" t-esc="item['label']"/>
+                                <h4 class="o_cc_amenities__title h5 fw-bold mb-4"
+                                    t-out="cert_type.amenities_title or 'Lo que ofrece este comercio'"/>
+                                <div class="row g-3 o_cc_amenities mb-4">
+                                    <div t-foreach="amenities" t-as="item"
+                                         class="col-12 col-sm-6 col-lg-4">
+                                        <div class="o_cc_amenity d-flex align-items-start gap-3">
+                                            <i t-attf-class="fa {{ item['icon'] }} o_cc_amenity__icon"
+                                               t-attf-style="color: {{ bar_color }};"
+                                               aria-hidden="true"/>
+                                            <span>
+                                                <span class="o_cc_amenity__label d-block"
+                                                      t-out="item['label']"/>
+                                                <small t-if="item.get('description')"
+                                                       class="o_cc_amenity__desc d-block text-muted"
+                                                       t-out="item['description']"/>
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

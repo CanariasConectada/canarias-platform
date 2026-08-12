@@ -109,6 +109,19 @@ class CertificationType(models.Model):
     material_ids = fields.One2many(
         "certification.material", "type_id", string="Training Material"
     )
+    amenities_title = fields.Char(
+        translate=True,
+        help="Heading above the highlight icons on the microsite. Falls back "
+        "to a generic wording when empty.",
+    )
+    highlight_ids = fields.One2many(
+        "certification.highlight",
+        "type_id",
+        string="Highlights",
+        help="What holding this seal means. Shown as an icon list on every "
+        "certified company's microsite when that company's own evaluation "
+        "highlights are not available.",
+    )
     # Auto-generated backend menu ----------------------------------------
     menu_id = fields.Many2one("ir.ui.menu", readonly=True, copy=False)
     action_id = fields.Many2one("ir.actions.act_window", readonly=True, copy=False)

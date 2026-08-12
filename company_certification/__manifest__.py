@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Company Certification",
-    "version": "19.0.1.4.0",
+    "version": "19.0.2.0.0",
     "category": "Marketing/Surveys",
     "summary": "Parameterizable company certification seals built on Survey",
     "author": "MikeColangelo",
@@ -26,6 +26,7 @@
         "data/survey_silver_economy.xml",
         "data/survey_sustainability.xml",
         "data/certification_type_data.xml",
+        "data/certification_highlight_data.xml",
         "data/mail_template_data.xml",
         "data/ir_cron_data.xml",
     ],

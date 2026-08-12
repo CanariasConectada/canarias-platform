@@ -63,6 +63,26 @@
                                    widget="html"
                                    placeholder="What this certification is about, shown at /certification/&lt;code&gt;"/>
                         </page>
+                        <page string="Highlights" name="highlights">
+                            <group>
+                                <field name="amenities_title"
+                                       placeholder="Lo que ofrece este comercio"/>
+                            </group>
+                            <field name="highlight_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="icon"
+                                           placeholder="fa-wheelchair"/>
+                                    <field name="label"/>
+                                    <field name="description"/>
+                                </list>
+                            </field>
+                            <p class="text-muted mt-2">
+                                Shown as an icon list on every certified company's
+                                microsite. A company whose own evaluation produced
+                                highlights shows those instead.
+                            </p>
+                        </page>
                         <page string="Training Material" name="material">
                             <field name="material_ids">
                                 <list editable="bottom">
