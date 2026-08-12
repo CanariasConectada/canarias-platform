@@ -1,6 +1,8 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import re
+
 from odoo.tests import HttpCase, tagged
 
 
@@ -47,20 +49,46 @@ class TestDirectoryController(HttpCase):
             [("company_id", "=", cls.company_hidden.id)]
         )
 
+    # These three narrow to the fixtures with ?search=WDC instead of reading
+    # the bare first page. On an empty test database the fixtures happen to be
+    # the whole directory; on a copy of production they are four rows among
+    # hundreds and land on page 9. That made the positive test fail for the
+    # wrong reason, and — worse — made the two negative tests below pass
+    # vacuously: "hidden shop not on this page" is true of every company that
+    # simply did not fit.
     def test_directory_page_ok(self):
-        response = self.url_open("/comercio")
+        response = self.url_open("/comercio?search=WDC")
         self.assertEqual(response.status_code, 200)
         self.assertIn("WDC Alpha Bakery", response.text)
         self.assertIn("WDC Beta Cafe", response.text)
 
-    def test_hidden_company_not_listed(self):
+    def test_browser_title_does_not_repeat_the_site_name(self):
+        """The tab says where you are; the site name is appended by the layout.
+
+        ``website.layout`` builds the title as "<additional_title> | <site>".
+        While the tab and the H1 shared one term, the portal's tab read
+        "Directorio Canarias Conectada | Canarias Conectada" and a merchant
+        microsite's read the platform's brand next to the shop's own.
+        """
         response = self.url_open("/comercio")
         self.assertEqual(response.status_code, 200)
+        title = re.search(r"<title>(.*?)</title>", response.text, re.S).group(1)
+        head, _sep, site = title.rpartition("|")
+        self.assertTrue(_sep, "the layout appends the site name after a pipe")
+        self.assertNotIn(site.strip(), head, title)
+
+    def test_hidden_company_not_listed(self):
+        response = self.url_open("/comercio?search=WDC")
+        self.assertEqual(response.status_code, 200)
+        # Positive control first: without it, an empty result page would
+        # satisfy the assertion below and prove nothing about the filtering.
+        self.assertIn("WDC Alpha Bakery", response.text)
         self.assertNotIn("WDC Hidden Shop", response.text)
 
     def test_unpublished_entry_not_listed(self):
-        response = self.url_open("/comercio")
+        response = self.url_open("/comercio?search=WDC")
         self.assertEqual(response.status_code, 200)
+        self.assertIn("WDC Alpha Bakery", response.text)
         self.assertNotIn("WDC Unpublished Bar", response.text)
 
     def test_search_filter(self):

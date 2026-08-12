@@ -139,7 +139,13 @@
     <!-- Main page. -->
     <template id="directory_index" name="Business Directory">
         <t t-call="website.layout">
-            <t t-set="additional_title">Business Directory</t>
+            <!-- Its own term, not the H1's. website.layout composes the tab as
+                 "<additional_title> | <site name>", and the H1 carries the
+                 brand: reusing it printed "Directorio Canarias Conectada |
+                 Canarias Conectada" on the portal, and mixed two brands on a
+                 merchant microsite. The heading names the thing, the tab says
+                 where in the site you are. -->
+            <t t-set="additional_title">Directory of shops</t>
 
             <section class="wd-header py-5 bg-light border-bottom">
                 <div class="container">
