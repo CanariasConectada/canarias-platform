@@ -67,7 +67,7 @@
                             <div class="col-lg-4 text-center"
                                  t-if="cert_type.badge_image">
                                 <img class="o_cc_landing_hero__badge img-fluid"
-                                     t-att-src="image_data_uri(cert_type.badge_image)"
+                                     t-attf-src="/certification/{{ cert_type.code }}/badge"
                                      t-att-alt="cert_type.name"
                                      loading="lazy"/>
                             </div>
@@ -361,8 +361,12 @@
                         <t t-set="bar_color" t-value="{'gold': '#FFD700', 'silver': '#C0C0C0', 'bronze': '#CD7F32'}.get(cert.level, '#6c757d')"/>
                         <div class="row align-items-center mb-5">
                             <div class="col-lg-6 text-center mb-4 mb-lg-0">
+                                <!-- A URL, not image_data_uri: the seal is a
+                                     258 KB PNG and inlining it put that in
+                                     the HTML of every microsite homepage,
+                                     uncached and re-sent on every view. -->
                                 <img t-if="cert_type.badge_image"
-                                     t-att-src="image_data_uri(cert_type.badge_image)"
+                                     t-attf-src="/certification/{{ cert_type.code }}/badge"
                                      t-att-alt="cert_type.name"
                                      class="img-fluid"
                                      style="max-width: 280px; height: auto; object-fit: contain;"

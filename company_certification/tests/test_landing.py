@@ -166,6 +166,43 @@ class TestCertificationLanding(HttpCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("Siteless Shop", response.text)
 
+    # -- the badge image ------------------------------------------------
+    # A 1x1 PNG: enough to prove the bytes travel, small enough to inline.
+    BADGE_PNG = (
+        b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
+        b"\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\nIDATx\x9cc\x00"
+        b"\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82"
+    )
+
+    def test_a_visitor_can_fetch_the_badge(self):
+        # The seal used to be inlined as a data URI in every microsite
+        # homepage; it is now a URL, and that URL has to answer to visitors
+        # who cannot read certification.type.
+        self.cert_type.badge_image = base64.b64encode(self.BADGE_PNG)
+
+        response = self.url_open("/certification/landing-vertical/badge")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.headers["Content-Type"].startswith("image/"))
+        self.assertGreater(
+            response.headers.get("Cache-Control", "").find("max-age"), -1
+        )
+
+    def test_the_badge_of_an_unpublished_vertical_is_a_404(self):
+        # The route reads as sudo, so the published flag is the only thing
+        # standing between a draft vertical's artwork and the public.
+        self.cert_type.badge_image = base64.b64encode(self.BADGE_PNG)
+        self.cert_type.landing_published = False
+
+        response = self.url_open("/certification/landing-vertical/badge")
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_a_vertical_without_a_badge_is_a_404_not_a_placeholder(self):
+        response = self.url_open("/certification/landing-vertical/badge")
+
+        self.assertEqual(response.status_code, 404)
+
     # -- the download ---------------------------------------------------
     def test_attaching_material_publishes_the_file(self):
         # A private attachment would answer 403 to exactly the visitors this

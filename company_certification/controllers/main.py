@@ -8,6 +8,11 @@ from odoo.http import request
 # order the level filter is drawn in, not merely a set of valid values.
 LEVEL_ORDER = ["gold", "silver", "bronze"]
 
+# A day, not Odoo's year-long static cache: the badge URL is keyed by the
+# vertical's code, so replacing the image does not change it and a longer
+# max-age would leave the old seal on visitors' screens for months.
+BADGE_CACHE_SECONDS = 60 * 60 * 24
+
 
 class CompanyCertificationController(http.Controller):
     """Website entry points to start a certification evaluation.
@@ -112,6 +117,41 @@ class CompanyCertificationController(http.Controller):
         for holder in holders:
             counts[holder["level"]] = counts.get(holder["level"], 0) + 1
         return counts
+
+    @http.route(
+        "/certification/<string:code>/badge",
+        type="http",
+        auth="public",
+        website=True,
+        sitemap=False,
+    )
+    def certification_badge(self, code, **kwargs):
+        """Serve the seal image of a published vertical.
+
+        A route rather than ``/web/image/certification.type/...`` because the
+        latter checks read access on the record, and visitors have none: the
+        model also carries the scoring thresholds and the vertical's security
+        groups, which is not something to open up for the sake of a picture.
+        This exposes exactly one field of the published verticals.
+
+        The alternative was inlining it with ``image_data_uri``, which put a
+        258 KB base64 blob in the HTML of every microsite homepage — repeated
+        on each page view, never cached and never shared between shops.
+        """
+        cert_type = self._get_certification_type(code)
+        if (
+            not cert_type
+            or not cert_type.landing_published
+            or not cert_type.badge_image
+        ):
+            return request.not_found()
+        stream = request.env["ir.binary"]._get_image_stream_from(
+            cert_type, "badge_image"
+        )
+        # Public + a day of cache: the seal changes about never, and it is the
+        # same bytes for every shop holding it.
+        stream.public = True
+        return stream.get_response(max_age=BADGE_CACHE_SECONDS)
 
     @http.route(
         "/certification/<string:code>/start",
