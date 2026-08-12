@@ -133,39 +133,9 @@ action = model.action_start_new_sustainability_evaluation()
         </xpath>
     </template>
 
-    <!-- Herencia de la template de finalización de survey para mostrar sello Silver -->
-    <template id="survey_fill_form_done_inherit_silver" inherit_id="survey.survey_fill_form_done">
-        <xpath expr="//div[@class='o_survey_finished mt32 mb32']" position="inside">
-            <t t-if="survey.is_sustainability and answer.certification_level != 'none'">
-                <div class="alert alert-success mt-3 text-center">
-                    <h3 class="mb-3">🎉 ¡Felicidades! Tu empresa ha obtenido el sello Sostenibilidad</h3>
-                    <div class="d-flex justify-content-center align-items-center gap-3">
-                        <div t-if="answer.certification_level == 'bronze'" class="badge bg-warning text-dark p-3 fs-4">🥉 BRONCE</div>
-                        <div t-if="answer.certification_level == 'silver'" class="badge bg-secondary p-3 fs-4">🥈 PLATA</div>
-                        <div t-if="answer.certification_level == 'gold'" class="badge bg-warning p-3 fs-4">🥇 ORO</div>
-                    </div>
-                    <p class="mt-3">
-                        Puntuación: <strong t-esc="answer.scoring_total"/> / <t t-esc="survey.sustain_max_score or 80"/> puntos
-                        (<t t-esc="answer.scoring_percentage"/>%)
-                    </p>
-                    <p class="text-muted">
-                        El sello es válido hasta: <strong t-esc="answer.expiry_date"/>
-                    </p>
-                </div>
-            </t>
-            <t t-if="survey.is_sustainability and answer.certification_level == 'none'">
-                <div class="alert alert-info mt-3 text-center">
-                    <h4>Resultado de la evaluación</h4>
-                    <p>
-                        Puntuación: <strong t-esc="answer.scoring_total"/> / <t t-esc="survey.sustain_max_score or 80"/> puntos
-                        (<t t-esc="answer.scoring_percentage"/>%)
-                    </p>
-                    <p>En esta ocasión no has alcanzado el nivel mínimo para obtener el sello Sostenibilidad.</p>
-                    <p class="text-muted">Podrás volver a intentarlo a partir del: <strong t-esc="answer.next_attempt_date"/></p>
-                </div>
-            </t>
-        </xpath>
-    </template>
+    <!-- El sello Sostenibilidad ahora lo renderiza company_certification (base),
+         una sola vez y en español, keyed por certification_type_id. Este módulo
+         ya no duplica el panel. -->
 
     <!-- ============================================ -->
     <!-- F: Recomendaciones visibles en impresión web -->
@@ -292,15 +262,5 @@ action = model.action_start_new_sustainability_evaluation()
         </xpath>
     </template>
 
-    <!-- ============================================ -->
-<!-- F: Botón Salir/Cerrar en página de finalización -->
-    <template id="survey_fill_form_done_sust_close" inherit_id="survey.survey_fill_form_done">
-        <xpath expr="//div[contains(@class, 'o_survey_finished')]//div[contains(@class, 'd-flex') and contains(@class, 'gap-3')]" position="inside">
-            <t t-if="survey.is_sustainability and not survey.is_silver_economy">
-                <a role="button" class="btn btn-outline-secondary btn-lg" href="javascript:window.close()">
-                    <i class="fa fa-times"/> Cerrar
-                </a>
-            </t>
-        </xpath>
-    </template>
+    <!-- El botón «Cerrar» lo pone company_certification (base), una sola vez. -->
 </odoo>
