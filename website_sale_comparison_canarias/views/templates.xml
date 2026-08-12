@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- ================================================================
+         Make "compare" available on EVERY product, modern styling
+         ================================================================
+         Core's compare button (website_sale_comparison.add_to_compare) only
+         renders when the product has variant attributes
+         (``valid_product_template_attribute_line_ids``). On this catalogue
+         almost nothing has variants, so the button was invisible — which is
+         why the comparator looked missing. Every product still has a single
+         variant (``product_variant_id``), and the compare list keys on the
+         variant id, so the gate is simply too strict for a marketplace that
+         compares whole products, not variants of one.
+
+         We reuse core's button (same ``o_add_compare`` hook the comparison
+         interaction listens on) and only change two things: it always renders,
+         and it carries a modern look. -->
+    <!-- The Canarias aggregated shop hides the whole add-to-cart button row
+         (the cart lives on each merchant's own site), and core injects its
+         compare button INTO that row — so on our shop it never rendered.
+         Put the button on the card itself instead, right under the title,
+         next to the merchant badge, for every product (not only variant
+         ones: the compare list keys on the single variant every product has). -->
+    <template
+        id="card_compare_button"
+        inherit_id="website_sale.products_item"
+        name="Comparar en la tarjeta del shop (Canarias)"
+    >
+        <xpath expr="//*[hasclass('o_wsale_products_item_title')]" position="after">
+            <div t-if="product.product_variant_id" class="o_wscc_compare_wrap mt-1">
+                <button
+                    type="button"
+                    class="btn o_add_compare o_wscc_compare_btn o_wscc_compare_btn_sm"
+                    title="Comparar con otros productos"
+                    aria-label="Comparar"
+                    t-att-data-product-template-id="product.id"
+                    t-att-data-product-product-id="product.product_variant_id.id"
+                    data-action="o_comparelist"
+                >
+                    <span class="fa fa-exchange fa-fw o_not-animable"/>
+                    <span class="o_label small ms-1">Comparar</span>
+                </button>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- ================================================================
+         Compare button on the aggregated shop's AJAX cards
+         ================================================================
+         The Canarias shop swaps in its own card markup for the AJAX grid,
+         which core's inherit never reaches. Add the same hook there so a
+         product filtered in via AJAX can also be compared. -->
+    <template
+        id="ajax_card_compare"
+        inherit_id="website_sale_canarias.shop_grid_ajax"
+        name="Comparar en la grilla AJAX (Canarias)"
+    >
+        <xpath expr="//div[hasclass('o_wsale_product_price')]" position="after">
+            <button
+                t-if="product.product_variant_id"
+                type="button"
+                class="btn btn-sm o_add_compare o_wscc_compare_btn o_wscc_compare_btn_sm mt-1"
+                title="Comparar con otros productos"
+                aria-label="Comparar"
+                t-att-data-product-template-id="product.id"
+                t-att-data-product-product-id="product.product_variant_id.id"
+                data-action="o_comparelist"
+            >
+                <span class="fa fa-exchange fa-fw o_not-animable"/>
+                <span class="o_label small ms-1">Comparar</span>
+            </button>
+        </xpath>
+    </template>
+
+</odoo>
