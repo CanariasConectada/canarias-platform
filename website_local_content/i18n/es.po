@@ -300,3 +300,8 @@ msgstr "valoraciones"
 #: code:addons/website_local_content/models/local_content_item.py:0
 msgid "Visitor"
 msgstr "Visitante"
+
+#. module: website_local_content
+#: model:ir.ui.menu,name:website_local_content.menu_local_content_configuration
+msgid "Configuration"
+msgstr "Configuración"
