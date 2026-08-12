@@ -87,11 +87,14 @@
             </t>
         </div>
         <div t-if="not entries" class="text-center py-5">
-            <i class="fa fa-inbox fa-4x text-muted mb-3"/>
-            <h4 class="text-muted">No businesses found</h4>
-            <p class="text-muted" t-if="search">Try another search term</p>
+            <i class="fa fa-search fa-4x text-muted mb-3"/>
+            <h4 class="text-muted">No se encontraron resultados</h4>
+            <p class="text-muted" t-if="search">Intenta con otro término de búsqueda</p>
         </div>
-        <div class="wd-pager d-flex justify-content-center mt-4">
+        <!-- No pager when there is nothing to page through: an empty result
+             set used to leave the pager block (and, on a stale AJAX render, a
+             ghost "1 2 3 … 10") sitting under the empty state. -->
+        <div t-if="entries" class="wd-pager d-flex justify-content-center mt-4">
             <t t-call="website.pager"/>
         </div>
     </template>

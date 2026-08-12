@@ -8,6 +8,24 @@
                      style="max-height: 180px; max-width: 80%; width: auto;"/>
             </div>
         </xpath>
+        <!-- Guest access: enter without registering and without typing any
+             credentials. The platform already allows public browsing and
+             the community chat accepts anonymous (mail.guest) participation,
+             so "continue as guest" simply carries the visitor to where they
+             were headed (the ?redirect target, or the front page) as an
+             anonymous visitor — no shared password to leak, no shared
+             identity that would collapse every guest into one chat author. -->
+        <xpath expr="//div[hasclass('oe_website_login_container')]" position="after">
+            <div class="text-center mt-3 o_login_guest">
+                <div class="o_login_guest_sep text-muted small mb-2">o</div>
+                <a href="/" class="btn btn-outline-secondary w-100 o_login_guest_btn">
+                    <i class="fa fa-user-o me-2"/>Continuar como invitado
+                </a>
+                <p class="text-muted small mt-2 mb-0">
+                    Entra sin cuenta para mirar y participar en la comunidad.
+                </p>
+            </div>
+        </xpath>
         <xpath expr="//div[hasclass('oe_website_login_container')]" position="after">
             <div class="text-center mt-4 pb-4">
                 <img src="/website_login_branding/static/src/img/zca_logo.webp"

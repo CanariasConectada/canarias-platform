@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Website Login Branding",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.1.0",
     "category": "Website",
     "summary": "Canarias Conectada and ZCA logos on all website login pages",
     "description": """
