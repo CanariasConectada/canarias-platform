@@ -57,7 +57,11 @@
 
 .wd-card .card-footer .btn:hover:not(.disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+    /* Brand plum (#714B67), not Bootstrap's default blue: the glow was
+     * rgba(13, 110, 253, .3), which is the one colour on this page that
+     * belongs to no part of the platform's palette. Same rgb triplet the
+     * zone stylesheet already uses for its rings. */
+    box-shadow: 0 4px 12px rgba(113, 75, 103, 0.3);
 }
 
 /* List view */
@@ -89,8 +93,11 @@
     text-overflow: ellipsis;
 }
 .wd-select-toggle:focus {
-    border-color: #86b7fe;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    /* Bootstrap's focus ring is blue; the rest of this platform is plum.
+     * The ring stays the same shape and opacity so the affordance is
+     * unchanged — only the hue moves onto the brand. */
+    border-color: #a98ba1;
+    box-shadow: 0 0 0 0.25rem rgba(113, 75, 103, 0.25);
 }
 .wd-select-panel {
     position: absolute;
