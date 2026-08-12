@@ -18,7 +18,9 @@
     }
 
     .o_cc_login_brand_logo {
-        max-height: 96px;
+        // The brand mark is the first thing that identifies the card, so it
+        // carries more weight than the subvention strip at the foot (64px).
+        max-height: 128px;
         width: auto;
     }
 
