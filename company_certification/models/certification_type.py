@@ -128,7 +128,7 @@ class CertificationType(models.Model):
     def write(self, vals):
         previous_surveys = {t.id: t.survey_id for t in self}
         res = super().write(vals)
-        if {"name", "group_user_id", "sequence"} & set(vals):
+        if {"name", "group_user_id", "sequence", "active"} & set(vals):
             self._sync_menu()
         if "survey_id" in vals:
             self._sync_survey_link(previous_surveys)
@@ -245,6 +245,13 @@ class CertificationType(models.Model):
                 survey.sudo().certification_type_id = cert_type
 
     def _sync_menu(self):
+        """Keep the generated menu tree in step with its type.
+
+        ``active`` travels down to the children as well: a menu whose parent
+        is visible but which is itself archived never renders, so the whole
+        branch has to move together or the vertical ends up with a root menu
+        that opens onto nothing.
+        """
         for cert_type in self.filtered("menu_id"):
             cert_type.menu_id.sudo().write(
                 {
@@ -253,9 +260,21 @@ class CertificationType(models.Model):
                     "group_ids": [(6, 0, cert_type.group_user_id.ids)],
                 }
             )
+            cert_type._menu_branch().sudo().write({"active": cert_type.active})
             cert_type.action_id.sudo().write(
                 {"name": _("%s Evaluations", cert_type.name)}
             )
+
+    def _menu_branch(self):
+        """The generated root menu plus its children, archived ones included."""
+        self.ensure_one()
+        children = (
+            self.env["ir.ui.menu"]
+            .sudo()
+            .with_context(active_test=False)
+            .search([("parent_id", "=", self.menu_id.id)])
+        )
+        return self.menu_id | children
 
     def _prepare_action_vals(self):
         self.ensure_one()

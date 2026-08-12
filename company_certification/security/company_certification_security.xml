@@ -47,6 +47,30 @@
             <field name="perm_unlink" eval="0"/>
         </record>
 
+        <!-- The answer lines carry the same confidential payload as the
+             evaluation they belong to, so they need the same scope. Two
+             things make this rule load-bearing rather than belt-and-braces:
+             survey.user_input.line has NO company_id column, so the scope
+             has to be traversed through the parent; and group_certification_user
+             implies neither survey group, so without a rule of its own the
+             model is matched by NO rule at all for these users, which in
+             Odoo means no domain, i.e. every company's answers readable. -->
+        <record id="survey_user_input_line_rule_certification_user" model="ir.rule">
+            <field name="name">Certification: user sees own companies' answer lines</field>
+            <field name="model_id" ref="survey.model_survey_user_input_line"/>
+            <field name="domain_force">[
+                ('user_input_id.certification_type_id', '!=', False),
+                ('user_input_id.certification_type_id.group_user_id', 'in', user.all_group_ids.ids),
+                ('user_input_id.company_id', 'in', user.company_ids.ids),
+                ('user_input_id.test_entry', '=', False),
+            ]</field>
+            <field name="groups" eval="[(4, ref('group_certification_user'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
         <!-- Vertical managers see every evaluation of the verticals they
              manage; the generic manager group sees them all.
 

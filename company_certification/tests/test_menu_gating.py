@@ -51,6 +51,19 @@ class TestMenuGating(CertificationCase):
         with self.assertRaises(AccessError):
             silver_survey.with_user(self.user).read(["title"])
 
+    def test_menu_branch_follows_type_active_state(self):
+        """Archiving a vertical takes its whole entry point with it.
+
+        The children matter as much as the root: a child left archived under
+        a live root gives a menu that opens onto nothing.
+        """
+        branch = self.cert_type._menu_branch()
+        self.assertTrue(len(branch) > 1, "the generated menu has children")
+        self.cert_type.active = False
+        self.assertFalse(any(branch.exists().with_context(active_test=False).mapped("active")))
+        self.cert_type.active = True
+        self.assertTrue(all(branch.exists().with_context(active_test=False).mapped("active")))
+
     def test_user_input_isolated_by_company_and_vertical(self):
         answer = self._run_evaluation(3)
         # The evaluating user sees their company's evaluation.
@@ -80,6 +93,36 @@ class TestMenuGating(CertificationCase):
         # A plain internal user cannot read it at all.
         with self.assertRaises(AccessError):
             answer.with_user(self.plain_user).read(["state"])
+
+    def test_user_input_lines_isolated_by_company(self):
+        """The answers themselves, not just the evaluation that holds them.
+
+        survey.user_input.line has no company_id of its own, so it is only
+        covered if the rule reaches through user_input_id -- and the group
+        implies no survey group, so a missing rule means no domain at all
+        rather than a restrictive default.
+        """
+        answer = self._run_evaluation(3)
+        line_model = self.env["survey.user_input.line"]
+        # Positive control: the evaluating user still reads their own answers.
+        self.assertTrue(
+            line_model.with_user(self.user).search([("user_input_id", "=", answer.id)])
+        )
+        other_company = self.env["res.company"].create({"name": "Other Shop Lines"})
+        other_user = new_test_user(
+            self.env,
+            login="cert_other_lines",
+            groups="base.group_user",
+            company_id=other_company.id,
+            company_ids=[(6, 0, other_company.ids)],
+            context=NO_MAIL_CTX,
+        )
+        other_user.write({"group_ids": [(4, self.group_user.id)]})
+        # Searched by survey rather than by parent: the parent is already
+        # unreadable, so this is the query that leaks if the rule is absent.
+        self.assertFalse(
+            line_model.with_user(other_user).search([("survey_id", "=", self.survey.id)])
+        )
 
     def test_manager_sees_all_evaluations_of_managed_vertical(self):
         answer = self._run_evaluation(3)
