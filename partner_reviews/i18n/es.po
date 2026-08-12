@@ -48,6 +48,7 @@ msgid "Business"
 msgstr "Comercio"
 
 #. module: partner_reviews
+#. odoo-python
 #: code:addons/partner_reviews/models/rating_rating.py:0
 msgid "Comment"
 msgstr "Comentario"
@@ -91,6 +92,7 @@ msgid "Forbidden Words"
 msgstr "Palabras prohibidas"
 
 #. module: partner_reviews
+#. odoo-python
 #: code:addons/partner_reviews/models/rating_rating.py:0
 msgid "Hello %s,"
 msgstr "Hola %s,"
@@ -117,6 +119,7 @@ msgid "Moderator"
 msgstr "Moderador"
 
 #. module: partner_reviews
+#. odoo-python
 #: code:addons/partner_reviews/models/rating_rating.py:0
 msgid "New review on %s"
 msgstr "Nueva reseña en %s"
@@ -137,11 +140,13 @@ msgid "Pending Moderation"
 msgstr "Pendiente de moderación"
 
 #. module: partner_reviews
+#. odoo-python
 #: code:addons/partner_reviews/controllers/main.py:0
 msgid "Please select a rating between 1 and 5 stars."
 msgstr "Selecciona una valoración de entre 1 y 5 estrellas."
 
 #. module: partner_reviews
+#. odoo-python
 #: code:addons/partner_reviews/models/rating_rating.py:0
 msgid "Rating"
 msgstr "Valoración"
@@ -158,11 +163,13 @@ msgid "Rejected"
 msgstr "Rechazada"
 
 #. module: partner_reviews
+#. odoo-python
 #: code:addons/partner_reviews/models/rating_rating.py:0
 msgid "Review pending moderation"
 msgstr "Reseña pendiente de moderación"
 
 #. module: partner_reviews
+#. odoo-python
 #: code:addons/partner_reviews/models/res_company.py:0
 #: model:ir.ui.menu,name:partner_reviews.menu_partner_reviews_root
 #: model:ir.ui.menu,name:partner_reviews.menu_partner_reviews_reviews
@@ -192,11 +199,13 @@ msgid "Status"
 msgstr "Estado"
 
 #. module: partner_reviews
+#. odoo-python
 #: code:addons/partner_reviews/controllers/main.py:0
 msgid "Thank you! Your review has been published."
 msgstr "¡Gracias! Tu reseña se ha publicado."
 
 #. module: partner_reviews
+#. odoo-python
 #: code:addons/partner_reviews/models/rating_rating.py:0
 msgid ""
 "The review of %(author)s on %(merchant)s contains words that require a "
@@ -211,16 +220,19 @@ msgid "User"
 msgstr "Usuario"
 
 #. module: partner_reviews
+#. odoo-python
 #: code:addons/partner_reviews/models/rating_rating.py:0
 msgid "A visitor"
 msgstr "Un visitante"
 
 #. module: partner_reviews
+#. odoo-python
 #: code:addons/partner_reviews/models/rating_rating.py:0
 msgid "a visitor"
 msgstr "un visitante"
 
 #. module: partner_reviews
+#. odoo-python
 #: code:addons/partner_reviews/models/rating_rating.py:0
 msgid "(no comment)"
 msgstr "(sin comentario)"
@@ -246,26 +258,31 @@ msgid "Allow Review Comments"
 msgstr "Permitir comentarios en reseñas"
 
 #. module: partner_reviews
+#. odoo-python
 #: code:addons/partner_reviews/models/rating_rating.py:0
 msgid "You have received a new review on your website:"
 msgstr "Has recibido una nueva reseña en tu sitio web:"
 
 #. module: partner_reviews
+#. odoo-python
 #: code:addons/partner_reviews/models/rating_rating.py:0
 msgid "Author"
 msgstr "Autor"
 
 #. module: partner_reviews
+#. odoo-python
 #: code:addons/partner_reviews/controllers/main.py:0
 msgid "Your review has been deleted."
 msgstr "Tu reseña se ha eliminado."
 
 #. module: partner_reviews
+#. odoo-python
 #: code:addons/partner_reviews/controllers/main.py:0
 msgid "Your review has been updated."
 msgstr "Tu reseña se ha actualizado."
 
 #. module: partner_reviews
+#. odoo-python
 #: code:addons/partner_reviews/controllers/main.py:0
 msgid ""
 "Your review is awaiting moderation and will be published after a manual "
@@ -281,6 +298,7 @@ msgstr "Tu reseña"
 
 #. module: partner_reviews
 #. odoo-javascript
+#. odoo-python
 #: code:addons/partner_reviews/views/website_templates.xml:0
 msgid "Answer from"
 msgstr "Respuesta de"

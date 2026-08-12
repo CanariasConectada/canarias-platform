@@ -50,31 +50,37 @@ msgid "Company Certification Status"
 msgstr "Estado de certificación de empresa"
 
 #. module: company_certification
+#. odoo-python
 #: code:addons/company_certification/models/certification_type.py:0
 msgid "My Evaluations"
 msgstr "Mis evaluaciones"
 
 #. module: company_certification
+#. odoo-python
 #: code:addons/company_certification/models/certification_type.py:0
 msgid "New Evaluation"
 msgstr "Nueva evaluación"
 
 #. module: company_certification
+#. odoo-python
 #: code:addons/company_certification/models/certification_type.py:0
 msgid "%s Evaluations"
 msgstr "Evaluaciones %s"
 
 #. module: company_certification
+#. odoo-python
 #: code:addons/company_certification/models/certification_type.py:0
 msgid "New %s Evaluation"
 msgstr "Nueva evaluación %s"
 
 #. module: company_certification
+#. odoo-python
 #: code:addons/company_certification/models/survey_user_input.py:0
 msgid "Only certification managers can override levels."
 msgstr "Solo los gestores de certificación pueden modificar niveles."
 
 #. module: company_certification
+#. odoo-python
 #: code:addons/company_certification/models/survey_user_input.py:0
 msgid "You need a company on your user profile to run an evaluation."
 msgstr ""
@@ -82,28 +88,34 @@ msgstr ""
 "evaluación."
 
 #. module: company_certification
+#. odoo-python
 #: code:addons/company_certification/models/survey_user_input.py:0
 msgid "No questionnaire is configured for %s. Please contact the administrator."
 msgstr ""
 "No hay un cuestionario configurado para %s. Contacta con el administrador."
 
 #. module: company_certification
+#. odoo-python
 #: code:addons/company_certification/models/survey_user_input.py:0
 msgid "You cannot run a new evaluation until %s."
 msgstr "No puedes realizar una nueva evaluación hasta el %s."
 
 #. module: company_certification
+#. odoo-python
 #: code:addons/company_certification/models/survey_user_input.py:0
 msgid "This evaluation is already completed."
 msgstr "Esta evaluación ya ha sido completada."
 
 #. module: company_certification
+#. odoo-python
 #: code:addons/company_certification/controllers/main.py:0
+#. odoo-python
 #: code:addons/company_certification/models/survey_user_input.py:0
 msgid "Unknown certification type."
 msgstr "Tipo de certificación desconocido."
 
 #. module: company_certification
+#. odoo-python
 #: code:addons/company_certification/models/res_company.py:0
 msgid "Certification Evaluations - %s"
 msgstr "Evaluaciones de certificación - %s"

@@ -15,16 +15,19 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: auto_microsite_generator
+#. odoo-python
 #: code:addons/auto_microsite_generator/models/res_company.py:0
 msgid "Home"
 msgstr "Inicio"
 
 #. module: auto_microsite_generator
+#. odoo-python
 #: code:addons/auto_microsite_generator/models/res_company.py:0
 msgid "Shop"
 msgstr "Tienda"
 
 #. module: auto_microsite_generator
+#. odoo-python
 #: code:addons/auto_microsite_generator/models/res_company.py:0
 msgid "Directory"
 msgstr "Comercios"

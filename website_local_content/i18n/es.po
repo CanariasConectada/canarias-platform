@@ -231,26 +231,31 @@ msgid "Categories"
 msgstr "Categorías"
 
 #. module: website_local_content
+#. odoo-python
 #: code:addons/website_local_content/models/local_content_item.py:0
 msgid "The photo year must be between %(min_year)s and %(max_year)s."
 msgstr "El año de la fotografía debe estar entre %(min_year)s y %(max_year)s."
 
 #. module: website_local_content
+#. odoo-python
 #: code:addons/website_local_content/models/local_content_item.py:0
 msgid "Latitude must be between -90 and 90."
 msgstr "La latitud debe estar entre -90 y 90."
 
 #. module: website_local_content
+#. odoo-python
 #: code:addons/website_local_content/models/local_content_item.py:0
 msgid "Longitude must be between -180 and 180."
 msgstr "La longitud debe estar entre -180 y 180."
 
 #. module: website_local_content
+#. odoo-python
 #: code:addons/website_local_content/models/local_content_item.py:0
 msgid "The category does not belong to the selected content type."
 msgstr "La categoría no pertenece al tipo de contenido seleccionado."
 
 #. module: website_local_content
+#. odoo-python
 #: code:addons/website_local_content/models/local_content_item.py:0
 msgid "The subcategory does not belong to the selected category."
 msgstr "La subcategoría no pertenece a la categoría seleccionada."

@@ -60,9 +60,44 @@ class TestMenuGating(CertificationCase):
         branch = self.cert_type._menu_branch()
         self.assertTrue(len(branch) > 1, "the generated menu has children")
         self.cert_type.active = False
-        self.assertFalse(any(branch.exists().with_context(active_test=False).mapped("active")))
+        self.assertFalse(
+            any(branch.exists().with_context(active_test=False).mapped("active"))
+        )
         self.cert_type.active = True
-        self.assertTrue(all(branch.exists().with_context(active_test=False).mapped("active")))
+        self.assertTrue(
+            all(branch.exists().with_context(active_test=False).mapped("active"))
+        )
+
+    def test_generated_menu_children_carry_every_language(self):
+        """The generated labels exist in each installed language, not just one.
+
+        These rows are written by code through ``_()``, so they are invisible
+        to a ``.po`` import: whichever language the install ran in is the only
+        one they would ever carry. The regression this guards is a Spanish
+        backend showing "My Evaluations" while the translation sits unused in
+        ``i18n/es.po``.
+        """
+        for code in ("en_US", "es_ES"):
+            self.env["res.lang"]._activate_lang(code)
+        # ``get_installed`` is ormcached and the activations above changed it.
+        self.env.registry.clear_cache()
+
+        self.cert_type._sync_menu_child_names()
+        children = self.cert_type._menu_branch() - self.cert_type.menu_id
+        self.assertTrue(children, "the generated menu has children")
+
+        # Asserted as literal strings rather than "the two languages differ":
+        # on a database installed in Spanish the source key holds Spanish too,
+        # so a difference test passes while proving nothing. These are the
+        # exact msgstr values in i18n/es.po, which is what has to arrive.
+        self.assertEqual(
+            sorted(children.with_context(lang="en_US").mapped("name")),
+            ["My Evaluations", "New Evaluation"],
+        )
+        self.assertEqual(
+            sorted(children.with_context(lang="es_ES").mapped("name")),
+            ["Mis evaluaciones", "Nueva evaluación"],
+        )
 
     def test_user_input_isolated_by_company_and_vertical(self):
         answer = self._run_evaluation(3)
@@ -121,7 +156,9 @@ class TestMenuGating(CertificationCase):
         # Searched by survey rather than by parent: the parent is already
         # unreadable, so this is the query that leaks if the rule is absent.
         self.assertFalse(
-            line_model.with_user(other_user).search([("survey_id", "=", self.survey.id)])
+            line_model.with_user(other_user).search(
+                [("survey_id", "=", self.survey.id)]
+            )
         )
 
     def test_manager_sees_all_evaluations_of_managed_vertical(self):

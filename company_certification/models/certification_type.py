@@ -264,6 +264,43 @@ class CertificationType(models.Model):
             cert_type.action_id.sudo().write(
                 {"name": _("%s Evaluations", cert_type.name)}
             )
+        self._sync_menu_child_names()
+
+    def _sync_menu_child_names(self):
+        """Write the generated children's labels in every installed language.
+
+        ``_()`` resolves once, in whichever language the install happened to
+        be running in, and a translated field stores the result under that
+        language's key alone. These rows are created by code, so no later
+        ``.po`` import ever reaches them: an English install leaves "My
+        Evaluations" showing untranslated on a Spanish backend forever, with
+        the correct translation sitting unused in ``i18n/es.po``.
+
+        Children are identified by the KIND of action they open rather than by
+        sequence: a sequence is a number an administrator may reorder, the
+        action is what the menu is.
+        """
+        # ``get_installed`` and not ``search([])``: this runs from a migration
+        # whose recordset carries ``active_test=False``, and a plain search
+        # would inherit it and hand back every language Odoo knows about
+        # rather than the handful actually installed. Setting a context to an
+        # uninstalled code raises.
+        langs = [code for code, _name in self.env["res.lang"].get_installed()]
+        for cert_type in self.filtered("menu_id"):
+            children = cert_type._menu_branch() - cert_type.menu_id
+            for lang in langs:
+                translated = cert_type.with_context(lang=lang).env
+                labels = {
+                    "ir.actions.act_window": translated._("My Evaluations"),
+                    "ir.actions.server": translated._("New Evaluation"),
+                }
+                for child in children:
+                    action = child.sudo().action
+                    if not action:
+                        continue
+                    label = labels.get(action._name)
+                    if label:
+                        child.with_context(lang=lang).sudo().write({"name": label})
 
     def _menu_branch(self):
         """The generated root menu plus its children, archived ones included."""
