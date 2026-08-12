@@ -191,6 +191,16 @@
                 <i class="fa fa-times"/> Cerrar
             </a>
         </xpath>
+        <!-- On a certification survey, hide the raw Odoo score ("You scored
+             X%") and the "Review your answers" button: the seal card below
+             already shows the score in a readable way, and the certification
+             is not a quiz the user re-reads. Keeps the survey title. -->
+        <xpath expr="//h1[hasclass('fs-2')]" position="attributes">
+            <attribute name="t-if">not survey.certification_type_id</attribute>
+        </xpath>
+        <xpath expr="//a[hasclass('o_survey_review')]" position="attributes">
+            <attribute name="t-att-class">'o_survey_review btn btn-secondary btn-lg' + (' d-none' if survey.certification_type_id else '')</attribute>
+        </xpath>
     </template>
 
     <!-- Show the question's comment message as a fixed recommendation
