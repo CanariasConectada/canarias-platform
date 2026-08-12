@@ -16,21 +16,25 @@ msgstr ""
 
 #. module: company_certification
 #: model:ir.model.fields.selection,name:company_certification.selection__certification_type__level__none
+#: model:ir.model.fields.selection,name:company_certification.selection__res_company_certification__level__none
 msgid "No seal"
 msgstr "Sin sello"
 
 #. module: company_certification
 #: model:ir.model.fields.selection,name:company_certification.selection__certification_type__level__bronze
+#: model:ir.model.fields.selection,name:company_certification.selection__res_company_certification__level__bronze
 msgid "Bronze"
 msgstr "Bronce"
 
 #. module: company_certification
 #: model:ir.model.fields.selection,name:company_certification.selection__certification_type__level__silver
+#: model:ir.model.fields.selection,name:company_certification.selection__res_company_certification__level__silver
 msgid "Silver"
 msgstr "Plata"
 
 #. module: company_certification
 #: model:ir.model.fields.selection,name:company_certification.selection__certification_type__level__gold
+#: model:ir.model.fields.selection,name:company_certification.selection__res_company_certification__level__gold
 msgid "Gold"
 msgstr "Oro"
 
