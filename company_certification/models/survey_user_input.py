@@ -162,6 +162,15 @@ class SurveyUserInput(models.Model):
         res = super()._mark_done()
         self.env.flush_all()
         self._refresh_company_certification()
+        # The seal on the completion page reads the COMPUTED fields below.
+        # ``super()._mark_done()`` finalises the scoring they depend on, but
+        # their cached value may have been computed earlier (score 0 -> level
+        # 'none' -> blank seal). Invalidate so the template that renders right
+        # after recomputes from the final score — without this the result
+        # showed blank until the visitor reloaded the page.
+        self.invalidate_recordset(
+            ["certification_level", "expiry_date", "next_attempt_date"]
+        )
         for user_input in self.filtered(
             lambda ui: ui.certification_type_id
             and not ui.test_entry
