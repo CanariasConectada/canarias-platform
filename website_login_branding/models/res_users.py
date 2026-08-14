@@ -54,6 +54,35 @@ class ResUsers(models.Model):
         "garbage-collected once idle. Never set this by hand.",
     )
 
+    def _notify_security_setting_update(self, subject, content, **kwargs):
+        """Never warn a guest that their password changed.
+
+        Core sends this whenever ``password`` is in the vals of a
+        ``res.users.write`` (``mail/models/res_users.py:234-238``), and
+        ``/guest/enter`` rotates a throwaway password on EVERY entry, not only
+        at creation. So each anonymous visit was queueing a "Security Update:
+        Password Changed" email addressed to
+        ``guest_xxx@guests.canariasconectada.es``.
+
+        The non-routable domain above already guaranteed no stray notification
+        could reach a real inbox, and that still holds; what it could not stop
+        was the attempt. Ten of them were sitting in the queue in ``exception``
+        state on 2026-08-14 with a single-digit guest population, so at cutover
+        volume this is a steady stream of undeliverable mail leaving the
+        platform's own SMTP account — bounces to a domain with no MX, charged
+        against the sender reputation of every real email the platform sends.
+
+        Only the notification is dropped, and only for guests. The password is
+        still rotated, the account is still written, and a real user's account
+        still gets every warning core sends.
+        """
+        recipients = self.filtered(lambda user: not user.is_platform_guest)
+        if not recipients:
+            return
+        return super(ResUsers, recipients)._notify_security_setting_update(
+            subject, content, **kwargs
+        )
+
     # ------------------------------------------------------------------
     # Guest lifecycle
     # ------------------------------------------------------------------

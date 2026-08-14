@@ -125,3 +125,45 @@ class TestGuestModel(TransactionCase):
         removed = self.env["res.users"]._gc_platform_guests()
         self.assertGreaterEqual(removed, 1)
         self.assertFalse(guest.exists(), "stale guest was not purged")
+
+    # ------------------------------------------------------------------
+    # Undeliverable mail
+    # ------------------------------------------------------------------
+
+    def test_rotating_a_guest_password_queues_no_mail(self):
+        """The guest domain is non-routable, so the warning can only bounce.
+
+        `/guest/enter` rotates the password on every visit, so without this
+        every anonymous arrival queued a "Security Update: Password Changed"
+        addressed to a domain with no MX -- charged against the sender
+        reputation of every real email the platform sends.
+        """
+        guest = self.env["res.users"]._create_platform_guest()
+        before = self.env["mail.mail"].sudo().search_count([])
+
+        guest.sudo().write({"password": "rotado-por-el-test"})
+
+        self.assertEqual(
+            self.env["mail.mail"].sudo().search_count([]),
+            before,
+            "a guest password rotation must not queue mail",
+        )
+
+    def test_a_real_user_is_still_warned(self):
+        """Only guests are silenced. Everybody else keeps core's warning."""
+        user = self.env["res.users"].create(
+            {
+                "name": "Cliente de verdad",
+                "login": "cliente_de_verdad",
+                "email": "cliente@example.com",
+            }
+        )
+        before = self.env["mail.mail"].sudo().search_count([])
+
+        user.write({"password": "una-contrasena-nueva"})
+
+        self.assertGreater(
+            self.env["mail.mail"].sudo().search_count([]),
+            before,
+            "a real account must still be told its password changed",
+        )

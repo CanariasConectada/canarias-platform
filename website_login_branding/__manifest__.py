@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Website Login Branding",
-    "version": "19.0.2.0.0",
+    "version": "19.0.2.1.0",
     "category": "Website",
     "summary": "Branded login card + anonymous portal guest access with Discuss & push",
     "description": """
