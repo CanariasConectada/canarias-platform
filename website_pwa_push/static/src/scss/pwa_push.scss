@@ -1,0 +1,10 @@
+// Copyright 2026 Canarias Conectada
+// License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+.o_pwa_push_card {
+    // Same neutral treatment as website_pwa's install card: these two blocks
+    // usually sit on the same page, and a palette of our own would make them
+    // look like they came from different sites.
+    background-color: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}

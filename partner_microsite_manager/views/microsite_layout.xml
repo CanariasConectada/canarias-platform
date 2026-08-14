@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- Corporate microsite footer.
+
+         Replaces the standard Odoo footer with a black corporate footer
+         (social links, trade name, legal links and certification badges)
+         ONLY on websites flagged as microsite-themed. Every other website
+         (directory, main website) keeps the original footer via ``$0``. -->
+    <template
+        id="microsite_corporate_footer"
+        inherit_id="website.layout"
+        name="Microsite Corporate Footer"
+        priority="100"
+    >
+        <xpath expr="//div[@id='footer']" position="replace">
+            <t t-if="website.is_microsite_themed">
+                <t t-set="pmm_company" t-value="website.company_id.sudo()"/>
+                <t t-set="pmm_certs" t-value="website._pmm_footer_certifications()"/>
+                <div
+                    id="footer"
+                    class="oe_structure oe_structure_solo text-break o_pmm_footer"
+                    t-ignore="true"
+                    t-if="not no_footer"
+                >
+                    <footer class="bg-black text-light py-4">
+                        <div class="container">
+                            <!-- Social networks -->
+                            <div class="row justify-content-center mb-3">
+                                <div class="col-auto d-flex gap-3 align-items-center">
+                                    <a
+                                        t-if="website.social_facebook"
+                                        t-att-href="website.social_facebook"
+                                        target="_blank"
+                                        class="link-light"
+                                        title="Facebook"
+                                        aria-label="Facebook"
+                                    >
+                                        <i class="fa fa-facebook fa-lg"/>
+                                    </a>
+                                    <a
+                                        t-if="website.social_instagram"
+                                        t-att-href="website.social_instagram"
+                                        target="_blank"
+                                        class="link-light"
+                                        title="Instagram"
+                                        aria-label="Instagram"
+                                    >
+                                        <i class="fa fa-instagram fa-lg"/>
+                                    </a>
+                                    <a
+                                        t-if="website.social_twitter"
+                                        t-att-href="website.social_twitter"
+                                        target="_blank"
+                                        class="link-light"
+                                        title="X/Twitter"
+                                        aria-label="X/Twitter"
+                                    >
+                                        <i class="fa fa-twitter fa-lg"/>
+                                    </a>
+                                    <a
+                                        t-if="website.social_youtube"
+                                        t-att-href="website.social_youtube"
+                                        target="_blank"
+                                        class="link-light"
+                                        title="YouTube"
+                                        aria-label="YouTube"
+                                    >
+                                        <i class="fa fa-youtube-play fa-lg"/>
+                                    </a>
+                                    <a
+                                        t-if="website.social_linkedin"
+                                        t-att-href="website.social_linkedin"
+                                        target="_blank"
+                                        class="link-light"
+                                        title="LinkedIn"
+                                        aria-label="LinkedIn"
+                                    >
+                                        <i class="fa fa-linkedin fa-lg"/>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Trade name, copyright and legal links -->
+                            <div class="row justify-content-center text-center mb-3">
+                                <div class="col-lg-10">
+                                    <h6 class="fw-bold mb-2">
+                                        <t
+                                            t-esc="pmm_company.microsite_name or pmm_company.name"
+                                        />
+                                    </h6>
+                                    <!-- Production format: "© <year> Todos los
+                                         derechos reservados" — the brand is
+                                         already the heading above; repeating
+                                         the legal name here doubled it. -->
+                                    <p class="mb-2">
+                                        © <t t-esc="datetime.datetime.now().year"/>
+                                        Todos los derechos reservados
+                                    </p>
+                                    <p class="small mb-3">
+                                        <i class="fa fa-shield me-1"/>
+                                        <a
+                                            href="/politica-privacidad"
+                                            class="link-light text-decoration-none"
+                                        >Política de privacidad</a>
+                                        <span class="mx-2">·</span>
+                                        <a
+                                            href="/terminos-condiciones"
+                                            class="link-light text-decoration-none"
+                                        >Términos y condiciones</a>
+                                        <span class="mx-2">·</span>
+                                        <a
+                                            href="/politica-cookies"
+                                            class="link-light text-decoration-none"
+                                        >Política de Cookies</a>
+                                    </p>
+
+                                    <!-- Certification badges (company_certification) -->
+                                    <div
+                                        t-if="pmm_certs"
+                                        class="d-flex justify-content-center gap-2 flex-wrap mt-2"
+                                    >
+                                        <span
+                                            t-foreach="pmm_certs"
+                                            t-as="badge"
+                                            class="badge rounded-pill px-3 py-2"
+                                            t-attf-style="background-color: {{ badge['color'] }}; color: #212529;"
+                                        >
+                                            <i class="fa fa-certificate me-1"/>
+                                            <t t-esc="badge['name']"/>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </footer>
+                </div>
+            </t>
+            <t t-else="">$0</t>
+        </xpath>
+    </template>
+
+</odoo>

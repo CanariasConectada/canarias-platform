@@ -18,7 +18,7 @@ action = model.action_start_new_sustainability_evaluation()
         <field name="res_model">survey.user_input</field>
         <field name="view_mode">list,form</field>
         <field name="domain">[('survey_id.is_sustainability', '=', True), ('test_entry', '=', False)]</field>
-        <field name="context">{'is_sustainability': True, 'search_default_group_by_survey': 1}</field>
+        <field name="context">{'is_sustainability': True, 'certification_display': True, 'search_default_group_by_survey': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Bienvenido a Sostenibilidad
@@ -41,17 +41,39 @@ action = model.action_start_new_sustainability_evaluation()
     </record>
 
     <!-- Menú principal -->
+    <!-- Cuelga de Certificaciones, igual que Silver Economy: un contenedor
+         para los dos sellos en vez de dos iconos sueltos en aplicaciones. -->
     <menuitem id="menu_sustainability_root"
               name="Sostenibilidad"
-              web_icon="sustainability,static/description/icon.png"
-              groups="base.group_user"
+              parent="company_certification.menu_certification_root"
+              groups="sustainability.group_sustainability_user"
               sequence="50"/>
 
-    <menuitem id="menu_sust_evaluations"
-              name="Mis Evaluaciones"
-              parent="menu_sustainability_root"
-              action="action_sust_evaluations"
-              sequence="10"/>
+    <!-- Ver la nota equivalente en silver_economy: el contenedor se carga
+         antes y la concesión del grupo tiene que subir desde aquí. -->
+    <record id="company_certification.menu_certification_root" model="ir.ui.menu">
+        <field name="group_ids" eval="[(4, ref('sustainability.group_sustainability_user'))]"/>
+    </record>
+
+    <!-- Ver la nota equivalente en silver_economy: tener el sello aquí es
+         tenerlo también para el motor, que es quien decide con su regla qué
+         evaluaciones puede leer cada uno. Sin este enlace los dos nombres del
+         mismo sello nunca se encontraban y la lista sólo podía ir sello a
+         sello. -->
+    <record id="group_sustainability_user" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('company_certification.group_sustainability_user'))]"/>
+    </record>
+    <record id="group_sustainability_manager" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('company_certification.group_sustainability_manager'))]"/>
+    </record>
+
+    <!-- "Mis Evaluaciones" se retiró: Certificaciones > Evaluaciones es ahora
+         la lista única de todos los sellos, agrupada por sello, igual que
+         Contenido local muestra memoria viva y lugares de interés juntos.
+         Quitar el menuitem de este archivo es lo que lo borra de la base.
+
+         `action_sust_evaluations` SE QUEDA: los correos de recordatorio
+         enlazan a ella y el controlador redirige ahí al terminar. -->
 
     <menuitem id="menu_sust_surveys"
               name="Cuestionarios"
@@ -133,39 +155,9 @@ action = model.action_start_new_sustainability_evaluation()
         </xpath>
     </template>
 
-    <!-- Herencia de la template de finalización de survey para mostrar sello Silver -->
-    <template id="survey_fill_form_done_inherit_silver" inherit_id="survey.survey_fill_form_done">
-        <xpath expr="//div[@class='o_survey_finished mt32 mb32']" position="inside">
-            <t t-if="survey.is_sustainability and answer.certification_level != 'none'">
-                <div class="alert alert-success mt-3 text-center">
-                    <h3 class="mb-3">🎉 ¡Felicidades! Tu empresa ha obtenido el sello Sostenibilidad</h3>
-                    <div class="d-flex justify-content-center align-items-center gap-3">
-                        <div t-if="answer.certification_level == 'bronze'" class="badge bg-warning text-dark p-3 fs-4">🥉 BRONCE</div>
-                        <div t-if="answer.certification_level == 'silver'" class="badge bg-secondary p-3 fs-4">🥈 PLATA</div>
-                        <div t-if="answer.certification_level == 'gold'" class="badge bg-warning p-3 fs-4">🥇 ORO</div>
-                    </div>
-                    <p class="mt-3">
-                        Puntuación: <strong t-esc="answer.scoring_total"/> / <t t-esc="survey.sustain_max_score or 80"/> puntos
-                        (<t t-esc="answer.scoring_percentage"/>%)
-                    </p>
-                    <p class="text-muted">
-                        El sello es válido hasta: <strong t-esc="answer.expiry_date"/>
-                    </p>
-                </div>
-            </t>
-            <t t-if="survey.is_sustainability and answer.certification_level == 'none'">
-                <div class="alert alert-info mt-3 text-center">
-                    <h4>Resultado de la evaluación</h4>
-                    <p>
-                        Puntuación: <strong t-esc="answer.scoring_total"/> / <t t-esc="survey.sustain_max_score or 80"/> puntos
-                        (<t t-esc="answer.scoring_percentage"/>%)
-                    </p>
-                    <p>En esta ocasión no has alcanzado el nivel mínimo para obtener el sello Sostenibilidad.</p>
-                    <p class="text-muted">Podrás volver a intentarlo a partir del: <strong t-esc="answer.next_attempt_date"/></p>
-                </div>
-            </t>
-        </xpath>
-    </template>
+    <!-- El sello Sostenibilidad ahora lo renderiza company_certification (base),
+         una sola vez y en español, keyed por certification_type_id. Este módulo
+         ya no duplica el panel. -->
 
     <!-- ============================================ -->
     <!-- F: Recomendaciones visibles en impresión web -->
@@ -292,15 +284,5 @@ action = model.action_start_new_sustainability_evaluation()
         </xpath>
     </template>
 
-    <!-- ============================================ -->
-<!-- F: Botón Salir/Cerrar en página de finalización -->
-    <template id="survey_fill_form_done_sust_close" inherit_id="survey.survey_fill_form_done">
-        <xpath expr="//div[contains(@class, 'o_survey_finished')]//div[contains(@class, 'd-flex') and contains(@class, 'gap-3')]" position="inside">
-            <t t-if="survey.is_sustainability and not survey.is_silver_economy">
-                <a role="button" class="btn btn-outline-secondary btn-lg" href="javascript:window.close()">
-                    <i class="fa fa-times"/> Cerrar
-                </a>
-            </t>
-        </xpath>
-    </template>
+    <!-- El botón «Cerrar» lo pone company_certification (base), una sola vez. -->
 </odoo>

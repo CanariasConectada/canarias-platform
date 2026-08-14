@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="login_layout_branding" inherit_id="website.login_layout" name="Login Branding Logos">
+        <!--
+            Wrap the whole auth experience in ONE branded card instead of the
+            old stack of floating divs. The div carrying t-out="0" (the actual
+            login / signup / reset form) is re-emitted verbatim inside the card,
+            keeping its `oe_website_login_container` class so the QWeb slot still
+            resolves and any sibling inheritance that targets it keeps working.
+        -->
+        <xpath expr="//div[hasclass('oe_website_login_container')]" position="replace">
+            <div class="o_cc_login_wrap d-flex justify-content-center">
+                <div class="o_cc_login_card card border-0 shadow-sm">
+                    <div class="card-body p-4 p-sm-5">
+
+                        <!-- Brand mark, top of the card. -->
+                        <div class="o_cc_login_brand text-center mb-4">
+                            <img src="/website_login_branding/static/src/img/canarias_conectada_logo.webp"
+                                 alt="Canarias Conectada"
+                                 class="o_cc_login_brand_logo img-fluid"/>
+                        </div>
+
+                        <!-- The core auth form. Its primary "Iniciar sesión"
+                             button is styled up (via login.scss) to be the
+                             clear focal point of the card. -->
+                        <div class="oe_website_login_container o_cc_login_form" t-out="0"/>
+
+                        <!--
+                            Guest access. THE PRODUCT DECISION CHANGED: this used
+                            to be an anonymous <a href="/"> that logged nobody in
+                            (the visitor stayed public). It now points at the
+                            /guest/enter controller, which logs the visitor into
+                            a lightweight ANONYMOUS PORTAL user so they get a
+                            Discuss inbox and can receive web-push notifications
+                            (both are tied to res.users). The controller reuses a
+                            signed cookie, so repeat clicks never spawn new
+                            accounts. keep_query('redirect') forwards the same
+                            ?redirect target the login form was going to honour.
+
+                            Visually it is a SECONDARY / ghost action, set apart
+                            by a labelled divider, never a second loud button
+                            competing with "Iniciar sesión".
+                        -->
+                        <div class="o_cc_login_guest">
+                            <div class="o_cc_divider" role="separator">
+                                <span class="o_cc_divider_label">o continúa como invitado</span>
+                            </div>
+                            <form action="/guest/enter" method="post" class="w-100">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <input type="hidden" name="redirect" t-att-value="request.params.get('redirect') or request.httprequest.args.get('redirect')"/>
+                                <button type="submit"
+                                        class="btn btn-outline-secondary w-100 o_cc_guest_btn">
+                                    <i class="fa fa-user-o me-2" role="img" aria-label="Invitado"/>Entrar como invitado
+                                </button>
+                            </form>
+                            <p class="o_cc_guest_hint text-muted small text-center mt-2 mb-0">
+                                Entra sin registrarte para explorar y participar en la comunidad.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Subvention strip (ZCA), foot of the card. -->
+                    <div class="o_cc_login_subvention text-center px-4 pb-4">
+                        <img src="/website_login_branding/static/src/img/zca_logo.webp"
+                             alt="Zonas Comerciales Abiertas"
+                             class="o_cc_login_subvention_logo img-fluid"/>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

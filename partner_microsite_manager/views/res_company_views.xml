@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="view_company_form_microsite" model="ir.ui.view">
+        <field name="name">res.company.form.microsite</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Microsite" name="microsite" invisible="not has_microsite">
+                    <group>
+                        <group string="Identity">
+                            <field name="has_microsite" invisible="1"/>
+                            <field name="microsite_name"/>
+                            <field name="microsite_button_text"/>
+                            <field name="microsite_hero_image" widget="image" class="oe_avatar"/>
+                        </group>
+                        <group string="Publication">
+                            <field name="website_id" readonly="1"/>
+                            <field name="microsite_homepage_page_id" readonly="1"/>
+                            <button
+                                name="action_publish_microsite_homepage"
+                                type="object"
+                                string="Publish Homepage"
+                                class="btn-primary"
+                                help="Replace the homepage of the company website with the dynamic microsite template."
+                                confirm="This replaces the current homepage of the company website with the microsite template. Continue?"
+                            />
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Practical Information">
+                            <field
+                                name="microsite_opening_hours"
+                                placeholder="e.g. L-V 10:00-13:30 / L-V 16:30-20:00 / S 10:00-14:00"
+                            />
+                            <field name="microsite_delivery_info"/>
+                            <field name="microsite_parking_info"/>
+                            <field name="microsite_map_url"/>
+                            <field name="microsite_phone"/>
+                            <field
+                                name="microsite_phone2"
+                                invisible="not microsite_phone"
+                            />
+                        </group>
+                        <group string="Banners">
+                            <field name="microsite_intro_title"/>
+                            <field name="microsite_intro_image" widget="image" class="oe_avatar"/>
+                            <field name="microsite_banner_title"/>
+                            <field name="microsite_banner_image" widget="image" class="oe_avatar"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="About">
+                            <field name="microsite_about_title"/>
+                            <field name="microsite_about_text"/>
+                        </group>
+                        <group string="Services">
+                            <field name="microsite_services_title"/>
+                            <field name="microsite_services_text"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

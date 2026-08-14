@@ -1,0 +1,30 @@
+/* Recommended-products carousel (a re-skin of website_sale.alternative_products).
+ *
+ * These declarations previously lived in an inline <style> block injected into
+ * the DOM (views/product_recommended.xml), which forced `!important` to beat the
+ * theme. As a proper web.assets_frontend asset they load after core, so plain
+ * specificity is enough and the `!important` flags are dropped. */
+
+:root {
+    /* Canarias Conectada brand primary ("morado"). Same value the platform
+     * already tokenises as --zca-primary (zca_platform) and --wscc-accent
+     * (website_sale_comparison_canarias); redefined locally so this module stays
+     * self-contained (it depends only on website + website_sale). Prefer those
+     * tokens when their modules are loaded, else fall back to the brand hex. */
+    --scc-brand-primary: var(--zca-primary, var(--wscc-accent, #714b67));
+}
+
+.o_wsale_alternative_products {
+    /* Neutral separator; --bs-border-color is Bootstrap's token (#dee2e6). */
+    border-top: 1px solid var(--bs-border-color, #dee2e6);
+}
+
+.o_wsale_alternative_products .shop-recommended-title {
+    color: var(--scc-brand-primary, #714b67);
+    font-weight: 700;
+}
+
+.o_wsale_alternative_products .lead {
+    font-size: 1rem;
+    color: var(--bs-secondary-color, #6c757d);
+}

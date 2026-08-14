@@ -1,0 +1,60 @@
+# Copyright 2026 Canarias Conectada
+# License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+"""La visibilidad de Sostenibilidad depende de ``group_sustainability_user``.
+
+Un usuario interno SIN el grupo (status "No" en su configuración) no debe ver el
+menú raíz ni acceder a las encuestas; uno CON el grupo sí.
+"""
+from odoo.exceptions import AccessError
+from odoo.tests import tagged
+from odoo.tests.common import TransactionCase, new_test_user
+
+
+@tagged("post_install", "-at_install")
+class TestMenuVisibility(TransactionCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.menu = cls.env.ref("sustainability.menu_sustainability_root")
+        # El cuestionario ya no es de este módulo: su dueño único es
+        # company_certification y aquí sólo se le pone la marca.
+        cls.survey = cls.env.ref("company_certification.survey_sustainability")
+        cls.group = cls.env.ref("sustainability.group_sustainability_user")
+        # Evita el envío/render del correo de bienvenida al crear el usuario.
+        no_mail_ctx = {
+            "no_reset_password": True,
+            "tracking_disable": True,
+            "mail_create_nosubscribe": True,
+        }
+        # Usuario interno "No": solo base.group_user, sin el grupo Sostenibilidad.
+        cls.user_without = new_test_user(
+            cls.env, login="sust_no", groups="base.group_user", context=no_mail_ctx
+        )
+        # Usuario interno "Usuario": con el grupo Sostenibilidad asignado.
+        cls.user_with = new_test_user(
+            cls.env,
+            login="sust_yes",
+            groups="base.group_user,sustainability.group_sustainability_user",
+            context=no_mail_ctx,
+        )
+
+    def _menu_visible_for(self, user):
+        # _visible_menu_ids() es la API que usa el web client para decidir qué
+        # menús ve el usuario (respeta group_ids y el acceso a la acción).
+        visible = self.env["ir.ui.menu"].with_user(user)._visible_menu_ids()
+        return self.menu.id in visible
+
+    def test_menu_hidden_without_group(self):
+        self.assertFalse(
+            self.user_without.has_group("sustainability.group_sustainability_user")
+        )
+        self.assertFalse(self._menu_visible_for(self.user_without))
+
+    def test_menu_visible_with_group(self):
+        self.assertTrue(self._menu_visible_for(self.user_with))
+
+    def test_survey_access_gated(self):
+        with self.assertRaises(AccessError):
+            self.survey.with_user(self.user_without).read(["title"])
+        # Con el grupo, la encuesta de Sostenibilidad es legible.
+        self.assertTrue(self.survey.with_user(self.user_with).read(["title"]))

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="local_content_category_view_list" model="ir.ui.view">
+        <field name="name">website.local.content.category.view.list</field>
+        <field name="model">website.local.content.category</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="type_id"/>
+                <field name="subcategory_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="local_content_category_view_form" model="ir.ui.view">
+        <field name="name">website.local.content.category.view.form</field>
+        <field name="model">website.local.content.category</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <group>
+                        <field name="name"/>
+                        <field name="type_id"/>
+                        <field name="sequence"/>
+                        <field name="active" invisible="1"/>
+                    </group>
+                    <field name="subcategory_ids">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="active" optional="hide"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="local_content_category_view_search" model="ir.ui.view">
+        <field name="name">website.local.content.category.view.search</field>
+        <field name="model">website.local.content.category</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="type_id"/>
+                <separator/>
+                    <filter name="group_by_type" string="Content Type" context="{'group_by': 'type_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="local_content_category_action" model="ir.actions.act_window">
+        <field name="name">Categories</field>
+        <field name="res_model">website.local.content.category</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_group_by_type': 1}</field>
+    </record>
+
+</odoo>

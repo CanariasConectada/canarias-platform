@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="demo_category_food_root" model="res.company.category">
+        <field name="name">Demo Comida</field>
+        <field name="type">view</field>
+    </record>
+    <record id="demo_category_bakery" model="res.company.category">
+        <field name="name">Demo Panadería</field>
+        <field name="type">normal</field>
+        <field name="parent_id" ref="demo_category_food_root"/>
+    </record>
+
+    <record id="demo_company_bakery" model="res.company">
+        <field name="name">Demo Panadería La Espiga</field>
+        <field name="category_id" ref="demo_category_bakery"/>
+    </record>
+
+</odoo>

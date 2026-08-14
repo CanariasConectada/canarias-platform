@@ -1,61 +1,44 @@
-// ========================================
-// Partner Reviews - Frontend Styles
-// Basado en memoria_viva, enfoque Bootstrap-first
-// ========================================
+// Copyright 2026 Canarias Conectada
+// License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-.partner-review-stars {
-    font-size: 2rem;
-    color: #ddd;
-    cursor: default;
-    display: inline-block;
+// Read-only stars
+.o_partner_reviews_stars {
+    .o_partner_reviews_star {
+        color: #d5d5d5;
+        font-size: 1.25rem;
 
-    .star {
-        cursor: pointer;
-        transition: color 0.2s;
-        display: inline-block;
-        padding: 0 2px;
-
-        &.active,
-        &:hover {
-            color: #ffc107;
+        &.filled {
+            color: #f5b301;
         }
     }
-
-    &[data-readonly="1"] .star {
-        cursor: default;
-    }
 }
 
-.partner-review-stars.interactive {
-    .star:hover ~ .star {
-        color: #ddd;
-    }
-}
+// Star input: radios rendered 5..1 and flipped with row-reverse, so the
+// "~" sibling selector highlights every star up to the hovered/checked one.
+// Pure CSS, no JavaScript needed.
+.o_partner_reviews_star_input {
+    display: inline-flex;
+    flex-direction: row-reverse;
 
-// Comentarios - estilo memoria_viva
-.comentario-item {
-    .comentario-avatar {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        object-fit: cover;
-    }
-
-    .comentario-avatar-sm {
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        object-fit: cover;
+    input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
     }
 
-    .respuesta-item {
-        margin-top: 0.75rem;
-        padding-top: 0.75rem;
+    label {
+        color: #d5d5d5;
+        cursor: pointer;
+        font-size: 2rem;
+        line-height: 1;
+        padding: 0 0.1rem;
+        transition: color 0.15s ease-in-out;
     }
-}
 
-// Formulario inline de respuesta
-.respuesta-form-inline {
-    margin-top: 0.75rem;
-    padding-top: 0.75rem;
+    input:checked ~ label,
+    label:hover,
+    label:hover ~ label {
+        color: #f5b301;
+    }
 }

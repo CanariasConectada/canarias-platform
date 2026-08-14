@@ -1,0 +1,116 @@
+# Copyright 2026 Canarias Conectada
+# License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+from odoo import _, fields, models
+
+
+class ResCompany(models.Model):
+    _inherit = "res.company"
+
+    certification_ids = fields.One2many(
+        "res.company.certification",
+        "company_id",
+        string="Certifications",
+    )
+    certification_evaluation_count = fields.Integer(
+        compute="_compute_certification_evaluation_count"
+    )
+
+    def _compute_certification_evaluation_count(self):
+        # Single grouped query instead of one search_count per company.
+        counts = dict(
+            self.env["survey.user_input"]._read_group(
+                domain=[
+                    ("certification_type_id", "!=", False),
+                    ("company_id", "in", self.ids),
+                    ("test_entry", "=", False),
+                ],
+                groupby=["company_id"],
+                aggregates=["__count"],
+            )
+        )
+        for company in self:
+            company.certification_evaluation_count = counts.get(company, 0)
+
+    def action_open_certification_evaluations(self):
+        self.ensure_one()
+        return {
+            "name": _("Certification Evaluations - %s", self.name),
+            "type": "ir.actions.act_window",
+            "res_model": "survey.user_input",
+            "view_mode": "list,form",
+            "domain": [
+                ("certification_type_id", "!=", False),
+                ("company_id", "=", self.id),
+                ("test_entry", "=", False),
+            ],
+            "context": {"create": False},
+        }
+
+    def _get_valid_certifications(self):
+        """Certification status records currently in force for the company.
+
+        Uses sudo because it is called from public website rendering.
+        """
+        self.ensure_one()
+        return self.sudo().certification_ids.filtered(lambda c: c._is_valid())
+
+    def _get_certification_amenities(self, cert_type):
+        """The icon list shown under a seal on the company microsite.
+
+        Prefers what THIS company actually scored well on, and falls back to
+        the vertical's curated highlights. The fallback is not cosmetic: a
+        seal imported from the previous platform has no evaluation behind it,
+        so the per-company list is empty for it and the microsite would show
+        a seal with no explanation at all.
+
+        Sudo: rendered in public website context.
+        """
+        self.ensure_one()
+        earned = self._get_certification_positive_items(cert_type)
+        if earned:
+            return earned
+        # Guarded rather than relying on the caller: the template only reaches
+        # here inside a loop over held seals, but the fallback is a list of
+        # public claims and must never be readable for a shop that has none.
+        if not self._get_valid_certifications().filtered(
+            lambda status: status.type_id == cert_type
+        ):
+            return []
+        return [
+            {
+                "label": highlight.label,
+                "description": highlight.description,
+                "icon": highlight.icon or "fa-check-circle",
+            }
+            for highlight in cert_type.sudo().highlight_ids
+        ]
+
+    def _get_certification_positive_items(self, cert_type):
+        """Positive highlights of the last awarding evaluation.
+
+        Returns a list of ``{'label': str, 'icon': str}`` dicts for the
+        microsite QWeb template. Sudo: rendered in public website context.
+        """
+        self.ensure_one()
+        status = self.sudo().certification_ids.filtered(
+            lambda c: c.type_id == cert_type and c._is_valid()
+        )
+        awarding = status.user_input_id
+        if not awarding or not awarding.survey_id.positive_item_ids:
+            return []
+        lines = awarding.user_input_line_ids
+        items = []
+        for item in awarding.survey_id.positive_item_ids.sorted("sequence"):
+            line = lines.filtered(lambda ln: ln.question_id == item.question_id)
+            if line and max(line.mapped("answer_score")) >= item.min_score:
+                items.append(
+                    {
+                        "label": item.label,
+                        # Same keys as the curated highlights so the template
+                        # renders one shape and never has to know which of
+                        # the two sources it is looping over.
+                        "description": None,
+                        "icon": item.icon or "fa-check-circle",
+                    }
+                )
+        return items

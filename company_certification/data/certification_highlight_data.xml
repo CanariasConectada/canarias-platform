@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!-- What each seal means, as an icon list on the certified microsite.
+
+         Wording follows the sections of each vertical's questionnaire so the
+         public claim and the thing actually evaluated stay the same: Silver
+         Economy scores accessibility, attention and product; Sostenibilidad
+         scores resources, social impact and governance.
+
+         noupdate: created on install, never overwritten afterwards. These are
+         editable content, and an administrator's rewording must survive the
+         next module update. -->
+    <data noupdate="1">
+
+        <!-- Heading above the icons, per vertical: "what this shop offers"
+             fits an accessibility seal, but a sustainability seal is about
+             how the shop operates, not what the visitor gets. -->
+        <record id="certification_type_silver" model="certification.type">
+            <field name="amenities_title">Lo que ofrece este comercio</field>
+        </record>
+        <record id="certification_type_sustainability" model="certification.type">
+            <field name="amenities_title">Sus prácticas sostenibles</field>
+        </record>
+
+        <!-- ============ Silver Economy ============ -->
+        <record id="highlight_silver_access" model="certification.highlight">
+            <field name="type_id" ref="certification_type_silver"/>
+            <field name="sequence">10</field>
+            <field name="icon">fa-wheelchair</field>
+            <field name="label">Acceso sin barreras</field>
+            <field name="description">Entrada y recorrido cómodos, sin escalones ni estrecheces.</field>
+        </record>
+        <record id="highlight_silver_seating" model="certification.highlight">
+            <field name="type_id" ref="certification_type_silver"/>
+            <field name="sequence">20</field>
+            <field name="icon">fa-bed</field>
+            <field name="label">Espacio para descansar</field>
+            <field name="description">Un sitio donde sentarse durante la visita.</field>
+        </record>
+        <record id="highlight_silver_signage" model="certification.highlight">
+            <field name="type_id" ref="certification_type_silver"/>
+            <field name="sequence">30</field>
+            <field name="icon">fa-lightbulb-o</field>
+            <field name="label">Señalización e iluminación claras</field>
+            <field name="description">Se ve bien y se encuentra todo sin preguntar.</field>
+        </record>
+        <record id="highlight_silver_pace" model="certification.highlight">
+            <field name="type_id" ref="certification_type_silver"/>
+            <field name="sequence">40</field>
+            <field name="icon">fa-clock-o</field>
+            <field name="label">Atención sin prisas</field>
+            <field name="description">El ritmo lo marca el cliente.</field>
+        </record>
+        <record id="highlight_silver_language" model="certification.highlight">
+            <field name="type_id" ref="certification_type_silver"/>
+            <field name="sequence">50</field>
+            <field name="icon">fa-comments-o</field>
+            <field name="label">Lenguaje claro y sencillo</field>
+            <field name="description">Sin tecnicismos innecesarios.</field>
+        </record>
+        <record id="highlight_silver_support" model="certification.highlight">
+            <field name="type_id" ref="certification_type_silver"/>
+            <field name="sequence">60</field>
+            <field name="icon">fa-life-ring</field>
+            <field name="label">Acompañamiento en la compra</field>
+            <field name="description">Ayuda cuando el proceso se complica.</field>
+        </record>
+        <record id="highlight_silver_phone" model="certification.highlight">
+            <field name="type_id" ref="certification_type_silver"/>
+            <field name="sequence">70</field>
+            <field name="icon">fa-phone</field>
+            <field name="label">Atención telefónica cercana</field>
+            <field name="description">Se puede resolver todo por teléfono.</field>
+        </record>
+        <record id="highlight_silver_web" model="certification.highlight">
+            <field name="type_id" ref="certification_type_silver"/>
+            <field name="sequence">80</field>
+            <field name="icon">fa-low-vision</field>
+            <field name="label">Web fácil de leer</field>
+            <field name="description">Texto grande y buen contraste.</field>
+        </record>
+
+        <!-- ============ Sostenibilidad ============ -->
+        <record id="highlight_sustainability_energy" model="certification.highlight">
+            <field name="type_id" ref="certification_type_sustainability"/>
+            <field name="sequence">10</field>
+            <field name="icon">fa-bolt</field>
+            <field name="label">Eficiencia energética</field>
+            <field name="description">Mide y reduce su consumo de energía.</field>
+        </record>
+        <record id="highlight_sustainability_renewable" model="certification.highlight">
+            <field name="type_id" ref="certification_type_sustainability"/>
+            <field name="sequence">20</field>
+            <field name="icon">fa-sun-o</field>
+            <field name="label">Energías renovables</field>
+            <field name="description">Parte de su energía es de origen renovable.</field>
+        </record>
+        <record id="highlight_sustainability_waste" model="certification.highlight">
+            <field name="type_id" ref="certification_type_sustainability"/>
+            <field name="sequence">30</field>
+            <field name="icon">fa-recycle</field>
+            <field name="label">Gestión de residuos</field>
+            <field name="description">Separa y trata correctamente lo que desecha.</field>
+        </record>
+        <record id="highlight_sustainability_water" model="certification.highlight">
+            <field name="type_id" ref="certification_type_sustainability"/>
+            <field name="sequence">40</field>
+            <field name="icon">fa-tint</field>
+            <field name="label">Ahorro de agua</field>
+            <field name="description">Controla el consumo y aplica medidas de ahorro.</field>
+        </record>
+        <record id="highlight_sustainability_waste_food" model="certification.highlight">
+            <field name="type_id" ref="certification_type_sustainability"/>
+            <field name="sequence">50</field>
+            <field name="icon">fa-leaf</field>
+            <field name="label">Menos desperdicio</field>
+            <field name="description">Consumo responsable de materiales.</field>
+        </record>
+        <record id="highlight_sustainability_suppliers" model="certification.highlight">
+            <field name="type_id" ref="certification_type_sustainability"/>
+            <field name="sequence">60</field>
+            <field name="icon">fa-truck</field>
+            <field name="label">Proveedores responsables</field>
+            <field name="description">Elige a quién compra con criterios sostenibles.</field>
+        </record>
+        <record id="highlight_sustainability_labour" model="certification.highlight">
+            <field name="type_id" ref="certification_type_sustainability"/>
+            <field name="sequence">70</field>
+            <field name="icon">fa-users</field>
+            <field name="label">Condiciones laborales justas</field>
+            <field name="description">Empleo estable y bienestar del equipo.</field>
+        </record>
+        <record id="highlight_sustainability_equality" model="certification.highlight">
+            <field name="type_id" ref="certification_type_sustainability"/>
+            <field name="sequence">80</field>
+            <field name="icon">fa-balance-scale</field>
+            <field name="label">Igualdad de oportunidades</field>
+            <field name="description">Mismas condiciones para todo el equipo.</field>
+        </record>
+        <record id="highlight_sustainability_training" model="certification.highlight">
+            <field name="type_id" ref="certification_type_sustainability"/>
+            <field name="sequence">90</field>
+            <field name="icon">fa-graduation-cap</field>
+            <field name="label">Formación del equipo</field>
+            <field name="description">El personal se forma de manera continua.</field>
+        </record>
+        <record id="highlight_sustainability_governance" model="certification.highlight">
+            <field name="type_id" ref="certification_type_sustainability"/>
+            <field name="sequence">100</field>
+            <field name="icon">fa-shield</field>
+            <field name="label">Gobernanza y ética</field>
+            <field name="description">Política ambiental integrada en sus decisiones.</field>
+        </record>
+
+    </data>
+</odoo>

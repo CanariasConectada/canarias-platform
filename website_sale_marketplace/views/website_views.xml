@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <record id="view_website_form_marketplace" model="ir.ui.view">
+        <field name="name">website.form.marketplace</field>
+        <field name="model">website</field>
+        <field name="inherit_id" ref="website.view_website_form" />
+        <field name="arch" type="xml">
+            <field name="domain" position="after">
+                <field name="is_marketplace" />
+                <field name="marketplace_zone" invisible="not is_marketplace" />
+            </field>
+        </field>
+    </record>
+</odoo>

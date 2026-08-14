@@ -1,0 +1,9 @@
+// Copyright 2026 Canarias Conectada
+// License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+.o_pwa_install_card {
+    // Deliberately neutral: the card inherits the microsite's own theme
+    // rather than imposing a palette on 218 different sites.
+    background-color: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}

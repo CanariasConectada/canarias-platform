@@ -1,10 +1,8 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_sust_survey_user,sustainability.survey.user,model_survey_survey,sustainability.group_sustainability_user,1,0,0,0
+access_sust_user_input_user,sustainability.user_input.user,model_survey_user_input,sustainability.group_sustainability_user,1,0,1,0
+access_sust_question_user,sustainability.question.user,survey.model_survey_question,sustainability.group_sustainability_user,1,0,0,0
+access_sust_question_answer_user,sustainability.question_answer.user,survey.model_survey_question_answer,sustainability.group_sustainability_user,1,0,0,0
+access_sust_user_input_line_user,sustainability.user_input_line.user,survey.model_survey_user_input_line,sustainability.group_sustainability_user,1,0,1,0
 access_sust_survey_manager,sustainability.survey.manager,model_survey_survey,sustainability.group_sustainability_manager,1,1,1,1
-access_sust_user_input_user,sustainability.user_input.user,model_survey_user_input,sustainability.group_sustainability_user,1,0,0,0
 access_sust_user_input_manager,sustainability.user_input.manager,model_survey_user_input,sustainability.group_sustainability_manager,1,1,1,1
-access_sust_internal_survey,sustainability.internal.survey,model_survey_survey,base.group_user,1,0,0,0
-access_sust_internal_user_input,sustainability.internal.user_input,model_survey_user_input,base.group_user,1,0,1,0
-access_sust_internal_question,sustainability.internal.question,survey.model_survey_question,base.group_user,1,0,0,0
-access_sust_internal_question_answer,sustainability.internal.question_answer,survey.model_survey_question_answer,base.group_user,1,0,0,0
-access_sust_internal_user_input_line,sustainability.internal.user_input_line,survey.model_survey_user_input_line,base.group_user,1,0,1,0

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <data noupdate="0">
+        <record id="res_groups_privilege_certification" model="res.groups.privilege">
+            <field name="name">Company Certification</field>
+            <field name="sequence">25</field>
+            <field name="category_id" ref="base.module_category_marketing"/>
+        </record>
+
+        <!-- Base group shared by every vertical: carries the ACLs. It is
+             never assigned directly; each vertical's user group implies it.
+             Plain internal users are NOT in it: they see nothing. -->
+        <record id="group_certification_user" model="res.groups">
+            <field name="name">Certification User (base)</field>
+            <field name="sequence">10</field>
+            <field name="privilege_id" ref="res_groups_privilege_certification"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <record id="group_certification_manager" model="res.groups">
+            <field name="name">Certification Manager</field>
+            <field name="sequence">20</field>
+            <field name="privilege_id" ref="res_groups_privilege_certification"/>
+            <field name="implied_ids" eval="[(4, ref('group_certification_user')), (4, ref('survey.group_survey_user'))]"/>
+            <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+    </data>
+
+    <data noupdate="1">
+        <!-- Users only see real evaluations of their own companies, and only
+             for the verticals whose user group they belong to. -->
+        <record id="survey_user_input_rule_certification_user" model="ir.rule">
+            <field name="name">Certification: user sees own companies' evaluations of own verticals</field>
+            <field name="model_id" ref="survey.model_survey_user_input"/>
+            <field name="domain_force">[
+                ('certification_type_id', '!=', False),
+                ('certification_type_id.group_user_id', 'in', user.all_group_ids.ids),
+                ('company_id', 'in', user.company_ids.ids),
+                ('test_entry', '=', False),
+            ]</field>
+            <field name="groups" eval="[(4, ref('group_certification_user'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <!-- The answer lines carry the same confidential payload as the
+             evaluation they belong to, so they need the same scope. Two
+             things make this rule load-bearing rather than belt-and-braces:
+             survey.user_input.line has NO company_id column, so the scope
+             has to be traversed through the parent; and group_certification_user
+             implies neither survey group, so without a rule of its own the
+             model is matched by NO rule at all for these users, which in
+             Odoo means no domain, i.e. every company's answers readable. -->
+        <record id="survey_user_input_line_rule_certification_user" model="ir.rule">
+            <field name="name">Certification: user sees own companies' answer lines</field>
+            <field name="model_id" ref="survey.model_survey_user_input_line"/>
+            <field name="domain_force">[
+                ('user_input_id.certification_type_id', '!=', False),
+                ('user_input_id.certification_type_id.group_user_id', 'in', user.all_group_ids.ids),
+                ('user_input_id.company_id', 'in', user.company_ids.ids),
+                ('user_input_id.test_entry', '=', False),
+            ]</field>
+            <field name="groups" eval="[(4, ref('group_certification_user'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <!-- Vertical managers see every evaluation of the verticals they
+             manage; the generic manager group sees them all.
+
+             DESIGN DECISION (multi-tenant audit, 2026-07): this rule is
+             INTENTIONALLY not scoped by company. A vertical "manager" is a
+             platform/program operator that runs a certification program
+             (e.g. Silver Economy) across every participating company, so it
+             must read/award/override evaluations of companies it does not
+             belong to. Adding ('company_id','in',user.company_ids.ids) here
+             would break that documented role (see group_manager_id help and
+             test_manager_sees_all_evaluations_of_managed_vertical). Cross-
+             company visibility is a consequence of granting the manager
+             group, not a self-service escalation: the unauthenticated/plain
+             path is closed by the group check in
+             survey.user_input._start_certification_evaluation. If a future
+             requirement needs per-company managers, split this into a
+             company-scoped manager rule plus an unscoped rule limited to
+             base.group_system, and revisit the group_manager_id semantics. -->
+        <record id="survey_user_input_rule_certification_manager" model="ir.rule">
+            <field name="name">Certification: manager sees managed verticals' evaluations</field>
+            <field name="model_id" ref="survey.model_survey_user_input"/>
+            <field name="domain_force">[
+                ('certification_type_id', '!=', False),
+                '|',
+                ('certification_type_id.group_manager_id', 'in', user.all_group_ids.ids),
+                ('certification_type_id.group_manager_id', '=', False),
+            ]</field>
+            <field name="groups" eval="[(4, ref('group_certification_manager'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="1"/>
+        </record>
+
+        <!-- Users only read the active questionnaires of their verticals. -->
+        <record id="survey_survey_rule_certification_user" model="ir.rule">
+            <field name="name">Certification: user reads own verticals' questionnaires</field>
+            <field name="model_id" ref="survey.model_survey_survey"/>
+            <field name="domain_force">[
+                ('certification_type_id', '!=', False),
+                ('certification_type_id.group_user_id', 'in', user.all_group_ids.ids),
+                ('active', '=', True),
+            ]</field>
+            <field name="groups" eval="[(4, ref('group_certification_user'))]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="0"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+    </data>
+</odoo>

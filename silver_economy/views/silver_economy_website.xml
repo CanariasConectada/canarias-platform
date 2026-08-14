@@ -34,30 +34,48 @@
         </t>
     </template>
 
-    <!-- Grid View (carga inicial) -->
-    <template id="directory_grid_badge_silver" inherit_id="website_directory.directory_index">
-        <xpath expr="//div[@class='card h-100 border-0 shadow-sm directory-card position-relative']//h5[@class='card-title mb-1 fs-6']" position="after">
+    <!--
+        website_directory refactored the card/list markup out of
+        directory_index / directory_search_results into shared sub-templates
+        (directory_entry_card, directory_entry_list_item), t-called by both the
+        initial page and the AJAX partial. XPath view inheritance only sees the
+        inherited template's own arch (not t-called sub-templates), so we must
+        inherit the sub-templates directly. Inheriting each once also covers
+        both the initial and AJAX render, so the previous four inherits collapse
+        into two (avoiding duplicate badges). Selectors use hasclass() instead
+        of literal @class strings for robustness against Bootstrap class churn.
+    -->
+
+    <!--
+        RETIRED IN FAVOUR OF company_certification
+        ==========================================
+        website_directory_company_certification draws the badge of every seal
+        a shop holds from res.company.certification, this one from the legacy
+        silver_* columns on res.company. Both were active, so a shop holding
+        the seal in both places got two badges on the same card.
+
+        Kept as inactive records rather than deleted: the survey flow still
+        writes the legacy columns, so reactivating these is the rollback if
+        the certification data turns out to be incomplete at cutover. They go
+        away with the module.
+
+        active="False" on the root node only applies on INSTALL: convert.py
+        deliberately drops it when updating, so a user's activation choice
+        survives an upgrade. Databases where these are already active are
+        therefore switched off by fix f34 in canarias-migracion-script, not
+        by this file.
+    -->
+
+    <!-- Grid card (initial + AJAX render) -->
+    <template id="directory_grid_badge_silver" inherit_id="website_directory.directory_entry_card" active="False">
+        <xpath expr="//h5[hasclass('card-title')]" position="after">
             <t t-call="silver_economy.directory_silver_badge"/>
         </xpath>
     </template>
 
-    <!-- List View (carga inicial) -->
-    <template id="directory_list_badge_silver" inherit_id="website_directory.directory_index">
-        <xpath expr="//div[@class='list-group-item d-flex align-items-center gap-3 py-3']//h5[@class='mb-0 fs-6']" position="after">
-            <t t-call="silver_economy.directory_silver_badge"/>
-        </xpath>
-    </template>
-
-    <!-- Grid View (AJAX) -->
-    <template id="directory_search_grid_badge_silver" inherit_id="website_directory.directory_search_results">
-        <xpath expr="//div[@class='card h-100 border-0 shadow-sm directory-card position-relative']//h5[@class='card-title mb-1 fs-6']" position="after">
-            <t t-call="silver_economy.directory_silver_badge"/>
-        </xpath>
-    </template>
-
-    <!-- List View (AJAX) -->
-    <template id="directory_search_list_badge_silver" inherit_id="website_directory.directory_search_results">
-        <xpath expr="//div[@class='list-group-item d-flex align-items-center gap-3 py-3']//h5[@class='mb-0 fs-6']" position="after">
+    <!-- List row (initial + AJAX render) -->
+    <template id="directory_list_badge_silver" inherit_id="website_directory.directory_entry_list_item" active="False">
+        <xpath expr="//h5[hasclass('fs-6')]" position="after">
             <t t-call="silver_economy.directory_silver_badge"/>
         </xpath>
     </template>
@@ -73,7 +91,14 @@
         </xpath>
     </template>
 
-    <template id="silver_microsite_header_section" inherit_id="website.layout" name="Silver Economy - Footer Section">
+    <!--
+        RETIRED IN FAVOUR OF company_certification (see the note above).
+        company_certification.certification_microsite_section renders every
+        seal a shop holds in one loop, this one only Silver, and both injected
+        before the same footer: a shop with the Silver seal in both places
+        showed the award twice on its homepage.
+    -->
+    <template id="silver_microsite_header_section" inherit_id="website.layout" name="Silver Economy - Footer Section" active="False">
         <xpath expr="//footer[@id='bottom']" position="before">
             <t t-set="company" t-value="website.company_id"/>
             <t t-set="silver_level" t-value="company.silver_certification_level"/>

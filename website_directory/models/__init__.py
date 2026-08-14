@@ -1,3 +1,1 @@
-# -*- coding: utf-8 -*-
-from . import website_directory
-from . import res_company
+from . import res_company, res_partner, website_directory_entry

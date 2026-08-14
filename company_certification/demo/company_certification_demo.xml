@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!-- The demo user can run Silver Economy evaluations. -->
+    <record id="group_silver_user" model="res.groups">
+        <field name="user_ids" eval="[(4, ref('base.user_demo'))]"/>
+    </record>
+
+    <!-- A microsite positive item bound to the first Silver question. -->
+    <record id="demo_positive_item_access" model="certification.positive.item">
+        <field name="survey_id" ref="survey_silver_economy"/>
+        <field name="question_id" ref="silver_economy_q1"/>
+        <field name="min_score">2</field>
+        <field name="label">Accessible entrance</field>
+        <field name="icon">fa-wheelchair</field>
+    </record>
+</odoo>

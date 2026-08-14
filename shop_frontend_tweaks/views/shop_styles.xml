@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ADDITIONAL SHOP STYLES
+- General microsite styles
+- Sidebar adjustments
+- Hide the original Odoo shop header
+-->
+<odoo>
+
+    <!-- HIDE ORIGINAL ODOO SHOP HEADER -->
+    <template id="shop_hide_original_header" inherit_id="website_sale.products"
+              name="Shop Hide Original Header" priority="88">
+        <xpath expr="." position="inside">
+            <style type="text/css">
+                /* Hide the original "All Products" title */
+                #wrap > section:first-child h1 {
+                    display: none !important;
+                }
+                /* Hide the original searchbox if present */
+                #products_grid_before .o_wsale_products_searchbar_form,
+                #products_grid_before form[action="/shop"] {
+                    display: none !important;
+                }
+            </style>
+        </xpath>
+    </template>
+
+    <!-- SIDEBAR STYLES -->
+    <template id="shop_sidebar_styles" inherit_id="website_sale.products"
+              name="Shop Sidebar Styles" priority="90">
+        <xpath expr="." position="inside">
+            <style type="text/css">
+                /* Wider directory-like sidebar */
+                #products_grid_before {
+                    flex: 0 0 26% !important;
+                    max-width: 300px !important;
+                }
+                @media (max-width: 991px) {
+                    #products_grid_before {
+                        flex: 0 0 100% !important;
+                        max-width: 100% !important;
+                    }
+                }
+            </style>
+        </xpath>
+    </template>
+
+</odoo>

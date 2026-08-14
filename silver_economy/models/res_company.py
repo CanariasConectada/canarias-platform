@@ -119,12 +119,12 @@ class ResCompany(models.Model):
             return []
         
         survey = last_cert.survey_id
-        if not survey.positive_item_ids:
+        if not survey.silver_positive_item_ids:
             return []
         
         lines = last_cert.user_input_line_ids
         active_items = []
-        for item_config in survey.positive_item_ids.sorted('sequence'):
+        for item_config in survey.silver_positive_item_ids.sorted('sequence'):
             line = lines.filtered(lambda l: l.question_id == item_config.question_id)
             if line and line.answer_score >= item_config.min_score:
                 active_items.append({

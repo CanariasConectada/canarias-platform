@@ -1,0 +1,209 @@
+/* ========================================================================
+   COMPANY CERTIFICATION - PUBLIC LANDING
+   Visual treatment aligned with "Lugares de Interes" / "Memoria Viva":
+   brand palette, gradient hero, section headings and lift-on-hover cards.
+   Rendered once for every vertical (Silver Economy, Sostenibilidad and any
+   future one) served from /certification/<code>, so the look stays uniform
+   without forking a template per vertical.
+   ======================================================================== */
+
+// Brand palette (same look as lugares_interes / memoria_viva).
+$cc-primary: #2c5282;
+$cc-primary-dark: #1e3a5f;
+$cc-secondary: #ed8936;
+$cc-bg-light: #f7fafc;
+$cc-radius: 8px;
+$cc-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+$cc-pdf-red: #c0392b;
+
+// Seal levels. The same three values the template and the microsite bar use;
+// named here so a change lands everywhere at once.
+$cc-gold: #d4a017;
+$cc-silver: #8e8e8e;
+$cc-bronze: #cd7f32;
+
+.o_cc_landing {
+
+    // ---- Hero -----------------------------------------------------------
+    .o_cc_landing_hero {
+        background: linear-gradient(135deg, $cc-primary 0%, $cc-primary-dark 100%);
+        color: #fff;
+        padding: 4.5rem 0;
+
+        .o_cc_landing_hero__title {
+            color: #fff;
+        }
+
+        .o_cc_landing_hero__lead {
+            font-size: 1.25rem;
+            opacity: 0.9;
+        }
+
+        .o_cc_landing_hero__badge {
+            max-height: 200px;
+            width: auto;
+            filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.25));
+        }
+    }
+
+    // ---- Content sections ----------------------------------------------
+    .o_cc_landing_section__title {
+        color: $cc-primary;
+        font-weight: 600;
+    }
+
+    .o_cc_landing_materials {
+        background-color: $cc-bg-light;
+    }
+
+    .o_cc_landing_richtext {
+        max-width: 60rem;
+        line-height: 1.7;
+
+        h1, h2, h3, h4, h5 {
+            color: $cc-primary;
+            font-weight: 600;
+        }
+    }
+
+    // ---- Training-material cards ----------------------------------------
+    .o_cc_landing_card {
+        border-radius: $cc-radius;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        color: inherit;
+
+        &:hover,
+        &:focus-visible {
+            transform: translateY(-5px);
+            box-shadow: $cc-shadow;
+        }
+
+        .o_cc_landing_card__icon {
+            color: $cc-pdf-red;
+            font-size: 1.75rem;
+            line-height: 1;
+        }
+
+        .o_cc_landing_card__title {
+            color: $cc-primary;
+        }
+
+        .o_cc_landing_card__dl {
+            color: $cc-secondary;
+        }
+    }
+
+    // ---- Certified-business cards ---------------------------------------
+    .o_cc_holder_card {
+        border-radius: $cc-radius;
+        overflow: hidden;
+        color: inherit;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+        &:hover,
+        &:focus-visible {
+            transform: translateY(-5px);
+            box-shadow: $cc-shadow;
+        }
+
+        .o_cc_holder_card__imgwrap {
+            position: relative;
+            // Fixed ratio so a grid of logos of wildly different shapes still
+            // lines up; `contain` because a logo cropped to fill is a logo
+            // with its name cut off.
+            aspect-ratio: 4 / 3;
+            background: $cc-bg-light;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .o_cc_holder_card__img {
+            max-width: 80%;
+            max-height: 80%;
+            object-fit: contain;
+        }
+
+        .o_cc_holder_card__placeholder {
+            color: darken($cc-bg-light, 25%);
+            font-size: 2.5rem;
+        }
+
+        .o_cc_holder_card__level {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            color: #fff;
+
+            &--gold {
+                background-color: $cc-gold;
+            }
+
+            &--silver {
+                background-color: $cc-silver;
+            }
+
+            &--bronze {
+                background-color: $cc-bronze;
+            }
+        }
+
+        .o_cc_holder_card__name {
+            color: $cc-primary;
+        }
+    }
+
+    .o_cc_level_dot {
+        &--gold {
+            color: $cc-gold;
+        }
+
+        &--silver {
+            color: $cc-silver;
+        }
+
+        &--bronze {
+            color: $cc-bronze;
+        }
+    }
+}
+
+// ---- Microsite highlight grid -------------------------------------------
+// Lives outside .o_cc_landing: it is injected into every certified company's
+// own microsite layout, not into the vertical's landing page.
+.o_cc_amenities {
+    .o_cc_amenity__icon {
+        font-size: 1.4rem;
+        line-height: 1.4;
+        // A fixed box keeps the labels on one left edge whatever the glyph
+        // width; Font Awesome icons are not all the same size.
+        width: 1.6rem;
+        text-align: center;
+        flex: 0 0 auto;
+    }
+
+    .o_cc_amenity__label {
+        font-size: 1rem;
+        line-height: 1.4;
+    }
+
+    .o_cc_amenity__desc {
+        font-size: 0.85rem;
+        line-height: 1.35;
+    }
+}
+
+// ---- Responsive ---------------------------------------------------------
+@media (max-width: 768px) {
+    .o_cc_landing .o_cc_landing_hero {
+        padding: 3rem 0;
+
+        .o_cc_landing_hero__title {
+            font-size: 2rem;
+        }
+
+        .o_cc_landing_hero__lead {
+            font-size: 1rem;
+        }
+    }
+}

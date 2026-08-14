@@ -18,7 +18,7 @@ action = model.action_start_new_silver_evaluation()
         <field name="res_model">survey.user_input</field>
         <field name="view_mode">list,form</field>
         <field name="domain">[('survey_id.is_silver_economy', '=', True), ('test_entry', '=', False)]</field>
-        <field name="context">{'is_silver_economy': True, 'search_default_group_by_survey': 1}</field>
+        <field name="context">{'is_silver_economy': True, 'certification_display': True, 'search_default_group_by_survey': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Bienvenido a Silver Economy
@@ -40,18 +40,54 @@ action = model.action_start_new_silver_evaluation()
         <field name="context">{'default_is_silver_economy': True}</field>
     </record>
 
-    <!-- Menú principal -->
+    <!-- Menú principal. Cuelga de Certificaciones: los dos sellos comparten
+         contenedor en vez de ocupar cada uno un icono propio en el menú de
+         aplicaciones, que es donde el administrador los veía duplicados. -->
     <menuitem id="menu_silver_economy_root"
               name="Silver Economy"
-              web_icon="silver_economy,static/description/icon.png"
-              groups="base.group_user"
-              sequence="50"/>
+              parent="company_certification.menu_certification_root"
+              groups="silver_economy.group_silver_user"
+              sequence="40"/>
 
-    <menuitem id="menu_silver_evaluations"
-              name="Mis Evaluaciones"
-              parent="menu_silver_economy_root"
-              action="action_silver_evaluations"
-              sequence="10"/>
+    <!-- El contenedor pertenece a company_certification, que se carga antes
+         que este módulo y por eso no puede nombrar este grupo. La concesión
+         viaja en el sentido de la dependencia: quien tiene el sello abre la
+         puerta al menú que lo contiene. -->
+    <record id="company_certification.menu_certification_root" model="ir.ui.menu">
+        <field name="group_ids" eval="[(4, ref('silver_economy.group_silver_user'))]"/>
+    </record>
+
+    <!-- Holding the Silver seal here means holding it for the engine too.
+         `company_certification` owns the generic machinery — the
+         `certification.type` records, and the record rule that decides which
+         evaluations somebody may read ("a seal whose `group_user_id` I hold,
+         in a company I belong to"). That rule reads the ENGINE's group, and
+         this module has its own; without this link the two names for the same
+         seal never met, which is why the evaluations could only be listed one
+         seal at a time, each through its own module's rule.
+
+         With the link there is a single list for both seals, and it is the
+         engine's rule that fills it. Nothing is granted that the seal did not
+         already imply: the engine's group is read-only on the certification
+         models plus the right to answer one's own evaluation. -->
+    <record id="group_silver_user" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('company_certification.group_silver_user'))]"/>
+    </record>
+    <record id="group_silver_manager" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('company_certification.group_silver_manager'))]"/>
+    </record>
+
+    <!-- "Mis Evaluaciones" used to live here, one list per seal. It is gone
+         on purpose: Certificaciones > Evaluaciones is now the single list for
+         every seal, grouped by seal, the way Contenido local lists memoria
+         viva and lugares de interés together. Removing the menuitem from this
+         file is what removes it from the database — Odoo deletes the records
+         of xmlids a module stops declaring.
+
+         `action_silver_evaluations` STAYS. It is not menu furniture: the
+         reminder emails link to it and the controller redirects to it after a
+         merchant finishes an evaluation. Deleting it would break both.
+    -->
 
     <menuitem id="menu_silver_surveys"
               name="Cuestionarios"
@@ -133,39 +169,9 @@ action = model.action_start_new_silver_evaluation()
         </xpath>
     </template>
 
-    <!-- Herencia de la template de finalización de survey para mostrar sello Silver -->
-    <template id="survey_fill_form_done_inherit_silver" inherit_id="survey.survey_fill_form_done">
-        <xpath expr="//div[@class='o_survey_finished mt32 mb32']" position="inside">
-            <t t-if="survey.is_silver_economy and answer.certification_level != 'none'">
-                <div class="alert alert-success mt-3 text-center">
-                    <h3 class="mb-3">🎉 ¡Felicidades! Tu empresa ha obtenido el sello Silver Economy</h3>
-                    <div class="d-flex justify-content-center align-items-center gap-3">
-                        <div t-if="answer.certification_level == 'bronze'" class="badge bg-warning text-dark p-3 fs-4">🥉 BRONCE</div>
-                        <div t-if="answer.certification_level == 'silver'" class="badge bg-secondary p-3 fs-4">🥈 PLATA</div>
-                        <div t-if="answer.certification_level == 'gold'" class="badge bg-warning p-3 fs-4">🥇 ORO</div>
-                    </div>
-                    <p class="mt-3">
-                        Puntuación: <strong t-esc="answer.scoring_total"/> / <t t-esc="survey.silver_max_score or 80"/> puntos
-                        (<t t-esc="answer.scoring_percentage"/>%)
-                    </p>
-                    <p class="text-muted">
-                        El sello es válido hasta: <strong t-esc="answer.expiry_date"/>
-                    </p>
-                </div>
-            </t>
-            <t t-if="survey.is_silver_economy and answer.certification_level == 'none'">
-                <div class="alert alert-info mt-3 text-center">
-                    <h4>Resultado de la evaluación</h4>
-                    <p>
-                        Puntuación: <strong t-esc="answer.scoring_total"/> / <t t-esc="survey.silver_max_score or 80"/> puntos
-                        (<t t-esc="answer.scoring_percentage"/>%)
-                    </p>
-                    <p>En esta ocasión no has alcanzado el nivel mínimo para obtener el sello Silver Economy.</p>
-                    <p class="text-muted">Podrás volver a intentarlo a partir del: <strong t-esc="answer.next_attempt_date"/></p>
-                </div>
-            </t>
-        </xpath>
-    </template>
+    <!-- El sello Silver ahora lo renderiza company_certification (base), una
+         sola vez y en español, keyed por certification_type_id. Este módulo ya
+         no duplica el panel: mantenerlo aquí doblaba el sello y los botones. -->
 
     <!-- ============================================ -->
     <!-- F: Recomendaciones visibles en impresión web -->
@@ -199,7 +205,7 @@ action = model.action_start_new_silver_evaluation()
                         </group>
                     </group>
                     <separator string="Items positivos del microsite"/>
-                    <field name="positive_item_ids" nolabel="1" context="{'default_survey_id': id}"/>
+                    <field name="silver_positive_item_ids" nolabel="1" context="{'default_survey_id': id}"/>
                 </page>
             </xpath>
         </field>
@@ -310,17 +316,5 @@ action = model.action_start_new_silver_evaluation()
         </xpath>
     </template>
 
-    <!-- ============================================ -->
-    <!-- F: Botón Salir/Cerrar en página de finalización -->
-    <!-- ============================================ -->
-
-    <template id="survey_fill_form_done_silver_close" inherit_id="survey.survey_fill_form_done">
-        <xpath expr="//div[contains(@class, 'o_survey_finished')]//div[contains(@class, 'd-flex') and contains(@class, 'gap-3')]" position="inside">
-            <t t-if="survey.is_silver_economy and not survey.is_sustainability">
-                <a role="button" class="btn btn-outline-secondary btn-lg" href="javascript:window.close()">
-                    <i class="fa fa-times"/> Cerrar
-                </a>
-            </t>
-        </xpath>
-    </template>
+    <!-- El botón «Cerrar» lo pone company_certification (base), una sola vez. -->
 </odoo>

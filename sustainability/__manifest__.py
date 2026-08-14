@@ -3,14 +3,14 @@
 
 {
     "name": "Sostenibilidad Certification",
-    "version": "19.0.1.3.0",
+    "version": "19.0.1.8.0",
     "category": "Marketing/Surveys",
     "summary": "Sistema de evaluación y certificación Sostenibilidad para empresas",
     "description": """
         Módulo de evaluación Sostenibilidad basado en Survey.
         Permite a usuarios internos evaluar sus empresas mediante un cuestionario
         de 40 preguntas y obtener sellos Bronce, Plata u Oro.
-        
+
         Características:
         - Cuestionario editable por administradores
         - Control de plazos (3 meses reintento, 1 año renovación)
@@ -19,9 +19,11 @@
         - Notificaciones por email
         - Integración web (microsite y directorio)
     """,
-    'author': 'MikeColangelo',
+    "author": "MikeColangelo",
     "depends": [
         "survey",
+        # The questionnaire lives here now; this module only flags it.
+        "company_certification",
         "contacts",
         "website",
         "website_directory",
@@ -48,9 +50,12 @@
             "sustainability/static/src/scss/sustainability_public.scss",
         ],
     },
+    # Deja la marca is_sustainability puesta tras un -i; del resto de la vida
+    # del módulo se encarga SurveySurvey._register_hook.
+    "post_init_hook": "post_init_hook",
     "installable": True,
     "application": True,
     "auto_install": False,
     "license": "AGPL-3",
-    'website': 'https://github.com/CanariasConectada/canarias-platform',
+    "website": "https://github.com/CanariasConectada/canarias-platform",
 }

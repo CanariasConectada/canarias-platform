@@ -17,18 +17,13 @@
                 <button name="action_continue_silver_evaluation" type="object" icon="fa-play" title="Continuar evaluación"
                         invisible="state != 'in_progress' or not context.get('is_silver_economy') or context.get('is_sustainability')"/>
             </xpath>
-            <xpath expr="//field[@name='survey_id']" position="after">
-                <field name="company_id" optional="show" invisible="not context.get('is_silver_economy')"/>
-                <field name="certification_level" optional="show" widget="badge"
-                       decoration-muted="certification_level == 'none'"
-                       decoration-info="certification_level == 'bronze'"
-                       decoration-primary="certification_level == 'silver'"
-                       decoration-warning="certification_level == 'gold'"
-                       invisible="not context.get('is_silver_economy')"/>
-                <field name="next_attempt_date" optional="show" invisible="not context.get('is_silver_economy')"/>
-                <field name="expiry_date" optional="show" invisible="not context.get('is_silver_economy')"/>
-                <field name="is_manually_overridden" optional="hide" invisible="not context.get('is_silver_economy')"/>
-            </xpath>
+            <!-- The certification columns (company, level, dates, override
+                 flag) are OWNED by company_certification's inherited list,
+                 gated behind context key certification_display. Re-adding
+                 them here duplicated every column on screen: in Odoo list
+                 views a context condition only hides a column through
+                 column_invisible, never through invisible. The action
+                 context sets certification_display instead. -->
         </field>
     </record>
 
@@ -38,16 +33,24 @@
         <field name="model">survey.user_input</field>
         <field name="inherit_id" ref="survey.survey_user_input_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//notebook" position="inside">
-                <page string="Auditoría" name="audit" invisible="not is_manually_overridden">
-                    <group>
-                        <field name="is_manually_overridden"/>
-                        <field name="original_scoring_total"/>
-                        <field name="override_user_id"/>
-                        <field name="override_date"/>
-                        <field name="override_reason"/>
-                    </group>
-                </page>
+            <!-- The override audit trail is OWNED by company_certification's
+                 "Certification" page, whose Manual Override group is gated to
+                 certification managers. The old "Auditoría" page here showed
+                 the same four fields a second time — and with NO group gate,
+                 leaking the audit trail to every backoffice user. Only
+                 original_scoring_total is added, because the base module
+                 cannot know it: the field belongs to this vertical. Inserted
+                 inside the gated group, it inherits the manager-only
+                 visibility. -->
+            <xpath
+                expr="//page[@name='certification']//field[@name='is_manually_overridden']"
+                position="after"
+            >
+                <field
+                    name="original_scoring_total"
+                    readonly="1"
+                    invisible="not is_manually_overridden"
+                />
             </xpath>
         </field>
     </record>

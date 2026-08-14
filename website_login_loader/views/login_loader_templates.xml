@@ -1,0 +1,578 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl). -->
+<odoo>
+
+    <!--
+        Everything below is inlined on purpose. See the manifest: a loader
+        shipped through `web.assets_frontend` travels inside the same 1.1 MB
+        stylesheet whose wait it exists to cover, so it would only ever appear
+        once the waiting was over.
+
+        The anchor is `oe_website_login_container`, the container core itself
+        emits. `website_login_branding` REPLACES that node but re-emits it with
+        the same class, so this attaches whether or not the branded card is
+        installed, and in either inheritance order.
+
+        THREE affordances, deliberately not one, each on its own clock:
+
+        - The button that was pressed goes busy IMMEDIATELY. It is a small,
+          local change with nothing to flash, and it is what makes a press feel
+          received. It is also the real double-submit guard.
+        - The top bar reports the boot wait only, which is the one wait we know
+          is happening because the page said so by rendering.
+        - The curtain waits 200 ms before appearing and stays at least 400 ms
+          once it does. A curtain that opens and shuts inside a fast response
+          reads as a glitch, not as feedback.
+    -->
+    <template
+        id="login_layout_loader"
+        inherit_id="website.login_layout"
+        name="Login Loader"
+    >
+        <xpath expr="//div[hasclass('oe_website_login_container')]" position="before">
+
+            <style type="text/css">
+                /* Colours come from the card's own custom properties, with the
+                   same fallbacks its stylesheet declares. Copying the hex
+                   values instead would match today by coincidence and drift
+                   the day the brand blue is tuned. `--bs-primary` resolves
+                   once Bootstrap lands and falls back until then. */
+
+                .o_cc_ldr_bar {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 3px;
+                    z-index: 2100;
+                    background: rgba(0, 0, 0, 0.06);
+                    overflow: hidden;
+                    display: none;
+                }
+                html.o_cc_loading .o_cc_ldr_bar { display: block; }
+                .o_cc_ldr_bar::after {
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                    width: 40%;
+                    background: var(--bs-primary, #0d6efd);
+                    animation: o_cc_ldr_slide 1.1s ease-in-out infinite;
+                }
+                @keyframes o_cc_ldr_slide {
+                    0%   { left: -40%; }
+                    100% { left: 100%; }
+                }
+
+                .o_cc_ldr {
+                    position: fixed;
+                    inset: 0;
+                    z-index: 2200;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 1rem;
+                    background: var(--o-cc-card-bg, #ffffff);
+                    opacity: 0.94;
+                }
+                /* Not redundant: the class rule above is author origin and
+                   would otherwise beat the user agent's own [hidden] rule. */
+                .o_cc_ldr[hidden] { display: none; }
+
+                .o_cc_ldr_box { text-align: center; }
+                .o_cc_ldr_ring {
+                    width: 2.5rem;
+                    height: 2.5rem;
+                    margin: 0 auto 0.75rem;
+                    border: 3px solid rgba(0, 0, 0, 0.12);
+                    border-top-color: var(--bs-primary, #0d6efd);
+                    border-radius: 50%;
+                    animation: o_cc_ldr_spin 0.8s linear infinite;
+                }
+                @keyframes o_cc_ldr_spin { to { transform: rotate(360deg); } }
+                .o_cc_ldr_text {
+                    margin: 0;
+                    font-size: 0.95rem;
+                    color: var(--o-cc-muted, #6c757d);
+                }
+
+                /* Busy button: a ring in front of the label the button already
+                   had. Keeping the original wording is what makes this correct
+                   on login, signup, reset and guest entry alike, and it is why
+                   nothing here has to guess at a verb. */
+                .o_cc_ldr_busy {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.5rem;
+                }
+                .o_cc_ldr_btnring {
+                    flex: 0 0 auto;
+                    width: 1rem;
+                    height: 1rem;
+                    border: 2px solid currentColor;
+                    border-top-color: transparent;
+                    border-radius: 50%;
+                    opacity: 0.85;
+                    animation: o_cc_ldr_spin 0.7s linear infinite;
+                }
+
+                /* Present in the accessibility tree from the first paint:
+                   revealing a node that was `hidden` is not a reliable
+                   announcement, a text change inside a live region is. */
+                .o_cc_ldr_sr {
+                    position: absolute;
+                    width: 1px;
+                    height: 1px;
+                    margin: -1px;
+                    padding: 0;
+                    overflow: hidden;
+                    clip: rect(0, 0, 0, 0);
+                    white-space: nowrap;
+                    border: 0;
+                }
+
+                @media (prefers-reduced-motion: reduce) {
+                    .o_cc_ldr_bar::after {
+                        animation: none;
+                        left: 0;
+                        width: 100%;
+                    }
+                    /* A frozen ring with one mismatched border edge reads as a
+                       broken render. Text alone carries the message. */
+                    .o_cc_ldr_ring,
+                    .o_cc_ldr_btnring { display: none; }
+                }
+            </style>
+
+            <div class="o_cc_ldr_bar" aria-hidden="true"/>
+
+            <p class="o_cc_ldr_sr" role="status" aria-live="polite" aria-atomic="true"/>
+
+            <!--
+                Starts hidden and is only ever revealed by the script below.
+                That ordering is the no-JavaScript guarantee: a visitor whose
+                browser never runs the script sees the plain form, never a
+                curtain with nobody left to lift it.
+            -->
+            <div id="o_cc_ldr" class="o_cc_ldr" hidden="hidden">
+                <div class="o_cc_ldr_box">
+                    <div class="o_cc_ldr_ring" aria-hidden="true"/>
+                    <p class="o_cc_ldr_text" id="o_cc_ldr_text">Un momento…</p>
+                </div>
+            </div>
+
+            <script type="text/javascript">
+                (function () {
+                    var root = document.documentElement;
+
+                    var SHOW_DELAY = 200;
+                    var MIN_VISIBLE = 400;
+                    var BOOT_MAX = 12000;
+                    var SLOW_AFTER = 20000;
+
+                    var WAIT_MSG = "Un momento…";
+                    var SLOW_MSG = "Esto está tardando más de lo normal…";
+
+                    var bootTimer = null;
+                    var showTimer = null;
+                    var slowTimer = null;
+                    var shownAt = 0;
+
+                    function stopBoot() {
+                        if (bootTimer) {
+                            window.clearTimeout(bootTimer);
+                            bootTimer = null;
+                        }
+                        root.className = root.className.replace(
+                            /(^|\s)o_cc_loading(\s|$)/,
+                            " "
+                        );
+                    }
+
+                    root.className += " o_cc_loading";
+                    bootTimer = window.setTimeout(stopBoot, BOOT_MAX);
+                    window.addEventListener("load", stopBoot);
+
+                    function byId(id) {
+                        return document.getElementById(id);
+                    }
+
+                    function announce(message) {
+                        var region = document.querySelector(".o_cc_ldr_sr");
+                        if (region) {
+                            region.textContent = message;
+                        }
+                    }
+
+                    // Everything beside the curtain is taken out of reach while
+                    // it is up: a form the visitor can still tab into under a
+                    // cover that says "wait" is a lie told to keyboard users.
+                    function setInert(state) {
+                        var curtain = byId("o_cc_ldr");
+                        if (!curtain) {
+                            return;
+                        }
+                        var siblings = curtain.parentNode.children;
+                        // Counted down so the loop needs no "less than": a raw
+                        // one is an invalid token inside an XML data file.
+                        var index;
+                        for (index = siblings.length - 1; index >= 0; index--) {
+                            var node = siblings[index];
+                            if (node === curtain) {
+                                continue;
+                            }
+                            if (node.classList.contains("o_cc_ldr_bar")) {
+                                continue;
+                            }
+                            if (node.classList.contains("o_cc_ldr_sr")) {
+                                continue;
+                            }
+                            if (state) {
+                                node.setAttribute("inert", "inert");
+                            } else {
+                                node.removeAttribute("inert");
+                            }
+                        }
+                    }
+
+                    function reveal() {
+                        showTimer = null;
+                        var curtain = byId("o_cc_ldr");
+                        if (!curtain) {
+                            return;
+                        }
+                        curtain.removeAttribute("hidden");
+                        setInert(true);
+                        shownAt = new Date().getTime();
+                        announce(WAIT_MSG);
+                        slowTimer = window.setTimeout(function () {
+                            var text = byId("o_cc_ldr_text");
+                            if (text) {
+                                text.textContent = SLOW_MSG;
+                            }
+                            announce(SLOW_MSG);
+                        }, SLOW_AFTER);
+                    }
+
+                    function reallyHide() {
+                        var curtain = byId("o_cc_ldr");
+                        if (curtain) {
+                            curtain.setAttribute("hidden", "hidden");
+                        }
+                        setInert(false);
+                        shownAt = 0;
+                    }
+
+                    function show() {
+                        if (showTimer) {
+                            return;
+                        }
+                        if (shownAt) {
+                            return;
+                        }
+                        showTimer = window.setTimeout(reveal, SHOW_DELAY);
+                    }
+
+                    function hide() {
+                        if (slowTimer) {
+                            window.clearTimeout(slowTimer);
+                            slowTimer = null;
+                        }
+                        if (showTimer) {
+                            window.clearTimeout(showTimer);
+                            showTimer = null;
+                            return;
+                        }
+                        if (!shownAt) {
+                            return;
+                        }
+                        var visible = new Date().getTime() - shownAt;
+                        if (visible >= MIN_VISIBLE) {
+                            reallyHide();
+                        } else {
+                            window.setTimeout(reallyHide, MIN_VISIBLE - visible);
+                        }
+                    }
+
+                    function markBusy(button) {
+                        if (!button) {
+                            return;
+                        }
+                        if (button.getAttribute("aria-busy") === "true") {
+                            return;
+                        }
+                        var box = button.getBoundingClientRect();
+                        button.style.minWidth = box.width + "px";
+                        button.style.minHeight = box.height + "px";
+                        var ring = document.createElement("span");
+                        ring.className = "o_cc_ldr_btnring";
+                        ring.setAttribute("aria-hidden", "true");
+                        button.classList.add("o_cc_ldr_busy");
+                        button.insertBefore(ring, button.firstChild);
+                        button.setAttribute("aria-busy", "true");
+                        // Deferred by a tick: disabling a control while the
+                        // browser is still serialising the form can drop its
+                        // name/value from the payload.
+                        window.setTimeout(function () {
+                            button.disabled = true;
+                        }, 0);
+                    }
+
+                    function submitButton(form, submitter) {
+                        if (submitter) {
+                            return submitter;
+                        }
+                        return form.querySelector(
+                            "button[type=submit], input[type=submit], button:not([type])"
+                        );
+                    }
+
+                    // Bubble phase, not capture: in-page validation that cancels
+                    // a submit runs as a listener too, and a capture listener on
+                    // document would fire before it and raise a curtain over a
+                    // form going nowhere.
+                    document.addEventListener("submit", function (ev) {
+                        if (ev.defaultPrevented) {
+                            return;
+                        }
+                        markBusy(submitButton(ev.target, ev.submitter));
+                        show();
+                    });
+
+                    document.addEventListener("click", function (ev) {
+                        if (ev.defaultPrevented) {
+                            return;
+                        }
+                        if (ev.button) {
+                            return;
+                        }
+                        if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) {
+                            return;
+                        }
+                        var node = ev.target;
+                        while (node) {
+                            if (node.tagName === "A") {
+                                break;
+                            }
+                            node = node.parentNode;
+                        }
+                        if (!node) {
+                            return;
+                        }
+                        if (node.target) {
+                            if (node.target !== "_self") {
+                                return;
+                            }
+                        }
+                        if (node.hasAttribute("download")) {
+                            return;
+                        }
+                        var href = node.getAttribute("href") || "";
+                        if (!href) {
+                            return;
+                        }
+                        // In-page anchors and javascript: links reload nothing,
+                        // so there is no wait to report.
+                        if (href.charAt(0) === "#") {
+                            return;
+                        }
+                        if (href.indexOf("javascript:") === 0) {
+                            return;
+                        }
+                        show();
+                    });
+
+                    // Returning through the bfcache restores the DOM exactly as
+                    // it was left, curtain and busy button included. The button
+                    // is NOT revived on a timeout, only by a real page load:
+                    // a form that looks idle again while its first request may
+                    // still land is how double submissions happen.
+                    window.addEventListener("pageshow", function () {
+                        if (showTimer) {
+                            window.clearTimeout(showTimer);
+                            showTimer = null;
+                        }
+                        shownAt = 0;
+                        reallyHide();
+                        stopBoot();
+                    });
+                })();
+            </script>
+
+        </xpath>
+    </template>
+
+    <!--
+        The empty box between the logo and "o continúa como invitado",
+        reported with a screenshot on 2026-08-14 and described as happening
+        often. It is not a slow stylesheet: the form is served with Bootstrap's
+        `d-none` on it, and Odoo 19 only takes that class off once the OWL
+        component `web.user_switch` mounts, which cannot happen before the
+        frontend JS bundle has downloaded, parsed and booted. Until then the
+        markup around the form paints normally and the form itself is display
+        none — a card with a hole in it.
+
+        So the hole gets filled with the shape of what is coming. The skeleton
+        is inlined for the same reason the rest of this module is: anything
+        arriving inside the bundle would arrive after the wait it describes.
+
+        This NEVER hides the form. Odoo hides it and Odoo reveals it; all that
+        happens here is that the gap it leaves is occupied meanwhile. That is
+        the whole safety argument — the worst failure this can produce is a
+        skeleton left on screen next to a working form, never a login page
+        with no way in.
+    -->
+    <template
+        id="login_form_skeleton"
+        inherit_id="web.login"
+        name="Login Form Skeleton"
+    >
+        <!--
+            Anchored on `data-captcha`, not on the class, and that is not a
+            matter of taste. Core writes the form's class with `t-attf-class`
+            (`web/views/webclient_templates.xml:140`), which means the node
+            carries NO class attribute at all until the template is rendered,
+            so `hasclass('oe_login_form')` matches nothing at inheritance time
+            and the module refuses to install. `data-captcha="login"` is a
+            plain static attribute on the same node.
+
+            That same line is also the proof of the diagnosis: the class it
+            builds is `oe_login_form d-none` whenever `login` is empty, which
+            is every visitor who is not arriving with a remembered address.
+        -->
+        <xpath expr="//form[@data-captcha='login']" position="before">
+
+            <style type="text/css">
+                /* Hidden by default and shown only under a class the script
+                   below sets on itself. With JavaScript off, the OWL component
+                   never mounts either — but the form is then revealed by the
+                   `noscript` path, and a skeleton nobody can remove would sit
+                   under it forever. Default-off is what prevents that. */
+                .o_cc_skel { display: none; }
+                html.o_cc_skel_on .o_cc_skel { display: block; }
+
+                .o_cc_skel_row { margin-bottom: 1rem; }
+                .o_cc_skel_bar {
+                    background: var(--o-cc-skel, rgba(0, 0, 0, 0.08));
+                    border-radius: 0.5rem;
+                    background-image: linear-gradient(
+                        90deg,
+                        rgba(255, 255, 255, 0) 0%,
+                        rgba(255, 255, 255, 0.6) 50%,
+                        rgba(255, 255, 255, 0) 100%
+                    );
+                    background-size: 200% 100%;
+                    background-repeat: no-repeat;
+                    animation: o_cc_skel_shimmer 1.4s ease-in-out infinite;
+                }
+                /* Label, then field: the same rhythm the real rows have, so
+                   the card does not resize when the form takes over. */
+                .o_cc_skel_label {
+                    height: 0.85rem;
+                    width: 40%;
+                    margin-bottom: 0.5rem;
+                }
+                .o_cc_skel_field { height: 2.75rem; }
+                .o_cc_skel_action {
+                    height: 2.9rem;
+                    margin-top: 1.5rem;
+                    border-radius: 0.5rem;
+                }
+                @keyframes o_cc_skel_shimmer {
+                    0%   { background-position: 200% 0; }
+                    100% { background-position: -200% 0; }
+                }
+                @media (prefers-reduced-motion: reduce) {
+                    .o_cc_skel_bar {
+                        animation: none;
+                        background-image: none;
+                    }
+                }
+            </style>
+
+            <div class="o_cc_skel" aria-hidden="true">
+                <div class="o_cc_skel_row">
+                    <div class="o_cc_skel_bar o_cc_skel_label"/>
+                    <div class="o_cc_skel_bar o_cc_skel_field"/>
+                </div>
+                <div class="o_cc_skel_row">
+                    <div class="o_cc_skel_bar o_cc_skel_label"/>
+                    <div class="o_cc_skel_bar o_cc_skel_field"/>
+                </div>
+                <div class="o_cc_skel_bar o_cc_skel_action"/>
+            </div>
+
+            <script type="text/javascript">
+                (function () {
+                    var root = document.documentElement;
+                    var MAX_WAIT = 15000;
+
+                    function done() {
+                        root.className = root.className.replace(
+                            /(^|\s)o_cc_skel_on(\s|$)/,
+                            " "
+                        );
+                    }
+
+                    // Registered before anything that could throw, so the
+                    // skeleton always has someone left to take it down.
+                    root.className += " o_cc_skel_on";
+                    window.setTimeout(done, MAX_WAIT);
+                    window.addEventListener("load", function () {
+                        // One frame after load: the bundle has run by then, and
+                        // whichever of the two things it decided to show has
+                        // been laid out.
+                        window.requestAnimationFrame(done);
+                    });
+
+                    function ready() {
+                        var form = document.querySelector(".oe_login_form");
+                        if (form) {
+                            if (!form.classList.contains("d-none")) {
+                                return true;
+                            }
+                        }
+                        // The other outcome: a returning visitor gets the
+                        // account picker instead of the form, and the form
+                        // stays hidden. Anything rendered into the component
+                        // means the boot is over just as much.
+                        var owl = document.querySelector(
+                            "owl-component[name='web.user_switch']"
+                        );
+                        if (owl) {
+                            if (owl.children.length) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+
+                    if (window.MutationObserver) {
+                        var observer = new window.MutationObserver(function () {
+                            if (ready()) {
+                                observer.disconnect();
+                                done();
+                            }
+                        });
+                        observer.observe(document.documentElement, {
+                            subtree: true,
+                            childList: true,
+                            attributes: true,
+                            attributeFilter: ["class"]
+                        });
+                    }
+
+                    // The bundle may already be cached and done before this
+                    // line runs, in which case no mutation is ever observed.
+                    if (ready()) {
+                        done();
+                    }
+                })();
+            </script>
+
+        </xpath>
+    </template>
+
+</odoo>

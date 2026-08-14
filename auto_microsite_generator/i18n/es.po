@@ -1,0 +1,43 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* auto_microsite_generator
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: Canarias Conectada\n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: auto_microsite_generator
+#. odoo-python
+#: code:addons/auto_microsite_generator/models/res_company.py:0
+msgid "Home"
+msgstr "Inicio"
+
+#. module: auto_microsite_generator
+#. odoo-python
+#: code:addons/auto_microsite_generator/models/res_company.py:0
+msgid "Shop"
+msgstr "Tienda"
+
+#. module: auto_microsite_generator
+#. odoo-python
+#: code:addons/auto_microsite_generator/models/res_company.py:0
+msgid "Directory"
+msgstr "Comercios"
+
+#. module: auto_microsite_generator
+#: model_terms:ir.ui.view,arch_db:auto_microsite_generator.default_homepage_content
+msgid "Welcome to our microsite on Canarias Conectada."
+msgstr "Bienvenido a nuestro microsite en Canarias Conectada."
+
+#. module: auto_microsite_generator
+#: model_terms:ir.ui.view,arch_db:auto_microsite_generator.default_homepage_content
+msgid "Local Directory"
+msgstr "Directorio de comercios"

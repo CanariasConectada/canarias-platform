@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+     Seed of the two existing verticals. A third vertical needs exactly
+     this: two groups, a survey and one certification.type record. -->
+<odoo>
+    <data noupdate="0">
+        <!-- Silver Economy groups -->
+        <record id="group_silver_user" model="res.groups">
+            <field name="name">Silver Economy User</field>
+            <field name="sequence">30</field>
+            <field name="privilege_id" ref="res_groups_privilege_certification"/>
+            <field name="implied_ids" eval="[(4, ref('group_certification_user'))]"/>
+        </record>
+        <record id="group_silver_manager" model="res.groups">
+            <field name="name">Silver Economy Manager</field>
+            <field name="sequence">31</field>
+            <field name="privilege_id" ref="res_groups_privilege_certification"/>
+            <field name="implied_ids" eval="[(4, ref('group_silver_user')), (4, ref('group_certification_manager'))]"/>
+            <field name="user_ids" eval="[(4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Sustainability groups -->
+        <record id="group_sustainability_user" model="res.groups">
+            <field name="name">Sustainability User</field>
+            <field name="sequence">32</field>
+            <field name="privilege_id" ref="res_groups_privilege_certification"/>
+            <field name="implied_ids" eval="[(4, ref('group_certification_user'))]"/>
+        </record>
+        <record id="group_sustainability_manager" model="res.groups">
+            <field name="name">Sustainability Manager</field>
+            <field name="sequence">33</field>
+            <field name="privilege_id" ref="res_groups_privilege_certification"/>
+            <field name="implied_ids" eval="[(4, ref('group_sustainability_user')), (4, ref('group_certification_manager'))]"/>
+            <field name="user_ids" eval="[(4, ref('base.user_admin'))]"/>
+        </record>
+    </data>
+
+    <data noupdate="1">
+        <record id="certification_type_silver" model="certification.type">
+            <field name="name">Silver Economy</field>
+            <field name="code">silver</field>
+            <field name="sequence">10</field>
+            <field name="survey_id" ref="survey_silver_economy"/>
+            <field name="group_user_id" ref="group_silver_user"/>
+            <field name="group_manager_id" ref="group_silver_manager"/>
+            <field name="max_score">80.0</field>
+            <field name="bronze_min">40.0</field>
+            <field name="silver_min">56.0</field>
+            <field name="gold_min">71.0</field>
+            <field name="badge_image" type="base64" file="company_certification/static/src/img/seal_silver.png"/>
+            <field name="website_title">Negocio Comprometido</field>
+            <field name="website_description">Este negocio ha sido evaluado y reconocido con el sello Silver Economy por su compromiso con la accesibilidad, la atención personalizada y la adaptación a las personas mayores.</field>
+        </record>
+
+        <record id="certification_type_sustainability" model="certification.type">
+            <field name="name">Sostenibilidad</field>
+            <field name="code">sustainability</field>
+            <field name="sequence">20</field>
+            <field name="survey_id" ref="survey_sustainability"/>
+            <field name="group_user_id" ref="group_sustainability_user"/>
+            <field name="group_manager_id" ref="group_sustainability_manager"/>
+            <field name="max_score">80.0</field>
+            <field name="bronze_min">40.0</field>
+            <field name="silver_min">56.0</field>
+            <field name="gold_min">71.0</field>
+            <field name="badge_image" type="base64" file="company_certification/static/src/img/seal_sustainability.png"/>
+            <field name="website_title">Comercio Sostenible</field>
+            <field name="website_description">Este negocio ha sido evaluado y reconocido con el sello de Sostenibilidad por sus prácticas responsables con el medio ambiente, el impacto social y la buena gobernanza.</field>
+        </record>
+    </data>
+</odoo>

@@ -1,99 +1,40 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
 <odoo>
-    <!-- ========================================
-         REGLAS PARA GRUPOS PÚBLICO/PORTAL/USER
-         ======================================== -->
-    <record id="rule_partner_review_comment_public" model="ir.rule">
-        <field name="name">Comentarios públicos solo aprobados</field>
-        <field name="model_id" ref="model_partner_review_comment"/>
-        <field name="domain_force">[('estado', '=', 'aprobado')]</field>
-        <field name="groups" eval="[(4, ref('base.group_public'))]"/>
-        <field name="perm_read" eval="1"/>
-        <field name="perm_write" eval="0"/>
-        <field name="perm_create" eval="0"/>
-        <field name="perm_unlink" eval="0"/>
+
+    <!-- Moderators only manage the merchant reviews of their own companies.
+         Merchant reviews store the company id directly in res_id, so the
+         multi-company check is a plain leaf. Ratings of other applications
+         (first branch) are left untouched for them. -->
+    <record id="rule_rating_review_moderator" model="ir.rule">
+        <field name="name">Merchant reviews: own companies (Moderator)</field>
+        <field name="model_id" ref="rating.model_rating_rating"/>
+        <field name="domain_force">['|', ('res_model', '!=', 'res.company'), ('res_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('group_partner_reviews_moderator'))]"/>
     </record>
 
-    <record id="rule_partner_review_comment_portal" model="ir.rule">
-        <field name="name">Comentarios portal solo aprobados</field>
-        <field name="model_id" ref="model_partner_review_comment"/>
-        <field name="domain_force">[('estado', '=', 'aprobado')]</field>
-        <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
-        <field name="perm_read" eval="1"/>
-        <field name="perm_write" eval="0"/>
-        <field name="perm_create" eval="0"/>
-        <field name="perm_unlink" eval="0"/>
-    </record>
-
-    <record id="rule_partner_review_comment_own" model="ir.rule">
-        <field name="name">Usuarios ven sus propios comentarios</field>
-        <field name="model_id" ref="model_partner_review_comment"/>
-        <field name="domain_force">['|', ('autor_id', '=', user.id), ('estado', '=', 'aprobado')]</field>
+    <!-- Company scoping for every internal user. The native rating.rating
+         ACL grants base.group_user read/write with NO record rule, so a plain
+         employee could otherwise read/write reviews of ALL companies over RPC.
+         This rule scopes them to their allowed companies (same leaf as the
+         moderator rule). It is ORed with the moderator/manager rules, so it
+         never narrows their broader access: a manager keeps (1=1), a moderator
+         keeps the identical scope. Non-merchant ratings (helpdesk, project...)
+         stay untouched through the first branch. -->
+    <record id="rule_rating_review_internal" model="ir.rule">
+        <field name="name">Merchant reviews: own companies (Internal users)</field>
+        <field name="model_id" ref="rating.model_rating_rating"/>
+        <field name="domain_force">['|', ('res_model', '!=', 'res.company'), ('res_id', 'in', company_ids)]</field>
         <field name="groups" eval="[(4, ref('base.group_user'))]"/>
-        <field name="perm_read" eval="1"/>
-        <field name="perm_write" eval="0"/>
-        <field name="perm_create" eval="1"/>
-        <field name="perm_unlink" eval="0"/>
     </record>
 
-    <record id="rule_partner_review_rating_public" model="ir.rule">
-        <field name="name">Ratings públicos solo lectura</field>
-        <field name="model_id" ref="model_partner_review_rating"/>
-        <field name="domain_force">[(1, '=', 1)]</field>
-        <field name="groups" eval="[(4, ref('base.group_public'))]"/>
-        <field name="perm_read" eval="1"/>
-        <field name="perm_write" eval="0"/>
-        <field name="perm_create" eval="0"/>
-        <field name="perm_unlink" eval="0"/>
-    </record>
-
-    <!-- ========================================
-         AISLAMIENTO POR MICROSITE / COMPANY
-         ======================================== -->
-    <record id="rule_partner_review_comment_microsite" model="ir.rule">
-        <field name="name">Comentarios: solo del microsite asignado (Moderador)</field>
-        <field name="model_id" ref="model_partner_review_comment"/>
-        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
-        <field name="groups" eval="[(4, ref('group_partner_reviews_moderator'))]"/>
-        <field name="perm_read" eval="1"/>
-        <field name="perm_write" eval="1"/>
-        <field name="perm_create" eval="1"/>
-        <field name="perm_unlink" eval="0"/>
-    </record>
-
-    <record id="rule_partner_review_rating_microsite" model="ir.rule">
-        <field name="name">Valoraciones: solo del microsite asignado (Moderador)</field>
-        <field name="model_id" ref="model_partner_review_rating"/>
-        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
-        <field name="groups" eval="[(4, ref('group_partner_reviews_moderator'))]"/>
-        <field name="perm_read" eval="1"/>
-        <field name="perm_write" eval="1"/>
-        <field name="perm_create" eval="1"/>
-        <field name="perm_unlink" eval="0"/>
-    </record>
-
-    <!-- ========================================
-         ADMINISTRADOR GLOBAL: SIN RESTRICCIONES
-         ======================================== -->
-    <record id="rule_partner_review_comment_manager" model="ir.rule">
-        <field name="name">Comentarios: acceso total (Manager)</field>
-        <field name="model_id" ref="model_partner_review_comment"/>
+    <!-- Review administrators manage every review of every company. -->
+    <record id="rule_rating_review_manager" model="ir.rule">
+        <field name="name">Merchant reviews: all companies (Administrator)</field>
+        <field name="model_id" ref="rating.model_rating_rating"/>
         <field name="domain_force">[(1, '=', 1)]</field>
         <field name="groups" eval="[(4, ref('group_partner_reviews_manager'))]"/>
-        <field name="perm_read" eval="1"/>
-        <field name="perm_write" eval="1"/>
-        <field name="perm_create" eval="1"/>
-        <field name="perm_unlink" eval="1"/>
     </record>
 
-    <record id="rule_partner_review_rating_manager" model="ir.rule">
-        <field name="name">Valoraciones: acceso total (Manager)</field>
-        <field name="model_id" ref="model_partner_review_rating"/>
-        <field name="domain_force">[(1, '=', 1)]</field>
-        <field name="groups" eval="[(4, ref('group_partner_reviews_manager'))]"/>
-        <field name="perm_read" eval="1"/>
-        <field name="perm_write" eval="1"/>
-        <field name="perm_create" eval="1"/>
-        <field name="perm_unlink" eval="1"/>
-    </record>
 </odoo>

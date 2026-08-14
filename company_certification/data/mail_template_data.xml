@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <data noupdate="1">
+        <record id="mail_template_certification_retry_available" model="mail.template">
+            <field name="name">Certification: Retry Available</field>
+            <field name="model_id" ref="survey.model_survey_user_input"/>
+            <field name="subject">Ya puedes repetir tu evaluación {{ object.certification_type_id.name }}</field>
+            <field name="email_from">{{ object.survey_id.create_uid.email_formatted }}</field>
+            <field name="email_to">{{ object.partner_id.email_formatted }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; font-size: 13px;">
+                    <p>Hola <t t-out="object.partner_id.name"/>,</p>
+                    <p>
+                        Ha terminado el plazo de espera desde tu última evaluación
+                        <strong t-out="object.certification_type_id.name"/>.
+                        Ya puedes realizar un nuevo intento para obtener tu sello.
+                    </p>
+                    <p>¡Mucho éxito!<br/>El equipo de Canarias Conectada</p>
+                </div>
+            </field>
+            <field name="lang">{{ object.partner_id.lang or '' }}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <record id="mail_template_certification_renewal_due" model="mail.template">
+            <field name="name">Certification: Renewal Due</field>
+            <field name="model_id" ref="survey.model_survey_user_input"/>
+            <field name="subject">Tu sello {{ object.certification_type_id.name }} vence pronto</field>
+            <field name="email_from">{{ object.survey_id.create_uid.email_formatted }}</field>
+            <field name="email_to">{{ object.partner_id.email_formatted }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; font-size: 13px;">
+                    <p>Hola <t t-out="object.partner_id.name"/>,</p>
+                    <p>
+                        Tu sello <strong t-out="object.certification_type_id.name"/>
+                        vence el <strong t-out="object.expiry_date"/>.
+                        Para mantener la certificación activa, realiza una nueva
+                        evaluación antes de esa fecha.
+                    </p>
+                    <p>Saludos,<br/>El equipo de Canarias Conectada</p>
+                </div>
+            </field>
+            <field name="lang">{{ object.partner_id.lang or '' }}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <record id="mail_template_certification_new_badge" model="mail.template">
+            <field name="name">Certification: New Badge</field>
+            <field name="model_id" ref="survey.model_survey_user_input"/>
+            <field name="subject">¡Felicidades! Has obtenido el sello {{ object.certification_type_id.name }}</field>
+            <field name="email_from">{{ object.survey_id.create_uid.email_formatted }}</field>
+            <field name="email_to">{{ object.partner_id.email_formatted }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; font-size: 13px;">
+                    <p>Hola <t t-out="object.partner_id.name"/>,</p>
+                    <p>
+                        ¡Enhorabuena! Tu empresa <strong t-out="object.company_id.name"/>
+                        ha obtenido el sello <strong t-out="object.certification_type_id.name"/>
+                        con nivel <strong t-out="dict(object._fields['certification_level']._description_selection(object.env)).get(object.certification_level)"/>.
+                    </p>
+                    <p>
+                        El sello es válido hasta el
+                        <strong t-out="object.expiry_date"/>.
+                    </p>
+                    <p>Saludos,<br/>El equipo de Canarias Conectada</p>
+                </div>
+            </field>
+            <field name="lang">{{ object.partner_id.lang or '' }}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <record id="mail_template_certification_expiry_alert" model="mail.template">
+            <field name="name">Certification: Expiry Alert (admin)</field>
+            <field name="model_id" ref="survey.model_survey_user_input"/>
+            <field name="subject">Sello {{ object.certification_type_id.name }} expirado: {{ object.company_id.name }}</field>
+            <field name="email_from">{{ object.survey_id.create_uid.email_formatted }}</field>
+            <field name="email_to">{{ object.survey_id.user_id.email_formatted }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; font-size: 13px;">
+                    <p>
+                        El sello <strong t-out="object.certification_type_id.name"/>
+                        de la empresa <strong t-out="object.company_id.name"/>
+                        expiró el <strong t-out="object.expiry_date"/> y ha sido
+                        retirado de su microsite.
+                    </p>
+                </div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+    </data>
+</odoo>

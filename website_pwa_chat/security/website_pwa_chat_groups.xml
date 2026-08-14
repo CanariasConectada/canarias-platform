@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo noupdate="1">
+
+    <!--
+        Who answers "hablar con soporte".
+
+        A group rather than a hardcoded list of administrators, because the
+        request was explicit that this can be handed to somebody who is not an
+        administrator. Membership of this group is the only thing that decides
+        it, and granting it adds the holder to every open support conversation
+        (see `_support_sync_agents`), so a new agent starts with the history,
+        not with an empty inbox.
+
+        Administrators reach these conversations regardless: `mail`'s own
+        `ir_rule_discuss_channel_group_system` gives `base.group_system` full
+        access to every channel. This group exists to extend that reach
+        WITHOUT handing out system access, which is the whole point.
+
+        noupdate: membership is operational data. Somebody added to the group
+        on a Tuesday must not be removed by a module upgrade on a Wednesday.
+    -->
+    <record id="group_support_agent" model="res.groups">
+        <field name="name">Soporte: atender a los visitantes</field>
+        <field name="comment">Ve y responde las conversaciones privadas que
+            los visitantes abren desde el chat de la web. No da acceso a
+            ninguna otra parte del sistema.</field>
+    </record>
+
+</odoo>

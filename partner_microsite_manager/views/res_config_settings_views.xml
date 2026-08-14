@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- Expose the per-website "Corporate Microsite Look" toggle in the
+         website settings, so it no longer has to be flipped from a shell. -->
+    <record id="res_config_settings_view_form_microsite" model="ir.ui.view">
+        <field name="name">res.config.settings.form.microsite</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="website.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='website_info_settings']" position="inside">
+                <setting
+                    id="microsite_theme_setting"
+                    string="Corporate Microsite Look"
+                    help="Render the corporate microsite footer (social links, legal pages and certification badges) on this website."
+                    invisible="not website_id"
+                >
+                    <field name="is_microsite_themed"/>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

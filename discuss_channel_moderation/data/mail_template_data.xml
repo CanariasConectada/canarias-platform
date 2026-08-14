@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <data noupdate="1">
+
+        <!-- ONE mail per channel, listing every overdue message of that
+             channel. The template is rendered on the discuss.channel.moderation
+             row, not on the held message, precisely so the batching is a
+             property of the DATA rather than of the sending code: there is one
+             record to render, so there is one mail to send.
+
+             email_from is deliberately NOT set. This deployment sends through a
+             single IONOS mail server that only accepts a From it owns; letting
+             mail.mail compute the default (alias domain, then company, then the
+             `mail.default.from` config fallback) keeps the header aligned with
+             what the server will actually relay. A hardcoded or field-derived
+             From is how an alert turns into a rejected message nobody sees. -->
+        <record id="mail_template_late_pending_alert" model="mail.template">
+            <field name="name">Moderation: Late Pending Messages</field>
+            <field name="model_id" ref="discuss_channel_moderation.model_discuss_channel_moderation"/>
+            <field name="subject">Mensajes esperando moderación en {{ object.channel_id.name }}</field>
+            <!-- WITHOUT THIS FIELD THE ALERT SENDS NOTHING, and says nothing.
+                 `use_default_to` defaults to TRUE (core
+                 addons/mail/models/mail_template.py:57-59), and a template with
+                 it on never evaluates the `email_to` expression below:
+                 `_generate_template_recipients` takes the default-recipients
+                 branch instead (same file, line 447) and asks
+                 `_message_get_default_recipients` who to write to. That generic
+                 implementation looks for a customer partner or an email field
+                 on the record (addons/mail/models/models.py:331-378), and this
+                 model has neither: it is a moderation switch, not a document
+                 with a counterparty. So the recipient list came out EMPTY, the
+                 mail.mail ended in `state='exception'` with
+                 `failure_type='mail_email_missing'`, and nothing ever left the
+                 machine. Reproduced on a copy of production against a real SMTP
+                 sink: with this field the message reaches the wire with the
+                 right `To:`, without it no message exists at all. -->
+            <field name="use_default_to" eval="False"/>
+            <!-- Recipients are the channel's moderators, resolved here so the
+                 address list is editable with the wording. The cron checks the
+                 same list before sending and logs a warning when it is empty or
+                 unreachable: this expression decides WHO gets it, the cron
+                 decides WHETHER anyone can. -->
+            <field name="email_to">{{ ','.join(object.moderator_user_ids.filtered('email').mapped('email_formatted')) }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; font-size: 13px;">
+                    <t t-set="alert" t-value="object._late_alert_render_values()"/>
+                    <p>Hola,</p>
+                    <p t-if="alert['count'] == 1">
+                        Hay <strong>un mensaje</strong> esperando revisión en el canal
+                        <strong t-out="object.channel_id.name"/>, y lleva ya
+                        <strong t-out="alert['oldest_minutes']"/> minutos ahí.
+                    </p>
+                    <p t-else="">
+                        Hay <strong t-out="alert['count']"/> mensajes esperando revisión en el canal
+                        <strong t-out="object.channel_id.name"/>. El más antiguo lleva
+                        <strong t-out="alert['oldest_minutes']"/> minutos esperando.
+                    </p>
+                    <p>
+                        Mientras siguen retenidos no los ve nadie más que quien los escribió:
+                        para el resto del canal, esos mensajes no existen. Y quien los envió
+                        está mirando la pantalla sin saber si llegaron.
+                    </p>
+                    <!-- Author and time, NEVER the body. The body is exactly the
+                         text nobody has approved yet: putting it in an email
+                         signed by la plataforma would deliver unmoderated
+                         content to the very people whose job is to see it only
+                         inside the queue, where it is framed as pending. -->
+                    <ul>
+                        <li t-foreach="alert['messages']" t-as="pending">
+                            <strong t-out="pending.author_name"/>
+                            — recibido el <t t-out="format_datetime(pending.create_date)"/>
+                        </li>
+                    </ul>
+                    <p>
+                        <a t-att-href="alert['queue_url']"
+                           style="background-color: #875A7B; padding: 10px 20px; color: #ffffff; text-decoration: none; border-radius: 5px;">
+                            Abrir la cola de moderación
+                        </a>
+                    </p>
+                    <p>
+                        Gracias por echarle un vistazo,<br/>
+                        El equipo de Canarias Conectada
+                    </p>
+                </div>
+            </field>
+            <field name="lang">{{ object.moderator_user_ids[:1].lang or '' }}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

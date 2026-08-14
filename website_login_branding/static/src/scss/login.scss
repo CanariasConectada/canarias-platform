@@ -1,0 +1,106 @@
+// Copyright 2026 Canarias Conectada
+// License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl).
+//
+// Polish for the branded auth card. Everything is scoped under
+// `.o_cc_login_wrap` so none of it leaks into the rest of the frontend. No
+// external fonts or CDNs -- only Bootstrap variables already present in the
+// frontend bundle, with plain-value fallbacks.
+
+.o_cc_login_wrap {
+    padding: 2rem 1rem;
+
+    .o_cc_login_card {
+        width: 100%;
+        max-width: 420px;
+        border-radius: 1rem;
+        overflow: hidden;
+        background-color: var(--o-cc-card-bg, #ffffff);
+    }
+
+    .o_cc_login_brand_logo {
+        // The brand mark is the first thing that identifies the card, so it
+        // carries more weight than the subvention strip at the foot (64px).
+        // Raised from 128px on 2026-08-14: the card is 420px wide, and at 160
+        // the mark reads as the subject of the card rather than a header on
+        // top of it, with room to spare on the narrowest phone.
+        max-height: 160px;
+        width: auto;
+    }
+
+    // Make the core primary action ("Iniciar sesión") the clear focal point of
+    // the card without touching the core template.
+    .o_cc_login_form {
+        .btn-primary {
+            width: 100%;
+            padding-block: 0.625rem;
+            font-weight: 600;
+            border-radius: 0.5rem;
+        }
+
+        .form-control {
+            border-radius: 0.5rem;
+        }
+    }
+
+    // Labelled divider: a centered word floating over a hairline rule.
+    .o_cc_divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 1.5rem 0 1rem;
+        color: var(--o-cc-muted, #6c757d);
+        font-size: 0.85rem;
+
+        &::before,
+        &::after {
+            content: "";
+            flex: 1 1 auto;
+            border-top: 1px solid var(--o-cc-divider, #dee2e6);
+        }
+
+        .o_cc_divider_label {
+            padding: 0 0.75rem;
+            white-space: nowrap;
+        }
+    }
+
+    // Secondary / ghost guest action.
+    .o_cc_guest_btn {
+        border-radius: 0.5rem;
+        padding-block: 0.5rem;
+        font-weight: 500;
+        transition: background-color 0.15s ease, border-color 0.15s ease,
+            color 0.15s ease;
+
+        // Keyboard users get a visible ring; mouse users do not.
+        &:focus-visible {
+            outline: 2px solid currentColor;
+            outline-offset: 2px;
+        }
+    }
+
+    .o_cc_login_subvention_logo {
+        max-height: 64px;
+        width: auto;
+        opacity: 0.9;
+    }
+}
+
+// On a phone the card fills the width and drops its shadow: a floating card on
+// a tiny screen reads as an error dialog, a full-bleed sheet reads as a page.
+@media (max-width: 575.98px) {
+    .o_cc_login_wrap {
+        padding: 1rem 0.5rem;
+
+        .o_cc_login_card {
+            box-shadow: none !important;
+        }
+    }
+}
+
+// Respect users who asked the OS to reduce motion.
+@media (prefers-reduced-motion: reduce) {
+    .o_cc_login_wrap .o_cc_guest_btn {
+        transition: none;
+    }
+}

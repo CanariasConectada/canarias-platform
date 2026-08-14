@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!--
+        THE group the three zone channels are gated on.
+
+        Why a new group at all: the gate is `ir_rule_discuss_channel_all`
+        (mail/security/mail_security.xml:15-26), whose only branch for
+        `channel_type == "channel"` is
+
+            group_public_id = False  OR  group_public_id IN user.all_group_ids
+
+        so the channel is open to exactly the holders of ONE group — and the
+        product needs "portal AND internal, but not the visitor". No such group
+        exists in base: `group_user`, `group_portal` and `group_public` are
+        three siblings with no implication between them
+        (odoo/addons/base/security/base_groups.xml:42-91), so gating on
+        `group_portal` would lock internal staff out and gating on `group_user`
+        would lock every resident out.
+
+        `implied_by_ids` is what makes one group cover both: a member of
+        `group_user` or of `group_portal` gets this group in
+        `all_group_ids` (= `group_ids.all_implied_ids`,
+        odoo/addons/base/models/res_users.py:447-449), which is the exact field
+        the rule reads.
+
+        The visitor is excluded by omission, and that is the whole security
+        property: a guest session runs as `base.public_user`, whose only group
+        is `base.group_public` (base_groups.xml:93-95). `group_public` does NOT
+        imply this group, so `group_public_id IN user.all_group_ids` is false
+        for every anonymous request and the record rule filters the zone
+        channels out of the `search()` that every public discuss route starts
+        with. The visitor gets 404, not an empty channel.
+
+        Note this is a READ gate, not a seat: membership plays no part in the
+        rule for `channel_type == "channel"`, so seating a guest would not open
+        a zone channel either. Membership is only what puts a channel in
+        somebody's Discuss sidebar.
+    -->
+    <record id="group_zone_channel_member" model="res.groups">
+        <field name="name">Community Chat: Registered Member</field>
+        <field name="comment">Holders may read and post in the neighbourhood
+            channels. Granted automatically to every portal and internal user;
+            never granted to anonymous visitors.</field>
+        <field
+            name="implied_by_ids"
+            eval="[Command.link(ref('base.group_user')), Command.link(ref('base.group_portal'))]"
+        />
+    </record>
+
+</odoo>

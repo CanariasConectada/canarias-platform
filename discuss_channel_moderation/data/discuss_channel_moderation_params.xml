@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!-- noupdate: an administrator who raised (or lowered) the SLA must not
+         have it silently reset to 30 by the next module upgrade. -->
+    <data noupdate="1">
+
+        <!-- The row exists so the knob is FINDABLE in Settings > Technical >
+             System Parameters. The Python side falls back to the same 30
+             minutes when the row is missing, so deleting it changes nothing;
+             what deleting it would change, if the record did not ship at all,
+             is that nobody would ever learn the parameter is readable. -->
+        <record id="param_late_alert_minutes" model="ir.config_parameter">
+            <field name="key">discuss_channel_moderation.late_alert_minutes</field>
+            <field name="value">30</field>
+        </record>
+
+    </data>
+</odoo>

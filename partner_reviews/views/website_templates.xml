@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- Read-only star row (0..5 filled stars). -->
+    <template id="review_stars" name="Review Stars">
+        <span class="o_partner_reviews_stars" t-att-aria-label="'%s/5' % int(stars)">
+            <t t-foreach="range(1, 6)" t-as="star">
+                <span t-attf-class="o_partner_reviews_star #{'filled' if star &lt;= int(stars) else ''}">★</span>
+            </t>
+        </span>
+    </template>
+
+    <!-- One published review card. -->
+    <template id="review_card" name="Review Card">
+        <div class="card border-0 shadow-sm mb-3 o_partner_reviews_card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <strong t-out="review.partner_id.name or 'Visitante'"/>
+                    <small class="text-muted" t-out="review.create_date.strftime('%d/%m/%Y')"/>
+                </div>
+                <t t-call="partner_reviews.review_stars">
+                    <t t-set="stars" t-value="review.rating"/>
+                </t>
+                <p class="mb-0 mt-2" t-if="review.feedback" t-out="review.feedback"/>
+                <div class="mt-3 ps-3 border-start border-3" t-if="review.publisher_comment">
+                    <small class="text-muted d-block">
+                        Answer from <t t-out="company.name"/>
+                    </small>
+                    <p class="mb-0 fst-italic" t-out="review.publisher_comment"/>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Public reviews page of the current merchant website. -->
+    <template id="reviews_page" name="Merchant Reviews Page">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <section class="py-5">
+                    <div class="container">
+                        <h1 class="mb-4">Reviews of <t t-out="company.name"/></h1>
+                        <div t-if="status_message" t-attf-class="alert #{'alert-danger' if status_is_error else 'alert-success'}" role="alert">
+                            <t t-out="status_message"/>
+                        </div>
+                        <div class="row">
+                            <!-- Stats column -->
+                            <div class="col-md-4">
+                                <div class="card border-0 shadow-sm mb-4">
+                                    <div class="card-body text-center">
+                                        <span class="display-4 fw-bold text-primary" t-out="'%.1f' % company.review_avg"/>
+                                        <div class="mt-2">
+                                            <t t-call="partner_reviews.review_stars">
+                                                <t t-set="stars" t-value="round(company.review_avg)"/>
+                                            </t>
+                                        </div>
+                                        <p class="text-muted small mt-2 mb-0">
+                                            <t t-out="total_reviews"/> reviews
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="card border-0 shadow-sm mb-4">
+                                    <div class="card-body">
+                                        <t t-foreach="[5, 4, 3, 2, 1]" t-as="star">
+                                            <div class="d-flex align-items-center mb-1">
+                                                <span class="me-2 small" style="width: 2rem;"><t t-out="star"/>★</span>
+                                                <div class="flex-grow-1 progress" style="height: 8px;">
+                                                    <div class="progress-bar bg-warning" role="progressbar" t-attf-style="width: #{(distribution.get(star, 0) * 100 / total_reviews) if total_reviews else 0}%"/>
+                                                </div>
+                                                <span class="ms-2 text-muted small" style="width: 1.5rem;" t-out="distribution.get(star, 0)"/>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Form + list column -->
+                            <div class="col-md-8">
+                                <div class="card border-0 shadow-sm mb-4" t-if="not request.env.user._is_public()">
+                                    <div class="card-body">
+                                        <h5 class="mb-3" t-if="not user_review">Your review</h5>
+                                        <h5 class="mb-3" t-else="">Edit your review</h5>
+                                        <form action="/resenas/enviar" method="post">
+                                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                            <div class="o_partner_reviews_star_input" role="radiogroup">
+                                                <t t-foreach="[5, 4, 3, 2, 1]" t-as="star">
+                                                    <input type="radio" name="rating" t-att-id="'rating-%s' % star" t-att-value="star" t-att-checked="'checked' if user_review and int(user_review.rating) == star else None" required="required"/>
+                                                    <label t-att-for="'rating-%s' % star" t-att-title="'%s/5' % star">★</label>
+                                                </t>
+                                            </div>
+                                            <textarea t-if="comments_allowed" name="feedback" class="form-control mt-3" rows="3" placeholder="Share your experience..." t-out="user_review.feedback or ''"/>
+                                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                                <button type="submit" class="btn btn-primary btn-sm">Send review</button>
+                                            </div>
+                                        </form>
+                                        <form action="/resenas/eliminar" method="post" class="mt-2" t-if="user_review">
+                                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                            <button type="submit" class="btn btn-outline-danger btn-sm">Delete my review</button>
+                                        </form>
+                                    </div>
+                                </div>
+                                <div class="card border-0 shadow-sm mb-4 bg-light" t-else="">
+                                    <div class="card-body text-center py-4">
+                                        <h5>Want to leave a review?</h5>
+                                        <a href="/web/login?redirect=/resenas" class="btn btn-primary mt-2">Log in</a>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h3 class="mb-0">Comments</h3>
+                                    <span class="badge text-bg-secondary" t-out="total_reviews"/>
+                                </div>
+                                <t t-foreach="reviews" t-as="review">
+                                    <t t-call="partner_reviews.review_card"/>
+                                </t>
+                                <p class="text-muted" t-if="not reviews">
+                                    No reviews yet. Be the first one!
+                                </p>
+                                <div class="o_portal_pager d-flex justify-content-center" t-if="pager['page_count'] &gt; 1">
+                                    <t t-call="website.pager"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+</odoo>

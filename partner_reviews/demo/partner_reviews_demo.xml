@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="demo_company_reviews" model="res.company">
+        <field name="name">Demo Reviewed Bakery</field>
+        <field name="enable_reviews" eval="True"/>
+    </record>
+
+    <record id="demo_partner_customer_1" model="res.partner">
+        <field name="name">Demo Review Customer 1</field>
+        <field name="email">demo.review.customer1@example.com</field>
+    </record>
+
+    <record id="demo_partner_customer_2" model="res.partner">
+        <field name="name">Demo Review Customer 2</field>
+        <field name="email">demo.review.customer2@example.com</field>
+    </record>
+
+    <record id="demo_review_approved" model="rating.rating">
+        <field name="res_model_id" ref="base.model_res_company"/>
+        <field name="res_id" eval="ref('demo_company_reviews')"/>
+        <field name="partner_id" ref="demo_partner_customer_1"/>
+        <field name="rating">5</field>
+        <field name="feedback">Great bread and lovely staff, totally recommended.</field>
+        <field name="consumed" eval="True"/>
+    </record>
+
+    <!-- Contains a forbidden word ("timo"), so it is auto-held. -->
+    <record id="demo_review_pending" model="rating.rating">
+        <field name="res_model_id" ref="base.model_res_company"/>
+        <field name="res_id" eval="ref('demo_company_reviews')"/>
+        <field name="partner_id" ref="demo_partner_customer_2"/>
+        <field name="rating">1</field>
+        <field name="feedback">Un timo, no volveré.</field>
+        <field name="consumed" eval="True"/>
+    </record>
+
+</odoo>

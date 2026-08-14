@@ -1,0 +1,80 @@
+/* Copyright 2026 Canarias Conectada
+ * License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+ *
+ * A modern skin for core's product comparison — the button on the cards and
+ * the bottom bar/drawer the comparison interaction shows. Colour comes from
+ * the Canarias plum so it reads as one system with the rest of the shop. */
+
+:root {
+    --wscc-accent: #714B67;
+    --wscc-accent-ink: #ffffff;
+    --wscc-radius: 999px;
+}
+
+/* -- the compare button on a product card -------------------------------- */
+/* Core keeps ``.o_add_compare`` hidden until the tile is hovered (it lives in
+ * a visibility wrapper on the standard shop). Our button sits on the card
+ * itself and must always show, so override that default. */
+.o_wscc_compare_btn {
+    display: inline-flex !important;
+    align-items: center;
+    opacity: 1 !important;
+    visibility: visible !important;
+    border: 1px solid var(--wscc-accent);
+    color: var(--wscc-accent);
+    background: transparent;
+    border-radius: var(--wscc-radius);
+    padding: 0.3rem 0.9rem;
+    font-weight: 600;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+.o_wscc_compare_btn:hover,
+.o_wscc_compare_btn:focus-visible {
+    background: var(--wscc-accent);
+    color: var(--wscc-accent-ink);
+}
+.o_wscc_compare_btn.active,
+.o_wscc_compare_btn[aria-pressed="true"] {
+    background: var(--wscc-accent);
+    color: var(--wscc-accent-ink);
+}
+.o_wscc_compare_btn_sm {
+    padding: 0.2rem 0.7rem;
+    font-size: 0.8rem;
+}
+
+/* -- the bottom comparison bar ------------------------------------------- */
+/* Core renders it as an OWL component; we lift it into a modern floating bar
+ * with a soft shadow and rounded top, and let its product strip scroll
+ * horizontally instead of breaking the layout on mobile (UI/UX Pro: wide
+ * content gets its own overflow-x, never the page body). */
+.o_product_feature_panel,
+.o_comparelist_products {
+    border-radius: 1rem 1rem 0 0 !important;
+    box-shadow: 0 -0.5rem 1.5rem rgba(0, 0, 0, 0.15) !important;
+    overflow-x: auto;
+}
+.o_product_feature_panel .o_product_row,
+.o_comparelist_products .o_product_row {
+    scroll-snap-align: start;
+}
+
+/* The "compare now" call to action in the bar, in brand colour. */
+.o_product_feature_panel .btn-primary,
+.o_comparelist_button .btn-primary {
+    background-color: var(--wscc-accent);
+    border-color: var(--wscc-accent);
+}
+
+/* -- the full comparison table page -------------------------------------- */
+/* UI/UX Pro: a wide table must scroll inside its own wrapper. */
+.o_wsale_comparison_page .table-responsive,
+.o_wsale_comparison_page table {
+    overflow-x: auto;
+}
+.o_wsale_comparison_page table thead th {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 2;
+}

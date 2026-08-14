@@ -1,28 +1,26 @@
+# Copyright 2026 Canarias Conectada
+# License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
-    'name': 'Auto Microsite Generator',
-    'version': '1.0.0',
-    'category': 'Website',
-    'summary': 'Generación automática de microsites y validación batch',
-    'description': """
-        Módulo independiente que intercepta la creación de compañías (res.company)
-        para generar automáticamente un microsite completo (website, homepage,
-        menús, theme views y campos por defecto).
-
-        Incluye herramientas de validación batch para auditar la calidad de
-        microsites existentes: campos vacíos, secciones HTML incompletas,
-        detección de Lorem ipsum y reportes ejecutables manualmente o vía cron.
-    """,
-    'author': 'MikeColangelo',
-    'depends': ['partner_microsite_manager', 'website', 'theme_corporate_multi'],
-    'data': [
-        'security/ir.model.access.csv',
-        'data/cron.xml',
-        'data/server_actions.xml',
-        'views/validation_report_views.xml',
+    "name": "Auto Microsite Generator",
+    "version": "19.0.1.1.0",
+    "category": "Website",
+    "summary": "Provision a website, homepage and menu when a company is created",
+    "author": "MikeColangelo",
+    "website": "https://github.com/CanariasConectada/canarias-platform",
+    "license": "AGPL-3",
+    "maintainers": ["mikecolangelo"],
+    "development_status": "Beta",
+    "depends": [
+        "website",
     ],
-    'installable': True,
-    'application': False,
-    'license': 'LGPL-3',
-    'auto_install': False,
-    'website': 'https://github.com/CanariasConectada/canarias-platform',
+    "data": [
+        "views/microsite_templates.xml",
+    ],
+    "demo": [
+        "demo/auto_microsite_demo.xml",
+    ],
+    "installable": True,
+    "application": False,
+    "auto_install": False,
+    "uninstall_hook": "uninstall_hook",
 }

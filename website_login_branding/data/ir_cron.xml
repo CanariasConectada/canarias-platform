@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl). -->
+<odoo>
+    <!--
+        noupdate="1": an administrator may widen the interval, move the hour or
+        switch the purge off; a module update must not put those changes back.
+    -->
+    <data noupdate="1">
+
+        <record id="cron_gc_platform_guests" model="ir.cron">
+            <field name="name">Website Login Branding: purge idle guest accounts</field>
+            <field name="model_id" ref="base.model_res_users"/>
+            <field name="state">code</field>
+            <field name="code">model._gc_platform_guests()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <!-- 04:00 UTC: quiet hour, after the nightly jobs. -->
+            <field name="nextcall" eval="(DateTime.now().replace(hour=4, minute=0, second=0) + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="active" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

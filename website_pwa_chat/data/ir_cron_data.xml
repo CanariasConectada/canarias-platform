@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!--
+        Keeps the support queue seated with today's agents.
+
+        Every support conversation seats its agents when it opens and again
+        whenever the visitor comes back to it, so this is not the main path —
+        it is the one that covers the conversation nobody has reopened. Grant
+        somebody the support group this morning and by tonight they are in
+        every waiting conversation, including the ones opened before they were
+        appointed.
+
+        Nightly rather than hourly: appointing an agent is a rare, deliberate
+        act, and the two immediate paths already cover the common case. A
+        frequent job here would spend its time re-reading a queue that has not
+        changed.
+    -->
+    <record id="ir_cron_support_sync_agents" model="ir.cron">
+        <field name="name">Chat: sentar a los agentes de soporte en las conversaciones abiertas</field>
+        <field name="model_id" ref="mail.model_discuss_channel" />
+        <field name="state">code</field>
+        <field name="code">model._support_sync_agents()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="active" eval="True" />
+    </record>
+</odoo>

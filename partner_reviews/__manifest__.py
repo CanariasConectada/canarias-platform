@@ -1,44 +1,41 @@
-# -*- coding: utf-8 -*-
+# Copyright 2026 Canarias Conectada
+# License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
-    'name': 'Partner Reviews - Reseñas de Comercios',
-    'version': '19.0.1.0.0',
-    'category': 'Website',
-    'summary': 'Sistema de reseñas con valoraciones y comentarios para microsites de comercios',
-    'description': """
-Partner Reviews
-===============
-Módulo para gestionar reseñas de clientes en los microsites de comercios:
-* Valoraciones con estrellas (1-5)
-* Comentarios textuales con moderación automática
-* Palabras prohibidas y filtro de contenido
-* Página de reseñas por microsite
-* Integración con directorio de comercios
-    """,
-    'author': 'MikeColangelo',
-    'website': 'https://github.com/CanariasConectada/canarias-platform',
-    'depends': ['base', 'website', 'partner_microsite_manager', 'mail'],
-    'data': [
-        'security/partner_reviews_security.xml',
-        'security/ir.model.access.csv',
-        'security/partner_reviews_rules.xml',
-        'data/email_template_moderacion.xml',
-        'data/palabras_prohibidas_default.xml',
-        'views/partner_review_settings_views.xml',
-        'views/partner_review_rating_views.xml',
-        'views/partner_review_comment_views.xml',
-        'views/partner_review_palabra_prohibida_views.xml',
-        'views/partner_review_templates.xml',
-        'views/res_partner_views.xml',
-        'views/partner_review_menus.xml',
+    "name": "Merchant Reviews",
+    "version": "19.0.2.1.2",
+    "category": "Website",
+    "summary": "Customer reviews for merchant websites, built on rating.rating",
+    "author": "MikeColangelo",
+    "website": "https://github.com/CanariasConectada/canarias-platform",
+    "license": "AGPL-3",
+    "maintainers": ["mikecolangelo"],
+    "development_status": "Production/Stable",
+    "depends": [
+        "portal_rating",
+        "website",
     ],
-    'assets': {
-        'web.assets_frontend': [
-            'partner_reviews/static/src/scss/partner_reviews.scss',
-            'partner_reviews/static/src/js/partner_reviews.js',
+    "data": [
+        "security/partner_reviews_security.xml",
+        "security/ir.model.access.csv",
+        "security/partner_reviews_rules.xml",
+        "data/forbidden_words.xml",
+        "data/mail_template_moderation.xml",
+        "views/rating_rating_views.xml",
+        "views/review_forbidden_word_views.xml",
+        "views/res_company_views.xml",
+        "views/res_config_settings_views.xml",
+        "views/website_templates.xml",
+        "views/partner_reviews_menus.xml",
+    ],
+    "demo": [
+        "demo/partner_reviews_demo.xml",
+    ],
+    "assets": {
+        "web.assets_frontend": [
+            "partner_reviews/static/src/scss/partner_reviews.scss",
         ],
     },
-    'installable': True,
-    'application': False,
-    'auto_install': False,
-    'license': 'LGPL-3',
+    "installable": True,
+    "application": False,
+    "auto_install": False,
 }

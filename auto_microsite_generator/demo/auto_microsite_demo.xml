@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- Creating this company triggers the generator: it provisions a website,
+         a default homepage at "/" and the standard menu automatically. -->
+    <record id="demo_generated_company" model="res.company">
+        <field name="name">Demo Auto Microsite Shop</field>
+        <field name="street">Calle Mayor 10</field>
+        <field name="city">Las Palmas de Gran Canaria</field>
+        <field name="zip">35001</field>
+    </record>
+
+</odoo>

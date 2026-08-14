@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <record id="certification_type_view_list" model="ir.ui.view">
+        <field name="name">certification.type.list</field>
+        <field name="model">certification.type</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="survey_id"/>
+                <field name="group_user_id"/>
+                <field name="group_manager_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="certification_type_view_form" model="ir.ui.view">
+        <field name="name">certification.type.form</field>
+        <field name="model">certification.type</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="active" invisible="1"/>
+                    <field name="badge_image" widget="image" class="oe_avatar"/>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="e.g. Silver Economy"/></h1>
+                    </div>
+                    <group>
+                        <group string="Configuration">
+                            <field name="code"/>
+                            <field name="sequence"/>
+                            <field name="survey_id"/>
+                            <field name="group_user_id"/>
+                            <field name="group_manager_id"/>
+                        </group>
+                        <group string="Score Thresholds">
+                            <field name="max_score"/>
+                            <field name="question_full_score"/>
+                            <field name="bronze_min"/>
+                            <field name="silver_min"/>
+                            <field name="gold_min"/>
+                        </group>
+                        <group string="Timing">
+                            <field name="cooldown_months"/>
+                            <field name="validity_years"/>
+                            <field name="renewal_reminder_days"/>
+                        </group>
+                        <group string="Website">
+                            <field name="website_title"/>
+                            <field name="website_description"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Landing Page" name="landing">
+                            <group>
+                                <field name="landing_published"/>
+                            </group>
+                            <field name="landing_description"
+                                   widget="html"
+                                   placeholder="What this certification is about, shown at /certification/&lt;code&gt;"/>
+                        </page>
+                        <page string="Highlights" name="highlights">
+                            <group>
+                                <field name="amenities_title"
+                                       placeholder="Lo que ofrece este comercio"/>
+                            </group>
+                            <field name="highlight_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="icon"
+                                           placeholder="fa-wheelchair"/>
+                                    <field name="label"/>
+                                    <field name="description"/>
+                                </list>
+                            </field>
+                            <p class="text-muted mt-2">
+                                Shown as an icon list on every certified company's
+                                microsite. A company whose own evaluation produced
+                                highlights shows those instead.
+                            </p>
+                        </page>
+                        <page string="Training Material" name="material">
+                            <field name="material_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="description"/>
+                                    <field name="attachment_id"/>
+                                </list>
+                            </field>
+                            <p class="text-muted mt-2">
+                                Files listed here are published automatically so
+                                visitors can download them from the landing page.
+                            </p>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_certification_type" model="ir.actions.act_window">
+        <field name="name">Certification Types</field>
+        <field name="res_model">certification.type</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="company_certification_view_list" model="ir.ui.view">
+        <field name="name">res.company.certification.list</field>
+        <field name="model">res.company.certification</field>
+        <field name="arch" type="xml">
+            <list create="false">
+                <field name="company_id"/>
+                <field name="type_id"/>
+                <field name="level" widget="badge"
+                       decoration-info="level == 'bronze'"
+                       decoration-primary="level == 'silver'"
+                       decoration-warning="level == 'gold'"/>
+                <field name="score"/>
+                <field name="certification_date"/>
+                <field name="expiry_date"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_company_certification" model="ir.actions.act_window">
+        <field name="name">Company Certifications</field>
+        <field name="res_model">res.company.certification</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <!-- THE list of evaluations, for everybody. Not "all" in the sense of a
+         manager privilege: the domain matches every seal, and who sees which
+         rows is decided underneath by `survey_user_input_rule_certification_user`
+         ("a seal whose user group I hold, in a company I belong to") and its
+         manager counterpart. So a merchant opening this menu sees their own
+         two seals and a platform manager sees all 216 companies — one menu,
+         one list, different rows.
+
+         Grouped by seal rather than by survey: a survey is an implementation
+         detail of a seal, and there can be several per seal over time as the
+         questionnaire is revised, which would split a merchant's own history
+         into groups that mean nothing to them. -->
+    <record id="action_all_certification_evaluations" model="ir.actions.act_window">
+        <field name="name">Evaluaciones</field>
+        <field name="res_model">survey.user_input</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('certification_type_id', '!=', False), ('test_entry', '=', False)]</field>
+        <field name="context">{'create': False, 'certification_display': True, 'search_default_group_by_certification_type': 1}</field>
+    </record>
+
+    <!-- The container for every seal the platform issues. Silver Economy and
+         Sostenibilidad declare this menu as their parent, so a merchant who
+         holds either seal reaches it here instead of getting a top-level app
+         of its own. Each of those modules adds its own seal-holder group to
+         this menu — they depend on this one, so the grant has to travel in
+         that direction and cannot be named here. The configuration entries
+         below stay manager-only: a menu without groups inherits the
+         visibility of its parent, so each one has to say so itself. -->
+    <menuitem id="menu_certification_root"
+              name="Certificaciones"
+              web_icon="company_certification,static/description/icon.png"
+              groups="company_certification.group_certification_manager"
+              sequence="49"/>
+    <!-- No group restriction of its own, deliberately, and it is the only
+         entry here without one: this is the list every seal holder came for,
+         so it inherits the visibility of Certificaciones — which the seal
+         modules open for their own holders. The record rules decide the rows;
+         a group on the menu would only decide who gets to see an empty one. -->
+    <menuitem id="menu_certification_evaluations"
+              name="Evaluaciones"
+              parent="menu_certification_root"
+              action="action_all_certification_evaluations"
+              sequence="10"/>
+    <menuitem id="menu_company_certification"
+              name="Company Certifications"
+              parent="menu_certification_root"
+              action="action_company_certification"
+              groups="company_certification.group_certification_manager"
+              sequence="20"/>
+    <menuitem id="menu_certification_type"
+              name="Certification Types"
+              parent="menu_certification_root"
+              action="action_certification_type"
+              groups="company_certification.group_certification_manager"
+              sequence="30"/>
+</odoo>

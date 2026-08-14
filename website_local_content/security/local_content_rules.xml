@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <data noupdate="1">
+
+        <!-- Anonymous visitors and portal users only read approved,
+             published items. The public controller uses sudo(), so these
+             rules protect direct ORM access (e.g. exports, RPC). -->
+        <record id="rule_local_content_item_public" model="ir.rule">
+            <field name="name">Local content: public reads approved items only</field>
+            <field name="model_id" ref="model_website_local_content_item"/>
+            <field name="domain_force">[('state', '=', 'approved'), ('is_published', '=', True)]</field>
+            <field name="groups" eval="[Command.link(ref('base.group_public')), Command.link(ref('base.group_portal'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="rule_local_content_item_manager" model="ir.rule">
+            <field name="name">Local content: managers see everything</field>
+            <field name="model_id" ref="model_website_local_content_item"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[Command.link(ref('group_local_content_manager')), Command.link(ref('base.group_system'))]"/>
+        </record>
+
+    </data>
+</odoo>
