@@ -57,11 +57,37 @@ action = model.action_start_new_silver_evaluation()
         <field name="group_ids" eval="[(4, ref('silver_economy.group_silver_user'))]"/>
     </record>
 
-    <menuitem id="menu_silver_evaluations"
-              name="Mis Evaluaciones"
-              parent="menu_silver_economy_root"
-              action="action_silver_evaluations"
-              sequence="10"/>
+    <!-- Holding the Silver seal here means holding it for the engine too.
+         `company_certification` owns the generic machinery — the
+         `certification.type` records, and the record rule that decides which
+         evaluations somebody may read ("a seal whose `group_user_id` I hold,
+         in a company I belong to"). That rule reads the ENGINE's group, and
+         this module has its own; without this link the two names for the same
+         seal never met, which is why the evaluations could only be listed one
+         seal at a time, each through its own module's rule.
+
+         With the link there is a single list for both seals, and it is the
+         engine's rule that fills it. Nothing is granted that the seal did not
+         already imply: the engine's group is read-only on the certification
+         models plus the right to answer one's own evaluation. -->
+    <record id="group_silver_user" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('company_certification.group_silver_user'))]"/>
+    </record>
+    <record id="group_silver_manager" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('company_certification.group_silver_manager'))]"/>
+    </record>
+
+    <!-- "Mis Evaluaciones" used to live here, one list per seal. It is gone
+         on purpose: Certificaciones > Evaluaciones is now the single list for
+         every seal, grouped by seal, the way Contenido local lists memoria
+         viva and lugares de interés together. Removing the menuitem from this
+         file is what removes it from the database — Odoo deletes the records
+         of xmlids a module stops declaring.
+
+         `action_silver_evaluations` STAYS. It is not menu furniture: the
+         reminder emails link to it and the controller redirects to it after a
+         merchant finishes an evaluation. Deleting it would break both.
+    -->
 
     <menuitem id="menu_silver_surveys"
               name="Cuestionarios"

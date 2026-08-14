@@ -55,11 +55,25 @@ action = model.action_start_new_sustainability_evaluation()
         <field name="group_ids" eval="[(4, ref('sustainability.group_sustainability_user'))]"/>
     </record>
 
-    <menuitem id="menu_sust_evaluations"
-              name="Mis Evaluaciones"
-              parent="menu_sustainability_root"
-              action="action_sust_evaluations"
-              sequence="10"/>
+    <!-- Ver la nota equivalente en silver_economy: tener el sello aquí es
+         tenerlo también para el motor, que es quien decide con su regla qué
+         evaluaciones puede leer cada uno. Sin este enlace los dos nombres del
+         mismo sello nunca se encontraban y la lista sólo podía ir sello a
+         sello. -->
+    <record id="group_sustainability_user" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('company_certification.group_sustainability_user'))]"/>
+    </record>
+    <record id="group_sustainability_manager" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('company_certification.group_sustainability_manager'))]"/>
+    </record>
+
+    <!-- "Mis Evaluaciones" se retiró: Certificaciones > Evaluaciones es ahora
+         la lista única de todos los sellos, agrupada por sello, igual que
+         Contenido local muestra memoria viva y lugares de interés juntos.
+         Quitar el menuitem de este archivo es lo que lo borra de la base.
+
+         `action_sust_evaluations` SE QUEDA: los correos de recordatorio
+         enlazan a ella y el controlador redirige ahí al terminar. -->
 
     <menuitem id="menu_sust_surveys"
               name="Cuestionarios"

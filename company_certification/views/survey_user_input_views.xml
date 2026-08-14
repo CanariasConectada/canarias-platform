@@ -2,6 +2,33 @@
 <!-- Copyright 2026 Canarias Conectada
      License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
 <odoo>
+    <!-- One list for every seal, grouped by which seal it is. The same shape
+         `website_local_content` uses for its Items: a single list of
+         everything, with the vertical as a group-by rather than as a separate
+         menu per vertical. A seal is a `certification.type` record here for
+         exactly the reason a content type is one there, so the two lists can
+         be read the same way.
+
+         The group-by is what makes one list better than two rather than just
+         shorter: the seals stay visually separated, and a merchant who holds
+         both sees them side by side instead of having to remember which menu
+         held which. -->
+    <record id="survey_user_input_view_search_certification" model="ir.ui.view">
+        <field name="name">survey.user_input.search.certification</field>
+        <field name="model">survey.user_input</field>
+        <field name="inherit_id" ref="survey.survey_user_input_view_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <filter name="group_by_certification_type"
+                        string="Sello"
+                        context="{'group_by': 'certification_type_id'}"/>
+                <filter name="group_by_certification_company"
+                        string="Comercio"
+                        context="{'group_by': 'company_id'}"/>
+            </xpath>
+        </field>
+    </record>
+
     <record id="survey_user_input_view_list_certification" model="ir.ui.view">
         <field name="name">survey.user_input.list.certification</field>
         <field name="model">survey.user_input</field>
@@ -18,6 +45,11 @@
                         invisible="state not in ('new', 'in_progress') or not context.get('certification_display')"/>
             </xpath>
             <xpath expr="//field[@name='survey_id']" position="after">
+                <!-- Which seal this evaluation is for. On one list per seal it
+                     was implicit in the menu you came through; on a single
+                     list it has to be on the row. -->
+                <field name="certification_type_id" optional="show"
+                       column_invisible="not context.get('certification_display')"/>
                 <field name="company_id" optional="show" column_invisible="not context.get('certification_display')"/>
                 <field name="certification_level" optional="show" widget="badge"
                        decoration-muted="certification_level == 'none'"

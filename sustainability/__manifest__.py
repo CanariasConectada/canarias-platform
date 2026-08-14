@@ -3,7 +3,7 @@
 
 {
     "name": "Sostenibilidad Certification",
-    "version": "19.0.1.7.0",
+    "version": "19.0.1.8.0",
     "category": "Marketing/Surveys",
     "summary": "Sistema de evaluación y certificación Sostenibilidad para empresas",
     "description": """

@@ -133,12 +133,24 @@
         <field name="view_mode">list</field>
     </record>
 
+    <!-- THE list of evaluations, for everybody. Not "all" in the sense of a
+         manager privilege: the domain matches every seal, and who sees which
+         rows is decided underneath by `survey_user_input_rule_certification_user`
+         ("a seal whose user group I hold, in a company I belong to") and its
+         manager counterpart. So a merchant opening this menu sees their own
+         two seals and a platform manager sees all 216 companies — one menu,
+         one list, different rows.
+
+         Grouped by seal rather than by survey: a survey is an implementation
+         detail of a seal, and there can be several per seal over time as the
+         questionnaire is revised, which would split a merchant's own history
+         into groups that mean nothing to them. -->
     <record id="action_all_certification_evaluations" model="ir.actions.act_window">
-        <field name="name">All Evaluations</field>
+        <field name="name">Evaluaciones</field>
         <field name="res_model">survey.user_input</field>
         <field name="view_mode">list,form</field>
         <field name="domain">[('certification_type_id', '!=', False), ('test_entry', '=', False)]</field>
-        <field name="context">{'create': False, 'certification_display': True, 'search_default_group_by_survey': 1}</field>
+        <field name="context">{'create': False, 'certification_display': True, 'search_default_group_by_certification_type': 1}</field>
     </record>
 
     <!-- The container for every seal the platform issues. Silver Economy and
@@ -154,11 +166,15 @@
               web_icon="company_certification,static/description/icon.png"
               groups="company_certification.group_certification_manager"
               sequence="49"/>
+    <!-- No group restriction of its own, deliberately, and it is the only
+         entry here without one: this is the list every seal holder came for,
+         so it inherits the visibility of Certificaciones — which the seal
+         modules open for their own holders. The record rules decide the rows;
+         a group on the menu would only decide who gets to see an empty one. -->
     <menuitem id="menu_certification_evaluations"
-              name="All Evaluations"
+              name="Evaluaciones"
               parent="menu_certification_root"
               action="action_all_certification_evaluations"
-              groups="company_certification.group_certification_manager"
               sequence="10"/>
     <menuitem id="menu_company_certification"
               name="Company Certifications"

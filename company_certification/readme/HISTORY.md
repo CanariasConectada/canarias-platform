@@ -1,3 +1,16 @@
+## 19.0.2.1.0 (2026-08-14)
+
+- One list of evaluations for every seal, grouped by seal, replacing the one
+  list per seal. Certificaciones > Evaluaciones now reads the way Contenido
+  local reads memoria viva and lugares de interés together: a single list with
+  the vertical as a group-by. Who sees which rows was already decided by
+  `survey_user_input_rule_certification_user` ("a seal whose user group I
+  hold, in a company I belong to"), so a merchant opens it onto their own
+  seals and a manager onto every company.
+- The seal modules now imply this module's per-seal groups. The two names for
+  the same seal had never met, which is why the engine's rule could not fill a
+  list across both.
+
 ## 19.0.1.1.0 (2026-07-23)
 
 Closes the last gap against the legacy modules: their public landing pages
