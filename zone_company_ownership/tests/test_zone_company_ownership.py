@@ -121,6 +121,32 @@ class TestZoneCompanyOwnership(TransactionCase):
         staff._apply_zone_companies()
         self.assertIn(self.zone_guanarteme, staff.company_ids)
 
+    def test_the_zone_alone_does_not_satisfy_the_ownership_guard(self):
+        """A zone rides along; it never substitutes for the shop.
+
+        Merchants belong to their zone company now, which is what would let
+        "keep at least one of your own companies" be satisfied by the zone
+        alone -- and a product owned by the zone but not by the shop is out of
+        the shop's own catalogue, which is the exact problem the guard exists
+        to prevent.
+        """
+        merchant = self.env["res.users"].create(
+            {
+                "name": "Zone Guard Merchant",
+                "login": "zone_guard_merchant",
+                "company_id": self.shop.id,
+                "company_ids": [(6, 0, (self.shop | self.zone_guanarteme).ids)],
+            }
+        )
+        guarded = merchant.with_context(test_multi_company_field_visible=True)
+        self.assertEqual(
+            self.env["product.template"]
+            .with_user(guarded)
+            ._guard_own_companies(),
+            self.shop,
+            "only the merchant's real shop may count as theirs",
+        )
+
     def test_running_it_twice_changes_nothing(self):
         """Idempotent, because the backfill will run over live data."""
         product = self._product(self.shop | self.platform)
