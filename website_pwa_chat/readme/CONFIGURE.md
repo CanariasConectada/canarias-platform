@@ -1,44 +1,37 @@
-Three switches, all off by default.
+## Publishing a channel on the chat page
 
-- **The website that serves it.** `Sitio web → Configuración → Sitios web`,
-  field **Chat de la comunidad**. Turn it on for the main portal and nowhere
-  else: the four channels belong to the whole platform, so serving them from a
-  merchant's microsite would put another merchant's conversation on their site.
-  Until it is on, `/chat` answers 404 everywhere — the intended posture for a
-  database with 218 websites.
+Discuss > a channel > **En el chat de la web**. Nothing else changes: who may
+read and post is still the channel's own group, so publishing a closed channel
+puts it on the list only for the people who could already open it.
 
-- **The websites that only link to it.** Field **Enlace a Comunidad**, on the
-  three neighbourhood portals (Guanarteme, Lomo los Frailes, Tamaraceite) and
-  on nothing else. They live on their own subdomains, so their menu entry is an
-  absolute URL built from the `domain` of whichever website has **Chat de la
-  comunidad** on. Leave it off on the merchant microsites: a shop's window is
-  not a public square, and the link would pull a visitor out of the shop they
-  were looking at.
+## Answering the support conversations
 
-  If the host website has no `domain` filled in, the entry is simply not
-  rendered. That is deliberate — an incomplete configuration must cost a
-  visitor one tap, not a whole page.
+Every visitor who opens **Hablar con soporte** gets a private conversation of
+their own, and it lands in the Discuss sidebar of everybody who answers.
+Administrators are there automatically. To add somebody who is *not* an
+administrator, give them the role **Soporte (chat de visitantes)**.
 
-- **The channels.** Installing the module publishes the four channels seeded by
-  `discuss_channel_zone`. A fifth is added later by ticking **En el chat de la
-  web** on its Discuss form. Publishing grants nothing: who may read and post
-  is still decided by the channel's own `group_public_id`.
+A ROLE, not the group. This platform runs `base_user_role`: every
+`res.users` write re-derives the user's groups from their roles, so ticking
+**Soporte: atender a los visitantes** on a user form saves without complaint
+and is gone by the next write. The role is created by
+`f41_support_role` in the migration-script repo and is the only grant that
+lasts.
 
-Worth checking at the same time:
+Somebody appointed today joins the conversations that were already waiting:
+the nightly cron *Chat: sentar a los agentes de soporte en las conversaciones
+abiertas* seats every current agent in every open conversation, and opening a
+conversation seats them too. Nobody has to be appointed before the queue
+starts, only before it is answered.
 
-- **The PWA.** The chat is a page of the app, so the website should also have
-  `website_pwa`'s **Instalable como app** on. Without it the page still works,
-  it simply is not part of an installable app.
-- **Moderators.** `discuss_channel_zone` ships the four moderation rows with an
-  empty moderator list. Until somebody is on it, held messages queue up with
-  nobody to approve them and every visitor's first message sits in "en
-  revisión" forever. Add them from **Discusión → Moderación**.
-- **The wait the page promises.** The held card tells the author how long a
-  review usually takes, and the number is read from
-  `discuss_channel_moderation.late_alert_minutes` — the threshold at which that
-  module emails the moderators about a message nobody has looked at. Move the
-  threshold and the copy follows; there is nothing to edit here. If the
-  parameter is missing or unreadable the page says 30 minutes.
-- **Push notifications are not required.** The page works with them off, which
-  is how it ships. Enabling them is `website_pwa_push`'s business and its
-  switch; nothing on this page asks the visitor for permission.
+Removing the role removes them from nothing: they stay in the conversations
+they were already seated in, which is deliberate — a conversation somebody has
+been replying to should not lose its history holder. Remove them from the
+channel members if that is what is wanted.
+
+## What support conversations are not
+
+They are never on the public channel list, they cannot be published there
+(`website_chat_published` stays false), and they are `channel_type = "group"`
+so only their members can read them. A visitor who guesses another
+conversation's URL gets a 404, not an empty page.
