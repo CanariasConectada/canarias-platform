@@ -3,6 +3,8 @@
 
 from unittest.mock import patch
 
+import psycopg2
+
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
@@ -241,6 +243,60 @@ class TestAutoTranslateFlow(TransactionCase):
         self.assertEqual(
             product.with_context(lang=TARGET).name, "[en_US] Frangollo dulce"
         )
+
+    # ------------------------------------------------------------------
+    # Surviving the database
+    # ------------------------------------------------------------------
+    def test_a_lost_transaction_stops_the_batch_instead_of_flailing(self):
+        """A serialization failure kills the whole transaction, not one record.
+
+        Rolling back to the savepoint does not revive it, so everything
+        afterwards fails too -- including writing the error onto the job. The
+        first production run swallowed that and lost 230 seconds of finished
+        translation. It has to stop and let the next run retry instead.
+        """
+        self.Product.create({"name": "Sancocho"})
+        jobs = self.Job.search([("state", "=", "pending")])
+        self.assertTrue(jobs)
+
+        boom = psycopg2.extensions.TransactionRollbackError(
+            "could not serialize access due to concurrent update"
+        )
+        with patch.object(type(self.engine), "translate", side_effect=boom):
+            with self.assertRaises(psycopg2.extensions.TransactionRollbackError):
+                jobs._run()
+
+    def test_an_ordinary_failure_is_recorded_and_the_batch_carries_on(self):
+        """One unreachable provider must not stop the other records."""
+        product = self.Product.create({"name": "Escaldón"})
+        # Only the filled-in fields ever reach an engine; an empty one is
+        # marked done without a round-trip, so it cannot carry a failure.
+        jobs = self._jobs_for(product, lang=False).filtered(
+            lambda job: job.field_name == "name"
+        )
+
+        with patch.object(
+            type(self.engine), "translate", side_effect=ValueError("connection refused")
+        ):
+            jobs._run()
+
+        self.assertTrue(all(job.state == "pending" for job in jobs))
+        self.assertTrue(all(job.attempts == 1 for job in jobs))
+        self.assertTrue(all("connection refused" in (job.error or "") for job in jobs))
+
+    def test_a_job_gives_up_after_three_attempts(self):
+        product = self.Product.create({"name": "Gofio"})
+        job = self._jobs_for(product).filtered(
+            lambda candidate: candidate.field_name == "name"
+        )
+
+        with patch.object(
+            type(self.engine), "translate", side_effect=ValueError("still down")
+        ):
+            for _attempt in range(3):
+                job._run()
+
+        self.assertEqual(job.state, "failed")
 
     # ------------------------------------------------------------------
     # Pages

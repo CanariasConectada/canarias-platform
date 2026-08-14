@@ -4,13 +4,28 @@
 import hashlib
 import logging
 
+import psycopg2
+
 from odoo import api, fields, models
-from odoo.tools import SQL
+from odoo.tools import SQL, config
 
 _logger = logging.getLogger(__name__)
 
 DEFAULT_BATCH = 50
 MAX_ATTEMPTS = 3
+
+# Progress is committed in slices. A batch can run for minutes, and losing all
+# of it because the last record misbehaved is exactly what happened the first
+# time this ran against production.
+COMMIT_EVERY = 20
+
+# PostgreSQL kills the *whole* transaction on these, not just back to the
+# savepoint. Nothing afterwards can succeed -- not even recording the error on
+# the job -- so the batch has to stop and let the next run retry.
+TRANSACTION_LOST = (
+    psycopg2.extensions.TransactionRollbackError,
+    psycopg2.errors.InFailedSqlTransaction,
+)
 
 # Odoo keeps this language as the technical base of every translatable jsonb
 # column, and any language without its own entry falls back to it. Writing it
@@ -124,8 +139,27 @@ class AutoTranslateJob(models.Model):
         limit = int(
             params.get_param("website_auto_translate.batch_size", DEFAULT_BATCH)
         )
-        jobs = self.search([("state", "=", "pending")], limit=limit)
-        return jobs.sorted(key=lambda job: job.lang == BASE_LANG)._run()
+        # Claim the rows instead of plainly searching them. Two runners over
+        # the same page -- a cron and somebody draining the queue by hand -- is
+        # enough for PostgreSQL to raise a serialization failure, and that
+        # aborts the entire transaction rather than just the record being
+        # worked on. ``SKIP LOCKED`` lets a second runner take different work
+        # instead of colliding. The ``lang = base`` term sorts English last for
+        # the reason given on ``BASE_LANG``.
+        self.env.cr.execute(
+            SQL(
+                """
+                SELECT id FROM auto_translate_job
+                 WHERE state = 'pending'
+                 ORDER BY (lang = %s), id
+                 LIMIT %s
+                   FOR UPDATE SKIP LOCKED
+                """,
+                BASE_LANG,
+                limit,
+            )
+        )
+        return self.browse([row[0] for row in self.env.cr.fetchall()])._run()
 
     def _run(self):
         """Translate each job in its own transaction slice.
@@ -140,11 +174,20 @@ class AutoTranslateJob(models.Model):
             .get_param("website_auto_translate.source_lang", "es_ES")
         )
         done = 0
-        for job in self:
+        for position, job in enumerate(self, start=1):
             try:
                 with self.env.cr.savepoint():
                     if job._run_one(source_lang):
                         done += 1
+            except TRANSACTION_LOST as error:
+                # Everything committed so far is safe; the rest stays pending.
+                _logger.warning(
+                    "Auto translate batch abandoned after %s jobs, "
+                    "the transaction is gone: %s",
+                    position - 1,
+                    error,
+                )
+                raise
             except Exception as error:  # noqa: BLE001 - recorded on the job itself
                 _logger.warning(
                     "Auto translate failed on %s(%s).%s [%s]: %s",
@@ -163,6 +206,8 @@ class AutoTranslateJob(models.Model):
                         "error": str(error)[:255],
                     }
                 )
+            if position % COMMIT_EVERY == 0 and not config["test_enable"]:
+                self.env.cr.commit()
         return done
 
     def _run_one(self, source_lang):

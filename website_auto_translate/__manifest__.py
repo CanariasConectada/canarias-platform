@@ -4,7 +4,7 @@
 {
     "name": "Website Auto Translate",
     "summary": "Translate shop, event and page content automatically when it is saved",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.1.0",
     "author": "Canarias Conectada",
     "website": "https://github.com/CanariasConectada/canarias-platform",
     "category": "Website",
