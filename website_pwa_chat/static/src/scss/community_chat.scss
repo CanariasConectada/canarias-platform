@@ -39,3 +39,34 @@
         overflow-wrap: anywhere;
     }
 }
+
+// The support card sits above the channels and has to read as a different
+// kind of thing, not as the first channel in the list. It carries the brand
+// plum rather than the neutral of a list row, and it is the only element on
+// the page with an icon.
+.o_cc_chat_support {
+    display: block;
+    border-color: rgba(113, 75, 103, 0.35);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+    &:hover,
+    &:focus-visible {
+        border-color: rgba(113, 75, 103, 0.75);
+        box-shadow: 0 4px 12px rgba(113, 75, 103, 0.18);
+    }
+
+    .o_cc_chat_support_icon {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 50%;
+        background: rgba(113, 75, 103, 0.12);
+        color: #714b67;
+        font-size: 1.15rem;
+    }
+}

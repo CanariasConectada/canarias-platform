@@ -40,12 +40,22 @@ action = model.action_start_new_silver_evaluation()
         <field name="context">{'default_is_silver_economy': True}</field>
     </record>
 
-    <!-- Menú principal -->
+    <!-- Menú principal. Cuelga de Certificaciones: los dos sellos comparten
+         contenedor en vez de ocupar cada uno un icono propio en el menú de
+         aplicaciones, que es donde el administrador los veía duplicados. -->
     <menuitem id="menu_silver_economy_root"
               name="Silver Economy"
-              web_icon="silver_economy,static/description/icon.png"
+              parent="company_certification.menu_certification_root"
               groups="silver_economy.group_silver_user"
-              sequence="50"/>
+              sequence="40"/>
+
+    <!-- El contenedor pertenece a company_certification, que se carga antes
+         que este módulo y por eso no puede nombrar este grupo. La concesión
+         viaja en el sentido de la dependencia: quien tiene el sello abre la
+         puerta al menú que lo contiene. -->
+    <record id="company_certification.menu_certification_root" model="ir.ui.menu">
+        <field name="group_ids" eval="[(4, ref('silver_economy.group_silver_user'))]"/>
+    </record>
 
     <menuitem id="menu_silver_evaluations"
               name="Mis Evaluaciones"

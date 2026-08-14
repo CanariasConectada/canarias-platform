@@ -20,7 +20,10 @@
     .o_cc_login_brand_logo {
         // The brand mark is the first thing that identifies the card, so it
         // carries more weight than the subvention strip at the foot (64px).
-        max-height: 128px;
+        // Raised from 128px on 2026-08-14: the card is 420px wide, and at 160
+        // the mark reads as the subject of the card rather than a header on
+        // top of it, with room to spare on the narrowest phone.
+        max-height: 160px;
         width: auto;
     }
 

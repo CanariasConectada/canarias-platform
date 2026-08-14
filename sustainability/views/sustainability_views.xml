@@ -41,11 +41,19 @@ action = model.action_start_new_sustainability_evaluation()
     </record>
 
     <!-- Menú principal -->
+    <!-- Cuelga de Certificaciones, igual que Silver Economy: un contenedor
+         para los dos sellos en vez de dos iconos sueltos en aplicaciones. -->
     <menuitem id="menu_sustainability_root"
               name="Sostenibilidad"
-              web_icon="sustainability,static/description/icon.png"
+              parent="company_certification.menu_certification_root"
               groups="sustainability.group_sustainability_user"
               sequence="50"/>
+
+    <!-- Ver la nota equivalente en silver_economy: el contenedor se carga
+         antes y la concesión del grupo tiene que subir desde aquí. -->
+    <record id="company_certification.menu_certification_root" model="ir.ui.menu">
+        <field name="group_ids" eval="[(4, ref('sustainability.group_sustainability_user'))]"/>
+    </record>
 
     <menuitem id="menu_sust_evaluations"
               name="Mis Evaluaciones"

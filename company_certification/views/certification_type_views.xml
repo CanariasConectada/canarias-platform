@@ -141,10 +141,16 @@
         <field name="context">{'create': False, 'certification_display': True, 'search_default_group_by_survey': 1}</field>
     </record>
 
-    <!-- Manager-only configuration menu. Vertical menus for end users are
-         generated automatically per certification.type record. -->
+    <!-- The container for every seal the platform issues. Silver Economy and
+         Sostenibilidad declare this menu as their parent, so a merchant who
+         holds either seal reaches it here instead of getting a top-level app
+         of its own. Each of those modules adds its own seal-holder group to
+         this menu — they depend on this one, so the grant has to travel in
+         that direction and cannot be named here. The configuration entries
+         below stay manager-only: a menu without groups inherits the
+         visibility of its parent, so each one has to say so itself. -->
     <menuitem id="menu_certification_root"
-              name="Certifications"
+              name="Certificaciones"
               web_icon="company_certification,static/description/icon.png"
               groups="company_certification.group_certification_manager"
               sequence="49"/>
@@ -152,15 +158,18 @@
               name="All Evaluations"
               parent="menu_certification_root"
               action="action_all_certification_evaluations"
+              groups="company_certification.group_certification_manager"
               sequence="10"/>
     <menuitem id="menu_company_certification"
               name="Company Certifications"
               parent="menu_certification_root"
               action="action_company_certification"
+              groups="company_certification.group_certification_manager"
               sequence="20"/>
     <menuitem id="menu_certification_type"
               name="Certification Types"
               parent="menu_certification_root"
               action="action_certification_type"
+              groups="company_certification.group_certification_manager"
               sequence="30"/>
 </odoo>

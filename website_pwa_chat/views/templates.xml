@@ -73,6 +73,28 @@
                         Elige un canal para empezar.
                     </p>
 
+                    <!-- Above the channels, and separate from them, because
+                         it is not one: the channels are rooms full of
+                         neighbours, this is a private line to the people who
+                         run the platform. Anybody may open it, with or
+                         without an account — the guest door is created on
+                         arrival if there is no identity yet. -->
+                    <a class="card mt-3 mb-4 o_cc_chat_support" href="/chat/soporte">
+                        <div class="card-body d-flex align-items-center gap-3">
+                            <span class="o_cc_chat_support_icon" aria-hidden="true">
+                                <i class="fa fa-life-ring"/>
+                            </span>
+                            <span>
+                                <span class="fw-bold d-block">Hablar con soporte</span>
+                                <small class="text-muted">
+                                    Una conversación privada contigo. Escríbenos
+                                    cuando lo necesites y te respondemos aquí
+                                    mismo.
+                                </small>
+                            </span>
+                        </div>
+                    </a>
+
                     <div class="list-group mt-3 o_cc_chat_channels">
                         <t t-foreach="channels" t-as="channel">
                             <a

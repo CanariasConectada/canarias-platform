@@ -9,6 +9,17 @@ from odoo.tools import format_datetime
 # "load older messages" button is ROADMAP, not v1.
 MESSAGE_LIMIT = 30
 
+# How a support conversation says whose it is. Two shapes because a visitor
+# has two possible identities on this platform and only one of them at a time:
+# an account, or the guest cookie the login page hands out.
+SUPPORT_KEY_PARTNER = "partner-%s"
+SUPPORT_KEY_GUEST = "guest-%s"
+
+# Referenced as a string so this module keeps loading if the group is ever
+# renamed or moved; `_support_agents` treats a missing group as "no agents
+# from there" rather than as an error on a page a visitor is waiting for.
+SUPPORT_GROUP_XMLID = "website_pwa_chat.group_support_agent"
+
 
 class DiscussChannel(models.Model):
     """The channels the website chat is allowed to offer, and how it reads them.
@@ -78,9 +89,21 @@ class DiscussChannel(models.Model):
         (``mail/controllers/discuss/channel.py:90-92``), so the page and the
         JSON routes it calls cannot disagree about what exists.
         """
-        return self.search(
+        published = self.search(
             [("id", "=", channel_id), ("website_chat_published", "=", True)]
         )
+        if published:
+            return published
+        # A support conversation is never published, so the search above can
+        # never find one — and the live catch-up and held-message routes both
+        # come back through here. The fallback is narrow on purpose: the key
+        # comes from the session, so the only support conversation this can
+        # ever return is the caller's own, and the search still runs without
+        # sudo so `is_member` is what finally answers.
+        key = self._support_key()
+        if not key:
+            return self.browse()
+        return self.search([("id", "=", channel_id), ("support_key", "=", key)])
 
     # ------------------------------------------------------------------
     # The messages
@@ -197,3 +220,148 @@ class DiscussChannel(models.Model):
                 order="id",
             )
         )
+
+    # ------------------------------------------------------------------
+    # Support: one private conversation per visitor
+    # ------------------------------------------------------------------
+
+    support_key = fields.Char(
+        string="Conversación de soporte de",
+        index=True,
+        copy=False,
+        help="Identifies whose support conversation this is. Set by the "
+        "platform, never by hand.",
+    )
+
+    @api.model
+    def _support_key(self):
+        """Who is asking, as a stable string, or False when nobody is.
+
+        A logged-in account wins over a guest cookie: somebody who signed in
+        halfway through a conversation should keep writing as themselves, and
+        the account is the identity that survives a new phone.
+
+        Returns False for the anonymous public user, and that is deliberate.
+        ``base.public_partner`` is ONE record shared by every anonymous hit on
+        the platform, so a conversation keyed on it would be a single room
+        that every stranger on the internet walks into and reads. The caller
+        turns that False into "get an identity first", which on this platform
+        means the guest door the login page already offers.
+        """
+        user = self.env.user
+        if not user._is_public():
+            return SUPPORT_KEY_PARTNER % user.partner_id.id
+        guest = self.env["mail.guest"]._get_guest_from_context()
+        if guest:
+            return SUPPORT_KEY_GUEST % guest.id
+        return False
+
+    @api.model
+    def _support_agents(self):
+        """The users who answer. Never empty if the database has an admin.
+
+        Administrators are included explicitly even though
+        ``ir_rule_discuss_channel_group_system`` already lets them read every
+        channel: reading is not the same as being seated. Only a member gets
+        the conversation in their Discuss sidebar, and a support queue nobody
+        is shown is a support queue nobody answers.
+        """
+        # sudo from the FIRST recordset, not only on each group. A union takes
+        # the environment of its left operand, so starting from the visitor's
+        # env would quietly drag every agent back into it — and the caller
+        # here is usually `base.public_user`, who cannot read another user's
+        # row. That is not theoretical: it shipped, and the queue came out
+        # seated with the administrators and without the one person actually
+        # appointed to answer. Who staffs support is the platform's answer to
+        # give, never the visitor's to read.
+        agents = self.env["res.users"].sudo()
+        for xmlid in (SUPPORT_GROUP_XMLID, "base.group_system"):
+            group = self.env.ref(xmlid, raise_if_not_found=False)
+            if group:
+                agents |= group.sudo().all_user_ids
+        # The technical accounts are seats nobody sits in.
+        return agents.filtered(lambda user: user.active and not user._is_public())
+
+    @api.model
+    def _support_channel(self):
+        """The caller's own support conversation, opening it if this is the first time.
+
+        ``channel_type`` is ``group`` and that single value is the privacy of
+        this feature. ``ir_rule_discuss_channel_all`` has two branches: for
+        ``channel_type == "channel"`` it asks about ``group_public_id``, which
+        is a door held open for a whole group of people; for everything else
+        it asks ``is_member``. Only the second branch describes "this visitor
+        and the people who answer them", so anything of type ``channel`` --
+        including a private-looking one with no group -- would have been
+        readable by every logged-in visitor on the platform.
+
+        sudo on the create: a guest cannot create a channel, and a portal user
+        cannot seat anybody but themselves. The identity being seated is not
+        taken from the caller's input at any point -- it is derived from the
+        session by ``_support_key`` -- so there is nothing here for a caller
+        to aim somewhere else.
+        """
+        key = self._support_key()
+        if not key:
+            return self.browse()
+
+        existing = self.sudo().search([("support_key", "=", key)], limit=1)
+        if existing:
+            # Agents appointed since the conversation opened still belong in it.
+            existing._support_seat_agents()
+            return existing
+
+        partner, guest = self.env["res.partner"]._get_current_persona()
+        channel = (
+            self.sudo()
+            .with_context(
+                # Core posts "X joined the channel" for every seat taken. On a
+                # support thread that is the first thing the visitor reads,
+                # and it is a list of strangers' names before they have said
+                # a word. The conversation opens empty instead.
+                mail_create_nosubscribe=True,
+            )
+            .create(
+                {
+                    "name": _(
+                        "Soporte · %s", (partner.name or guest.name or _("Visitante"))
+                    ),
+                    "channel_type": "group",
+                    "support_key": key,
+                    # Never on the public list: that flag is what `/chat` reads.
+                    "website_chat_published": False,
+                }
+            )
+        )
+        channel._add_members(
+            partners=partner or None,
+            guests=guest or None,
+            post_joined_message=False,
+        )
+        channel._support_seat_agents()
+        return channel
+
+    def _support_seat_agents(self):
+        """Put every current agent in the conversation, without disturbing the rest."""
+        agents = self._support_agents()
+        if not agents:
+            return
+        for channel in self.sudo():
+            seated = channel.channel_member_ids.partner_id
+            missing = agents.partner_id - seated
+            if missing:
+                channel._add_members(partners=missing, post_joined_message=False)
+
+    @api.model
+    def _support_sync_agents(self):
+        """Cron: keep every open support conversation seated with today's agents.
+
+        Granting somebody the support group is a two-second action in Settings
+        and it has to be enough. Without this, a new agent would only ever see
+        conversations opened after their appointment, and the ones already
+        waiting for an answer would stay invisible to the person hired to
+        answer them.
+        """
+        channels = self.sudo().search([("support_key", "!=", False)])
+        channels._support_seat_agents()
+        return len(channels)

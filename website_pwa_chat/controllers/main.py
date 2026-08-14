@@ -70,6 +70,51 @@ class WebsiteChat(http.Controller):
         )
 
     @http.route(
+        "/chat/soporte", type="http", auth="public", website=True, sitemap=False
+    )
+    @add_guest_to_context
+    def chat_support(self, **kwargs):
+        """The visitor's own private line to support.
+
+        A static segment, so it cannot be mistaken for a channel id nor for
+        core's ``/chat/<string:create_token>``: Werkzeug ranks a literal part
+        above every converter, whatever their weights, so this rule is reached
+        first and the other two keep working untouched.
+
+        A guest is created HERE and not on ``/chat``, for the same reason the
+        list page creates none: opening the support line is an act of
+        participation and it needs somewhere private to be answered. Without
+        an identity the conversation would be keyed on ``base.public_partner``
+        -- one room shared by every anonymous visitor on the platform -- which
+        is why ``_support_key`` refuses to key on it at all.
+
+        The page rendered is the ordinary conversation page. Support is a
+        conversation; it deserves the composer, the held-message notice and
+        the live catch-up that every other conversation has, not a second
+        implementation of them.
+        """
+        website = request.env["website"]._chat_current()
+        if not website:
+            return request.not_found()
+        self._chat_ensure_guest()
+        channel = request.env["discuss.channel"]._support_channel()
+        if not channel:
+            # Only reachable if the guest could not be created at all; the
+            # login page is where an identity comes from, guest door included.
+            return request.redirect("%s?redirect=/chat/soporte" % LOGIN_URL)
+        messages = channel._website_chat_messages()
+        return request.render(
+            "website_pwa_chat.chat_channel",
+            {
+                "channel": channel,
+                "messages": channel._website_chat_message_values(messages),
+                "pending": channel._website_chat_pending(),
+                "is_support": True,
+                **self._chat_visitor_values("/chat/soporte"),
+            },
+        )
+
+    @http.route(
         "/chat/<int:channel_id>",
         type="http",
         auth="public",
@@ -128,6 +173,7 @@ class WebsiteChat(http.Controller):
                 "channel": channel,
                 "messages": channel._website_chat_message_values(messages),
                 "pending": channel._website_chat_pending(),
+                "is_support": False,
                 **self._chat_visitor_values(self._chat_channel_url(channel)),
             },
         )

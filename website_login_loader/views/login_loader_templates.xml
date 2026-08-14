@@ -404,4 +404,175 @@
         </xpath>
     </template>
 
+    <!--
+        The empty box between the logo and "o continúa como invitado",
+        reported with a screenshot on 2026-08-14 and described as happening
+        often. It is not a slow stylesheet: the form is served with Bootstrap's
+        `d-none` on it, and Odoo 19 only takes that class off once the OWL
+        component `web.user_switch` mounts, which cannot happen before the
+        frontend JS bundle has downloaded, parsed and booted. Until then the
+        markup around the form paints normally and the form itself is display
+        none — a card with a hole in it.
+
+        So the hole gets filled with the shape of what is coming. The skeleton
+        is inlined for the same reason the rest of this module is: anything
+        arriving inside the bundle would arrive after the wait it describes.
+
+        This NEVER hides the form. Odoo hides it and Odoo reveals it; all that
+        happens here is that the gap it leaves is occupied meanwhile. That is
+        the whole safety argument — the worst failure this can produce is a
+        skeleton left on screen next to a working form, never a login page
+        with no way in.
+    -->
+    <template
+        id="login_form_skeleton"
+        inherit_id="web.login"
+        name="Login Form Skeleton"
+    >
+        <!--
+            Anchored on `data-captcha`, not on the class, and that is not a
+            matter of taste. Core writes the form's class with `t-attf-class`
+            (`web/views/webclient_templates.xml:140`), which means the node
+            carries NO class attribute at all until the template is rendered,
+            so `hasclass('oe_login_form')` matches nothing at inheritance time
+            and the module refuses to install. `data-captcha="login"` is a
+            plain static attribute on the same node.
+
+            That same line is also the proof of the diagnosis: the class it
+            builds is `oe_login_form d-none` whenever `login` is empty, which
+            is every visitor who is not arriving with a remembered address.
+        -->
+        <xpath expr="//form[@data-captcha='login']" position="before">
+
+            <style type="text/css">
+                /* Hidden by default and shown only under a class the script
+                   below sets on itself. With JavaScript off, the OWL component
+                   never mounts either — but the form is then revealed by the
+                   `noscript` path, and a skeleton nobody can remove would sit
+                   under it forever. Default-off is what prevents that. */
+                .o_cc_skel { display: none; }
+                html.o_cc_skel_on .o_cc_skel { display: block; }
+
+                .o_cc_skel_row { margin-bottom: 1rem; }
+                .o_cc_skel_bar {
+                    background: var(--o-cc-skel, rgba(0, 0, 0, 0.08));
+                    border-radius: 0.5rem;
+                    background-image: linear-gradient(
+                        90deg,
+                        rgba(255, 255, 255, 0) 0%,
+                        rgba(255, 255, 255, 0.6) 50%,
+                        rgba(255, 255, 255, 0) 100%
+                    );
+                    background-size: 200% 100%;
+                    background-repeat: no-repeat;
+                    animation: o_cc_skel_shimmer 1.4s ease-in-out infinite;
+                }
+                /* Label, then field: the same rhythm the real rows have, so
+                   the card does not resize when the form takes over. */
+                .o_cc_skel_label {
+                    height: 0.85rem;
+                    width: 40%;
+                    margin-bottom: 0.5rem;
+                }
+                .o_cc_skel_field { height: 2.75rem; }
+                .o_cc_skel_action {
+                    height: 2.9rem;
+                    margin-top: 1.5rem;
+                    border-radius: 0.5rem;
+                }
+                @keyframes o_cc_skel_shimmer {
+                    0%   { background-position: 200% 0; }
+                    100% { background-position: -200% 0; }
+                }
+                @media (prefers-reduced-motion: reduce) {
+                    .o_cc_skel_bar {
+                        animation: none;
+                        background-image: none;
+                    }
+                }
+            </style>
+
+            <div class="o_cc_skel" aria-hidden="true">
+                <div class="o_cc_skel_row">
+                    <div class="o_cc_skel_bar o_cc_skel_label"/>
+                    <div class="o_cc_skel_bar o_cc_skel_field"/>
+                </div>
+                <div class="o_cc_skel_row">
+                    <div class="o_cc_skel_bar o_cc_skel_label"/>
+                    <div class="o_cc_skel_bar o_cc_skel_field"/>
+                </div>
+                <div class="o_cc_skel_bar o_cc_skel_action"/>
+            </div>
+
+            <script type="text/javascript">
+                (function () {
+                    var root = document.documentElement;
+                    var MAX_WAIT = 15000;
+
+                    function done() {
+                        root.className = root.className.replace(
+                            /(^|\s)o_cc_skel_on(\s|$)/,
+                            " "
+                        );
+                    }
+
+                    // Registered before anything that could throw, so the
+                    // skeleton always has someone left to take it down.
+                    root.className += " o_cc_skel_on";
+                    window.setTimeout(done, MAX_WAIT);
+                    window.addEventListener("load", function () {
+                        // One frame after load: the bundle has run by then, and
+                        // whichever of the two things it decided to show has
+                        // been laid out.
+                        window.requestAnimationFrame(done);
+                    });
+
+                    function ready() {
+                        var form = document.querySelector(".oe_login_form");
+                        if (form) {
+                            if (!form.classList.contains("d-none")) {
+                                return true;
+                            }
+                        }
+                        // The other outcome: a returning visitor gets the
+                        // account picker instead of the form, and the form
+                        // stays hidden. Anything rendered into the component
+                        // means the boot is over just as much.
+                        var owl = document.querySelector(
+                            "owl-component[name='web.user_switch']"
+                        );
+                        if (owl) {
+                            if (owl.children.length) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+
+                    if (window.MutationObserver) {
+                        var observer = new window.MutationObserver(function () {
+                            if (ready()) {
+                                observer.disconnect();
+                                done();
+                            }
+                        });
+                        observer.observe(document.documentElement, {
+                            subtree: true,
+                            childList: true,
+                            attributes: true,
+                            attributeFilter: ["class"]
+                        });
+                    }
+
+                    // The bundle may already be cached and done before this
+                    // line runs, in which case no mutation is ever observed.
+                    if (ready()) {
+                        done();
+                    }
+                })();
+            </script>
+
+        </xpath>
+    </template>
+
 </odoo>

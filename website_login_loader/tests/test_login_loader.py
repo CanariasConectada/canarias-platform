@@ -48,3 +48,41 @@ class TestLoginLoader(HttpCase):
         """
         self.assertIn("o_cc_ldr_sr", self.page)
         self.assertIn('aria-live="polite"', self.page)
+
+    # ------------------------------------------------------------------
+    # The form slot
+    # ------------------------------------------------------------------
+
+    def test_the_skeleton_is_served_where_the_form_will_appear(self):
+        """The gap a visitor stares at, occupied by the shape of what is coming.
+
+        Order is the assertion, not mere presence: the skeleton stands in for
+        the form, so it has to be in the form's place. Rendered after it, it
+        would be a second block below an empty box rather than a stand-in for
+        one.
+        """
+        self.assertIn("o_cc_skel", self.page)
+        self.assertLess(
+            self.page.index('class="o_cc_skel"'),
+            self.page.index("oe_login_form"),
+            "the stand-in belongs where the form is going to be",
+        )
+
+    def test_the_skeleton_is_hidden_unless_the_script_asks_for_it(self):
+        """No JavaScript, no skeleton — and therefore never a stuck one.
+
+        The class that reveals it is added by the page's own script, so a
+        browser that never runs the script cannot end up with a skeleton
+        nobody is left to take down.
+        """
+        self.assertIn(".o_cc_skel { display: none; }", self.page)
+        self.assertIn("html.o_cc_skel_on .o_cc_skel { display: block; }", self.page)
+
+    def test_the_skeleton_never_hides_the_real_form(self):
+        """The one rule that keeps this from locking anybody out.
+
+        Odoo hides the form and Odoo reveals it. If this module ever took
+        that decision too, a failure in its own script would be a login page
+        with no way in.
+        """
+        self.assertNotIn("o_cc_skel_on .oe_login_form", self.page)

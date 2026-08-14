@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website PWA Chat",
-    "version": "19.0.1.1.0",
+    "version": "19.0.2.0.0",
     "category": "Website",
     "summary": "Community chat page of the Canarias Conectada app, served "
     "inside the public website layout",
@@ -52,9 +52,13 @@
         "bus",
     ],
     "data": [
+        # The support group is referenced by the cron's own reasoning and by
+        # `_support_agents`, so it exists before anything can look for it.
+        "security/website_pwa_chat_groups.xml",
         "views/website_views.xml",
         "views/templates.xml",
         "data/discuss_channel_data.xml",
+        "data/ir_cron_data.xml",
     ],
     "assets": {
         "web.assets_frontend": [
