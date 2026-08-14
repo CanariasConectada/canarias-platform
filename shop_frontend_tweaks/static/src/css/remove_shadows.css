@@ -11,12 +11,24 @@
     transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-/* Hover / focus: restore a subtle lift + shadow so the card reads as
- * interactive. No `!important` overrides that would freeze these states. */
+/* Hover / focus: the card has to read as interactive without jumping.
+ *
+ * The previous values (a 2px lift and a 0.75rem shadow at 12% black) made the
+ * card visibly hop and cast a hard edge, which in a dense grid reads as
+ * misalignment rather than as feedback. What replaces it is a wider, much
+ * fainter shadow and no vertical movement at all: the card lights up in place.
+ * `transform` is kept in the transition above only so anything else that
+ * animates it still eases. */
 .oe_product_cart:hover,
 .oe_product_cart:focus-within {
-    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.12);
-    transform: translateY(-2px);
+    box-shadow: 0 0.125rem 1.25rem rgba(0, 0, 0, 0.07);
+}
+
+/* Users who asked their system not to animate get the shadow with no easing. */
+@media (prefers-reduced-motion: reduce) {
+    .oe_product_cart {
+        transition: none;
+    }
 }
 
 /* Keyboard focus: a clearly visible outline on the card link so keyboard users

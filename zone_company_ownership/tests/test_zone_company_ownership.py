@@ -147,6 +147,37 @@ class TestZoneCompanyOwnership(TransactionCase):
             "only the merchant's real shop may count as theirs",
         )
 
+    def test_a_delivery_method_never_gets_a_zone(self):
+        """The exclusion that keeps 150 live delivery methods working.
+
+        ``delivery.carrier.company_id`` is ``related='product_id.company_id',
+        store=True`` — a STORED field following one that
+        ``multi.company.abstract`` computes from the active companies. Give the
+        product behind a carrier a second owner and that stored company starts
+        depending on who is looking, which
+        ``website_sale_collect._check_warehouses_have_same_company`` then
+        rejects. It already cost one aborted migration run.
+
+        Live, every carrier product owns exactly one company. This is what
+        keeps it that way.
+        """
+        product = self._product(self.shop.ids and self.shop or self.platform)
+        carrier = self.env["delivery.carrier"].create(
+            {
+                "name": "Zone Test Carrier",
+                "product_id": product.product_variant_id.id,
+            }
+        )
+        self.assertTrue(carrier)
+
+        candidates = product._zone_sync_candidates()
+
+        self.assertNotIn(
+            product,
+            candidates,
+            "a product backing a delivery method must stay out of the sweep",
+        )
+
     def test_running_it_twice_changes_nothing(self):
         """Idempotent, because the backfill will run over live data."""
         product = self._product(self.shop | self.platform)

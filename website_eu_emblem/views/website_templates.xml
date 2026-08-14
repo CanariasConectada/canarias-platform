@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!-- The emblem itself, kept apart so both branches below render the same
+         thing and neither can drift. -->
+    <template id="eu_emblem_content" name="EU Emblem content">
+        <img src="/website_eu_emblem/static/src/img/eu_flag.svg"
+             class="o_cc_eu_emblem_flag"
+             width="42" height="28"
+             t-att-alt="eu_emblem['statement'] or 'Unión Europea'"
+             loading="lazy"/>
+        <!-- Shown beside the flag on wide screens only: the statement is a
+             sentence, not a label, and forcing it into a phone-width navbar
+             would push the menu off. It stays reachable as alt text. -->
+        <span t-if="eu_emblem['statement']"
+              class="o_cc_eu_emblem_text d-none d-lg-inline"
+              t-out="eu_emblem['statement']"/>
+    </template>
+
+    <!-- Anchored on the brand placeholder because that is the one part of the
+         header every variant calls: this platform alone has six in use
+         (header_call_to_action_stretched / _large / _sidebar,
+         header_search_box_input, header_text_element, header_call_to_action),
+         and appending to the placeholder reaches all of them without touching
+         a single per-website COW view.
+
+         `position="inside"` on the template root rather than an xpath onto the
+         logo: core replaces `#o_fake_navbar_brand` with the site logo only
+         when the "Header Brand Logo" option is active, so an xpath naming
+         either of them would break on the sites using the other. -->
+    <template id="header_eu_emblem" inherit_id="website.placeholder_header_brand"
+              name="EU Emblem in the header">
+        <xpath expr="." position="inside">
+            <t t-set="eu_emblem" t-value="website._eu_emblem_values()"/>
+            <t t-if="eu_emblem['enabled']">
+                <a t-if="eu_emblem['url']"
+                   t-att-href="eu_emblem['url']"
+                   class="o_cc_eu_emblem"
+                   t-att-title="eu_emblem['statement'] or None">
+                    <t t-call="website_eu_emblem.eu_emblem_content"/>
+                </a>
+                <span t-else=""
+                      class="o_cc_eu_emblem"
+                      t-att-title="eu_emblem['statement'] or None">
+                    <t t-call="website_eu_emblem.eu_emblem_content"/>
+                </span>
+            </t>
+        </xpath>
+    </template>
+</odoo>

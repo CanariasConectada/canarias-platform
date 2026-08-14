@@ -1,0 +1,55 @@
+# Copyright 2026 Canarias Conectada
+# License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+from odoo.tests import HttpCase, tagged
+
+FLAG = "/website_eu_emblem/static/src/img/eu_flag.svg"
+STATEMENT = "Financiado por la Unión Europea – NextGenerationEU"
+
+
+@tagged("post_install", "-at_install")
+class TestEuEmblem(HttpCase):
+    """The emblem has to survive whichever header a site happens to use.
+
+    Goes through real HTTP because that is the only way to prove the inherited
+    placeholder actually renders inside the header of a live page -- reading
+    the template back would only prove the XML parsed.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.params = self.env["ir.config_parameter"].sudo()
+
+    def _home(self):
+        return self.url_open("/").text
+
+    def test_the_flag_is_in_the_page(self):
+        self.assertIn(FLAG, self._home())
+
+    def test_the_statement_shows_when_configured(self):
+        self.params.set_param("website_eu_emblem.statement", STATEMENT)
+        self.assertIn(STATEMENT, self._home())
+
+    def test_without_a_statement_only_the_flag_shows(self):
+        """The default state, and the one the grant may not accept.
+
+        Documented as a test rather than left implicit: shipping the emblem
+        alone is a deliberate default, not an oversight, and it must stay
+        possible until somebody supplies the wording.
+        """
+        self.params.set_param("website_eu_emblem.statement", "")
+        page = self._home()
+        self.assertIn(FLAG, page)
+        self.assertNotIn("o_cc_eu_emblem_text", page)
+
+    def test_it_can_be_switched_off(self):
+        self.params.set_param("website_eu_emblem.enabled", "False")
+        self.assertNotIn(FLAG, self._home())
+
+    def test_a_link_is_only_rendered_when_there_is_one(self):
+        self.params.set_param("website_eu_emblem.enabled", "True")
+        self.params.set_param("website_eu_emblem.url", "")
+        self.assertNotIn('<a class="o_cc_eu_emblem"', self._home())
+
+        self.params.set_param("website_eu_emblem.url", "https://example.org/grant")
+        self.assertIn("https://example.org/grant", self._home())

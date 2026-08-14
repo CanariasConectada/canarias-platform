@@ -75,4 +75,55 @@
         </xpath>
     </template>
 
+    <!-- ================================================================
+         The picker
+         ================================================================
+         Rendered once per page, next to the shop, and driven by the
+         `wscc:open` event the card buttons dispatch. One modal for the whole
+         grid rather than one per card: a thousand-product zone shop would
+         otherwise ship a thousand copies of this markup. -->
+    <template id="comparison_modal" inherit_id="website.layout"
+              name="Modal del comparador (Canarias)">
+        <xpath expr="//div[@id='wrapwrap']" position="inside">
+            <div class="modal fade o_wscc_compare_modal" id="o_wscc_compare_modal"
+                 tabindex="-1" aria-hidden="true"
+                 aria-labelledby="o_wscc_compare_modal_title">
+                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="o_wscc_compare_modal_title">
+                                Comparar precios
+                            </h5>
+                            <button type="button" class="btn-close"
+                                    data-bs-dismiss="modal" aria-label="Cerrar"/>
+                        </div>
+                        <div class="modal-body">
+                            <p class="text-muted small">
+                                Elige con qué productos comparar. Puedes filtrar
+                                por categoría.
+                            </p>
+                            <div class="o_wscc_modal_chips mb-3"/>
+                            <div class="o_wscc_modal_list"/>
+                            <div class="o_wscc_modal_empty d-none text-muted text-center py-4">
+                                No hay productos en esta categoría para comparar.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <span class="me-auto small text-muted">
+                                Seleccionados:
+                                <span class="o_wscc_modal_count">0</span>
+                                de 4
+                            </span>
+                            <button type="button" class="btn btn-secondary"
+                                    data-bs-dismiss="modal">Cerrar</button>
+                            <a href="/shop/compare" class="btn btn-primary">
+                                Ver comparativa
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
 </odoo>

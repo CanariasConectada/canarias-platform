@@ -78,3 +78,65 @@
     background: #fff;
     z-index: 2;
 }
+
+/* ── The picker ───────────────────────────────────────────────────────────
+ * Dense on purpose: the visitor is scanning names and prices, so the rows are
+ * a compact list rather than a second grid of cards. Rebuilding the grid here
+ * would compete with the shop behind the modal for attention. */
+
+.o_wscc_modal_chip {
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 999px;
+    margin: 0 0.25rem 0.25rem 0;
+    background: transparent;
+}
+
+.o_wscc_modal_chip.active {
+    background: var(--scc-brand-primary, #714b67);
+    border-color: var(--scc-brand-primary, #714b67);
+    color: #fff;
+}
+
+.o_wscc_modal_item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.25rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    margin: 0;
+}
+
+.o_wscc_modal_item:hover {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.o_wscc_modal_img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    flex: 0 0 40px;
+}
+
+.o_wscc_modal_name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.o_wscc_modal_price {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* A disabled row means the four-product cap is reached; say so quietly
+ * instead of letting the click do nothing. */
+.o_wscc_modal_item:has(input:disabled) {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.o_wscc_compare_modal.o_wscc_loading .o_wscc_modal_list {
+    opacity: 0.4;
+}

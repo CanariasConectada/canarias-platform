@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website Sale Comparison — Canarias",
-    "version": "19.0.1.0.0",
+    "version": "19.0.2.0.0",
     "category": "Website",
     "summary": "A modern, always-available product comparison on the Canarias shop",
     "author": "MikeColangelo",
@@ -25,6 +25,7 @@
         "web.assets_frontend": [
             "website_sale_comparison_canarias/static/src/css/comparison_canarias.css",
             "website_sale_comparison_canarias/static/src/js/comparison_canarias.js",
+            "website_sale_comparison_canarias/static/src/js/comparison_modal.js",
         ],
     },
     "installable": True,

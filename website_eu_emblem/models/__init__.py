@@ -1,4 +1,5 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from . import controllers
+from . import website
+from . import res_config_settings
