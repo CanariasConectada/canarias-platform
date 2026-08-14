@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <menuitem id="menu_auto_translate_root"
+              name="Automatic Translation"
+              parent="website.menu_website_configuration"
+              sequence="90"
+              groups="base.group_system"/>
+
+    <menuitem id="menu_auto_translate_engine"
+              name="Engines"
+              parent="menu_auto_translate_root"
+              action="action_auto_translate_engine"
+              sequence="10"/>
+
+    <menuitem id="menu_auto_translate_job"
+              name="Translation Queue"
+              parent="menu_auto_translate_root"
+              action="action_auto_translate_job"
+              sequence="20"/>
+
+</odoo>
