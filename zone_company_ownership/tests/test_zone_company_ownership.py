@@ -4,15 +4,22 @@
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
+from odoo.addons.zone_company_ownership.models.res_company import SKIP_CONTEXT
+
 
 @tagged("post_install", "-at_install")
 class TestZoneCompanyOwnership(TransactionCase):
-    """A merchant's catalogue and staff follow the merchant's neighbourhood.
+    """A merchant's catalogue follows the merchant's neighbourhood.
 
     Asked for on 2026-08-14: "la empresa que se va a agregar también es de la
     zona comercial a la que la empresa pertenece, si a la empresa le cambiamos
     la zona comercial, pues los productos y usuarios también deben
     actualizarse".
+
+    The user half of that was walked back on 2026-08-15: giving the merchant's
+    ACCOUNT the zone company handed every merchant of a neighbourhood read and
+    write access to every other one's products and contacts. The catalogue
+    still follows the zone; the person does not.
     """
 
     @classmethod
@@ -55,7 +62,7 @@ class TestZoneCompanyOwnership(TransactionCase):
         )
 
     def test_moving_to_no_zone_leaves_only_the_platform(self):
-        """"si no está en ninguna, pues sólo estará con canarias conectada"."""
+        """ "si no está en ninguna, pues sólo estará con canarias conectada"."""
         product = self._product(self.shop | self.platform)
 
         self.shop.commercial_zone = "canarias"
@@ -86,29 +93,50 @@ class TestZoneCompanyOwnership(TransactionCase):
             "the neighbour is still in Guanarteme and still sells this",
         )
 
-    def test_users_follow_the_zone_too(self):
+    def test_a_merchant_never_keeps_a_zone_company(self):
+        """The catalogue goes into the zone; the person does not.
+
+        ``res.users.company_ids`` is what every multi-company record rule
+        reads, so a zone company there is not "my shop is in the zone shop",
+        it is "I may read and write everything the zone owns" -- which is
+        every other merchant of the neighbourhood.
+        """
         user = self.env["res.users"].create(
             {
                 "name": "Zone Test Merchant",
                 "login": "zone_test_merchant",
                 "company_id": self.shop.id,
-                "company_ids": [(6, 0, (self.shop | self.platform).ids)],
+                "company_ids": [
+                    (6, 0, (self.shop | self.platform | self.zone_guanarteme).ids)
+                ],
             }
         )
-        self.assertIn(self.zone_guanarteme, user.company_ids)
 
-        self.shop.commercial_zone = "tamaraceite"
+        self.assertNotIn(self.zone_guanarteme, user.company_ids)
+        self.assertEqual(user.company_ids, self.shop | self.platform)
+
+    def test_a_zone_company_added_by_hand_is_taken_back_off(self):
+        """Self-healing, because the hole can be reopened from the user form."""
+        user = self.env["res.users"].create(
+            {
+                "name": "Zone Test Rehired",
+                "login": "zone_test_rehired",
+                "company_id": self.shop.id,
+                "company_ids": [(6, 0, self.shop.ids)],
+            }
+        )
+
+        user.company_ids = [(4, self.zone_tamaraceite.id)]
 
         user.invalidate_recordset(["company_ids"])
-        self.assertIn(self.zone_tamaraceite, user.company_ids)
-        self.assertNotIn(self.zone_guanarteme, user.company_ids)
+        self.assertEqual(user.company_ids, self.shop)
 
     def test_the_staff_of_a_zone_keep_their_own_company(self):
         """The people who work FOR a zone are the edge case of the rule.
 
-        Their own company IS a zone company, and the recomputation drops zone
-        companies before re-deriving them -- so without a floor they would be
-        stripped of the company they are logged into.
+        Their own company IS a zone company, so the guard that strips zone
+        companies would leave them logged into a company they are not allowed
+        into -- which core rejects outright.
         """
         staff = self.env["res.users"].create(
             {
@@ -118,31 +146,54 @@ class TestZoneCompanyOwnership(TransactionCase):
                 "company_ids": [(6, 0, self.zone_guanarteme.ids)],
             }
         )
-        staff._apply_zone_companies()
+        staff._drop_zone_companies()
         self.assertIn(self.zone_guanarteme, staff.company_ids)
+
+    def test_an_administrator_keeps_every_company(self):
+        """The only other exemption, and it is ``group_system``, not
+        ``group_multi_company``: the merchants hold that one.
+
+        The real administrator is used rather than a freshly built one because
+        ``base_user_role`` reverts group writes made directly on a user, so a
+        fixture "admin" would silently not be one.
+        """
+        admin = self.env.ref("base.user_admin")
+        admin.with_context(**{SKIP_CONTEXT: True}).company_ids = [
+            (4, self.zone_guanarteme.id)
+        ]
+
+        admin._drop_zone_companies()
+
+        self.assertIn(self.zone_guanarteme, admin.company_ids)
 
     def test_the_zone_alone_does_not_satisfy_the_ownership_guard(self):
         """A zone rides along; it never substitutes for the shop.
 
-        Merchants belong to their zone company now, which is what would let
-        "keep at least one of your own companies" be satisfied by the zone
-        alone -- and a product owned by the zone but not by the shop is out of
+        The user-side guard is the first line and the ownership guard is the
+        second: should a zone company ever reach a merchant's account again,
+        "keep at least one of your own companies" must still not accept the
+        zone alone -- a product owned by the zone but not by the shop is out of
         the shop's own catalogue, which is the exact problem the guard exists
         to prevent.
         """
-        merchant = self.env["res.users"].create(
-            {
-                "name": "Zone Guard Merchant",
-                "login": "zone_guard_merchant",
-                "company_id": self.shop.id,
-                "company_ids": [(6, 0, (self.shop | self.zone_guanarteme).ids)],
-            }
+        # Built with the guard suspended on purpose: the point of this test is
+        # what the OWNERSHIP guard does when a zone company is present, and
+        # ``res.users`` now takes it off before anything else can look at it.
+        merchant = (
+            self.env["res.users"]
+            .with_context(**{SKIP_CONTEXT: True})
+            .create(
+                {
+                    "name": "Zone Guard Merchant",
+                    "login": "zone_guard_merchant",
+                    "company_id": self.shop.id,
+                    "company_ids": [(6, 0, (self.shop | self.zone_guanarteme).ids)],
+                }
+            )
         )
         guarded = merchant.with_context(test_multi_company_field_visible=True)
         self.assertEqual(
-            self.env["product.template"]
-            .with_user(guarded)
-            ._guard_own_companies(),
+            self.env["product.template"].with_user(guarded)._guard_own_companies(),
             self.shop,
             "only the merchant's real shop may count as theirs",
         )
