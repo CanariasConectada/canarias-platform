@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="view_auto_translate_glossary_list" model="ir.ui.view">
+        <field name="name">auto.translate.glossary.list</field>
+        <field name="model">auto.translate.glossary</field>
+        <field name="arch" type="xml">
+            <list string="Protected terms" editable="top">
+                <field name="name"/>
+                <field name="replacement" placeholder="Leave empty to keep it untouched"/>
+                <field name="lang" placeholder="Every language"/>
+                <field name="note" placeholder="Why this term is here"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_auto_translate_glossary_search" model="ir.ui.view">
+        <field name="name">auto.translate.glossary.search</field>
+        <field name="model">auto.translate.glossary</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="replacement"/>
+                <filter name="kept_verbatim"
+                        string="Kept untouched"
+                        domain="['|', ('replacement', '=', False), ('replacement', '=', '')]"/>
+                <filter name="has_replacement"
+                        string="With a fixed wording"
+                        domain="[('replacement', '!=', False), ('replacement', '!=', '')]"/>
+                <filter name="inactive" string="Archived"
+                        domain="[('active', '=', False)]"/>
+                <separator/>
+                <group name="group_by">
+                    <filter name="by_lang" string="Language"
+                            context="{'group_by': 'lang'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_auto_translate_glossary" model="ir.actions.act_window">
+        <field name="name">Protected Terms</field>
+        <field name="res_model">auto.translate.glossary</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Add a term the machine must not translate</p>
+            <p>
+                Brand and place names are what go wrong: the engine turned
+                "Cheetos" into "Käse" and "Estrella Galicia mini" into
+                "Ministern Galicia". A term listed here is held back from the
+                request altogether, so it comes out exactly as it went in.
+            </p>
+            <p>
+                Fill in a fixed wording only when the term really does have an
+                official name in the other language. Leave it empty for a brand.
+            </p>
+        </field>
+    </record>
+
+</odoo>

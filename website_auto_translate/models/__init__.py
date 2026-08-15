@@ -3,6 +3,7 @@
 
 from . import (
     auto_translate_engine,
+    auto_translate_glossary,
     auto_translate_job,
     auto_translate_mixin,
     event_event,
@@ -11,4 +12,5 @@ from . import (
     product_template,
     res_company,
     res_config_settings,
+    website_menu,
 )

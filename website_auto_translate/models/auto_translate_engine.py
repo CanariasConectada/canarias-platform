@@ -288,14 +288,34 @@ class AutoTranslateEngine(models.Model):
 
         Returns ``(translations, engine)`` so the caller can record which
         engine actually produced what shipped.
+
+        Everything the glossary protects is fenced off here rather than in each
+        engine, because this is the single funnel every translation goes
+        through -- single engine and jury alike -- and a brand that slips past
+        one engine is as wrong as a brand that slips past all of them. The
+        request always leaves as HTML: that is the only format in which the
+        guard survives the round trip. See
+        :mod:`~.auto_translate_glossary` for the measurements behind that.
         """
         params = self.env["ir.config_parameter"].sudo()
+        Glossary = self.env["auto.translate.glossary"]
+        guarded = [Glossary._protect(text, is_html) for text in texts]
+
         if params.get_param("website_auto_translate.mode", "single") == "jury":
             jury = self.search([("in_jury", "=", True)])
             if len(jury) > 1:
-                return self._run_jury(jury, texts, source_lang, target_lang, is_html)
+                translated, engine = self._run_jury(
+                    jury, guarded, source_lang, target_lang, True
+                )
+                return self._release(translated, target_lang, is_html), engine
         engine = self._default_engine()
-        return engine.translate(texts, source_lang, target_lang, is_html), engine
+        translated = engine.translate(guarded, source_lang, target_lang, True)
+        return self._release(translated, target_lang, is_html), engine
+
+    @api.model
+    def _release(self, texts, target_lang, is_html):
+        Glossary = self.env["auto.translate.glossary"]
+        return [Glossary._restore(text, target_lang, is_html) for text in texts]
 
     @api.model
     def _default_engine(self):

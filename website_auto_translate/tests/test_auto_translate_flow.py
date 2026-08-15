@@ -7,6 +7,7 @@ import psycopg2
 
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
+from odoo.tools import SQL
 
 SOURCE = "es_ES"
 TARGET = "en_US"
@@ -56,6 +57,25 @@ class TestAutoTranslateFlow(TransactionCase):
     def _run_queue(self):
         with patch.object(type(self.engine), "translate", fake_translate):
             return self.Job.search([("state", "=", "pending")])._run()
+
+    def _raw_translations(self, record, field_name):
+        """The stored jsonb itself, keys and all.
+
+        Reading the field through the ORM cannot answer "does this language have
+        an entry?", because a language with no entry is handed the ``en_US``
+        base and looks identical to one that has been translated. Only the
+        column tells the truth.
+        """
+        record.flush_recordset([field_name])
+        self.env.cr.execute(
+            SQL(
+                "SELECT %s FROM %s WHERE id = %s",
+                SQL.identifier(field_name),
+                SQL.identifier(record._table),
+                record.id,
+            )
+        )
+        return self.env.cr.fetchone()[0] or {}
 
     # ------------------------------------------------------------------
     # Queueing
@@ -217,6 +237,89 @@ class TestAutoTranslateFlow(TransactionCase):
         self.assertIn("en_US", asked)
         self.assertIn("de_DE", asked)
         self.assertEqual(asked[-1], "en_US", "English must be written last")
+
+    def test_a_source_living_only_in_the_base_survives_being_translated(self):
+        """The shape production actually had -- and the one the fixtures hid.
+
+        ``setUpClass`` builds products through ``with_context(lang=SOURCE)``,
+        which makes Odoo store ``es_ES`` *and* ``en_US`` on the very first save.
+        The Spanish therefore always had a key of its own and nothing could
+        overwrite it, which is why every test above passed while the bug was
+        live in production.
+
+        Imported content did not arrive that way. Its Spanish sat in ``en_US``
+        alone, so translating into English -- a legitimate target -- wrote over
+        the only copy there was. On 2026-08-14 that cost 1415 products, 400
+        categories and 32 pages their Spanish, recovered from a dump.
+
+        English is run first here on purpose: ordering it last used to be the
+        only thing standing between the source and the machine, and it must not
+        be load-bearing any more.
+        """
+        self.env["res.lang"]._activate_lang("de_DE")
+        product = (
+            self.env["product.template"]
+            .with_context(lang=TARGET)
+            .create({"name": "Bocadillo de tortilla casero"})
+        )
+        self.assertNotIn(
+            SOURCE,
+            self._raw_translations(product, "name"),
+            "fixture check: the source must start with no entry of its own, "
+            "or this test is not reproducing production",
+        )
+
+        self.Job._enqueue_many(product, ["name"], [TARGET, "de_DE"])
+        english = self._jobs_for(product, lang=TARGET)
+        german = self._jobs_for(product, lang="de_DE")
+        with patch.object(type(self.engine), "translate", fake_translate):
+            english._run()
+            german._run()
+
+        self.assertEqual(
+            product.with_context(lang=SOURCE).name,
+            "Bocadillo de tortilla casero",
+            "the Spanish source must survive being translated into English",
+        )
+        self.assertEqual(
+            product.with_context(lang=TARGET).name,
+            "[en_US] Bocadillo de tortilla casero",
+        )
+        self.assertEqual(
+            product.with_context(lang="de_DE").name,
+            "[de_DE] Bocadillo de tortilla casero",
+            "German must be translated from the Spanish, not from the English "
+            "that landed in the base first",
+        )
+
+    def test_the_navigation_bar_is_in_the_rollout(self):
+        """Reported on 2026-08-15: the menu was never queued at all.
+
+        Not a failure of the queue -- there was no model for ``website.menu``,
+        so "Inicio / Tienda / Comercio" rendered in Spanish under every
+        language. The first thing a visitor reads, and the last thing anybody
+        checks, because whoever tests already speaks Spanish.
+        """
+        website = self.env["website"].search(
+            [("company_id", "=", self.company.id)], limit=1
+        )
+        self.assertTrue(website, "the rollout company needs a website to test with")
+        menu = (
+            self.env["website.menu"]
+            .with_context(lang=SOURCE)
+            .create({"name": "Ferias y Mercadillos", "url": "/event",
+                     "website_id": website.id})
+        )
+        self.assertTrue(
+            self._jobs_for(menu, lang=TARGET),
+            "saving a menu entry must queue it like any other content",
+        )
+
+        self._run_queue()
+        self.assertEqual(
+            menu.with_context(lang=TARGET).name, "[en_US] Ferias y Mercadillos"
+        )
+        self.assertEqual(menu.with_context(lang=SOURCE).name, "Ferias y Mercadillos")
 
     def test_editing_our_output_by_hand_locks_it_too(self):
         """Correcting the machine counts as writing it by hand."""

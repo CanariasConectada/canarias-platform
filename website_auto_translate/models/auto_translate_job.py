@@ -221,6 +221,8 @@ class AutoTranslateJob(models.Model):
             self.write({"state": "failed", "error": "Field is not translatable"})
             return False
 
+        # Before reading anything: the source language has to own its own key.
+        self._ensure_source_key(record, source_lang)
         source_value = record.with_context(lang=source_lang)[self.field_name]
         if not source_value:
             self.write(
@@ -271,6 +273,59 @@ class AutoTranslateJob(models.Model):
             }
         )
         return stored_now != stored
+
+    def _ensure_source_key(self, record, source_lang):
+        """Give the source language its own entry before anything writes the base.
+
+        Content on this platform is written in Spanish and was stored *only* in
+        ``en_US``, the technical base every unset language falls back to. English
+        is a legitimate translation target, so when its turn came the machine
+        wrote English over that base -- and because Spanish had no key of its
+        own, every Spanish visitor started reading the machine's English.
+        Measured on 2026-08-14: 1415 products, 400 categories and 32 pages lost
+        their Spanish this way, and it had to be recovered from a dump.
+
+        Translating the base *last*, which is what this module did until
+        19.0.2.0.0, is not a defence. It only decides when the damage happens,
+        not whether: the base is overwritten the moment its turn finally comes.
+        The source has to own its key first, and this is the only place that can
+        guarantee it -- one statement, in the same transaction slice as the
+        write that would otherwise destroy it.
+
+        Done in SQL rather than through ``update_field_translations`` because the
+        jsonb value is the whole stored text for plain and ``model_terms`` fields
+        alike. Copying a key across therefore needs no term extraction, cannot
+        re-encode entities, and cannot be mistaken by the ORM for the definition
+        changing.
+        """
+        self.ensure_one()
+        if source_lang == BASE_LANG:
+            return
+        record.flush_recordset([self.field_name])
+        column = SQL.identifier(self.field_name)
+        self.env.cr.execute(
+            SQL(
+                """
+                UPDATE %s
+                   SET %s = jsonb_set(%s, %s, %s -> %s)
+                 WHERE id = %s
+                   AND %s ? %s
+                   AND NOT %s ? %s
+                """,
+                SQL.identifier(record._table),
+                column,
+                column,
+                [source_lang],
+                column,
+                BASE_LANG,
+                record.id,
+                column,
+                BASE_LANG,
+                column,
+                source_lang,
+            )
+        )
+        record.invalidate_recordset([self.field_name])
 
     def _stored_translation(self, record):
         """The raw value held for this job's language, or ``None`` if there is none.
