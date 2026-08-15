@@ -7,6 +7,7 @@ import logging
 import psycopg2
 
 from odoo import api, fields, models
+from odoo.exceptions import UserError
 from odoo.tools import SQL, config
 
 _logger = logging.getLogger(__name__)
@@ -81,11 +82,94 @@ class AutoTranslateJob(models.Model):
         "That field is already queued for that language.",
     )
 
+    record_label = fields.Char(
+        string="Content", compute="_compute_texts", help="Which record this is."
+    )
+    source_text = fields.Text(
+        string="Original", compute="_compute_texts", help="What the merchant wrote."
+    )
+    translated_text = fields.Text(
+        string="Translation",
+        compute="_compute_texts",
+        inverse="_inverse_translated_text",
+        help="Correct it here and the machine will never touch it again.",
+    )
+    correctable_here = fields.Boolean(
+        compute="_compute_texts",
+        help="Pages are corrected in the website editor instead, because a "
+        "page is a set of terms rather than one piece of text.",
+    )
+
     def _record(self):
         self.ensure_one()
         if self.model_name not in self.env:
             return None
         return self.env[self.model_name].sudo().browse(self.res_id).exists()
+
+    # ------------------------------------------------------------------
+    # Reading and correcting the text itself
+    # ------------------------------------------------------------------
+    @api.depends("model_name", "res_id", "field_name", "lang", "state")
+    def _compute_texts(self):
+        """Put the original and the machine's answer side by side.
+
+        Without this the queue is a list of row identifiers: to judge whether a
+        translation is wrong you would have to open the product, switch
+        language and read it, once per record. Nobody audits 5500 rows that
+        way, which is how "Cheetos" stayed "Käse" until a person happened to
+        look at the shop.
+        """
+        source_lang = (
+            self.env["ir.config_parameter"]
+            .sudo()
+            .get_param("website_auto_translate.source_lang", "es_ES")
+        )
+        for job in self:
+            record = job._record()
+            field = record and record._fields.get(job.field_name)
+            if not record or field is None:
+                job.record_label = job.source_text = job.translated_text = False
+                job.correctable_here = False
+                continue
+            job.record_label = record.display_name
+            job.source_text = record.with_context(lang=source_lang)[job.field_name]
+            job.translated_text = record.with_context(lang=job.lang)[job.field_name]
+            # A ``model_terms`` field -- a page -- is a bag of terms, not one
+            # string, so it cannot be corrected by retyping the whole thing.
+            job.correctable_here = not callable(field.translate)
+
+    def _inverse_translated_text(self):
+        """Take the correction, and take the record out of the machine's hands.
+
+        Locking here rather than waiting for the next run is deliberate: a
+        person who has just fixed a translation should not have to trust that
+        some later job will notice.
+        """
+        source_lang = (
+            self.env["ir.config_parameter"]
+            .sudo()
+            .get_param("website_auto_translate.source_lang", "es_ES")
+        )
+        for job in self:
+            record = job._record()
+            if record is None or not record:
+                continue
+            field = record._fields.get(job.field_name)
+            if field is None or callable(field.translate):
+                raise UserError(
+                    self.env._(
+                        "A page is corrected in the website editor, where each "
+                        "sentence can be edited on its own."
+                    )
+                )
+            record.with_context(auto_translate_skip=True).update_field_translations(
+                job.field_name,
+                {job.lang: job.translated_text or False},
+                source_lang=source_lang,
+            )
+            super(AutoTranslateJob, job).write(
+                {"state": "locked", "error": False, "attempts": 0}
+            )
 
     # ------------------------------------------------------------------
     # Queueing
@@ -430,3 +514,38 @@ class AutoTranslateJob(models.Model):
 
     def action_run_now(self):
         self._run()
+
+    def action_translate_again(self):
+        """Redo the translation even though the source has not changed.
+
+        The ordinary skip -- same source, our own text still in place, nothing
+        to do -- is right for every change on the *merchant's* side. It is
+        wrong for a change on ours: a new protected term, a corrected glossary,
+        a different engine. Those change the answer without changing the
+        question, and without this the queue would answer "already done" to all
+        1424 products.
+
+        Two details that are not obvious and cost a run to find out:
+
+        * the stored text is adopted as ours before the source hash is
+          cleared. Leaving a hash that no longer matches would make
+          :meth:`_may_overwrite` read the machine's own output as somebody's
+          hand translation and lock the row instead of redoing it;
+        * a row somebody corrected by hand is never touched. Regenerating a
+          language must not quietly undo the corrections that were the whole
+          reason for keeping this engine.
+        """
+        redo = self.filtered(lambda job: job.state != "locked")
+        for job in redo:
+            record = job._record()
+            current = job._stored_translation(record) if record else ""
+            job.write(
+                {
+                    "state": "pending",
+                    "target_hash": _digest(current),
+                    "source_hash": False,
+                    "attempts": 0,
+                    "error": False,
+                }
+            )
+        return len(redo)

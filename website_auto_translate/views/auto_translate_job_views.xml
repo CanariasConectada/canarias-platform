@@ -7,22 +7,32 @@
         <field name="name">auto.translate.job.list</field>
         <field name="model">auto.translate.job</field>
         <field name="arch" type="xml">
-            <list>
-                <field name="model_name"/>
-                <field name="res_id"/>
-                <field name="field_name"/>
-                <field name="lang"/>
-                <field name="state" widget="badge"
+            <list editable="bottom">
+                <field name="correctable_here" column_invisible="1"/>
+                <field name="record_label" readonly="1" optional="show"/>
+                <field name="lang" readonly="1"/>
+                <field name="source_text" readonly="1"/>
+                <field name="translated_text"
+                       readonly="not correctable_here"
+                       placeholder="Correct it here and it stays corrected"/>
+                <field name="state" widget="badge" readonly="1"
                        decoration-success="state == 'done'"
                        decoration-danger="state == 'failed'"
                        decoration-info="state == 'locked'"/>
-                <field name="engine_id"/>
-                <field name="attempts"/>
-                <field name="error" optional="show"/>
-                <field name="write_date"/>
+                <field name="model_name" readonly="1" optional="hide"/>
+                <field name="res_id" readonly="1" optional="hide"/>
+                <field name="field_name" readonly="1" optional="hide"/>
+                <field name="engine_id" readonly="1" optional="hide"/>
+                <field name="attempts" readonly="1" optional="hide"/>
+                <field name="error" readonly="1" optional="show"/>
+                <field name="write_date" readonly="1" optional="hide"/>
                 <button name="action_retry" type="object" icon="fa-repeat"
                         title="Queue again"
                         invisible="state not in ('failed', 'done')"/>
+                <button name="action_translate_again" type="object"
+                        icon="fa-refresh"
+                        title="Translate again even though the source has not changed"
+                        invisible="state == 'locked'"/>
                 <button name="action_unlock" type="object" icon="fa-unlock"
                         title="Discard the hand-written text and translate it again"
                         invisible="state != 'locked'"/>

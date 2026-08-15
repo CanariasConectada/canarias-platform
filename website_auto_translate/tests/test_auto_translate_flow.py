@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 import psycopg2
 
+from odoo.exceptions import UserError
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 from odoo.tools import SQL
@@ -467,6 +468,128 @@ class TestAutoTranslateFlow(TransactionCase):
                 view.with_context(lang=lang).arch_db,
                 "%s must hold its own translation" % lang,
             )
+
+    def test_a_correction_made_on_the_website_is_kept_forever(self):
+        """The path Odoo's own frontend "Translate" mode actually takes.
+
+        Asked for on 2026-08-15: "lo que debemos tener como posibilidad, es que
+        podamos corregir las traducciones hechas en la web". The engine stays
+        LibreTranslate, and LibreTranslate is wrong often enough -- "Bolsa"
+        came back as "Austausch", the stock exchange -- that being able to
+        correct it and have the correction survive is the whole safety net.
+
+        The existing lock test writes through ``write`` under a language
+        context, which is the backend. The website editor does not: it calls
+        ``update_field_translations`` with a term mapping. Nothing may be
+        assumed to carry over between the two, so this exercises the one the
+        visitor-facing editor uses, and then re-queues the page the way saving
+        the Spanish would, to prove the machine does not take it back.
+        """
+        self.env["res.lang"]._activate_lang("de_DE")
+        view = (
+            self.env["ir.ui.view"]
+            .with_context(lang=SOURCE)
+            .create(
+                {
+                    "name": "Auto Translate Corrected Page",
+                    "type": "qweb",
+                    "key": "website_auto_translate.corrected_page",
+                    "website_id": 1,
+                    "arch": "<div><p>Bolsa de Cheetos</p></div>",
+                }
+            )
+        )
+        self._run_queue()
+        self.assertIn("[de_DE] Bolsa de Cheetos", view.with_context(lang="de_DE").arch_db)
+
+        # Somebody opens the German page and fixes it by hand. The key is the
+        # term as it reads in the *source*, not the machine's output: that is
+        # what the website editor sends, and passing the translated term
+        # instead silently changes nothing at all.
+        view.update_field_translations(
+            "arch_db",
+            {"de_DE": {"Bolsa de Cheetos": "Tüte Cheetos"}},
+            source_lang=SOURCE,
+        )
+        self.assertIn("Tüte Cheetos", view.with_context(lang="de_DE").arch_db)
+
+        # And then the Spanish is saved again, which re-opens the queue.
+        view.with_context(lang=SOURCE).write({"arch": "<div><p>Bolsa de Cheetos</p></div>"})
+        self._run_queue()
+
+        german = self._jobs_for(view, lang="de_DE")
+        self.assertEqual(
+            german.state,
+            "locked",
+            "a correction made on the website must lock the machine out",
+        )
+        self.assertIn(
+            "Tüte Cheetos",
+            view.with_context(lang="de_DE").arch_db,
+            "the correction must still be there after the queue ran again",
+        )
+
+    def test_a_translation_can_be_corrected_from_the_queue(self):
+        """One screen where the original and the machine's answer sit together.
+
+        Asked for on 2026-08-15, after the decision to keep LibreTranslate as
+        the engine: if the engine stays imperfect on purpose, correcting it has
+        to be cheap. Judging a translation used to mean opening the product and
+        switching language, once per row, which is how "Cheetos" stayed "Käse"
+        until somebody happened to look at the shop.
+        """
+        product = self.Product.create({"name": "Bolsa de Cheetos"})
+        self._run_queue()
+        job = self._jobs_for(product, lang=TARGET).filtered(
+            lambda row: row.field_name == "name"
+        )
+
+        self.assertEqual(job.source_text, "Bolsa de Cheetos")
+        self.assertEqual(job.translated_text, "[en_US] Bolsa de Cheetos")
+        self.assertTrue(job.correctable_here)
+
+        job.translated_text = "Bag of Cheetos"
+
+        self.assertEqual(product.with_context(lang=TARGET).name, "Bag of Cheetos")
+        self.assertEqual(job.state, "locked", "correcting must lock the machine out")
+        self.assertEqual(
+            product.with_context(lang=SOURCE).name,
+            "Bolsa de Cheetos",
+            "correcting one language must not disturb the source",
+        )
+
+        # And the queue must not take it back on the next pass.
+        job.write({"state": "pending"})
+        self._run_queue()
+        self.assertEqual(product.with_context(lang=TARGET).name, "Bag of Cheetos")
+        self.assertEqual(job.state, "locked")
+
+    def test_a_page_is_not_correctable_from_the_queue(self):
+        """A page is a bag of terms, not one string.
+
+        Retyping a whole ``arch_db`` here would replace the markup as well as
+        the words, so the queue sends the user to the website editor -- which
+        is proven to lock by
+        :meth:`test_a_correction_made_on_the_website_is_kept_forever`.
+        """
+        view = (
+            self.env["ir.ui.view"]
+            .with_context(lang=SOURCE)
+            .create(
+                {
+                    "name": "Auto Translate Uncorrectable Page",
+                    "type": "qweb",
+                    "key": "website_auto_translate.uncorrectable_page",
+                    "website_id": 1,
+                    "arch": "<div><p>Buenas tardes</p></div>",
+                }
+            )
+        )
+        self._run_queue()
+        job = self._jobs_for(view, lang=TARGET)
+        self.assertFalse(job.correctable_here)
+        with self.assertRaises(UserError):
+            job.translated_text = "<div><p>Good afternoon</p></div>"
 
     def test_a_core_view_is_never_touched(self):
         """Views without a website belong to the ``.po`` files, not to us."""

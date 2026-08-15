@@ -120,6 +120,71 @@ class TestAutoTranslateGlossary(TransactionCase):
         )
 
     # ------------------------------------------------------------------
+    # Repairing what was already translated
+    # ------------------------------------------------------------------
+    def test_adding_a_term_queues_the_content_that_mentions_it(self):
+        """A brand added today has to repair the 1424 products of yesterday.
+
+        Guarding only future translations is no use when the reason for adding
+        the term is content that is already wrong.
+        """
+        company = self.env.ref("base.main_company")
+        company.auto_translate_enabled = True
+        params = self.env["ir.config_parameter"].sudo()
+        params.set_param("website_auto_translate.enabled", "True")
+        params.set_param("website_auto_translate.source_lang", SOURCE)
+        Product = self.env["product.template"].with_context(lang=SOURCE)
+
+        mentions = Product.create({"name": "Bolsa de Cheetos"})
+        unrelated = Product.create({"name": "Gofio escaldado"})
+        Job = self.env["auto.translate.job"]
+        Job.search(
+            [("model_name", "=", "product.template"), ("field_name", "!=", "name")]
+        ).unlink()
+        Job.search([]).write({"state": "done", "source_hash": "stale"})
+
+        self.Glossary.search([("name", "=", "Cheetos")]).action_retranslate_affected()
+
+        def states(product):
+            return set(
+                Job.search(
+                    [
+                        ("model_name", "=", "product.template"),
+                        ("res_id", "=", product.id),
+                    ]
+                ).mapped("state")
+            )
+
+        self.assertEqual(
+            states(mentions),
+            {"pending"},
+            "the product that mentions the brand goes back in the queue",
+        )
+        self.assertEqual(
+            states(unrelated),
+            {"done"},
+            "content that never mentions the brand is left alone",
+        )
+
+    def test_a_hand_corrected_row_is_never_dragged_back_in(self):
+        """Regenerating a language must not undo somebody's correction."""
+        Job = self.env["auto.translate.job"]
+        job = Job.create(
+            {
+                "model_name": "product.template",
+                # An id nothing owns: this test is about the state machine, and
+                # a real product would collide with the queue the database
+                # copy already carries.
+                "res_id": 999999999,
+                "field_name": "name",
+                "lang": "de_DE",
+                "state": "locked",
+            }
+        )
+        self.assertEqual(job.action_translate_again(), 0)
+        self.assertEqual(job.state, "locked")
+
+    # ------------------------------------------------------------------
     # Through the engine
     # ------------------------------------------------------------------
     def test_the_engine_never_receives_the_brand(self):

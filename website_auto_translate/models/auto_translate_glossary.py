@@ -144,6 +144,60 @@ class AutoTranslateGlossary(models.Model):
         return result
 
     # ------------------------------------------------------------------
+    # Repairing what was translated before the term existed
+    # ------------------------------------------------------------------
+    def action_retranslate_affected(self):
+        """Queue everything whose source mentions these terms.
+
+        Adding a term only guards translations made *after* it, which is no use
+        at all when the reason for adding it is a brand that is already wrong in
+        1424 products. This finds the content that mentions the term and hands
+        it back to the queue.
+
+        Corrections made by hand are left alone: :meth:`action_translate_again`
+        skips a locked row, so somebody who already fixed a product keeps their
+        wording.
+        """
+        Job = self.env["auto.translate.job"].sudo()
+        source_lang = (
+            self.env["ir.config_parameter"]
+            .sudo()
+            .get_param("website_auto_translate.source_lang", "es_ES")
+        )
+        queued = 0
+        for model_name in sorted(self.env.registry):
+            model = self.env[model_name]
+            if model._abstract or model._transient:
+                continue
+            if not hasattr(model, "_auto_translate_fields"):
+                continue
+            for field_name in model._auto_translate_fields():
+                field = model._fields.get(field_name)
+                if field is None or not field.translate or not field.store:
+                    continue
+                domain = ["|"] * (len(self) - 1) + [
+                    (field_name, "ilike", entry.name) for entry in self
+                ]
+                # Searched in the source language on purpose: a term that only
+                # appears in the machine's German output is the machine's
+                # invention, not content anybody wrote.
+                hits = (
+                    model.sudo()
+                    .with_context(lang=source_lang, active_test=False)
+                    .search(domain)
+                )
+                if not hits:
+                    continue
+                queued += Job.search(
+                    [
+                        ("model_name", "=", model_name),
+                        ("field_name", "=", field_name),
+                        ("res_id", "in", hits.ids),
+                    ]
+                ).action_translate_again()
+        return queued
+
+    # ------------------------------------------------------------------
     # Protecting and restoring
     # ------------------------------------------------------------------
     @api.model

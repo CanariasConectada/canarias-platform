@@ -8,6 +8,13 @@
         <field name="model">auto.translate.glossary</field>
         <field name="arch" type="xml">
             <list string="Protected terms" editable="top">
+                <header>
+                    <button name="action_retranslate_affected" type="object"
+                            string="Re-translate what mentions these terms"
+                            confirm="Everything mentioning the selected terms goes
+                                     back in the queue. Translations corrected by
+                                     hand are left alone."/>
+                </header>
                 <field name="name"/>
                 <field name="replacement" placeholder="Leave empty to keep it untouched"/>
                 <field name="lang" placeholder="Every language"/>
