@@ -69,6 +69,27 @@ class TestAutoTranslateGlossary(TransactionCase):
         guarded = self.Glossary._protect("<p>Uno&nbsp;dos</p>", is_html=True)
         self.assertIn('<span translate="no">&nbsp;</span>', guarded)
 
+    def test_a_doubly_escaped_entity_is_fenced_off_whole(self):
+        """The one that shipped broken on 2026-08-16.
+
+        Odoo's website builder stores a typed non-breaking space as the *text*
+        "&amp;nbsp;". Guarding the leading "&amp;" alone -- which is itself a
+        valid entity, and what a naive alternation matches first -- leaves a
+        bare "nbsp;" outside the fence as ordinary words. The Italian model
+        capitalised it into "&Nbsp;", which is not an entity at all: it is five
+        characters the visitor reads on the page, on eight views.
+        """
+        guarded = self.Glossary._protect(
+            "<p>&amp;nbsp;TIENDA&amp;nbsp;</p>", is_html=True
+        )
+        self.assertIn('<span translate="no">&amp;nbsp;</span>', guarded)
+        self.assertNotIn(
+            'translate="no">&amp;</span>',
+            guarded,
+            "guarding only the ampersand leaves 'nbsp;' out in the open",
+        )
+        self.assertEqual(guarded.count("<span"), 2)
+
     def test_a_term_inside_markup_is_left_alone(self):
         """Protecting the "Cheetos" of ``alt="Cheetos"`` would rewrite the tag."""
         guarded = self.Glossary._protect('<img alt="Cheetos"/>Cheetos', is_html=True)

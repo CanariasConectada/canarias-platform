@@ -34,7 +34,17 @@ RESTORE = re.compile(
 # formats damage them: `text` turned "&nbsp;" into the literal "& nbsp;" -- the
 # corruption found in eight footers on 2026-08-15 -- and `html` swallowed it
 # along with the words either side of it.
-ENTITY = re.compile(r"&(?:#\d+|#x[0-9a-fA-F]+|[A-Za-z][A-Za-z0-9]{1,31});")
+#
+# The doubly-escaped form comes first and that ordering is load-bearing. Odoo's
+# website builder stores a typed non-breaking space as the text "&amp;nbsp;",
+# and an alternation that tried the plain form first would match the leading
+# "&amp;" -- a perfectly valid entity on its own -- fence off that much, and
+# leave a bare "nbsp;" outside the guard as ordinary translatable words. Which
+# is exactly what the Italian model then capitalised into "&Nbsp;": not an
+# entity at all, five characters the visitor reads. Eight views on production,
+# 2026-08-16.
+_NAME = r"(?:#\d+|#x[0-9a-fA-F]+|[A-Za-z][A-Za-z0-9]{1,31});"
+ENTITY = re.compile(r"&amp;" + _NAME + r"|&" + _NAME)
 
 # Splits markup from content while keeping both, so a term is never matched
 # inside an attribute: translating the "Milka" in `alt="Milka"` would rewrite
