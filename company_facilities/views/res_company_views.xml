@@ -25,4 +25,40 @@
         </field>
     </record>
 
+    <!-- ...and on the merchant's own screen, which is a different model.
+         Without this the merchant could read "Instalaciones y servicios" on
+         their own page and have nowhere to say what they offer, and the
+         directory filter would have 218 shops with nothing ticked. -->
+    <record id="view_microsite_content_editor_form_facilities" model="ir.ui.view">
+        <field name="name">microsite.content.editor.form.facilities</field>
+        <field name="model">microsite.content.editor</field>
+        <field name="inherit_id"
+               ref="partner_microsite_manager.view_microsite_content_editor_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Facilities and services" name="facilities">
+                    <group>
+                        <group string="What this shop offers">
+                            <field name="facility_ids" widget="many2many_tags"
+                                   nolabel="1" colspan="2"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   placeholder="Pick what this shop offers"/>
+                        </group>
+                        <group string="Show it on the page">
+                            <field name="facility_block_enabled"/>
+                            <field name="facility_block_title"
+                                   placeholder="Facilities and services"
+                                   invisible="not facility_block_enabled"/>
+                        </group>
+                    </group>
+                    <p class="text-muted">
+                        What you tick here is also what visitors can filter the
+                        directory by, whether or not you show the block on your
+                        own page.
+                    </p>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
 </odoo>
