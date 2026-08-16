@@ -42,16 +42,32 @@ class TestCompareCandidates(HttpCase):
             {"name": "Compare Test Unpublished", "is_published": False}
         )
 
-    def _candidates(self, template_id):
+    def _candidates(self, template_id, **params):
         return self.opener.post(
             self.base_url() + "/shop/compare/candidates",
             json={
-                "params": {"product_template_id": template_id},
+                "params": {"product_template_id": template_id, **params},
                 "jsonrpc": "2.0",
                 "method": "call",
                 "id": 1,
             },
         ).json()["result"]
+
+    def test_a_scope_nobody_offered_falls_back_instead_of_being_obeyed(self):
+        """A query string belongs to whoever is holding the address bar."""
+        data = self._candidates(self.published.id, scope="everything")
+        self.assertIn(
+            data["scope"], {entry["key"] for entry in data["scopes"]}
+        )
+
+    def test_a_zone_that_does_not_exist_falls_back_too(self):
+        data = self._candidates(
+            self.published.id, scope="other_zone", zone="atlantis"
+        )
+        self.assertIn(
+            data["scope"], {entry["key"] for entry in data["scopes"]}
+        )
+        self.assertTrue(data["products"] or not data["scopes"])
 
     def test_an_unpublished_product_is_never_offered(self):
         names = [p["name"] for p in self._candidates(self.published.id)["products"]]

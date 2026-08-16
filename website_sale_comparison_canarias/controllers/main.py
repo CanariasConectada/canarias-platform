@@ -69,7 +69,17 @@ class WebsiteSaleComparisonCanarias(http.Controller):
         if current:
             domain = [*domain, ("id", "!=", current.id)]
 
-        products = Product.search(domain, limit=CANDIDATE_LIMIT, order="name")
+        # SEARCHED IN THE TARGET'S CONTEXT, not the visitor's. The domain alone
+        # is not enough: `website_sale_marketplace` translates the `company_id`
+        # and `website_published` leaves through `_search_company_id` /
+        # `_search_website_published`, and both read `website_id` off the
+        # CONTEXT to decide whether they are on a zone marketplace. Asking for
+        # "solo en esta tienda" from the Guanarteme shop therefore came back
+        # with 83 products instead of the shop's 56 -- the leaf said company 6
+        # and the context widened it to the whole neighbourhood.
+        products = Product.with_context(website_id=target.id).search(
+            domain, limit=CANDIDATE_LIMIT, order="name"
+        )
 
         # Facets are built from what is actually on offer, not from the whole
         # category tree: a filter that returns nothing is worse than no filter.
