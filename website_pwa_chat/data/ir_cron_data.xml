@@ -26,4 +26,32 @@
         <field name="interval_type">days</field>
         <field name="active" eval="True" />
     </record>
+
+    <!--
+        Support conversations are temporary on purpose.
+
+        Left alone they become two bad things at once: a queue nobody can read,
+        because a hundred finished conversations sit among the three that are
+        waiting; and a permanent archive of strangers' messages, which is more
+        than we were given and more than we need.
+
+        So a conversation that has gone quiet is CLOSED (3 days), and a closed
+        one is DELETED (7 days, or 30 for a visitor who told us their name).
+        Reopening is free: writing again clears the flag.
+
+        Daily rather than weekly, with the windows expressed in days: the
+        retention is what the visitor was promised, and running the sweep more
+        often than that only makes it land closer to the promise. All three
+        windows are system parameters, so widening them needs no deploy.
+    -->
+    <record id="ir_cron_support_gc" model="ir.cron">
+        <field name="name">Chat: cerrar y borrar las conversaciones de soporte antiguas</field>
+        <field name="model_id" ref="mail.model_discuss_channel" />
+        <field name="state">code</field>
+        <field name="code">model._support_gc()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="nextcall" eval="(DateTime.now().replace(hour=4, minute=30, second=0) + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')" />
+        <field name="active" eval="True" />
+    </record>
 </odoo>

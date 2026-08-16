@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website PWA Chat",
-    "version": "19.0.2.2.0",
+    "version": "19.0.3.0.0",
     "category": "Website",
     "summary": "Community chat page of the Canarias Conectada app, served "
     "inside the public website layout",
@@ -57,6 +57,9 @@
         "security/website_pwa_chat_groups.xml",
         "views/website_views.xml",
         "views/templates.xml",
+        # After the group it is gated on and after the templates, so the
+        # backend queue can be read by the same people who answer it.
+        "views/support_views.xml",
         "data/discuss_channel_data.xml",
         "data/ir_cron_data.xml",
     ],

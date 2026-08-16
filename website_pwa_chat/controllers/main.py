@@ -110,9 +110,72 @@ class WebsiteChat(http.Controller):
                 "messages": channel._website_chat_message_values(messages),
                 "pending": channel._website_chat_pending(),
                 "is_support": True,
+                **self._chat_identify_values(channel),
                 **self._chat_visitor_values("/chat/soporte"),
             },
         )
+
+    @http.route(
+        "/chat/soporte/identificarme",
+        type="http",
+        auth="public",
+        website=True,
+        methods=["POST"],
+        csrf=True,
+        sitemap=False,
+    )
+    @add_guest_to_context
+    def chat_support_identify(self, name=None, email=None, **kwargs):
+        """Record who is asking. The conversation comes from the session.
+
+        Nothing here trusts the form about WHICH conversation to write on:
+        ``_support_channel()`` resolves that from the visitor's own account or
+        guest cookie, exactly as the page itself does. The form contributes a
+        name and an optional email and nothing else.
+
+        An empty name is not an error worth a page: the visitor simply stays
+        anonymous, which is a perfectly good answer to "who are you".
+        """
+        website = request.env["website"]._chat_current()
+        if not website:
+            return request.not_found()
+        self._chat_ensure_guest()
+        channel = request.env["discuss.channel"]._support_channel()
+        if channel:
+            channel._support_identify(name, email)
+        return request.redirect("/chat/soporte")
+
+    def _chat_identify_values(self, channel):
+        """What the "who are you" card needs to render, or not render.
+
+        The retention windows are read from the same parameters the sweep
+        obeys, so the promise on the page and the promise the platform keeps
+        are ONE number. Restating "7 days" in the copy would have been warmer
+        to write and wrong the first time somebody widened the window.
+        """
+        anonymous, identified = self._chat_identify_days()
+        return {
+            # A logged-in visitor already told us who they are by logging in.
+            "show_identify": not channel.support_identified
+            and request.env.user._is_public(),
+            "identify_pitch": _(
+                "¿Cómo te llamas? Así sabemos con quién hablamos y guardamos "
+                "esta conversación %(identified)s días en vez de "
+                "%(anonymous)s.",
+                identified=identified,
+                anonymous=anonymous,
+            ),
+            "identify_greeting": _(
+                "Hablamos con %s.", channel.support_visitor_name or ""
+            ),
+        }
+
+    @staticmethod
+    def _chat_identify_days():
+        _close, anonymous, identified = request.env[
+            "discuss.channel"
+        ]._support_retention_days()
+        return anonymous, identified
 
     @http.route(
         "/chat/<int:channel_id>",
@@ -174,6 +237,12 @@ class WebsiteChat(http.Controller):
                 "messages": channel._website_chat_message_values(messages),
                 "pending": channel._website_chat_pending(),
                 "is_support": False,
+                # Declared even though `is_support` short-circuits before it
+                # is read: a template that depends on evaluation order is a
+                # template that breaks the day somebody reorders the test.
+                "show_identify": False,
+                "identify_pitch": "",
+                "identify_greeting": "",
                 **self._chat_visitor_values(self._chat_channel_url(channel)),
             },
         )

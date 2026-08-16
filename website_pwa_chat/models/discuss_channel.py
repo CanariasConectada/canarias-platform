@@ -1,8 +1,13 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import logging
+from datetime import timedelta
+
 from odoo import _, api, fields, models
 from odoo.tools import format_datetime
+
+_logger = logging.getLogger(__name__)
 
 # How many messages the page renders, and how many a single live catch-up
 # fetch may return. Deliberately small: this is a phone screen, and the
@@ -19,6 +24,27 @@ SUPPORT_KEY_GUEST = "guest-%s"
 # renamed or moved; `_support_agents` treats a missing group as "no agents
 # from there" rather than as an error on a page a visitor is waiting for.
 SUPPORT_GROUP_XMLID = "website_pwa_chat.group_support_agent"
+
+# How long a support conversation lives, as system parameters so an
+# administrator can widen or narrow them without a deploy. A conversation is
+# CLOSED once it has been quiet for a while -- that is what keeps the queue
+# readable -- and DELETED a while after that.
+#
+# The identified window is the whole point of asking a visitor who they are:
+# somebody who left a name gets a month, an anonymous cookie gets a week. It
+# is also the honest thing to do with a stranger's messages -- keeping them
+# longer than the conversation lasted buys nothing and stores more than we
+# were given.
+PARAM_CLOSE_DAYS = "website_pwa_chat.support_close_after_days"
+PARAM_PURGE_DAYS = "website_pwa_chat.support_purge_after_days"
+PARAM_PURGE_IDENTIFIED_DAYS = "website_pwa_chat.support_purge_identified_days"
+DEFAULT_CLOSE_DAYS = 3
+DEFAULT_PURGE_DAYS = 7
+DEFAULT_PURGE_IDENTIFIED_DAYS = 30
+
+SUPPORT_WAITING = "waiting"
+SUPPORT_ANSWERED = "answered"
+SUPPORT_CLOSED = "closed"
 
 
 class DiscussChannel(models.Model):
@@ -351,6 +377,223 @@ class DiscussChannel(models.Model):
             missing = agents.partner_id - seated
             if missing:
                 channel._add_members(partners=missing, post_joined_message=False)
+
+    # ------------------------------------------------------------------
+    # Support: what the administrators see, and for how long
+    # ------------------------------------------------------------------
+
+    support_state = fields.Selection(
+        selection=[
+            (SUPPORT_WAITING, "Sin responder"),
+            (SUPPORT_ANSWERED, "Respondida"),
+            (SUPPORT_CLOSED, "Cerrada"),
+        ],
+        string="Estado",
+        compute="_compute_support_state",
+        store=True,
+        index=True,
+        help="Whether somebody is still waiting for an answer. Computed from "
+        "who wrote last, so it cannot fall out of step with the conversation.",
+    )
+    support_closed = fields.Boolean(
+        string="Cerrada a mano o por inactividad",
+        copy=False,
+        help="Set by an agent or by the nightly sweep. A closed conversation "
+        "reopens by itself the moment the visitor writes again.",
+    )
+    support_last_message_date = fields.Datetime(
+        string="Último mensaje",
+        compute="_compute_support_state",
+        store=True,
+        index=True,
+    )
+    support_identified = fields.Boolean(
+        string="Se identificó",
+        copy=False,
+        help="The visitor told us their name. That is what buys their "
+        "conversation the longer retention window.",
+    )
+    support_visitor_name = fields.Char(string="Quién pregunta", copy=False)
+    support_visitor_email = fields.Char(string="Correo de contacto", copy=False)
+
+    @api.depends("message_ids", "message_ids.author_id", "support_closed")
+    def _compute_support_state(self):
+        """Waiting, answered or closed — read off the conversation itself.
+
+        A separate "state" field an agent has to remember to move is a field
+        that is wrong by lunchtime. The only honest signal is who spoke last:
+        if it was one of the people who answer, the visitor has an answer; if
+        it was the visitor, somebody is waiting.
+
+        The agents are resolved ONCE per call rather than per record: this
+        recomputes on every message posted to every support conversation.
+        """
+        support = self.filtered("support_key")
+        (self - support).update(
+            {"support_state": False, "support_last_message_date": False}
+        )
+        if not support:
+            return
+        agent_partners = self._support_agents().partner_id
+        for channel in support:
+            # sudo: an agent reading their own queue may not be able to read
+            # a guest's message rows, and the state is about the conversation,
+            # not about who is looking at it.
+            last = (
+                self.env["mail.message"]
+                .sudo()
+                .search(
+                    [
+                        ("model", "=", "discuss.channel"),
+                        ("res_id", "=", channel.id),
+                        ("message_type", "!=", "notification"),
+                    ],
+                    order="id desc",
+                    limit=1,
+                )
+            )
+            channel.support_last_message_date = last.date or channel.create_date
+            if channel.support_closed:
+                channel.support_state = SUPPORT_CLOSED
+            elif last and last.author_id and last.author_id in agent_partners:
+                channel.support_state = SUPPORT_ANSWERED
+            else:
+                channel.support_state = SUPPORT_WAITING
+
+    def action_support_close(self):
+        """Close by hand. Writing again reopens it, so nothing is lost."""
+        self.sudo().write({"support_closed": True})
+        return True
+
+    def action_support_reopen(self):
+        self.sudo().write({"support_closed": False})
+        return True
+
+    @api.model
+    def _support_retention_days(self):
+        """The three windows, as an administrator has them configured."""
+        params = self.env["ir.config_parameter"].sudo()
+
+        def read(key, default):
+            try:
+                value = int(params.get_param(key) or default)
+            except (TypeError, ValueError):
+                return default
+            # A zero or negative window would delete conversations as fast as
+            # they are opened; treat nonsense as "leave the default alone".
+            return value if value > 0 else default
+
+        return (
+            read(PARAM_CLOSE_DAYS, DEFAULT_CLOSE_DAYS),
+            read(PARAM_PURGE_DAYS, DEFAULT_PURGE_DAYS),
+            read(PARAM_PURGE_IDENTIFIED_DAYS, DEFAULT_PURGE_IDENTIFIED_DAYS),
+        )
+
+    @api.model
+    def _support_gc(self):
+        """Cron: close what has gone quiet, delete what has been closed a while.
+
+        Support conversations are meant to be temporary. Left alone they would
+        become a permanent archive of strangers' messages, and an unreadable
+        queue for the people who answer.
+
+        Returns ``(closed, deleted)`` so the log says what it did.
+        """
+        now = fields.Datetime.now()
+        close_days, purge_days, identified_days = self._support_retention_days()
+
+        quiet = self.sudo().search(
+            [
+                ("support_key", "!=", False),
+                ("support_closed", "=", False),
+                ("support_last_message_date", "<", now - timedelta(days=close_days)),
+            ]
+        )
+        quiet.write({"support_closed": True})
+
+        # Two windows, one query each, rather than one query and a filter:
+        # the identified set is small and the anonymous one is not.
+        deleted = 0
+        for identified, days in ((False, purge_days), (True, identified_days)):
+            stale = self.sudo().search(
+                [
+                    ("support_key", "!=", False),
+                    ("support_closed", "=", True),
+                    ("support_identified", "=", identified),
+                    (
+                        "support_last_message_date",
+                        "<",
+                        now - timedelta(days=days),
+                    ),
+                ]
+            )
+            for channel in stale:
+                # One savepoint each: a single undeletable conversation must
+                # not roll back the whole sweep.
+                try:
+                    with self.env.cr.savepoint():
+                        guest = channel._support_guest()
+                        channel.unlink()
+                        # The visitor's throwaway persona goes with the last
+                        # thing it was used for -- but ONLY if that was the
+                        # last thing. The same guest may have posted in a
+                        # community channel, and deleting them there would
+                        # orphan messages other people are reading.
+                        if guest and not guest.channel_ids:
+                            guest.unlink()
+                        deleted += 1
+                except Exception:  # noqa: BLE001 - skip it, keep sweeping
+                    _logger.exception(
+                        "website_pwa_chat: could not delete support channel %s",
+                        channel.id,
+                    )
+        _logger.info(
+            "website_pwa_chat: support GC closed %s and deleted %s conversations",
+            len(quiet),
+            deleted,
+        )
+        return len(quiet), deleted
+
+    def _support_guest(self):
+        """The anonymous persona this conversation belongs to, if it is one.
+
+        Read back out of ``support_key`` rather than off the membership: the
+        key is what OPENED the conversation and it never changes, while the
+        members list also holds every agent seated since.
+        """
+        self.ensure_one()
+        prefix = SUPPORT_KEY_GUEST % ""
+        key = self.support_key or ""
+        if not key.startswith(prefix):
+            return self.env["mail.guest"]
+        raw = key[len(prefix) :]
+        if not raw.isdigit():
+            return self.env["mail.guest"]
+        return self.env["mail.guest"].sudo().browse(int(raw)).exists()
+
+    def _support_identify(self, name, email=None):
+        """Record who is asking, and buy them the longer retention window.
+
+        Called from the visitor's own page, so it writes only the three fields
+        the form offers and only on the caller's own conversation -- resolved
+        by ``_support_channel()`` from the session, never from the form.
+        """
+        self.ensure_one()
+        name = (name or "").strip()
+        if not name:
+            return False
+        values = {
+            "support_identified": True,
+            "support_visitor_name": name[:120],
+            "support_visitor_email": (email or "").strip()[:120] or False,
+        }
+        self.sudo().write(values)
+        # The guest persona carries the name too, so the agent sees it on the
+        # message and not only on the row.
+        _partner, guest = self.env["res.partner"]._get_current_persona()
+        if guest:
+            guest.sudo().write({"name": name[:120]})
+        return True
 
     @api.model
     def _support_sync_agents(self):

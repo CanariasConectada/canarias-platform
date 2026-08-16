@@ -210,6 +210,85 @@
                         <t t-call="website_pwa_chat.chat_pending" />
                     </div>
 
+                    <!-- Who are you? Asked only on the support line, only of a
+                         visitor who has not answered yet, and never as a wall
+                         in front of the conversation: the composer below is
+                         usable whether or not this is filled in.
+
+                         It buys something concrete and the copy says what:
+                         an anonymous conversation is deleted a week after it
+                         goes quiet, an identified one a month. Asking for a
+                         name without saying why is how forms get ignored. -->
+                    <t t-if="is_support and show_identify">
+                        <form
+                            class="o_cc_chat_identify card border-0 shadow-sm mt-3"
+                            action="/chat/soporte/identificarme"
+                            method="post"
+                        >
+                            <input
+                                type="hidden"
+                                name="csrf_token"
+                                t-att-value="request.csrf_token()"
+                            />
+                            <div class="card-body">
+                                <!-- One sentence, built on the server. Written
+                                     inline it exported as four fragments
+                                     ("…guardamos esta conversación", "días en
+                                     vez de", ".") because QWeb cuts a text
+                                     node at every element boundary, and a
+                                     translator cannot do anything useful with
+                                     "días en vez de" on its own. -->
+                                <p class="mb-2 small">
+                                    <i class="fa fa-user-o me-1" title="Identificarse" role="img" aria-label="Identificarse"/>
+                                    <t t-out="identify_pitch"/>
+                                </p>
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-12 col-sm-5">
+                                        <label
+                                            class="form-label small mb-1"
+                                            for="o_cc_identify_name"
+                                        >Tu nombre</label>
+                                        <input
+                                            id="o_cc_identify_name"
+                                            class="form-control form-control-sm"
+                                            type="text"
+                                            name="name"
+                                            maxlength="120"
+                                            required="required"
+                                            autocomplete="name"
+                                        />
+                                    </div>
+                                    <div class="col-12 col-sm-5">
+                                        <label
+                                            class="form-label small mb-1"
+                                            for="o_cc_identify_email"
+                                        >Correo (opcional)</label>
+                                        <input
+                                            id="o_cc_identify_email"
+                                            class="form-control form-control-sm"
+                                            type="email"
+                                            name="email"
+                                            maxlength="120"
+                                            autocomplete="email"
+                                        />
+                                    </div>
+                                    <div class="col-12 col-sm-2">
+                                        <button
+                                            type="submit"
+                                            class="btn btn-primary btn-sm w-100"
+                                        >Guardar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </t>
+                    <t t-if="is_support and not show_identify and channel.support_visitor_name">
+                        <p class="small text-muted mt-3 o_cc_chat_identified">
+                            <i class="fa fa-check me-1" title="Identificado" role="img" aria-label="Identificado"/>
+                            <t t-out="identify_greeting"/>
+                        </p>
+                    </t>
+
                     <!-- No `action` and no `method`: the interaction cancels
                          the submit, and if the bundle ever fails to load the
                          worst case is the page reloading itself rather than a
