@@ -47,9 +47,7 @@ class TestCompanyFacilities(TransactionCase):
     def test_what_a_shop_offers_comes_out_grouped_and_in_order(self):
         self.company.facility_ids = self.ramp + self.card + self.lift
         grouped = self.company._facilities_by_category()
-        self.assertEqual(
-            [category.name for category, _ in grouped], ["Acceso", "Pago"]
-        )
+        self.assertEqual([category.name for category, _ in grouped], ["Acceso", "Pago"])
         self.assertEqual(
             [item.name for item in grouped[0][1]],
             ["Ascensor", "Rampa"],
@@ -64,7 +62,8 @@ class TestCompanyFacilities(TransactionCase):
         self.company.facility_ids = self.ramp + self.lift
         self.lift.active = False
         offered = [
-            item.name for _, items in self.company._facilities_by_category()
+            item.name
+            for _, items in self.company._facilities_by_category()
             for item in items
         ]
         self.assertEqual(offered, ["Rampa"])
@@ -77,9 +76,7 @@ class TestCompanyFacilities(TransactionCase):
     def test_the_same_item_cannot_be_created_twice_in_a_subdivision(self):
         with self.assertRaises(Exception):
             with self.env.cr.savepoint():
-                self.Facility.create(
-                    {"name": "Rampa", "category_id": self.access.id}
-                )
+                self.Facility.create({"name": "Rampa", "category_id": self.access.id})
 
     def test_a_subdivision_in_use_cannot_be_deleted_by_accident(self):
         with self.assertRaises(Exception):

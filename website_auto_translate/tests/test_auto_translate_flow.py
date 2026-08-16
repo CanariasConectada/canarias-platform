@@ -320,8 +320,13 @@ class TestAutoTranslateFlow(TransactionCase):
         menu = (
             self.env["website.menu"]
             .with_context(lang=SOURCE)
-            .create({"name": "Ferias y Mercadillos", "url": "/event",
-                     "website_id": website.id})
+            .create(
+                {
+                    "name": "Ferias y Mercadillos",
+                    "url": "/event",
+                    "website_id": website.id,
+                }
+            )
         )
         self.assertTrue(
             self._jobs_for(menu, lang=TARGET),
@@ -512,7 +517,9 @@ class TestAutoTranslateFlow(TransactionCase):
             )
         )
         self._run_queue()
-        self.assertIn("[de_DE] Bolsa de Cheetos", view.with_context(lang="de_DE").arch_db)
+        self.assertIn(
+            "[de_DE] Bolsa de Cheetos", view.with_context(lang="de_DE").arch_db
+        )
 
         # Somebody opens the German page and fixes it by hand. The key is the
         # term as it reads in the *source*, not the machine's output: that is
@@ -526,7 +533,9 @@ class TestAutoTranslateFlow(TransactionCase):
         self.assertIn("Tüte Cheetos", view.with_context(lang="de_DE").arch_db)
 
         # And then the Spanish is saved again, which re-opens the queue.
-        view.with_context(lang=SOURCE).write({"arch": "<div><p>Bolsa de Cheetos</p></div>"})
+        view.with_context(lang=SOURCE).write(
+            {"arch": "<div><p>Bolsa de Cheetos</p></div>"}
+        )
         self._run_queue()
 
         german = self._jobs_for(view, lang="de_DE")

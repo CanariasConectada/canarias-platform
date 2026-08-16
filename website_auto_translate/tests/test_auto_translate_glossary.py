@@ -29,8 +29,11 @@ class TestAutoTranslateGlossary(TransactionCase):
                 {"name": "Cheetos"},
                 {"name": "Estrella Galicia"},
                 {"name": "Galicia"},
-                {"name": "Silver Economy", "replacement": "Silberwirtschaft",
-                 "lang": "de_DE"},
+                {
+                    "name": "Silver Economy",
+                    "replacement": "Silberwirtschaft",
+                    "lang": "de_DE",
+                },
             ]
         )
 
@@ -126,7 +129,9 @@ class TestAutoTranslateGlossary(TransactionCase):
         letters. The only safe source of truth is what we sent.
         """
         held = {}
-        guarded = self.Glossary._protect("Uno&nbsp;dos CHEETOS", is_html=True, held=held)
+        guarded = self.Glossary._protect(
+            "Uno&nbsp;dos CHEETOS", is_html=True, held=held
+        )
         self.assertIn('<span translate="no">&nbsp;</span>', guarded)
 
         # The engine hands both guards back with the case changed.

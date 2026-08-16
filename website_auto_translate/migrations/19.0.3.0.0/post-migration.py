@@ -33,7 +33,9 @@ def migrate(cr, version):
         try:
             with cr.savepoint():
                 terms = page._sync_terms()
-        except Exception as error:  # noqa: BLE001 - one bad page must not stop the upgrade
+        except (
+            Exception
+        ) as error:  # noqa: BLE001 - one bad page must not stop the upgrade
             _logger.warning(
                 "website_auto_translate: no se pudieron listar las frases de "
                 "%s(%s) [%s]: %s",
@@ -49,9 +51,7 @@ def migrate(cr, version):
 
     # Only now, so a page whose sentences could not be built keeps the lock it
     # already had rather than being handed back to the machine unprotected.
-    freed = pages.filtered(
-        lambda job: job.state == "locked" and job.term_ids
-    )
+    freed = pages.filtered(lambda job: job.state == "locked" and job.term_ids)
     if freed:
         freed.write({"state": "done"})
 

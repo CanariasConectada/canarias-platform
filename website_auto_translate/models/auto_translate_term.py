@@ -126,4 +126,3 @@ class AutoTranslateTerm(models.Model):
     def action_translate_again(self):
         """Redo this page's sentences, leaving the corrected ones alone."""
         return self.mapped("job_id").action_translate_again()
-

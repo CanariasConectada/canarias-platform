@@ -251,9 +251,7 @@ class AutoTranslateGlossary(models.Model):
         """Put the guarded terms back, in their final form."""
         if not text:
             return text
-        replacements = {
-            term.casefold(): dict(rules) for term, rules in self._index()
-        }
+        replacements = {term.casefold(): dict(rules) for term, rules in self._index()}
 
         def put_back(match):
             returned = match.group(1)

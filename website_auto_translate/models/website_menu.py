@@ -35,7 +35,9 @@ class WebsiteMenu(models.Model):
         enabled = self.env["res.company"]._auto_translate_companies()
         if not enabled:
             return self.browse()
-        websites = self.env["website"].sudo().search([("company_id", "in", enabled.ids)])
+        websites = (
+            self.env["website"].sudo().search([("company_id", "in", enabled.ids)])
+        )
         if not websites:
             return self.browse()
         return self.sudo().filtered(lambda menu: menu.website_id in websites)

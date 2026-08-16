@@ -319,9 +319,7 @@ class AutoTranslateEngine(models.Model):
     @api.model
     def _release(self, texts, target_lang, is_html, held=None):
         Glossary = self.env["auto.translate.glossary"]
-        return [
-            Glossary._restore(text, target_lang, is_html, held) for text in texts
-        ]
+        return [Glossary._restore(text, target_lang, is_html, held) for text in texts]
 
     @api.model
     def _default_engine(self):

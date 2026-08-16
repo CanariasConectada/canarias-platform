@@ -113,9 +113,13 @@ class TestAutoTranslateCoverage(TransactionCase):
         product = (
             self.env["product.template"]
             .with_context(lang=SOURCE)
-            .create({"name": "Queso de flor", "description_ecommerce": "<p>Curado.</p>"})
+            .create(
+                {"name": "Queso de flor", "description_ecommerce": "<p>Curado.</p>"}
+            )
         )
-        self.assertIn("description_ecommerce", self._queued(product).mapped("field_name"))
+        self.assertIn(
+            "description_ecommerce", self._queued(product).mapped("field_name")
+        )
 
     def test_a_field_nobody_filled_in_does_not_take_a_row_in_the_queue(self):
         product = (
@@ -135,7 +139,9 @@ class TestAutoTranslateCoverage(TransactionCase):
             .with_context(lang=SOURCE)
             .create({"name": "Quesos", "website_description": "<p>De la isla.</p>"})
         )
-        self.assertIn("website_description", self._queued(category).mapped("field_name"))
+        self.assertIn(
+            "website_description", self._queued(category).mapped("field_name")
+        )
         category.with_context(lang=SOURCE).write(
             {"website_footer": "<p>Envíos a toda Canarias.</p>"}
         )

@@ -6,7 +6,13 @@ from unittest.mock import patch
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
-from ..models.text_tools import mask, section_at, section_markers, term_has_words, unmask
+from ..models.text_tools import (
+    mask,
+    section_at,
+    section_markers,
+    term_has_words,
+    unmask,
+)
 
 SOURCE = "es_ES"
 TARGET = "en_US"
@@ -171,9 +177,7 @@ class TestAutoTranslateTerms(TransactionCase):
         view = self._page()
         job = self._job(view)
         self._run()
-        target = job.term_ids.filtered(
-            lambda row: "somos un equipo" in row.source_text
-        )
+        target = job.term_ids.filtered(lambda row: "somos un equipo" in row.source_text)
         self.assertEqual(len(target), 1)
         target.translated_text = mask(
             "En <strong>ZCA Tamaraceite</strong>, we are a team."
@@ -192,9 +196,7 @@ class TestAutoTranslateTerms(TransactionCase):
         view = self._page()
         job = self._job(view)
         self._run()
-        target = job.term_ids.filtered(
-            lambda row: "somos un equipo" in row.source_text
-        )
+        target = job.term_ids.filtered(lambda row: "somos un equipo" in row.source_text)
         target.translated_text = mask(
             "En <strong>ZCA Tamaraceite</strong>, we are a team."
         )
