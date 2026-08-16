@@ -22,6 +22,13 @@ class ResCompany(models.Model):
         help="Heading of the block on the microsite. Left empty it reads "
         "“Facilities and services”.",
     )
+    facility_block_enabled = fields.Boolean(
+        string="Show facilities on the website",
+        help="Adds the block to this shop's site, above the footer. Off by "
+        "default: the homepages were built page by page in the website "
+        "builder, and nothing may appear on one of them without its owner "
+        "asking for it.",
+    )
     facility_count = fields.Integer(compute="_compute_facility_count")
 
     def _compute_facility_count(self):

@@ -5,14 +5,18 @@
 
     <!-- The block itself, kept separate from where it is injected so a site
          that wants it somewhere else only has to move one t-call. -->
+    <!-- ``cf_company`` rather than ``company``: the caller states whose
+         facilities these are, so the block renders the same on a microsite
+         homepage, on a page built by hand in the builder, or anywhere else it
+         is ever called from. -->
     <template id="facilities_block" name="Facilities and Services Block">
-        <t t-set="facility_groups" t-value="company._facilities_by_category()"/>
+        <t t-set="facility_groups" t-value="cf_company._facilities_by_category()"/>
         <section t-if="facility_groups" class="pt48 pb48 o_cf_facilities"
                  data-name="Facilities">
             <div class="container">
                 <h3 class="text-center mb-5 o_cf_facilities__title">
-                    <t t-if="company.facility_block_title">
-                        <t t-out="company.facility_block_title"/>
+                    <t t-if="cf_company.facility_block_title">
+                        <t t-out="cf_company.facility_block_title"/>
                     </t>
                     <t t-else="">Facilities and services</t>
                 </h3>
@@ -52,7 +56,38 @@
               inherit_id="partner_microsite_manager.microsite_homepage_content"
               name="Microsite: facilities and services">
         <xpath expr="//section[@data-name='About']" position="after">
+            <t t-set="cf_company" t-value="company"/>
             <t t-call="company_facilities.facilities_block"/>
+        </xpath>
+    </template>
+
+    <!-- ...and for every other site, which is nearly all of them.
+
+         None of the 219 microsite homepages calls
+         ``microsite_homepage_content``: they were migrated from the old
+         platform as pages built snippet by snippet in the builder, so a block
+         attached to that template renders nowhere. Hanging it off the layout
+         instead reaches every one of them, above the footer of the home page,
+         and the per-company switch is what keeps it off the 218 sites that did
+         not ask for it.
+
+         Priority 90 rather than the default: ``partner_microsite_manager``
+         replaces the whole footer at priority 100 and wraps it in a
+         ``t-if="website.is_microsite_themed"``. Applying first leaves this
+         block a sibling of the footer instead of a passenger inside that
+         condition. -->
+    <template id="layout_facilities"
+              inherit_id="website.layout"
+              name="Facilities and services above the footer"
+              priority="90">
+        <xpath expr="//div[@id='footer']" position="before">
+            <t t-set="cf_company" t-value="website.company_id.sudo()"/>
+            <t t-if="cf_company.facility_block_enabled
+                     and main_object
+                     and main_object._name == 'website.page'
+                     and main_object.url == '/'">
+                <t t-call="company_facilities.facilities_block"/>
+            </t>
         </xpath>
     </template>
 

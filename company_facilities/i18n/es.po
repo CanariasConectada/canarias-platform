@@ -3,11 +3,7 @@
 # 	* company_facilities
 #
 # Generated from the module's own .pot so every `#:` reference line survives.
-# See docs in scratchpad/gen_po.py for why that matters.
-#
-# El catálogo se siembra en inglés a propósito: en_US es la base técnica
-# de toda columna traducible, así que sembrarlo en español lo dejaría
-# justo donde luego cae la traducción inglesa. Por eso NO hay en.po.
+# See scratchpad/refresh_po.py for why that matters.
 #
 msgid ""
 msgstr ""
@@ -21,6 +17,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+
+#. module: company_facilities
+#: model_terms:ir.actions.act_window,help:company_facilities.action_company_facility_category
+msgid ""
+"A subdivision groups what a shop offers — accessibility,\n"
+"                payment, parking — so a microsite shows four short lists\n"
+"                instead of one long row of icons."
+msgstr "Una subdivisión agrupa lo que ofrece un comercio —accesibilidad, pago, aparcamiento— para que el microsite enseñe cuatro listas cortas en vez de una fila larga de iconos."
 
 #. module: company_facilities
 #: model:company.facility.category,name:company_facilities.category_accessibility
@@ -48,6 +52,21 @@ msgstr "Activo"
 #: model_terms:ir.actions.act_window,help:company_facilities.action_company_facility
 msgid "Add something a shop can offer"
 msgstr "Añade algo que un comercio pueda ofrecer"
+
+#. module: company_facilities
+#: model:res.groups,comment:company_facilities.group_facility_manager
+msgid ""
+"Add, rename and archive the subdivisions and the\n"
+"            items every shop picks from."
+msgstr "Añade, renombra y archiva las subdivisiones y los elementos entre los que elige cada comercio."
+
+#. module: company_facilities
+#: model:ir.model.fields,help:company_facilities.field_res_company__facility_block_enabled
+msgid ""
+"Adds the block to this shop's site, above the footer. Off by default: the "
+"homepages were built page by page in the website builder, and nothing may "
+"appear on one of them without its owner asking for it."
+msgstr "Añade el bloque al sitio de este comercio, encima del pie. Desactivado por defecto: las portadas se construyeron una a una en el editor, y en ninguna debe aparecer nada sin que su dueño lo pida."
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_air_conditioning
@@ -152,6 +171,14 @@ msgid "English"
 msgstr "Inglés"
 
 #. module: company_facilities
+#: model_terms:ir.actions.act_window,help:company_facilities.action_company_facility
+msgid ""
+"Every shop picks from this list on its own form. Rename an item\n"
+"                here and it changes on every microsite at once — which is also\n"
+"                why it only has to be translated once."
+msgstr "Cada comercio elige de esta lista desde su propia ficha. Renombra un elemento aquí y cambia en todos los microsites a la vez, que es también por lo que solo hay que traducirlo una vez."
+
+#. module: company_facilities
 #: model:ir.actions.act_window,name:company_facilities.action_company_facility
 #: model:ir.model.fields,field_description:company_facilities.field_res_company__facility_ids
 #: model:ir.ui.menu,name:company_facilities.menu_facilities_root
@@ -211,6 +238,13 @@ msgstr "Cómo llegar"
 #: model:company.facility,name:company_facilities.facility_gift_wrapping
 msgid "Gift wrapping"
 msgstr "Envoltorio para regalo"
+
+#. module: company_facilities
+#: model:ir.model.fields,help:company_facilities.field_res_company__facility_block_title
+msgid ""
+"Heading of the block on the microsite. Left empty it reads “Facilities and "
+"services”."
+msgstr "Título del bloque en el microsite. Vacío, pone «Instalaciones y servicios»."
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_home_delivery
@@ -287,6 +321,12 @@ msgid "Offered by"
 msgstr "Lo ofrecen"
 
 #. module: company_facilities
+#: model:ir.model.fields,help:company_facilities.field_company_facility__description
+msgid ""
+"One short line under the name. Leave it empty when the name says everything."
+msgstr "Una línea corta bajo el nombre. Déjala vacía cuando el nombre ya lo diga todo."
+
+#. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_whatsapp_orders
 msgid "Orders by WhatsApp"
 msgstr "Pedidos por WhatsApp"
@@ -331,6 +371,11 @@ msgstr "Secuencia"
 #: model:company.facility.category,name:company_facilities.category_service
 msgid "Service"
 msgstr "Servicio"
+
+#. module: company_facilities
+#: model:ir.model.fields,field_description:company_facilities.field_res_company__facility_block_enabled
+msgid "Show facilities on the website"
+msgstr "Mostrar las instalaciones en la web"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_speaks_spanish
@@ -384,3 +429,16 @@ msgstr "Hablamos"
 #: model:ir.model.fields,help:company_facilities.field_res_company__facility_ids
 msgid "What this shop offers. Shown on its microsite, grouped by subdivision."
 msgstr "Lo que ofrece este comercio. Se muestra en su microsite, agrupado por subdivisión."
+
+#. module: company_facilities
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_category_form
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_category_list
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_form
+msgid "fa-wheelchair"
+msgstr ""
+
+#. module: company_facilities
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_category_form
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_list
+msgid "fa-wifi"
+msgstr ""

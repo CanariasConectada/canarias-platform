@@ -14,8 +14,10 @@
                  hide it from the very people it is for. -->
             <field name="microsite_services_text" position="after">
                 <separator string="Facilities and services"/>
+                <field name="facility_block_enabled"/>
                 <field name="facility_block_title"
-                       placeholder="Facilities and services"/>
+                       placeholder="Facilities and services"
+                       invisible="not facility_block_enabled"/>
                 <field name="facility_ids" widget="many2many_tags"
                        options="{'no_create': True, 'no_open': True}"
                        placeholder="Pick what this shop offers"/>

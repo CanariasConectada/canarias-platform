@@ -98,7 +98,7 @@ class TestCompanyFacilities(TransactionCase):
         self.company.facility_ids = self.ramp + self.card
         self.company.facility_block_title = "Instalaciones y servicios"
         rendered = self.env["ir.qweb"]._render(
-            "company_facilities.facilities_block", {"company": self.company}
+            "company_facilities.facilities_block", {"cf_company": self.company}
         )
         self.assertIn("Instalaciones y servicios", rendered)
         self.assertIn("Rampa", rendered)
@@ -109,6 +109,27 @@ class TestCompanyFacilities(TransactionCase):
         self.company.facility_ids = self.ramp
         self.company.facility_block_title = False
         rendered = self.env["ir.qweb"]._render(
-            "company_facilities.facilities_block", {"company": self.company}
+            "company_facilities.facilities_block", {"cf_company": self.company}
         )
         self.assertIn("Facilities and services", rendered)
+
+    def test_the_block_stays_off_until_the_shop_asks_for_it(self):
+        """218 microsites belong to somebody else.
+
+        The switch is what makes "leave only abinformatica with test content"
+        a setting rather than a promise.
+        """
+        self.assertFalse(self.company.facility_block_enabled)
+
+    def test_the_block_reaches_a_homepage_built_in_the_website_builder(self):
+        """None of the 219 migrated homepages calls the microsite template.
+
+        Attaching the block to ``microsite_homepage_content`` alone meant it
+        rendered nowhere at all, which is what "no lo veo habilitado" was.
+        """
+        view = self.env["ir.ui.view"].search(
+            [("key", "=", "company_facilities.layout_facilities")], limit=1
+        )
+        self.assertTrue(view, "the block has to hang off the site layout")
+        self.assertEqual(view.inherit_id.key, "website.layout")
+        self.assertIn("facility_block_enabled", view.arch_db)
