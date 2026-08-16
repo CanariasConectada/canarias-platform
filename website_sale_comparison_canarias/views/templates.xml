@@ -76,6 +76,41 @@
     </template>
 
     <!-- ================================================================
+         Compare from the product page itself
+         ================================================================
+         Where the question is actually asked. Core puts its own button in
+         `#product_option_block` and only renders it when the product has
+         variant attributes, which on this catalogue is almost never; and the
+         aggregated shop hides that whole row anyway.
+
+         Anchored right under the price, because "comparador de precios" is
+         what this is: the visitor is looking at a number and wants to know
+         whether it is a good one. -->
+    <template
+        id="product_page_compare_button"
+        inherit_id="website_sale.product"
+        name="Comparar precios en la ficha de producto (Canarias)"
+    >
+        <xpath expr="//div[hasclass('o_wsale_product_details_content_section_price')]"
+               position="after">
+            <div t-if="product.product_variant_id" class="o_wscc_compare_wrap mb-4">
+                <button
+                    type="button"
+                    class="btn btn-outline-primary o_add_compare o_wscc_compare_btn"
+                    title="Comparar este precio con otros productos"
+                    aria-label="Comparar precios"
+                    t-att-data-product-template-id="product.id"
+                    t-att-data-product-product-id="product.product_variant_id.id"
+                    data-action="o_comparelist"
+                >
+                    <span class="fa fa-exchange fa-fw o_not-animable"/>
+                    <span class="o_label ms-1">Comparar precios</span>
+                </button>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- ================================================================
          The picker
          ================================================================
          Rendered once per page, next to the shop, and driven by the
@@ -99,9 +134,23 @@
                         </div>
                         <div class="modal-body">
                             <p class="text-muted small">
-                                Elige con qué productos comparar. Puedes filtrar
-                                por categoría.
+                                Elige con qué productos comparar. Primero el
+                                alcance, después la categoría.
                             </p>
+                            <!-- The four scopes. Rendered by the client from
+                                 what the server says is available here: on the
+                                 portal there is no "mi zona", and on a shop
+                                 with no other neighbourhood there is no "otra
+                                 zona". A tab that comes back empty is worse
+                                 than one that is not offered. -->
+                            <div class="o_wscc_modal_scopes btn-group flex-wrap mb-3"
+                                 role="group" aria-label="Alcance de la comparación"/>
+                            <div class="o_wscc_modal_zones mb-3 d-none">
+                                <label class="form-label small text-muted mb-1"
+                                       for="o_wscc_zone_select">¿Con qué zona?</label>
+                                <select class="form-select form-select-sm"
+                                        id="o_wscc_zone_select"/>
+                            </div>
                             <div class="o_wscc_modal_chips mb-3"/>
                             <div class="o_wscc_modal_list"/>
                             <div class="o_wscc_modal_empty d-none text-muted text-center py-4">

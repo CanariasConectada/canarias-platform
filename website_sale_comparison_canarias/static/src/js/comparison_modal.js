@@ -24,39 +24,74 @@ export class ComparisonModal extends Interaction {
 
     setup() {
         this.state = {
+            templateId: null,
             products: [],
             categories: [],
             activeCategoryIds: [],
+            // The four scopes, as the server says they apply here.
+            scopes: [],
+            scope: null,
+            zone: "",
             loading: false,
         };
         this.listEl = this.el.querySelector(".o_wscc_modal_list");
         this.chipsEl = this.el.querySelector(".o_wscc_modal_chips");
         this.countEl = this.el.querySelector(".o_wscc_modal_count");
         this.emptyEl = this.el.querySelector(".o_wscc_modal_empty");
+        this.scopesEl = this.el.querySelector(".o_wscc_modal_scopes");
+        this.zonesEl = this.el.querySelector(".o_wscc_modal_zones");
+        this.zoneSelectEl = this.el.querySelector("#o_wscc_zone_select");
     }
 
     start() {
         this.el.addEventListener("wscc:open", (ev) => this.open(ev.detail.templateId));
         this.el.addEventListener("click", (ev) => this.onClick(ev));
+        this.el.addEventListener("change", (ev) => this.onChange(ev));
     }
 
     async open(templateId) {
+        this.state.templateId = templateId;
+        // A fresh product is a fresh question: the scope the visitor picked
+        // for a jacket says nothing about the one they want for a drill.
+        this.state.scope = null;
+        this.state.zone = "";
+        await this.load({ keepCategories: false });
+    }
+
+    /**
+     * Ask the server for the candidates of the current scope.
+     *
+     * Changing the scope goes back to the server rather than filtering what
+     * is already loaded, and it has to: "toda Canarias Conectada" is a
+     * different catalogue, not a wider view of this one, and the price shown
+     * has to be the price of the shop being compared against.
+     */
+    async load({ keepCategories }) {
+        const previousCategories = this.state.activeCategoryIds;
         this.setLoading(true);
         try {
             const data = await this.waitFor(
                 rpc("/shop/compare/candidates", {
-                    product_template_id: templateId,
+                    product_template_id: this.state.templateId,
+                    scope: this.state.scope,
+                    zone: this.state.zone,
                 })
             );
             this.state.products = data.products || [];
             this.state.categories = data.categories || [];
+            this.state.scopes = data.scopes || [];
+            // The server has the last word on the scope: it falls back when
+            // the one asked for is not available here.
+            this.state.scope = data.scope || null;
+            this.state.zone = data.zone || "";
             // Open on "things like this one", which is the whole point of the
             // modal. Only keep the ones that actually have candidates, so the
             // preselection can never produce an empty list on open.
             const available = new Set(this.state.categories.map((c) => c.id));
-            this.state.activeCategoryIds = (data.current_category_ids || []).filter(
-                (id) => available.has(id)
-            );
+            const wanted = keepCategories
+                ? previousCategories
+                : data.current_category_ids || [];
+            this.state.activeCategoryIds = wanted.filter((id) => available.has(id));
             this.render();
         } finally {
             this.setLoading(false);
@@ -78,9 +113,43 @@ export class ComparisonModal extends Interaction {
         );
     }
 
+    renderScopes() {
+        this.scopesEl.replaceChildren(
+            ...this.state.scopes.map((scope) => {
+                const button = document.createElement("button");
+                button.type = "button";
+                const active = scope.key === this.state.scope;
+                button.className =
+                    "btn btn-sm o_wscc_modal_scope " +
+                    (active ? "btn-primary" : "btn-outline-secondary");
+                button.dataset.scope = scope.key;
+                button.setAttribute("aria-pressed", active ? "true" : "false");
+                button.textContent = scope.label;
+                return button;
+            })
+        );
+
+        const current = this.state.scopes.find((s) => s.key === this.state.scope);
+        const zones = (current && current.zones) || [];
+        this.zonesEl.classList.toggle("d-none", zones.length === 0);
+        if (zones.length) {
+            this.zoneSelectEl.replaceChildren(
+                ...zones.map((zone) => {
+                    const option = document.createElement("option");
+                    option.value = zone.key;
+                    option.textContent = zone.name;
+                    option.selected = zone.key === this.state.zone;
+                    return option;
+                })
+            );
+        }
+    }
+
     render() {
         const compared = new Set(comparisonUtils.getComparisonProductIds());
         const products = this.visibleProducts();
+
+        this.renderScopes();
 
         this.chipsEl.replaceChildren(
             ...this.state.categories.map((category) => {
@@ -137,7 +206,34 @@ export class ComparisonModal extends Interaction {
         return row;
     }
 
+    onChange(ev) {
+        const select = ev.target.closest("#o_wscc_zone_select");
+        if (select) {
+            this.state.zone = select.value;
+            // Categories are not carried over: another neighbourhood has its
+            // own catalogue and the old selection would often filter it to
+            // nothing.
+            this.load({ keepCategories: false });
+        }
+    }
+
     onClick(ev) {
+        const scopeButton = ev.target.closest(".o_wscc_modal_scope");
+        if (scopeButton) {
+            const scope = scopeButton.dataset.scope;
+            if (scope === this.state.scope) {
+                return;
+            }
+            this.state.scope = scope;
+            const chosen = this.state.scopes.find((s) => s.key === scope);
+            // Picking "otra zona comercial" has to land on a real zone, not
+            // on an empty select.
+            this.state.zone =
+                chosen && chosen.zones.length ? chosen.zones[0].key : "";
+            this.load({ keepCategories: true });
+            return;
+        }
+
         const chip = ev.target.closest(".o_wscc_modal_chip");
         if (chip) {
             const id = parseInt(chip.dataset.categoryId, 10);
