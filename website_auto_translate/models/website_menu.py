@@ -21,7 +21,10 @@ class WebsiteMenu(models.Model):
     _inherit = ["website.menu", "auto.translate.mixin"]
 
     def _auto_translate_fields(self):
-        return ["name"]
+        # ``mega_menu_content`` is the whole drop-down panel, markup and all.
+        # A site using one had its navigation translated and the panel behind
+        # it left in Spanish, which is worse than either on its own.
+        return ["name", "mega_menu_content"]
 
     def _auto_translate_scoped(self):
         """Menus of a website whose company opted into the rollout.

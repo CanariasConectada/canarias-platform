@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="view_auto_translate_term_list" model="ir.ui.view">
+        <field name="name">auto.translate.term.list</field>
+        <field name="model">auto.translate.term</field>
+        <field name="arch" type="xml">
+            <list editable="bottom" default_order="job_id, sequence, id"
+                  create="false" delete="false">
+                <field name="sequence" widget="handle"/>
+                <field name="page_name" readonly="1" optional="show"/>
+                <field name="section" readonly="1" optional="show"/>
+                <field name="lang" readonly="1"/>
+                <field name="source_text" readonly="1"/>
+                <field name="translated_text"
+                       placeholder="Correct it here and it stays corrected"/>
+                <field name="state" widget="badge" readonly="1"
+                       decoration-success="state == 'auto'"
+                       decoration-info="state == 'locked'"/>
+                <field name="source_term" readonly="1" optional="hide"/>
+                <field name="translated_term" readonly="1" optional="hide"/>
+                <button name="action_unlock" type="object" icon="fa-unlock"
+                        title="Discard this correction and translate it again"
+                        invisible="state != 'locked'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_auto_translate_term_search" model="ir.ui.view">
+        <field name="name">auto.translate.term.search</field>
+        <field name="model">auto.translate.term</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="source_text"/>
+                <field name="translated_text"/>
+                <field name="page_name"/>
+                <field name="section"/>
+                <field name="lang"/>
+                <filter name="translated" string="Translated"
+                        domain="[('state', '=', 'auto')]"/>
+                <filter name="locked" string="Written by hand"
+                        domain="[('state', '=', 'locked')]"/>
+                <separator/>
+                <group name="group_by">
+                    <filter name="group_page" string="Page"
+                            context="{'group_by': 'page_name'}"/>
+                    <filter name="group_section" string="Section"
+                            context="{'group_by': 'section'}"/>
+                    <filter name="group_lang" string="Language"
+                            context="{'group_by': 'lang'}"/>
+                    <filter name="group_state" string="Status"
+                            context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_auto_translate_term" model="ir.actions.act_window">
+        <field name="name">Page Sentences</field>
+        <field name="res_model">auto.translate.term</field>
+        <field name="view_mode">list</field>
+        <field name="context">
+            {'search_default_group_page': 1, 'search_default_group_section': 2}
+        </field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No page sentence listed yet</p>
+            <p>
+                Pages are broken down into sentences the first time they are
+                translated. Use <b>Rebuild sentences</b> on a page in the
+                translation queue to list one that was translated earlier.
+            </p>
+        </field>
+    </record>
+
+</odoo>

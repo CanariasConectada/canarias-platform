@@ -1,7 +1,6 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-import hashlib
 import logging
 
 import psycopg2
@@ -9,6 +8,9 @@ import psycopg2
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools import SQL, config
+
+from .text_tools import digest as _digest
+from .text_tools import mask, section_at, section_markers, term_has_words
 
 _logger = logging.getLogger(__name__)
 
@@ -35,9 +37,20 @@ TRANSACTION_LOST = (
 # which is a far better thing for a German visitor to land on than English.
 BASE_LANG = "en_US"
 
-
-def _digest(value):
-    return hashlib.sha256((value or "").encode("utf-8")).hexdigest()
+# Which part of the site a row belongs to. The queue used to be grouped by
+# technical model name, which reads as "ir.ui.view" to somebody who only wants
+# to find the page whose German is wrong.
+CONTENT_KINDS = {
+    "ir.ui.view": "page",
+    "product.template": "product",
+    "product.public.category": "category",
+    "product.attribute": "category",
+    "product.attribute.value": "category",
+    "product.tag": "category",
+    "website.menu": "menu",
+    "event.event": "event",
+    "res.partner": "shop",
+}
 
 
 class AutoTranslateJob(models.Model):
@@ -96,9 +109,52 @@ class AutoTranslateJob(models.Model):
     )
     correctable_here = fields.Boolean(
         compute="_compute_texts",
-        help="Pages are corrected in the website editor instead, because a "
+        help="A page is corrected sentence by sentence instead, because a "
         "page is a set of terms rather than one piece of text.",
     )
+    content_kind = fields.Selection(
+        [
+            ("page", "Page"),
+            ("product", "Product"),
+            ("category", "Shop category"),
+            ("menu", "Navigation"),
+            ("event", "Event"),
+            ("shop", "Shop profile"),
+            ("other", "Other"),
+        ],
+        compute="_compute_content_kind",
+        store=True,
+        index=True,
+        help="What kind of content this is, so the queue can be read by "
+        "section instead of by technical model name.",
+    )
+    term_ids = fields.One2many("auto.translate.term", "job_id")
+    term_count = fields.Integer(compute="_compute_term_count")
+
+    @api.depends("model_name")
+    def _compute_content_kind(self):
+        for job in self:
+            job.content_kind = CONTENT_KINDS.get(job.model_name, "other")
+
+    @api.depends("term_ids")
+    def _compute_term_count(self):
+        counts = dict(
+            self.env["auto.translate.term"]._read_group(
+                domain=[("job_id", "in", self.ids)],
+                groupby=["job_id"],
+                aggregates=["__count"],
+            )
+        )
+        for job in self:
+            job.term_count = counts.get(job, 0)
+
+    @api.model
+    def _source_lang(self):
+        return (
+            self.env["ir.config_parameter"]
+            .sudo()
+            .get_param("website_auto_translate.source_lang", "es_ES")
+        )
 
     def _record(self):
         self.ensure_one()
@@ -109,7 +165,7 @@ class AutoTranslateJob(models.Model):
     # ------------------------------------------------------------------
     # Reading and correcting the text itself
     # ------------------------------------------------------------------
-    @api.depends("model_name", "res_id", "field_name", "lang", "state")
+    @api.depends("model_name", "res_id", "field_name", "lang", "state", "term_ids")
     def _compute_texts(self):
         """Put the original and the machine's answer side by side.
 
@@ -119,11 +175,7 @@ class AutoTranslateJob(models.Model):
         way, which is how "Cheetos" stayed "Käse" until a person happened to
         look at the shop.
         """
-        source_lang = (
-            self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("website_auto_translate.source_lang", "es_ES")
-        )
+        source_lang = self._source_lang()
         for job in self:
             record = job._record()
             field = record and record._fields.get(job.field_name)
@@ -132,11 +184,22 @@ class AutoTranslateJob(models.Model):
                 job.correctable_here = False
                 continue
             job.record_label = record.display_name
-            job.source_text = record.with_context(lang=source_lang)[job.field_name]
-            job.translated_text = record.with_context(lang=job.lang)[job.field_name]
             # A ``model_terms`` field -- a page -- is a bag of terms, not one
             # string, so it cannot be corrected by retyping the whole thing.
             job.correctable_here = not callable(field.translate)
+            if not job.correctable_here:
+                # Never the raw value here. A page is a fourteen-thousand
+                # character blob of ``<section data-snippet=…>``; putting that
+                # in a list column tells a human nothing and hides the one
+                # thing they came for, which is the sentence that reads wrong.
+                summary = self.env._(
+                    "%(count)s sentences — open them to read and correct them",
+                    count=job.term_count,
+                )
+                job.source_text = job.translated_text = summary
+                continue
+            job.source_text = record.with_context(lang=source_lang)[job.field_name]
+            job.translated_text = record.with_context(lang=job.lang)[job.field_name]
 
     def _inverse_translated_text(self):
         """Take the correction, and take the record out of the machine's hands.
@@ -145,11 +208,7 @@ class AutoTranslateJob(models.Model):
         person who has just fixed a translation should not have to trust that
         some later job will notice.
         """
-        source_lang = (
-            self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("website_auto_translate.source_lang", "es_ES")
-        )
+        source_lang = self._source_lang()
         for job in self:
             record = job._record()
             if record is None or not record:
@@ -158,8 +217,8 @@ class AutoTranslateJob(models.Model):
             if field is None or callable(field.translate):
                 raise UserError(
                     self.env._(
-                        "A page is corrected in the website editor, where each "
-                        "sentence can be edited on its own."
+                        "A page is corrected sentence by sentence: open its "
+                        "sentences and fix the one that reads wrong."
                     )
                 )
             record.with_context(auto_translate_skip=True).update_field_translations(
@@ -245,6 +304,109 @@ class AutoTranslateJob(models.Model):
         )
         return self.browse([row[0] for row in self.env.cr.fetchall()])._run()
 
+    # ------------------------------------------------------------------
+    # A page, sentence by sentence
+    # ------------------------------------------------------------------
+    @api.model
+    def _extract_terms(self, field, value):
+        """The sentences Odoo would translate in ``value``, in reading order.
+
+        ``get_trans_terms`` rather than our own parser: it is the very function
+        the ORM uses to decide what a term is, so anything else would drift the
+        first time a page used markup we had not thought of.
+        """
+        seen, ordered = set(), []
+        for term in field.get_trans_terms(value or ""):
+            if term in seen or not term_has_words(term):
+                continue
+            seen.add(term)
+            ordered.append(term)
+        return ordered
+
+    def _sync_terms(self, record=None, source_value=None):
+        """Materialise this page's sentences so a person can read and fix them.
+
+        Also the moment a correction made on the website itself is noticed: a
+        sentence whose stored translation is no longer the one we wrote was
+        retyped by somebody, and from here on it is theirs.
+        """
+        self.ensure_one()
+        record = record if record is not None else self._record()
+        if record is None or not record:
+            return self.env["auto.translate.term"]
+        field = record._fields.get(self.field_name)
+        if field is None or not callable(field.translate):
+            return self.env["auto.translate.term"]
+        source_lang = self._source_lang()
+        if source_value is None:
+            source_value = record.with_context(lang=source_lang)[self.field_name] or ""
+        Term = self.env["auto.translate.term"].sudo()
+        stored_value = self._stored_translation(record) or source_value
+        translations = field.get_translation_dictionary(
+            source_value, {self.lang: stored_value}
+        )
+        markers = section_markers(source_value)
+        existing = {row.term_hash: row for row in self.term_ids}
+        label = record.display_name
+        # A page locked before this table existed was locked by a person, and
+        # every sentence on it has to inherit that or the next run would undo
+        # work somebody did by hand.
+        born_locked = self.state == "locked"
+        cursor = 0
+        keep = Term.browse()
+        for position, term in enumerate(self._extract_terms(field, source_value), 1):
+            found = source_value.find(term, cursor)
+            if found >= 0:
+                cursor = found + len(term)
+            raw = translations.get(term, {}).get(self.lang) or ""
+            fingerprint = _digest(term)
+            values = {
+                "sequence": position,
+                "section": section_at(markers, found),
+                "page_name": label,
+                "source_term": term,
+                "source_text": mask(term),
+            }
+            row = existing.get(fingerprint)
+            if row:
+                if row.state == "auto" and raw and raw != row.translated_term:
+                    # Retyped on the website. Nobody has to tell us.
+                    values["state"] = "locked"
+                values.update(translated_term=raw, translated_text=mask(raw))
+                row.with_context(auto_translate_sync=True).write(values)
+            else:
+                row = Term.with_context(auto_translate_sync=True).create(
+                    dict(
+                        values,
+                        job_id=self.id,
+                        term_hash=fingerprint,
+                        translated_term=raw,
+                        translated_text=mask(raw),
+                        state="locked" if born_locked else "auto",
+                    )
+                )
+            keep |= row
+        (self.term_ids - keep).unlink()
+        return keep
+
+    def action_sync_terms(self):
+        """Rebuild the sentence list of every page selected."""
+        for job in self:
+            job._sync_terms()
+        return True
+
+    def action_open_terms(self):
+        self.ensure_one()
+        self._sync_terms()
+        return {
+            "type": "ir.actions.act_window",
+            "name": self.env._("Sentences — %(page)s", page=self.record_label or ""),
+            "res_model": "auto.translate.term",
+            "view_mode": "list",
+            "domain": [("job_id", "=", self.id)],
+            "context": {"search_default_group_section": 1, "create": False},
+        }
+
     def _run(self):
         """Translate each job in its own transaction slice.
 
@@ -314,8 +476,14 @@ class AutoTranslateJob(models.Model):
             )
             return False
         stored = self._stored_translation(record)
+        # A page is protected sentence by sentence, so it is read *before* the
+        # engine is asked anything: whatever somebody retyped on the website
+        # becomes locked here and is then left out of the request.
+        per_term = callable(field.translate)
+        if per_term:
+            self._sync_terms(record, source_value)
 
-        if not self._may_overwrite(stored, source_value):
+        if not per_term and not self._may_overwrite(stored, source_value):
             self.write({"state": "locked"})
             return False
         # Already translated from exactly this source, and our text is still
@@ -345,6 +513,11 @@ class AutoTranslateJob(models.Model):
         record.with_context(auto_translate_skip=True).update_field_translations(
             self.field_name, {self.lang: payload}, source_lang=source_lang
         )
+        if per_term:
+            # Refresh the rows with what the engine actually produced, so the
+            # next run compares against our own output rather than the text
+            # that was there before it.
+            self._sync_terms(record, source_value)
         stored_now = self._stored_translation(record)
         self.write(
             {
@@ -461,25 +634,35 @@ class AutoTranslateJob(models.Model):
         the raw markup to a translation engine is how you get back a page whose
         ``t-if`` attributes have been helpfully translated into German.
 
+        Two kinds of term are deliberately left out of the request:
+
+        * anything with no letters in it -- a lone ``&amp;nbsp;``, an icon tag
+          on its own. There is nothing to translate, and handing an entity to
+          an engine is how the Italian pages came back reading ``&Nbsp;``;
+        * a sentence somebody corrected by hand. Protecting the whole page
+          because one line was fixed is what this used to do, and it stopped
+          the other thirty-two lines ever improving.
+
         Returns ``(payload, engine)``, or ``(None, None)`` when the value holds
         nothing a translator could act on.
         """
         Engine = self.env["auto.translate.engine"]
-        translate = field.translate
-        if not callable(translate):
+        if not callable(field.translate):
             translated, engine = Engine._run(
                 [source_value], source_lang, self.lang, is_html=False
             )
             return translated[0], engine
 
-        terms = []
-
-        def collect(term):
-            terms.append(term)
-            return term
-
-        translate(collect, source_value)
-        unique = list(dict.fromkeys(term for term in terms if term and term.strip()))
+        locked = set(
+            self.term_ids.filtered(lambda row: row.state == "locked").mapped(
+                "source_term"
+            )
+        )
+        unique = [
+            term
+            for term in self._extract_terms(field, source_value)
+            if term not in locked
+        ]
         if not unique:
             return None, None
         translated, engine = Engine._run(unique, source_lang, self.lang, is_html=True)

@@ -3,7 +3,15 @@
 
 from odoo import models
 
-TRANSLATED_FIELDS = ["name", "description_sale", "website_description"]
+TRANSLATED_FIELDS = [
+    "name",
+    "description_sale",
+    "website_description",
+    # The paragraph the product page itself renders. Separate from
+    # ``website_description`` in Odoo 19, and left out until 19.0.3.0.0, so a
+    # shop that wrote its copy there had it stay in Spanish in every language.
+    "description_ecommerce",
+]
 
 
 class ProductTemplate(models.Model):

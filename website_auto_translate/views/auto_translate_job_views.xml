@@ -9,6 +9,7 @@
         <field name="arch" type="xml">
             <list editable="bottom">
                 <field name="correctable_here" column_invisible="1"/>
+                <field name="content_kind" readonly="1" optional="show"/>
                 <field name="record_label" readonly="1" optional="show"/>
                 <field name="lang" readonly="1"/>
                 <field name="source_text" readonly="1"/>
@@ -26,6 +27,13 @@
                 <field name="attempts" readonly="1" optional="hide"/>
                 <field name="error" readonly="1" optional="show"/>
                 <field name="write_date" readonly="1" optional="hide"/>
+                <field name="term_count" readonly="1" optional="hide"/>
+                <button name="action_open_terms" type="object" icon="fa-list-ol"
+                        title="Read and correct this page sentence by sentence"
+                        invisible="correctable_here"/>
+                <button name="action_sync_terms" type="object" icon="fa-sitemap"
+                        title="Rebuild sentences"
+                        invisible="correctable_here"/>
                 <button name="action_retry" type="object" icon="fa-repeat"
                         title="Queue again"
                         invisible="state not in ('failed', 'done')"/>
@@ -48,6 +56,11 @@
                 <field name="model_name"/>
                 <field name="field_name"/>
                 <field name="lang"/>
+                <filter name="pages" string="Pages"
+                        domain="[('content_kind', '=', 'page')]"/>
+                <filter name="products" string="Products"
+                        domain="[('content_kind', '=', 'product')]"/>
+                <separator/>
                 <filter name="pending" string="Pending"
                         domain="[('state', '=', 'pending')]"/>
                 <filter name="failed" string="Failed"
@@ -62,6 +75,8 @@
                             context="{'group_by': 'lang'}"/>
                     <filter name="by_engine" string="Winning engine"
                             context="{'group_by': 'engine_id'}"/>
+                    <filter name="by_kind" string="Kind of content"
+                            context="{'group_by': 'content_kind'}"/>
                     <filter name="by_model" string="Model"
                             context="{'group_by': 'model_name'}"/>
                 </group>
@@ -73,7 +88,9 @@
         <field name="name">Translation Queue</field>
         <field name="res_model">auto.translate.job</field>
         <field name="view_mode">list</field>
-        <field name="context">{'search_default_by_state': 1}</field>
+        <field name="context">
+            {'search_default_by_kind': 1, 'search_default_by_lang': 2}
+        </field>
     </record>
 
 </odoo>

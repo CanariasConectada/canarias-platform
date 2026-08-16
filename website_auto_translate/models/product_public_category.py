@@ -11,4 +11,10 @@ class ProductPublicCategory(models.Model):
     def _auto_translate_fields(self):
         # Shop categories carry no company: the same tree is the navigation of
         # every website, so it is in scope as soon as the feature is on.
-        return ["name", "website_meta_title", "website_meta_description"]
+        return [
+            "name",
+            "website_description",
+            "website_footer",
+            "website_meta_title",
+            "website_meta_description",
+        ]

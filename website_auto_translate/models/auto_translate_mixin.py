@@ -92,8 +92,18 @@ class AutoTranslateMixin(models.AbstractModel):
 
     @api.model_create_multi
     def create(self, vals_list):
+        """Queue what was actually written, exactly as ``write`` does.
+
+        Queueing every translatable field of every new record regardless of
+        whether it was given a value is what left 4272 rows in the queue for
+        ``website_description`` on a catalogue where not one product has one.
+        They were harmless -- read, found empty, marked done -- but they made
+        the screen unreadable, and on ``res.partner`` they would have cost a
+        language search on every customer the shop creates.
+        """
         records = super().create(vals_list)
-        records._auto_translate_enqueue(records._auto_translate_fields())
+        written = {key: True for vals in vals_list for key in vals}
+        records._auto_translate_enqueue(records._auto_translate_touched(written))
         return records
 
     def write(self, vals):

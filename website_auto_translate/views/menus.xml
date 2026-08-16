@@ -27,4 +27,10 @@
               action="action_auto_translate_job"
               sequence="20"/>
 
+    <menuitem id="menu_auto_translate_term"
+              name="Page Sentences"
+              parent="menu_auto_translate_root"
+              action="action_auto_translate_term"
+              sequence="25"/>
+
 </odoo>

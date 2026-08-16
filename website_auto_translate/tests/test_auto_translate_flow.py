@@ -156,10 +156,22 @@ class TestAutoTranslateFlow(TransactionCase):
         )
 
     def test_an_empty_source_is_not_sent_anywhere(self):
-        product = self.Product.create({"name": "Sin descripción"})
+        """A field somebody cleared still has a row, and still costs nothing.
+
+        Since 19.0.3.0.0 a field nobody filled in never enters the queue at
+        all, so the way an empty source reaches a run is a merchant emptying
+        what they had written. That is the case worth guarding: the row exists,
+        it must not be handed to a translation service, and it must not sit
+        there pending for ever.
+        """
+        product = self.Product.create(
+            {"name": "Sin descripción", "description_sale": "Se vende suelto"}
+        )
+        product.write({"description_sale": ""})
         job = self._jobs_for(product).filtered(
             lambda j: j.field_name == "description_sale"
         )
+        self.assertTrue(job)
         with patch.object(type(self.engine), "translate") as translate:
             job._run()
         translate.assert_not_called()
@@ -518,10 +530,19 @@ class TestAutoTranslateFlow(TransactionCase):
         self._run_queue()
 
         german = self._jobs_for(view, lang="de_DE")
+        corrected = german.term_ids.filtered(
+            lambda row: row.source_term == "Bolsa de Cheetos"
+        )
         self.assertEqual(
-            german.state,
+            corrected.state,
             "locked",
             "a correction made on the website must lock the machine out",
+        )
+        self.assertNotEqual(
+            german.state,
+            "locked",
+            "and it must lock it out of that sentence, not out of the page: "
+            "since 19.0.3.0.0 the rest of the page keeps improving",
         )
         self.assertIn(
             "Tüte Cheetos",
