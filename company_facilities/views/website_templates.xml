@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- The block itself, kept separate from where it is injected so a site
+         that wants it somewhere else only has to move one t-call. -->
+    <template id="facilities_block" name="Facilities and Services Block">
+        <t t-set="facility_groups" t-value="company._facilities_by_category()"/>
+        <section t-if="facility_groups" class="pt48 pb48 o_cf_facilities"
+                 data-name="Facilities">
+            <div class="container">
+                <h3 class="text-center mb-5 o_cf_facilities__title">
+                    <t t-if="company.facility_block_title">
+                        <t t-out="company.facility_block_title"/>
+                    </t>
+                    <t t-else="">Facilities and services</t>
+                </h3>
+                <div class="row g-4">
+                    <t t-foreach="facility_groups" t-as="group">
+                        <t t-set="category" t-value="group[0]"/>
+                        <div class="col-12 col-md-6 col-lg-4">
+                            <h5 class="o_cf_facilities__group d-flex align-items-center gap-2 mb-3">
+                                <i t-attf-class="fa #{category.icon or 'fa-th-large'} o_cf_facilities__group-icon"
+                                   aria-hidden="true"/>
+                                <span t-out="category.name"/>
+                            </h5>
+                            <ul class="list-unstyled mb-0">
+                                <li t-foreach="group[1]" t-as="facility"
+                                    class="o_cf_facility d-flex align-items-start gap-2 mb-2">
+                                    <i t-attf-class="fa #{facility.icon or 'fa-check'} o_cf_facility__icon mt-1"
+                                       aria-hidden="true"/>
+                                    <span>
+                                        <span class="o_cf_facility__name d-block"
+                                              t-out="facility.name"/>
+                                        <small t-if="facility.description"
+                                               class="text-muted d-block"
+                                               t-out="facility.description"/>
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <!-- Right after the About / Services text, which is the paragraph this
+         block turns into something a visitor can scan. -->
+    <template id="microsite_homepage_facilities"
+              inherit_id="partner_microsite_manager.microsite_homepage_content"
+              name="Microsite: facilities and services">
+        <xpath expr="//section[@data-name='About']" position="after">
+            <t t-call="company_facilities.facilities_block"/>
+        </xpath>
+    </template>
+
+</odoo>

@@ -1,0 +1,276 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* company_facilities
+#
+# Generated from the module's own .pot so every `#:` reference line survives.
+# See docs in scratchpad/gen_po.py for why that matters.
+#
+# El catálogo se siembra en inglés a propósito: en_US es la base técnica
+# de toda columna traducible, así que sembrarlo en español lo dejaría
+# justo donde luego cae la traducción inglesa. Por eso NO hay en.po.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: Canarias Conectada\n"
+"Language-Team: \n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+
+#. module: company_facilities
+#: model:company.facility.category,name:company_facilities.category_accessibility
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_category_form
+msgid "Accessibility"
+msgstr "Accessibilità"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_accessible_parking
+msgid "Accessible parking space"
+msgstr "Posto auto accessibile"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_accessible_toilet
+msgid "Accessible toilet"
+msgstr "Bagno accessibile"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_air_conditioning
+msgid "Air conditioning"
+msgstr "Aria condizionata"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_assistance_dogs
+msgid "Assistance dogs welcome"
+msgstr "Cani di assistenza ammessi"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_bicycle_parking
+msgid "Bicycle parking"
+msgstr "Parcheggio per biciclette"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_bus_stop
+msgid "Bus stop nearby"
+msgstr "Fermata dell'autobus vicina"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_click_and_collect
+msgid "Buy online, collect in shop"
+msgstr "Compra online, ritira in negozio"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_nearby_parking
+msgid "Car park nearby"
+msgstr "Parcheggio nelle vicinanze"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_card_payment
+msgid "Card payment"
+msgstr "Pagamento con carta"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_cash_only
+msgid "Cash only"
+msgstr "Solo contanti"
+
+#. module: company_facilities
+#: model:ir.model,name:company_facilities.model_company_facility
+msgid "Company Facility"
+msgstr "Struttura o servizio del negozio"
+
+#. module: company_facilities
+#: model:ir.model,name:company_facilities.model_company_facility_category
+msgid "Company Facility Category"
+msgstr "Sezione di strutture e servizi"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_contactless
+msgid "Contactless payment"
+msgstr "Pagamento contactless"
+
+#. module: company_facilities
+#: model:ir.model.fields,field_description:company_facilities.field_company_facility__description
+msgid "Description"
+msgstr "Descrizione"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_speaks_english
+msgid "English"
+msgstr "Inglese"
+
+#. module: company_facilities
+#: model:ir.actions.act_window,name:company_facilities.action_company_facility
+#: model:ir.model.fields,field_description:company_facilities.field_res_company__facility_ids
+#: model:ir.ui.menu,name:company_facilities.menu_facilities_root
+#: model:res.groups.privilege,name:company_facilities.res_groups_privilege_facilities
+#: model_terms:ir.ui.view,arch_db:company_facilities.facilities_block
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_company_form_facilities
+msgid "Facilities and services"
+msgstr "Strutture e servizi"
+
+#. module: company_facilities
+#: model:ir.model.fields,field_description:company_facilities.field_res_company__facility_block_title
+msgid "Facilities block title"
+msgstr "Titolo del blocco strutture"
+
+#. module: company_facilities
+#: model:ir.model.fields,field_description:company_facilities.field_company_facility_category__facility_ids
+msgid "Facility"
+msgstr "Struttura o servizio"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_fitting_room
+msgid "Fitting rooms"
+msgstr "Camerini"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_free_wifi
+msgid "Free wifi"
+msgstr "Wifi gratuito"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_speaks_german
+msgid "German"
+msgstr "Tedesco"
+
+#. module: company_facilities
+#: model:company.facility.category,name:company_facilities.category_access
+msgid "Getting there"
+msgstr "Come arrivare"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_gift_wrapping
+msgid "Gift wrapping"
+msgstr "Confezione regalo"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_home_delivery
+msgid "Home delivery"
+msgstr "Consegna a domicilio"
+
+#. module: company_facilities
+#: model:ir.model.fields,field_description:company_facilities.field_company_facility__icon
+#: model:ir.model.fields,field_description:company_facilities.field_company_facility_category__icon
+msgid "Icon"
+msgstr "Icona"
+
+#. module: company_facilities
+#: model:company.facility.category,name:company_facilities.category_premises
+msgid "In the shop"
+msgstr "In negozio"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_invoice_on_request
+msgid "Invoice on request"
+msgstr "Fattura su richiesta"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_speaks_italian
+msgid "Italian"
+msgstr "Italiano"
+
+#. module: company_facilities
+#: model:ir.ui.menu,name:company_facilities.menu_company_facility
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_category_form
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_category_list
+msgid "Items"
+msgstr "Voci"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_large_print
+msgid "Large-print prices"
+msgstr "Prezzi a caratteri grandi"
+
+#. module: company_facilities
+#: model:res.groups,name:company_facilities.group_facility_manager
+msgid "Manage the facilities catalogue"
+msgstr "Gestire il catalogo di strutture e servizi"
+
+#. module: company_facilities
+#: model:ir.model.fields,field_description:company_facilities.field_company_facility__company_ids
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_form
+msgid "Offered by"
+msgstr "Offerto da"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_whatsapp_orders
+msgid "Orders by WhatsApp"
+msgstr "Ordini su WhatsApp"
+
+#. module: company_facilities
+#: model:company.facility.category,name:company_facilities.category_payment
+msgid "Payment"
+msgstr "Pagamento"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_mobile_payment
+msgid "Payment by phone"
+msgstr "Pagamento con il telefono"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_pets_welcome
+msgid "Pets welcome"
+msgstr "Animali ammessi"
+
+#. module: company_facilities
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_company_form_facilities
+msgid "Pick what this shop offers"
+msgstr "Scegli cosa offre questo negozio"
+
+#. module: company_facilities
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_form
+msgid "Ramp at the main entrance"
+msgstr "Rampa all'ingresso principale"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_repairs
+msgid "Repairs and after-sales"
+msgstr "Riparazioni e assistenza"
+
+#. module: company_facilities
+#: model:company.facility.category,name:company_facilities.category_service
+msgid "Service"
+msgstr "Servizio"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_speaks_spanish
+msgid "Spanish"
+msgstr "Spagnolo"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_staff_assistance
+msgid "Staff trained to assist"
+msgstr "Personale formato per assistere"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_step_free_access
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_form
+msgid "Step-free access"
+msgstr "Accesso senza gradini"
+
+#. module: company_facilities
+#: model:ir.model.fields,field_description:company_facilities.field_company_facility__category_id
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_search
+msgid "Subdivision"
+msgstr "Sezione"
+
+#. module: company_facilities
+#: model:ir.actions.act_window,name:company_facilities.action_company_facility_category
+#: model:ir.ui.menu,name:company_facilities.menu_company_facility_category
+msgid "Subdivisions"
+msgstr "Sezioni"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_customer_toilet
+msgid "Toilet for customers"
+msgstr "Bagno per i clienti"
+
+#. module: company_facilities
+#: model:company.facility.category,name:company_facilities.category_languages
+msgid "We speak"
+msgstr "Parliamo"

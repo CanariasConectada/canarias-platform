@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="view_company_form_facilities" model="ir.ui.view">
+        <field name="name">res.company.form.facilities</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id"
+               ref="partner_microsite_manager.view_company_form_microsite"/>
+        <field name="arch" type="xml">
+            <!-- Inside the Microsite page, where the merchant already writes
+                 the rest of what their shop shows. A page of its own would
+                 hide it from the very people it is for. -->
+            <field name="microsite_services_text" position="after">
+                <separator string="Facilities and services"/>
+                <field name="facility_block_title"
+                       placeholder="Facilities and services"/>
+                <field name="facility_ids" widget="many2many_tags"
+                       options="{'no_create': True, 'no_open': True}"
+                       placeholder="Pick what this shop offers"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

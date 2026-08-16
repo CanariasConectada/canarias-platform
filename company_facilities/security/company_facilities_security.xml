@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="res_groups_privilege_facilities" model="res.groups.privilege">
+        <field name="name">Facilities and services</field>
+        <field name="sequence">30</field>
+        <field name="category_id" ref="base.module_category_website"/>
+    </record>
+
+    <!-- A group rather than "system only": the client is meant to add their
+         own subdivisions and items without an administrator. Remember this
+         platform grants groups through roles (base_user_role); ticking it on a
+         user by hand is reverted on the next synchronisation. -->
+    <record id="group_facility_manager" model="res.groups">
+        <field name="name">Manage the facilities catalogue</field>
+        <field name="sequence">10</field>
+        <field name="privilege_id" ref="res_groups_privilege_facilities"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="comment">Add, rename and archive the subdivisions and the
+            items every shop picks from.</field>
+    </record>
+
+    <record id="base.group_system" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('group_facility_manager'))]"/>
+    </record>
+
+</odoo>
