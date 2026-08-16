@@ -4,12 +4,12 @@
 from urllib.parse import quote_plus, urlsplit
 
 from odoo import _, api, fields, models
+from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tools.translate import LazyTranslate
 
-_lt = LazyTranslate(__name__)
-from odoo.exceptions import AccessError, UserError, ValidationError
-
 from ..tools.opening_hours import MAX_RANGES_PER_DAY, parse_opening_hours
+
+_lt = LazyTranslate(__name__)
 
 # Only https map URLs are embeddable in the microsite contact iframe. A
 # 'javascript:' or 'data:' src would run in the visitor's page context
@@ -228,6 +228,35 @@ class ResCompany(models.Model):
             "    </t>\n"
             "</t>\n"
         )
+
+    # ------------------------------------------------------------------
+    # Self-service: the merchant's own way in
+    # ------------------------------------------------------------------
+    @api.model
+    def _get_own_microsite_company(self):
+        """The one shop the caller may edit the page content of.
+
+        ``res.users.company_id`` and nothing else, mirroring the reasoning in
+        ``website_directory._get_own_company_for_directory``: the allowed
+        companies list is not a statement of ownership on this platform --
+        ``zone_company_ownership`` puts the ZONE company in it, and letting a
+        merchant edit their neighbourhood's homepage because it happens to be
+        in their list is exactly the leak that module was written to close.
+
+        Returns an empty recordset instead of raising, so the caller can say
+        "you have no shop" rather than serve a traceback.
+        """
+        user = self.env.user
+        if not user or user._is_public():
+            return self.browse()
+        company = user.company_id
+        if not company or not company.active or not company.website_id:
+            return self.browse()
+        # The platform's own company is nobody's shop.
+        main = self.env.ref("base.main_company", raise_if_not_found=False)
+        if main and company == main:
+            return self.browse()
+        return company
 
     def action_publish_microsite_homepage(self):
         """Create or replace the homepage of the company website with the

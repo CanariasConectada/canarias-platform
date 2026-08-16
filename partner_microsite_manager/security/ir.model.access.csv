@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_microsite_content_editor_editor,microsite.content.editor.website.editor,model_microsite_content_editor,website.group_website_restricted_editor,1,1,1,1
