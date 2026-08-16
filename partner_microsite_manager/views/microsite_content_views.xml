@@ -28,7 +28,8 @@
                         </h1>
                         <field name="company_id" invisible="1"/>
                         <div class="text-muted" invisible="not website_url">
-                            <i class="fa fa-globe me-1"/><field name="website_url" readonly="1" nolabel="1"/>
+                            <i class="fa fa-globe me-1" title="Address" role="img"
+                               aria-label="Address"/><field name="website_url" readonly="1" nolabel="1"/>
                         </div>
                     </div>
                     <notebook>

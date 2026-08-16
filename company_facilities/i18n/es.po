@@ -11,7 +11,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "Last-Translator: Canarias Conectada\n"
 "Language-Team: \n"
-"Language: es\n"
+"Language: es_ES\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -161,6 +161,7 @@ msgstr "Descripción"
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__display_name
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility_category__display_name
+#: model:ir.model.fields,field_description:company_facilities.field_microsite_content_editor__display_name
 #: model:ir.model.fields,field_description:company_facilities.field_res_company__display_name
 msgid "Display Name"
 msgstr "Nombre mostrado"
@@ -185,6 +186,7 @@ msgstr "Cada comercio elige de esta lista desde su propia ficha. Renombra un ele
 #: model:res.groups.privilege,name:company_facilities.res_groups_privilege_facilities
 #: model_terms:ir.ui.view,arch_db:company_facilities.facilities_block
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_form_facilities
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_microsite_content_editor_form_facilities
 msgid "Facilities and services"
 msgstr "Instalaciones y servicios"
 
@@ -240,6 +242,11 @@ msgid "Gift wrapping"
 msgstr "Envoltorio para regalo"
 
 #. module: company_facilities
+#: model:ir.model.fields,field_description:company_facilities.field_microsite_content_editor__facility_block_title
+msgid "Heading"
+msgstr "Título"
+
+#. module: company_facilities
 #: model:ir.model.fields,help:company_facilities.field_res_company__facility_block_title
 msgid ""
 "Heading of the block on the microsite. Left empty it reads “Facilities and "
@@ -254,6 +261,7 @@ msgstr "Entrega a domicilio"
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__id
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility_category__id
+#: model:ir.model.fields,field_description:company_facilities.field_microsite_content_editor__id
 #: model:ir.model.fields,field_description:company_facilities.field_res_company__id
 msgid "ID"
 msgstr "ID"
@@ -315,6 +323,13 @@ msgid "Name"
 msgstr "Nombre"
 
 #. module: company_facilities
+#: model:ir.model.fields,help:company_facilities.field_microsite_content_editor__facility_block_enabled
+msgid ""
+"Off by default. The ticks still feed the directory filter whether or not the"
+" block is shown."
+msgstr "Desactivado por defecto. Lo que marques alimenta el filtro del directorio se muestre o no el bloque."
+
+#. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__company_ids
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_form
 msgid "Offered by"
@@ -330,6 +345,11 @@ msgstr "Una línea corta bajo el nombre. Déjala vacía cuando el nombre ya lo d
 #: model:company.facility,name:company_facilities.facility_whatsapp_orders
 msgid "Orders by WhatsApp"
 msgstr "Pedidos por WhatsApp"
+
+#. module: company_facilities
+#: model:ir.model,name:company_facilities.model_microsite_content_editor
+msgid "Page content of my shop"
+msgstr ""
 
 #. module: company_facilities
 #: model:company.facility.category,name:company_facilities.category_payment
@@ -348,6 +368,7 @@ msgstr "Se admiten mascotas"
 
 #. module: company_facilities
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_form_facilities
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_microsite_content_editor_form_facilities
 msgid "Pick what this shop offers"
 msgstr "Elige lo que ofrece este comercio"
 
@@ -376,6 +397,16 @@ msgstr "Servicio"
 #: model:ir.model.fields,field_description:company_facilities.field_res_company__facility_block_enabled
 msgid "Show facilities on the website"
 msgstr "Mostrar las instalaciones en la web"
+
+#. module: company_facilities
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_microsite_content_editor_form_facilities
+msgid "Show it on the page"
+msgstr "Mostrarlo en la página"
+
+#. module: company_facilities
+#: model:ir.model.fields,field_description:company_facilities.field_microsite_content_editor__facility_block_enabled
+msgid "Show them on my page"
+msgstr "Mostrarlas en mi página"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_speaks_spanish
@@ -426,9 +457,23 @@ msgid "We speak"
 msgstr "Hablamos"
 
 #. module: company_facilities
+#: model:ir.model.fields,field_description:company_facilities.field_microsite_content_editor__facility_ids
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_microsite_content_editor_form_facilities
+msgid "What this shop offers"
+msgstr "Qué ofrece este comercio"
+
+#. module: company_facilities
 #: model:ir.model.fields,help:company_facilities.field_res_company__facility_ids
 msgid "What this shop offers. Shown on its microsite, grouped by subdivision."
 msgstr "Lo que ofrece este comercio. Se muestra en su microsite, agrupado por subdivisión."
+
+#. module: company_facilities
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_microsite_content_editor_form_facilities
+msgid ""
+"What you tick here is also what visitors can filter the\n"
+"                        directory by, whether or not you show the block on your\n"
+"                        own page."
+msgstr "Lo que marques aquí es también por lo que la gente puede filtrar en el directorio, muestres o no el bloque en tu propia página."
 
 #. module: company_facilities
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_category_form
