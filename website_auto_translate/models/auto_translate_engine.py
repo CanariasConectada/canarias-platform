@@ -299,7 +299,11 @@ class AutoTranslateEngine(models.Model):
         """
         params = self.env["ir.config_parameter"].sudo()
         Glossary = self.env["auto.translate.glossary"]
-        guarded = [Glossary._protect(text, is_html) for text in texts]
+        # What went out, so what comes back can be put right rather than
+        # trusted: an engine is free to change the case of a guarded term, and
+        # "&Nbsp;" is not the entity "&nbsp;", it is five visible characters.
+        held = {}
+        guarded = [Glossary._protect(text, is_html, held) for text in texts]
 
         if params.get_param("website_auto_translate.mode", "single") == "jury":
             jury = self.search([("in_jury", "=", True)])
@@ -307,15 +311,17 @@ class AutoTranslateEngine(models.Model):
                 translated, engine = self._run_jury(
                     jury, guarded, source_lang, target_lang, True
                 )
-                return self._release(translated, target_lang, is_html), engine
+                return self._release(translated, target_lang, is_html, held), engine
         engine = self._default_engine()
         translated = engine.translate(guarded, source_lang, target_lang, True)
-        return self._release(translated, target_lang, is_html), engine
+        return self._release(translated, target_lang, is_html, held), engine
 
     @api.model
-    def _release(self, texts, target_lang, is_html):
+    def _release(self, texts, target_lang, is_html, held=None):
         Glossary = self.env["auto.translate.glossary"]
-        return [Glossary._restore(text, target_lang, is_html) for text in texts]
+        return [
+            Glossary._restore(text, target_lang, is_html, held) for text in texts
+        ]
 
     @api.model
     def _default_engine(self):

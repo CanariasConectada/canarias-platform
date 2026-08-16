@@ -95,6 +95,27 @@ class TestAutoTranslateGlossary(TransactionCase):
             "Die Silver Economy hier",
         )
 
+    def test_a_guarded_term_comes_back_in_the_case_it_went_out_in(self):
+        """Measured on 2026-08-15: the Italian model returned ``&Nbsp;``.
+
+        An HTML entity is case-sensitive. ``&nbsp;`` is a non-breaking space
+        and ``&Nbsp;`` is not an entity at all -- it is five characters the
+        visitor reads on the page. Blindly lower-casing what comes back is not
+        the answer either, because ``&Aacute;`` and ``&aacute;`` are different
+        letters. The only safe source of truth is what we sent.
+        """
+        held = {}
+        guarded = self.Glossary._protect("Uno&nbsp;dos CHEETOS", is_html=True, held=held)
+        self.assertIn('<span translate="no">&nbsp;</span>', guarded)
+
+        # The engine hands both guards back with the case changed.
+        mangled = guarded.replace("&nbsp;", "&Nbsp;").replace("CHEETOS", "Cheetos")
+        restored = self.Glossary._restore(mangled, "it_IT", is_html=True, held=held)
+
+        self.assertIn("&nbsp;", restored)
+        self.assertNotIn("&Nbsp;", restored)
+        self.assertIn("CHEETOS", restored, "a brand keeps the case it was written in")
+
     def test_a_reformatted_guard_is_still_recognised(self):
         """The engine may rewrite the attribute, and a guard we cannot find
         again is a guard that deletes the brand."""

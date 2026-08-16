@@ -201,8 +201,15 @@ class AutoTranslateGlossary(models.Model):
     # Protecting and restoring
     # ------------------------------------------------------------------
     @api.model
-    def _protect(self, text, is_html):
+    def _protect(self, text, is_html, held=None):
         """Wrap everything the engine must leave alone.
+
+        ``held`` is filled with what was fenced off, keyed case-insensitively,
+        so :meth:`_restore` can put back the exact bytes that went out instead
+        of trusting what comes back. That is not paranoia: the Italian model
+        returned ``&Nbsp;`` for a guarded ``&nbsp;`` on 2026-08-15, and an HTML
+        entity is case-sensitive -- ``&Nbsp;`` is not an entity at all, it is
+        five visible characters on the page.
 
         Plain text is escaped on the way in because the request goes out as
         HTML either way -- that is the only format in which the guard is
@@ -214,29 +221,38 @@ class AutoTranslateGlossary(models.Model):
         if not is_html:
             text = str(escape(text))
         pattern = self._pattern()
+
+        def fence(match):
+            found = match.group(0)
+            if held is not None:
+                held[found.casefold()] = found
+            return PROTECTED % found
+
         pieces = []
         for index, piece in enumerate(MARKUP.split(text)):
             # Odd indices are the tags themselves: never touch them.
             if index % 2 == 0 and piece:
-                piece = pattern.sub(lambda match: PROTECTED % match.group(0), piece)
+                piece = pattern.sub(fence, piece)
             pieces.append(piece)
         return "".join(pieces)
 
     @api.model
-    def _restore(self, text, target_lang, is_html):
+    def _restore(self, text, target_lang, is_html, held=None):
         """Put the guarded terms back, in their final form."""
         if not text:
             return text
         replacements = {
-            term: dict(rules) for term, rules in self._index()
+            term.casefold(): dict(rules) for term, rules in self._index()
         }
 
         def put_back(match):
-            held = match.group(1)
-            rules = replacements.get(held) or {}
+            returned = match.group(1)
+            # What we sent wins over what came back, whenever we still know it.
+            original = (held or {}).get(returned.casefold(), returned)
+            rules = replacements.get(original.casefold()) or {}
             # An exact-language rule wins over the catch-all; with neither, the
             # term stays exactly as it was written, which is the whole point.
-            return rules.get(target_lang) or rules.get("") or held
+            return rules.get(target_lang) or rules.get("") or original
 
         text = RESTORE.sub(put_back, text)
         if not is_html:
