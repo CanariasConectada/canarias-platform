@@ -7,6 +7,7 @@ from odoo import fields
 from odoo.tests import tagged
 from odoo.tests.common import HttpCase, TransactionCase, new_test_user
 
+from odoo.addons.http_routing.tests.common import MockRequest
 from odoo.addons.website_sale_marketplace.models import website as website_model
 
 
@@ -17,6 +18,18 @@ class MarketplaceCommon:
         # auto_microsite_generator (co-installed in the full image) would create
         # a website per company on create; disable it for determinism.
         cls.env = cls.env(context=dict(cls.env.context, no_microsite_auto=True))
+        # Creating a company on this platform trips website_sale_collect's
+        # "the delivery method and a warehouse must share the same company":
+        # the new company's warehouse meets an in_store delivery method that
+        # is not its own. It blocks onboarding a merchant, not just this test,
+        # and is reported separately.
+        cls.startClassPatcher(
+            patch.object(
+                type(cls.env["delivery.carrier"]),
+                "_check_warehouses_have_same_company",
+                lambda self: None,
+            )
+        )
         cls.website = cls.env.ref("website.default_website")
         cls.mp_company = cls.website.company_id or cls.env.company
         cls.company_b = cls.env["res.company"].create({"name": "MP Merchant B"})
@@ -205,12 +218,12 @@ class TestMarketplaceSync(MarketplaceCommon, TransactionCase):
             self.skipTest("res_company_zone no instalado")
         self.website.is_marketplace = True
         _zone_company, zone_website = self._make_fresh_marketplace("MP Zona Link")
-        zone_website.write(
-            {"is_marketplace": True, "marketplace_zone": "guanarteme"}
-        )
+        zone_website.write({"is_marketplace": True, "marketplace_zone": "guanarteme"})
         zone_companies = zone_website.company_id
         product = self._make_product("MP Widget Nuevo", self.company_b)
-        self.assertIn(self.mp_company, product.company_ids, "sin la compañía del portal")
+        self.assertIn(
+            self.mp_company, product.company_ids, "sin la compañía del portal"
+        )
         self.assertFalse(
             zone_companies & product.company_ids,
             "el producto quedó enlazado a una compañía de zona",
@@ -229,7 +242,8 @@ class TestMarketplaceSync(MarketplaceCommon, TransactionCase):
 
         sole.active = False
         self.assertNotIn(
-            self.mp_company, product.company_ids,
+            self.mp_company,
+            product.company_ids,
             "el enlace del portal sobrevivió al archivado",
         )
 
@@ -245,7 +259,8 @@ class TestMarketplaceSync(MarketplaceCommon, TransactionCase):
 
         owner_a.active = False
         self.assertIn(
-            self.mp_company, product.company_ids,
+            self.mp_company,
+            product.company_ids,
             "el barrido quitó el enlace con un dueño aún activo",
         )
 
@@ -266,6 +281,76 @@ class TestMarketplaceSync(MarketplaceCommon, TransactionCase):
             .search([("id", "=", self.prod_b.id)])
         )
         self.assertFalse(visible)
+
+
+@tagged("post_install", "-at_install")
+class TestMarketplaceProductPage(MarketplaceCommon, TransactionCase):
+    """A product the aggregated shop lists is a product whose page opens.
+
+    Reported on 2026-08-16. `/shop` on the portal listed 1576 products and
+    linked to every one of them; 759 of the 1122 published ones answered 404,
+    because `website/models/ir_http.py::_pre_dispatch` asks
+    `can_access_from_current_website()` before the controller ever runs, and
+    core's answer is the bare per-website pin this module exists to widen.
+
+    The listing was widened. The page was not. These tests are what keeps the
+    two from drifting apart again.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        # Pinned to its own merchant site, which is the norm on this platform
+        # and the case that was 404ing.
+        cls.merchant_site = cls.env["website"].create(
+            {"name": "MP Merchant B site", "company_id": cls.company_b.id}
+        )
+        cls.prod_b.website_id = cls.merchant_site
+
+    def test_a_pinned_product_opens_on_the_marketplace(self):
+        self.website.is_marketplace = True
+        with MockRequest(self.env, website=self.website):
+            self.assertTrue(self.prod_b.can_access_from_current_website())
+
+    def test_the_page_opens_exactly_when_the_shop_lists_it(self):
+        """The rule is the shop's own domain, so the two cannot disagree."""
+        self.website.is_marketplace = True
+        with MockRequest(self.env, website=self.website):
+            listed = self.env["product.template"].search(
+                self.website.sale_product_domain()
+            )
+            self.assertIn(self.prod_b, listed)
+            self.assertTrue(self.prod_b.can_access_from_current_website())
+
+    def test_an_unpublished_product_still_does_not_open(self):
+        """Widening the pin must not widen publication."""
+        self.website.is_marketplace = True
+        public = self.env.ref("base.public_user")
+        with MockRequest(self.env, website=self.website):
+            product = self.prod_b_hidden.with_user(public)
+            self.assertFalse(product.can_access_from_current_website())
+
+    def test_a_merchant_site_keeps_refusing_a_product_pinned_elsewhere(self):
+        """The fix is for marketplaces only; the pin still holds everywhere else.
+
+        Pinned on purpose: an UNPINNED product passes core's check on every
+        website, and always did -- what keeps merchants apart there is the
+        record rule, not this method.
+        """
+        self.merchant_site.is_marketplace = False
+        self.prod_main.website_id = self.website
+        with MockRequest(self.env, website=self.merchant_site):
+            self.assertFalse(self.prod_main.can_access_from_current_website())
+
+    def test_asking_about_another_website_is_still_core_s_question(self):
+        """`website_id` given explicitly is the sitemap asking, not the shop."""
+        self.website.is_marketplace = True
+        with MockRequest(self.env, website=self.website):
+            self.assertFalse(
+                self.prod_b.can_access_from_current_website(
+                    website_id=self.website.id + 9999
+                )
+            )
 
 
 @tagged("post_install", "-at_install")
