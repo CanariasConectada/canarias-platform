@@ -56,17 +56,11 @@ class TestCompareCandidates(HttpCase):
     def test_a_scope_nobody_offered_falls_back_instead_of_being_obeyed(self):
         """A query string belongs to whoever is holding the address bar."""
         data = self._candidates(self.published.id, scope="everything")
-        self.assertIn(
-            data["scope"], {entry["key"] for entry in data["scopes"]}
-        )
+        self.assertIn(data["scope"], {entry["key"] for entry in data["scopes"]})
 
     def test_a_zone_that_does_not_exist_falls_back_too(self):
-        data = self._candidates(
-            self.published.id, scope="other_zone", zone="atlantis"
-        )
-        self.assertIn(
-            data["scope"], {entry["key"] for entry in data["scopes"]}
-        )
+        data = self._candidates(self.published.id, scope="other_zone", zone="atlantis")
+        self.assertIn(data["scope"], {entry["key"] for entry in data["scopes"]})
         self.assertTrue(data["products"] or not data["scopes"])
 
     def test_an_unpublished_product_is_never_offered(self):
