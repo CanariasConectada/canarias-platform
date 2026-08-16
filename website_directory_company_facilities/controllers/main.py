@@ -1,0 +1,174 @@
+# Copyright 2026 Canarias Conectada
+# License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+from werkzeug.urls import url_encode
+
+from odoo.http import request
+
+from odoo.addons.website_directory.controllers.main import WebsiteDirectory
+
+# Name of the query string parameter, and the separator inside it. Commas
+# rather than one parameter per facility so a shared link stays readable and
+# the pager keeps a single argument to carry across pages.
+PARAM = "facility"
+SEPARATOR = ","
+
+
+class WebsiteDirectoryFacilities(WebsiteDirectory):
+    """Plug the facilities filter into the directory extension hooks.
+
+    Everything here goes through the hooks ``website_directory`` already
+    publishes for bridges. Nothing about the base directory changes: without
+    this module installed the parameter is unknown and simply ignored.
+    """
+
+    # ------------------------------------------------------------------
+    # Reading the visitor's choice
+    # ------------------------------------------------------------------
+    def _selected_facility_ids(self, kw):
+        """The ids in the query string, as ids that actually exist.
+
+        A query string is written by whoever is holding the address bar, so
+        every value is checked against the catalogue before it reaches a
+        domain. Junk is dropped silently rather than raising: a mistyped URL
+        should show the directory, not a traceback.
+        """
+        raw = kw.get(PARAM) or ""
+        candidates = []
+        for chunk in raw.split(SEPARATOR):
+            chunk = chunk.strip()
+            if chunk.isdigit():
+                candidates.append(int(chunk))
+        if not candidates:
+            return []
+        existing = (
+            request.env["company.facility"]
+            .sudo()
+            .search([("id", "in", candidates)])
+            .ids
+        )
+        # The visitor's order is kept so the chips do not jump around.
+        return [item for item in candidates if item in existing]
+
+    # ------------------------------------------------------------------
+    # Directory hooks
+    # ------------------------------------------------------------------
+    def _get_extra_filter_domain(self, kw):
+        """One leaf per tick, which is what makes several ticks narrow.
+
+        A single ``("...", "in", ids)`` leaf would mean "offers ANY of these",
+        so asking for step-free access and parking would return shops with
+        only a ramp. Amenity filters are read as promises: everything ticked
+        has to be true of every shop that comes back.
+        """
+        domain = super()._get_extra_filter_domain(kw)
+        for facility_id in self._selected_facility_ids(kw):
+            domain += [("company_id.facility_ids", "in", [facility_id])]
+        return domain
+
+    def _get_extra_pager_args(self, kw):
+        args = super()._get_extra_pager_args(kw)
+        selected = self._selected_facility_ids(kw)
+        if selected:
+            args[PARAM] = SEPARATOR.join(str(item) for item in selected)
+        return args
+
+    def _prepare_directory_values(self, page=1, zone=None, url="/comercio", **kw):
+        values = super()._prepare_directory_values(page=page, zone=zone, url=url, **kw)
+        selected = self._selected_facility_ids(kw)
+        values["selected_facility_ids"] = selected
+        values["facility_filter_groups"] = self._facility_filter_groups(
+            selected, zone, url, kw
+        )
+        values["facility_filter_clear_url"] = self._facility_url(url, kw, [])
+        return values
+
+    # ------------------------------------------------------------------
+    # Building the panel
+    # ------------------------------------------------------------------
+    def _facility_pool(self, zone, kw):
+        """Facilities at least one shop in THIS listing actually offers.
+
+        Built from the same domain the listing uses, with the facility ticks
+        taken back out. Two reasons, and neither is cosmetic: a chip that can
+        only ever return zero results is a dead end, and a chip already ticked
+        has to stay on the panel so it can be un-ticked.
+
+        Reusing ``_get_search_domain`` rather than writing a second one keeps
+        the panel honest about which shops the zone, the category and the
+        search box have already excluded.
+        """
+        category_id = kw.get("category")
+        try:
+            category_id = int(category_id) if category_id else None
+        except (TypeError, ValueError):
+            category_id = None
+        domain = self._get_search_domain(
+            zone=zone,
+            category_id=category_id,
+            search=(kw.get("search") or "").strip(),
+            kw={key: value for key, value in kw.items() if key != PARAM},
+        )
+        entries = request.env["website.directory.entry"].sudo().search(domain)
+        return entries.company_id.facility_ids
+
+    def _facility_url(self, url, kw, facility_ids):
+        """The current address with the ticks replaced by ``facility_ids``.
+
+        Every other filter is carried over verbatim. Building this server side
+        rather than in the template is what stops a click on "parking" from
+        silently throwing away the search box and the category.
+        """
+        args = {
+            key: value
+            for key, value in kw.items()
+            # `page` is dropped on purpose: changing the filter changes how
+            # many results there are, and page 7 of the old answer is rarely
+            # page 7 of the new one.
+            if key not in (PARAM, "page") and value
+        }
+        if facility_ids:
+            args[PARAM] = SEPARATOR.join(str(item) for item in facility_ids)
+        query = url_encode(args)
+        return "%s?%s" % (url, query) if query else url
+
+    def _facility_filter_groups(self, selected, zone, url, kw):
+        """The panel, grouped by subdivision, in catalogue order.
+
+        Same grouping the shop's own page uses, so a visitor who read
+        "Instalaciones y servicios" on a microsite meets the same headings
+        here.
+        """
+        pool = self._facility_pool(zone, kw)
+        groups = []
+        for category in pool.category_id.sorted(lambda rec: (rec.sequence, rec.id)):
+            items = pool.filtered(
+                lambda facility, category=category: facility.category_id == category
+            ).sorted(lambda rec: (rec.sequence, rec.name or ""))
+            entries = []
+            for facility in items:
+                is_selected = facility.id in selected
+                remaining = [item for item in selected if item != facility.id]
+                entries.append(
+                    {
+                        "id": facility.id,
+                        "name": facility.name,
+                        "icon": facility.icon or category.icon or "fa-check",
+                        "selected": is_selected,
+                        "url": self._facility_url(
+                            url,
+                            kw,
+                            remaining if is_selected else selected + [facility.id],
+                        ),
+                    }
+                )
+            if entries:
+                groups.append(
+                    {
+                        "id": category.id,
+                        "name": category.name,
+                        "icon": category.icon,
+                        "facilities": entries,
+                    }
+                )
+        return groups
