@@ -34,10 +34,24 @@ class AutoTranslateTerm(models.Model):
         index=True,
     )
     lang = fields.Char(related="job_id.lang", store=True, index=True, readonly=True)
+    website_id = fields.Many2one(
+        "website",
+        string="Website",
+        index=True,
+        readonly=True,
+        help="Which site the page belongs to. Every site has a page called "
+        "“Inicio”, so without this they all pile up under one heading.",
+    )
     page_name = fields.Char(
         string="Page",
         index=True,
         help="Which page this sentence belongs to.",
+    )
+    page_url = fields.Char(
+        string="Address",
+        readonly=True,
+        help="Where the page lives, so two pages with the same title can be "
+        "told apart.",
     )
     section = fields.Char(
         index=True,

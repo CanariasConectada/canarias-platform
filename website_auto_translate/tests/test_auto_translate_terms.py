@@ -165,6 +165,50 @@ class TestAutoTranslateTerms(TransactionCase):
         somos = ordered.filtered(lambda row: "somos un equipo" in row.source_text)
         self.assertEqual(somos.section, "Quiénes Somos")
 
+    def test_two_sites_with_a_page_of_the_same_name_do_not_share_a_heading(self):
+        """Reported on 2026-08-16: "por qué no veo nada de home".
+
+        Every site has an "Inicio". Filed by title alone they became one
+        group of 123 sentences and no way to tell whose page you were
+        correcting.
+        """
+        other = self.env["website"].create({"name": "Otra Zona"})
+        first = self._page()
+        second = (
+            self.env["ir.ui.view"]
+            .with_context(lang=SOURCE)
+            .create(
+                {
+                    "name": "Página de prueba",
+                    "type": "qweb",
+                    "key": "website_auto_translate.test_page_two",
+                    "website_id": other.id,
+                    "arch": PAGE,
+                }
+            )
+        )
+        self._run()
+        sites = (self._job(first).term_ids | self._job(second).term_ids).mapped(
+            "website_id"
+        )
+        self.assertEqual(len(sites), 2, "each site has to keep its own sentences")
+
+    def test_a_sentence_is_filed_under_the_page_title_not_the_view_name(self):
+        view = self._page()
+        page = self.env["website.page"].create(
+            {
+                "view_id": view.id,
+                "website_id": self.website.id,
+                "url": "/prueba",
+                "name": "Inicio",
+            }
+        )
+        job = self._job(view)
+        self._run()
+        job._sync_terms()
+        self.assertEqual(job.term_ids[0].page_name, "Inicio")
+        self.assertEqual(job.term_ids[0].page_url, page.url)
+
     def test_a_sentence_with_nothing_to_translate_is_left_out(self):
         job = self._job(self._page())
         self._run()

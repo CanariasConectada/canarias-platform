@@ -3,11 +3,7 @@
 # 	* website_auto_translate
 #
 # Generated from the module's own .pot so every `#:` reference line survives.
-# See docs in scratchpad/gen_po.py for why that matters.
-#
-# No hay en.po a propósito: los textos de este módulo se escriben en
-# inglés, así que en_US -- la base técnica de toda columna traducible --
-# ya los tiene. Un en.po aquí no aportaría nada.
+# See scratchpad/refresh_po.py for why that matters.
 #
 msgid ""
 msgstr ""
@@ -29,6 +25,21 @@ msgid "%(count)s sentences — open them to read and correct them"
 msgstr "%(count)s frases — ábrelas para leerlas y corregirlas"
 
 #. module: website_auto_translate
+#: model:ir.model.fields,help:website_auto_translate.field_auto_translate_job__correctable_here
+msgid ""
+"A page is corrected sentence by sentence instead, because a page is a set of"
+" terms rather than one piece of text."
+msgstr "Una página se corrige frase a frase, porque una página es un conjunto de términos y no un solo texto."
+
+#. module: website_auto_translate
+#. odoo-python
+#: code:addons/website_auto_translate/models/auto_translate_job.py:0
+msgid ""
+"A page is corrected sentence by sentence: open its sentences and fix the one"
+" that reads wrong."
+msgstr "Una página se corrige frase a frase: abre sus frases y arregla la que esté mal."
+
+#. module: website_auto_translate
 #: model:ir.model.fields,field_description:website_auto_translate.field_auto_translate_engine__active
 #: model:ir.model.fields,field_description:website_auto_translate.field_auto_translate_glossary__active
 msgid "Active"
@@ -38,6 +49,11 @@ msgstr "Activo"
 #: model_terms:ir.actions.act_window,help:website_auto_translate.action_auto_translate_glossary
 msgid "Add a term the machine must not translate"
 msgstr "Añadir un término que la máquina no debe traducir"
+
+#. module: website_auto_translate
+#: model:ir.model.fields,field_description:website_auto_translate.field_auto_translate_term__page_url
+msgid "Address"
+msgstr "Dirección"
 
 #. module: website_auto_translate
 #: model:ir.model.fields,field_description:website_auto_translate.field_auto_translate_glossary__replacement
@@ -111,6 +127,15 @@ msgid "Base URL of the service. Leave empty to use the provider default."
 msgstr "URL base del servicio. Déjala vacía para usar la del proveedor."
 
 #. module: website_auto_translate
+#: model_terms:ir.actions.act_window,help:website_auto_translate.action_auto_translate_glossary
+msgid ""
+"Brand and place names are what go wrong: the engine turned\n"
+"                \"Cheetos\" into \"Käse\" and \"Estrella Galicia mini\" into\n"
+"                \"Ministern Galicia\". A term listed here is held back from the\n"
+"                request altogether, so it comes out exactly as it went in."
+msgstr "Lo que se rompe son las marcas y los nombres propios: el motor convirtió «Cheetos» en «Käse» y «Estrella Galicia mini» en «Ministern Galicia». Un término de esta lista no se envía en la petición, así que sale exactamente como entró."
+
+#. module: website_auto_translate
 #: model:ir.model.fields,field_description:website_auto_translate.field_auto_translate_engine__is_arbiter
 msgid "Can arbitrate"
 msgstr "Puede arbitrar"
@@ -146,9 +171,24 @@ msgid "Content Kind"
 msgstr "Tipo de contenido"
 
 #. module: website_auto_translate
+#: model_terms:ir.ui.view,arch_db:website_auto_translate.res_config_settings_view_form
+msgid ""
+"Content is queued when it is saved and translated by a scheduled job, so "
+"saving never waits for the translation service."
+msgstr "El contenido entra en la cola al guardarlo y lo traduce una tarea programada, así que guardar nunca espera al servicio de traducción."
+
+#. module: website_auto_translate
 #: model:ir.model.fields,field_description:website_auto_translate.field_res_config_settings__auto_translate_source_lang
 msgid "Content is written in"
 msgstr "El contenido se escribe en"
+
+#. module: website_auto_translate
+#: model:ir.model.fields,help:website_auto_translate.field_res_company__auto_translate_enabled
+msgid ""
+"Content owned by this company is queued for automatic translation whenever "
+"it is saved. Off by default so the rollout can start with the portal and the"
+" commercial zones rather than every shop at once."
+msgstr "El contenido de esta compañía entra en la cola de traducción automática cada vez que se guarda. Desactivado por defecto para empezar por el portal y las zonas comerciales en vez de por los 218 comercios a la vez."
 
 #. module: website_auto_translate
 #: model_terms:ir.ui.view,arch_db:website_auto_translate.view_auto_translate_job_list
@@ -160,6 +200,14 @@ msgstr "Corrígelo aquí y se queda corregido"
 #: model:ir.model.fields,help:website_auto_translate.field_auto_translate_job__translated_text
 msgid "Correct it here and the machine will never touch it again."
 msgstr "Corrígelo aquí y la máquina no volverá a tocarlo."
+
+#. module: website_auto_translate
+#: model:ir.model.fields,help:website_auto_translate.field_auto_translate_term__translated_text
+msgid ""
+"Correct it here and the machine will never touch this sentence again. 【0】, "
+"【1】… stand for the styling and icons the sentence carries; leave them where "
+"they belong and the page keeps them."
+msgstr "Corrígela aquí y la máquina no volverá a tocar esta frase. 【0】, 【1】… son el estilo y los iconos que lleva la frase; déjalos en su sitio y la página los conserva."
 
 #. module: website_auto_translate
 #: model:ir.model.fields,field_description:website_auto_translate.field_auto_translate_job__correctable_here
@@ -255,6 +303,16 @@ msgid "Event"
 msgstr "Evento"
 
 #. module: website_auto_translate
+#: model_terms:ir.ui.view,arch_db:website_auto_translate.res_config_settings_view_form
+msgid ""
+"Every active language other than the source one is a\n"
+"                            target. A shop is only included once its company has\n"
+"                            \"Translate this shop automatically\" ticked, and a\n"
+"                            translation somebody wrote by hand is never\n"
+"                            overwritten."
+msgstr "Son destino todos los idiomas activos menos el de origen. Un comercio solo entra cuando su compañía tiene marcado «Traducir este comercio automáticamente», y una traducción escrita a mano no se sobrescribe nunca."
+
+#. module: website_auto_translate
 #. odoo-python
 #: code:addons/website_auto_translate/models/auto_translate_engine.py:0
 msgid "Every engine in the jury failed."
@@ -266,6 +324,21 @@ msgid "Every language"
 msgstr "Todos los idiomas"
 
 #. module: website_auto_translate
+#: model_terms:ir.ui.view,arch_db:website_auto_translate.view_auto_translate_glossary_list
+msgid ""
+"Everything mentioning the selected terms goes"
+"                                      back in the queue. Translations "
+"corrected by                                      hand are left alone."
+msgstr "Todo lo que mencione los términos seleccionados vuelve a la cola. Las traducciones corregidas a mano se quedan como están."
+
+#. module: website_auto_translate
+#: model:ir.model.fields,help:website_auto_translate.field_auto_translate_glossary__name
+msgid ""
+"Exactly as it is written in the source text. Matched whole-word and case-"
+"insensitively, so 'Milka' also protects 'MILKA'."
+msgstr "Tal cual está escrito en el texto de origen. Se busca por palabra completa y sin distinguir mayúsculas, así que «Milka» también protege «MILKA»."
+
+#. module: website_auto_translate
 #: model:ir.model.fields.selection,name:website_auto_translate.selection__auto_translate_job__state__failed
 #: model_terms:ir.ui.view,arch_db:website_auto_translate.view_auto_translate_job_search
 msgid "Failed"
@@ -275,6 +348,13 @@ msgstr "Fallido"
 #: model:ir.model.fields,field_description:website_auto_translate.field_auto_translate_job__field_name
 msgid "Field Name"
 msgstr "Campo"
+
+#. module: website_auto_translate
+#: model_terms:ir.actions.act_window,help:website_auto_translate.action_auto_translate_glossary
+msgid ""
+"Fill in a fixed wording only when the term really does have an\n"
+"                official name in the other language. Leave it empty for a brand."
+msgstr "Rellena una forma fija solo cuando el término tenga de verdad un nombre oficial en el otro idioma. Para una marca, déjalo vacío."
 
 #. module: website_auto_translate
 #: model:ir.model.fields,help:website_auto_translate.field_auto_translate_glossary__note
@@ -310,6 +390,21 @@ msgstr "Cómo traducir"
 #: model:ir.model.fields,field_description:website_auto_translate.field_website_menu__id
 msgid "ID"
 msgstr "ID"
+
+#. module: website_auto_translate
+#: model_terms:ir.ui.view,arch_db:website_auto_translate.view_auto_translate_engine_form
+msgid ""
+"In jury mode every engine ticked as a juror translates the\n"
+"                        same text and the arbiter picks the best answer. A juror\n"
+"                        that fails is skipped, not fatal."
+msgstr "En modo jurado, cada motor marcado como jurado traduce el mismo texto y el árbitro elige la mejor respuesta. Un jurado que falla se salta, no rompe nada."
+
+#. module: website_auto_translate
+#: model:ir.model.fields,help:website_auto_translate.field_auto_translate_engine__in_jury
+msgid ""
+"In jury mode every engine ticked here translates the same text and the "
+"arbiter picks the best answer."
+msgstr "En modo jurado, cada motor marcado aquí traduce el mismo texto y el árbitro elige la mejor respuesta."
 
 #. module: website_auto_translate
 #: model:ir.model.fields,field_description:website_auto_translate.field_auto_translate_term__job_id
@@ -355,6 +450,13 @@ msgid "Language"
 msgstr "Idioma"
 
 #. module: website_auto_translate
+#: model:ir.model.fields,help:website_auto_translate.field_auto_translate_glossary__lang
+msgid ""
+"Language code the replacement applies to, e.g. de_DE. Leave empty for every "
+"language."
+msgstr "Código del idioma al que se aplica el reemplazo, por ejemplo de_DE. Vacío significa todos los idiomas."
+
+#. module: website_auto_translate
 #: model:ir.model.fields,field_description:website_auto_translate.field_auto_translate_engine__last_error
 msgid "Last Error"
 msgstr "Último error"
@@ -379,6 +481,14 @@ msgstr "Última actualización el"
 #: model_terms:ir.ui.view,arch_db:website_auto_translate.view_auto_translate_glossary_list
 msgid "Leave empty to keep it untouched"
 msgstr "Déjalo vacío para dejarlo tal cual"
+
+#. module: website_auto_translate
+#: model:ir.model.fields,help:website_auto_translate.field_auto_translate_glossary__replacement
+msgid ""
+"Leave empty to keep the term untouched, which is what a brand name normally "
+"wants. Fill it in only when the term does have an official wording in the "
+"target language."
+msgstr "Déjalo vacío para que el término no se toque, que es lo normal en una marca. Rellénalo solo cuando el término tenga una forma oficial en el idioma de destino."
 
 #. module: website_auto_translate
 #: model_terms:ir.ui.view,arch_db:website_auto_translate.view_auto_translate_engine_form
@@ -470,6 +580,14 @@ msgstr "Frases de las páginas"
 #: model_terms:ir.ui.view,arch_db:website_auto_translate.view_auto_translate_job_search
 msgid "Pages"
 msgstr "Páginas"
+
+#. module: website_auto_translate
+#: model_terms:ir.actions.act_window,help:website_auto_translate.action_auto_translate_term
+msgid ""
+"Pages are broken down into sentences the first time they are\n"
+"                translated. Use <b>Rebuild sentences</b> on a page in the\n"
+"                translation queue to list one that was translated earlier."
+msgstr "Las páginas se desglosan en frases la primera vez que se traducen. Usa <b>Reconstruir frases</b> sobre una página de la cola de traducción para listar una que se tradujo antes."
 
 #. module: website_auto_translate
 #: model:ir.model.fields.selection,name:website_auto_translate.selection__auto_translate_job__state__pending
@@ -726,6 +844,12 @@ msgid "View"
 msgstr "Vista"
 
 #. module: website_auto_translate
+#: model:ir.model.fields,field_description:website_auto_translate.field_auto_translate_term__website_id
+#: model_terms:ir.ui.view,arch_db:website_auto_translate.view_auto_translate_term_search
+msgid "Website"
+msgstr "Sitio web"
+
+#. module: website_auto_translate
 #: model:ir.model,name:website_auto_translate.model_website_menu
 msgid "Website Menu"
 msgstr "Menú del sitio web"
@@ -734,6 +858,13 @@ msgstr "Menú del sitio web"
 #: model:ir.model,name:website_auto_translate.model_product_public_category
 msgid "Website Product Category"
 msgstr "Categoría de producto del sitio web"
+
+#. module: website_auto_translate
+#: model:ir.model.fields,help:website_auto_translate.field_auto_translate_job__content_kind
+msgid ""
+"What kind of content this is, so the queue can be read by section instead of"
+" by technical model name."
+msgstr "Qué clase de contenido es, para poder leer la cola por secciones en vez de por el nombre técnico del modelo."
 
 #. module: website_auto_translate
 #: model:ir.model.fields,help:website_auto_translate.field_auto_translate_job__source_text
@@ -746,6 +877,12 @@ msgid "Where it appears on the page, top to bottom."
 msgstr "Dónde aparece en la página, de arriba abajo."
 
 #. module: website_auto_translate
+#: model:ir.model.fields,help:website_auto_translate.field_auto_translate_term__page_url
+msgid ""
+"Where the page lives, so two pages with the same title can be told apart."
+msgstr "Dónde vive la página, para distinguir dos páginas que se llaman igual."
+
+#. module: website_auto_translate
 #: model:ir.model.fields,help:website_auto_translate.field_auto_translate_term__page_name
 msgid "Which page this sentence belongs to."
 msgstr "A qué página pertenece esta frase."
@@ -754,6 +891,13 @@ msgstr "A qué página pertenece esta frase."
 #: model:ir.model.fields,help:website_auto_translate.field_auto_translate_job__record_label
 msgid "Which record this is."
 msgstr "De qué registro se trata."
+
+#. module: website_auto_translate
+#: model:ir.model.fields,help:website_auto_translate.field_auto_translate_term__website_id
+msgid ""
+"Which site the page belongs to. Every site has a page called “Inicio”, so "
+"without this they all pile up under one heading."
+msgstr "De qué sitio es la página. Todos los sitios tienen una página «Inicio», así que sin esto se amontonan todas bajo el mismo título."
 
 #. module: website_auto_translate
 #: model:ir.model.fields,field_description:website_auto_translate.field_auto_translate_glossary__note
@@ -793,5 +937,21 @@ msgstr "«%(name)s» respondió: %(sample)s"
 #. module: website_auto_translate
 #. odoo-python
 #: code:addons/website_auto_translate/models/auto_translate_engine.py:0
+msgid ""
+"“%(name)s” cannot arbitrate: only an LLM engine can compare translations and"
+" explain its choice."
+msgstr "«%(name)s» no puede arbitrar: solo un motor LLM puede comparar traducciones y explicar su elección."
+
+#. module: website_auto_translate
+#. odoo-python
+#: code:addons/website_auto_translate/models/auto_translate_engine.py:0
 msgid "“%(name)s” did not answer: %(error)s"
 msgstr "«%(name)s» no respondió: %(error)s"
+
+#. module: website_auto_translate
+#. odoo-python
+#: code:addons/website_auto_translate/models/auto_translate_engine.py:0
+msgid ""
+"“%(name)s” returned %(got)s translations for %(sent)s texts; refusing to "
+"guess which is which."
+msgstr "«%(name)s» devolvió %(got)s traducciones para %(sent)s textos; no se va a adivinar cuál es cuál."

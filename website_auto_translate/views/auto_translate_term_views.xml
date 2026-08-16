@@ -10,7 +10,9 @@
             <list editable="bottom" default_order="job_id, sequence, id"
                   create="false" delete="false">
                 <field name="sequence" widget="handle"/>
+                <field name="website_id" readonly="1" optional="show"/>
                 <field name="page_name" readonly="1" optional="show"/>
+                <field name="page_url" readonly="1" optional="hide"/>
                 <field name="section" readonly="1" optional="show"/>
                 <field name="lang" readonly="1"/>
                 <field name="source_text" readonly="1"/>
@@ -35,7 +37,9 @@
             <search>
                 <field name="source_text"/>
                 <field name="translated_text"/>
+                <field name="website_id"/>
                 <field name="page_name"/>
+                <field name="page_url"/>
                 <field name="section"/>
                 <field name="lang"/>
                 <filter name="translated" string="Translated"
@@ -44,6 +48,8 @@
                         domain="[('state', '=', 'locked')]"/>
                 <separator/>
                 <group name="group_by">
+                    <filter name="group_website" string="Website"
+                            context="{'group_by': 'website_id'}"/>
                     <filter name="group_page" string="Page"
                             context="{'group_by': 'page_name'}"/>
                     <filter name="group_section" string="Section"
@@ -61,8 +67,13 @@
         <field name="name">Page Sentences</field>
         <field name="res_model">auto.translate.term</field>
         <field name="view_mode">list</field>
+        <!-- Site first, then page: five sites each have an "Inicio" and a
+             "Términos y Condiciones", and grouping by title alone put all of
+             them under one heading. -->
         <field name="context">
-            {'search_default_group_page': 1, 'search_default_group_section': 2}
+            {'search_default_group_website': 1,
+             'search_default_group_page': 2,
+             'search_default_group_section': 3}
         </field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">No page sentence listed yet</p>

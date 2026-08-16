@@ -323,6 +323,34 @@ class AutoTranslateJob(models.Model):
             ordered.append(term)
         return ordered
 
+    def _page_label(self, record):
+        """The site, the title and the address a person would recognise.
+
+        ``display_name`` on its own is not enough to file a sentence under.
+        Every one of the five sites has a homepage called "Inicio" and a
+        "Términos y Condiciones", so grouping by it piled 123 sentences from
+        five different pages under a single heading -- which is why the portal
+        home looked missing when it had been there all along.
+
+        The title comes from the ``website.page`` when there is one: a view is
+        named for whoever built it ("Events (oe_structure_we_index_0)"), a page
+        is named for what a visitor reads.
+        """
+        website = self.env["website"]
+        if "website_id" in record._fields:
+            website = record.website_id
+        label, url = record.display_name, ""
+        if record._name == "ir.ui.view":
+            page = (
+                self.env["website.page"]
+                .sudo()
+                .search([("view_id", "=", record.id)], limit=1)
+            )
+            if page:
+                label = page.name or label
+                url = page.url or ""
+        return website, label, url
+
     def _sync_terms(self, record=None, source_value=None):
         """Materialise this page's sentences so a person can read and fix them.
 
@@ -347,7 +375,7 @@ class AutoTranslateJob(models.Model):
         )
         markers = section_markers(source_value)
         existing = {row.term_hash: row for row in self.term_ids}
-        label = record.display_name
+        website, label, url = self._page_label(record)
         # A page locked before this table existed was locked by a person, and
         # every sentence on it has to inherit that or the next run would undo
         # work somebody did by hand.
@@ -363,7 +391,9 @@ class AutoTranslateJob(models.Model):
             values = {
                 "sequence": position,
                 "section": section_at(markers, found),
+                "website_id": website.id,
                 "page_name": label,
+                "page_url": url,
                 "source_term": term,
                 "source_text": mask(term),
             }
