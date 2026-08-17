@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website PWA Chat",
-    "version": "19.0.4.1.1",
+    "version": "19.0.5.0.0",
     "category": "Website",
     "summary": "Community chat page of the Canarias Conectada app, served "
     "inside the public website layout",
@@ -66,6 +66,7 @@
     "assets": {
         "web.assets_frontend": [
             "website_pwa_chat/static/src/js/community_chat.js",
+            "website_pwa_chat/static/src/js/support_window.js",
             "website_pwa_chat/static/src/scss/community_chat.scss",
         ],
     },

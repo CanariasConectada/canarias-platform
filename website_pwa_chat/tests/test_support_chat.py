@@ -172,6 +172,156 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
         self.assertEqual(self._support_channels()[0].channel_type, "group")
 
     # ------------------------------------------------------------------
+    # The floating window
+    # ------------------------------------------------------------------
+
+    def test_the_page_carries_the_window_and_a_lazy_frame(self):
+        """The button's markup ships on every page; the conversation does not.
+
+        ``data-src`` and no ``src`` is the load-bearing half of this feature:
+        /chat/soporte opens a conversation for whoever knocks, so an iframe
+        that loaded eagerly would create one empty support conversation per
+        page view, platform-wide.
+        """
+        # The button rides on the link opt-in, which the fixtures leave off
+        # because launch left it off; the window is only reachable through it.
+        self.websites.write({"chat_link_enabled": True})
+        self._forget_guest_cookie()
+        before = self._support_channels()
+
+        response = self.url_open("/")
+
+        self.assertIn("o_cc_chat_window", response.text)
+        self.assertIn('data-src="/chat/soporte?frame=1"', response.text)
+        self.assertNotIn('src="/chat/soporte?frame=1"', response.text.replace("data-src", ""))
+        self.assertEqual(
+            self._support_channels(),
+            before,
+            "rendering a page must not open a support conversation",
+        )
+
+    def test_the_framed_page_strips_the_chrome_and_the_recursion(self):
+        # With the link off the button is absent everywhere and the recursion
+        # assertion below would pass without meaning anything.
+        self.websites.write({"chat_link_enabled": True})
+        self._forget_guest_cookie()
+        response = self.url_open(SUPPORT_URL + "?frame=1")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn('<header id="top"', response.text)
+        self.assertNotIn(
+            "o_cc_chat_fab",
+            response.text,
+            "a support button inside the support window would recurse",
+        )
+        self.assertNotIn(
+            "Todos los canales",
+            response.text,
+            "the channel list is a full page and has no business in the window",
+        )
+
+    def test_the_full_page_still_has_its_chrome(self):
+        self.websites.write({"chat_link_enabled": True})
+        self._forget_guest_cookie()
+        response = self.url_open(SUPPORT_URL)
+
+        self.assertIn('<header id="top"', response.text)
+        self.assertIn("o_cc_chat_fab", response.text)
+
+    def test_the_identify_card_invites_the_visitor_to_register(self):
+        self._forget_guest_cookie()
+        response = self.url_open(SUPPORT_URL)
+
+        self.assertIn("o_cc_chat_identify_signup", response.text)
+        self.assertIn("Crear mi cuenta", response.text)
+        self.assertIn("Ya tengo cuenta", response.text)
+
+    def test_a_frame_value_other_than_one_means_the_full_page(self):
+        """bool() on a query string would call "0" true; the visitor means no."""
+        self.websites.write({"chat_link_enabled": True})
+        self._forget_guest_cookie()
+        response = self.url_open(SUPPORT_URL + "?frame=0")
+
+        self.assertIn('<header id="top"', response.text)
+        self.assertIn("o_cc_chat_fab", response.text)
+
+    def test_a_linked_site_frames_the_host_site_cross_subdomain(self):
+        """The branch the window was built FOR: the three zone portals.
+
+        They do not serve /chat/soporte themselves, so their iframe has to
+        point at the host website's own domain, frame flag included.
+        """
+        self.websites.write({"chat_link_enabled": True})
+        host = self.env["website"]._chat_host_website()
+        host.domain = "https://portal.example"
+        zone = self.env["website"].create(
+            {
+                "name": "WPC Zona Ventana",
+                "chat_enabled": False,
+                "chat_link_enabled": True,
+            }
+        )
+
+        self.assertEqual(
+            zone._chat_support_url() + "?frame=1",
+            "https://portal.example/chat/soporte?frame=1",
+            "a relative URL on a zone portal would 404 on its own subdomain",
+        )
+
+    def test_the_support_page_sends_no_frame_blocking_header(self):
+        """The executable form of the claim the window rests on.
+
+        The day a hardening pass adds X-Frame-Options or frame-ancestors to
+        this route, the button silently dies on every site that frames the
+        portal cross-subdomain -- this is the test that says so out loud.
+        """
+        self._forget_guest_cookie()
+        response = self.url_open(SUPPORT_URL + "?frame=1")
+
+        self.assertNotIn("X-Frame-Options", response.headers)
+        self.assertNotIn(
+            "frame-ancestors",
+            response.headers.get("Content-Security-Policy", ""),
+        )
+
+    def test_identifying_from_the_full_page_stays_on_the_full_page(self):
+        """The pre-existing branch, asserted for the first time.
+
+        A regression that always appended ?frame=1 would otherwise pass CI.
+        """
+        self._forget_guest_cookie()
+        page = self.url_open(SUPPORT_URL)
+        csrf = page.text.split('name="csrf_token"')[1].split('value="')[1]
+        csrf = csrf.split('"')[0]
+
+        response = self.url_open(
+            "/chat/soporte/identificarme",
+            data={"name": "Vecina de prueba", "csrf_token": csrf},
+            allow_redirects=False,
+        )
+
+        self.assertEqual(response.status_code, 303)
+        self.assertTrue(response.headers["Location"].endswith("/chat/soporte"))
+
+    def test_identifying_from_the_window_lands_back_in_the_window(self):
+        self._forget_guest_cookie()
+        page = self.url_open(SUPPORT_URL + "?frame=1")
+        csrf = page.text.split('name="csrf_token"')[1].split('value="')[1]
+        csrf = csrf.split('"')[0]
+
+        response = self.url_open(
+            "/chat/soporte/identificarme",
+            data={"name": "Vecina de prueba", "frame": "1", "csrf_token": csrf},
+            allow_redirects=False,
+        )
+
+        self.assertEqual(response.status_code, 303)
+        self.assertTrue(
+            response.headers["Location"].endswith("/chat/soporte?frame=1"),
+            "posted from the window, the visitor must land back in the window",
+        )
+
+    # ------------------------------------------------------------------
     # Being answered
     # ------------------------------------------------------------------
 

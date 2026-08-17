@@ -73,7 +73,7 @@ class WebsiteChat(http.Controller):
         "/chat/soporte", type="http", auth="public", website=True, sitemap=False
     )
     @add_guest_to_context
-    def chat_support(self, **kwargs):
+    def chat_support(self, frame=None, **kwargs):
         """The visitor's own private line to support.
 
         A static segment, so it cannot be mistaken for a channel id nor for
@@ -92,6 +92,14 @@ class WebsiteChat(http.Controller):
         conversation; it deserves the composer, the held-message notice and
         the live catch-up that every other conversation has, not a second
         implementation of them.
+
+        ``frame=1`` is that same page dressed for the floating window: the
+        button on every site opens it in an <iframe> instead of navigating
+        away. One template, one controller -- the flag only strips the site
+        chrome (``no_header``/``no_footer`` are ``web.frontend_layout``'s own
+        switches) and tells the template it is inside the window, so the
+        conversation, the composer, the moderation notice and the identify
+        card are THE ones the full page has, not a copy that drifts.
         """
         website = request.env["website"]._chat_current()
         if not website:
@@ -102,6 +110,10 @@ class WebsiteChat(http.Controller):
             # Only reachable if the guest could not be created at all; the
             # login page is where an identity comes from, guest door included.
             return request.redirect("%s?redirect=/chat/soporte" % LOGIN_URL)
+        # The literal "1" and nothing else: bool() on a query string is True
+        # for "0", "false" and "no" alike, and a visitor who edits the URL to
+        # frame=0 means the full page, not the stripped one.
+        framed = frame == "1"
         messages = channel._website_chat_messages()
         return request.render(
             "website_pwa_chat.chat_channel",
@@ -110,6 +122,9 @@ class WebsiteChat(http.Controller):
                 "messages": channel._website_chat_message_values(messages),
                 "pending": channel._website_chat_pending(),
                 "is_support": True,
+                "chat_in_frame": framed,
+                "no_header": framed,
+                "no_footer": framed,
                 **self._chat_identify_values(channel),
                 **self._chat_visitor_values("/chat/soporte"),
             },
@@ -125,7 +140,7 @@ class WebsiteChat(http.Controller):
         sitemap=False,
     )
     @add_guest_to_context
-    def chat_support_identify(self, name=None, email=None, **kwargs):
+    def chat_support_identify(self, name=None, email=None, frame=None, **kwargs):
         """Record who is asking. The conversation comes from the session.
 
         Nothing here trusts the form about WHICH conversation to write on:
@@ -135,6 +150,11 @@ class WebsiteChat(http.Controller):
 
         An empty name is not an error worth a page: the visitor simply stays
         anonymous, which is a perfectly good answer to "who are you".
+
+        ``frame`` rides along as a hidden field so a form posted from inside
+        the floating window lands back inside it: redirecting to the bare page
+        would swap the window's content for the full site, header and all,
+        nested in a 380px box.
         """
         website = request.env["website"]._chat_current()
         if not website:
@@ -143,7 +163,9 @@ class WebsiteChat(http.Controller):
         channel = request.env["discuss.channel"]._support_channel()
         if channel:
             channel._support_identify(name, email)
-        return request.redirect("/chat/soporte")
+        return request.redirect(
+            "/chat/soporte?frame=1" if frame == "1" else "/chat/soporte"
+        )
 
     def _chat_identify_values(self, channel):
         """What the "who are you" card needs to render, or not render.
@@ -243,6 +265,9 @@ class WebsiteChat(http.Controller):
                 "show_identify": False,
                 "identify_pitch": "",
                 "identify_greeting": "",
+                # Community channels render as full pages only; the floating
+                # window is the support line's door, not theirs.
+                "chat_in_frame": False,
                 **self._chat_visitor_values(self._chat_channel_url(channel)),
             },
         )

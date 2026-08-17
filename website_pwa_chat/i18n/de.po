@@ -466,3 +466,20 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
 msgid "← Todos los canales"
 msgstr "← Alle Kanäle"
+
+#. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
+msgid ""
+"Y con una cuenta, ni eso: tus mensajes se\n"
+"                                    publican al instante, sin esperar revisión."
+msgstr "Und mit einem Konto nicht einmal das: Ihre Nachrichten werden sofort veröffentlicht, ohne auf eine Prüfung zu warten."
+
+#. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
+msgid "Cerrar el chat"
+msgstr "Chat schließen"
+
+#. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
+msgid "Chat de soporte"
+msgstr "Support-Chat"
