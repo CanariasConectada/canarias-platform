@@ -114,7 +114,7 @@ msgstr "Chat: Sit support agents dans des conversations ouvertes"
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_index
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_menu_entry
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.view_website_form_chat
-msgid "Community"
+msgid "Comunidad"
 msgstr "Communauté"
 
 #. module: website_pwa_chat
@@ -149,7 +149,7 @@ msgstr ""
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_index
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_pending
-msgid "Create my account"
+msgid "Crear mi cuenta"
 msgstr "Créer mon compte"
 
 #. module: website_pwa_chat
@@ -232,7 +232,7 @@ msgstr "Nous avons parlé à %s."
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_index
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_pending
-msgid "I already have an account"
+msgid "Ya tengo cuenta"
 msgstr "J'ai déjà un compte"
 
 #. module: website_pwa_chat
@@ -258,7 +258,7 @@ msgstr ""
 msgid ""
 "Los canales de barrio son para vecinos y\n"
 "                                    comercios con cuenta"
-msgstr "Les chaînes de voisinage sont pour les voisins et les entreprises avec"
+msgstr "Les canaux de quartier sont pour les voisins et les commerces avec compte"
 
 #. module: website_pwa_chat
 #: model_terms:ir.actions.act_window,help:website_pwa_chat.action_discuss_channel_support
@@ -273,8 +273,8 @@ msgstr "On n'a pas pu envoyer votre message. Essaie encore."
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
-msgid "No messages yet. Write the first one."
-msgstr "Pas encore de messages. Ecrivez le premier."
+msgid "Todavía no hay mensajes. Escribe el primero."
+msgstr "Pas encore de messages. Écrivez le premier."
 
 #. module: website_pwa_chat
 #: model:ir.model.fields,field_description:website_pwa_chat.field_discuss_channel__support_visitor_name
@@ -309,7 +309,7 @@ msgstr ""
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
-msgid "Send"
+msgid "Enviar"
 msgstr "Envoyer"
 
 #. module: website_pwa_chat
@@ -420,7 +420,7 @@ msgstr ""
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
-msgid "Write your message…"
+msgid "Escribe tu mensaje…"
 msgstr "Écrivez votre message…"
 
 #. module: website_pwa_chat
@@ -433,12 +433,12 @@ msgstr "C'est bon. Avant de le publier, lisez-le une personne de l'équipe, donc
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
-msgid "Your message"
+msgid "Tu mensaje"
 msgstr "Votre message"
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_pending
-msgid "Your message is being reviewed"
+msgid "Tu mensaje está en revisión"
 msgstr "Votre message est en cours de révision"
 
 #. module: website_pwa_chat
@@ -464,5 +464,5 @@ msgstr ""
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
-msgid "← All channels"
-msgstr "← Toutes les chaînes"
+msgid "← Todos los canales"
+msgstr "← Tous les canaux"

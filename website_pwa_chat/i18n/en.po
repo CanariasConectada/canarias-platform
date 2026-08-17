@@ -114,7 +114,7 @@ msgstr "Chat: seat support agents in open conversations"
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_index
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_menu_entry
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.view_website_form_chat
-msgid "Community"
+msgid "Comunidad"
 msgstr "Community"
 
 #. module: website_pwa_chat
@@ -149,7 +149,7 @@ msgstr ""
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_index
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_pending
-msgid "Create my account"
+msgid "Crear mi cuenta"
 msgstr "Create my account"
 
 #. module: website_pwa_chat
@@ -232,7 +232,7 @@ msgstr "We are talking to %s."
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_index
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_pending
-msgid "I already have an account"
+msgid "Ya tengo cuenta"
 msgstr "I already have an account"
 
 #. module: website_pwa_chat
@@ -273,7 +273,7 @@ msgstr "We could not send your message. Please try again."
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
-msgid "No messages yet. Write the first one."
+msgid "Todavía no hay mensajes. Escribe el primero."
 msgstr "No messages yet. Write the first one."
 
 #. module: website_pwa_chat
@@ -309,7 +309,7 @@ msgstr ""
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
-msgid "Send"
+msgid "Enviar"
 msgstr "Send"
 
 #. module: website_pwa_chat
@@ -420,7 +420,7 @@ msgstr ""
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
-msgid "Write your message…"
+msgid "Escribe tu mensaje…"
 msgstr "Write your message…"
 
 #. module: website_pwa_chat
@@ -433,12 +433,12 @@ msgstr "We got it. Before publishing it, a person on the team reads it, so that 
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
-msgid "Your message"
+msgid "Tu mensaje"
 msgstr "Your message"
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_pending
-msgid "Your message is being reviewed"
+msgid "Tu mensaje está en revisión"
 msgstr "Your message is being reviewed"
 
 #. module: website_pwa_chat
@@ -464,5 +464,5 @@ msgstr ""
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
-msgid "← All channels"
+msgid "← Todos los canales"
 msgstr "← All channels"
