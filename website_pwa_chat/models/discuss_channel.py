@@ -7,6 +7,8 @@ from datetime import timedelta
 from odoo import _, api, fields, models
 from odoo.tools import format_datetime
 
+from odoo.addons.mail.tools.discuss import Store
+
 _logger = logging.getLogger(__name__)
 
 # How many messages the page renders, and how many a single live catch-up
@@ -258,6 +260,22 @@ class DiscussChannel(models.Model):
         help="Identifies whose support conversation this is. Set by the "
         "platform, never by hand.",
     )
+
+    def _to_store_defaults(self, target):
+        """Tell the Discuss client which channels are support conversations.
+
+        A boolean rather than the key itself: the sidebar only needs to know
+        WHERE to file the conversation, and the key encodes partner and guest
+        ids that no client needs. The frontend patch reads this to move the
+        conversation from "Direct messages" into its own collapsible Soporte
+        category -- with 218 shops feeding the queue, the DM list was
+        drowning.
+        """
+        return super()._to_store_defaults(target) + [
+            Store.Attr(
+                "is_support_channel", lambda channel: bool(channel.support_key)
+            ),
+        ]
 
     @api.model
     def _support_key(self):

@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website PWA Chat",
-    "version": "19.0.5.1.0",
+    "version": "19.0.6.0.0",
     "category": "Website",
     "summary": "Community chat page of the Canarias Conectada app, served "
     "inside the public website layout",
@@ -68,6 +68,12 @@
             "website_pwa_chat/static/src/js/community_chat.js",
             "website_pwa_chat/static/src/js/support_window.js",
             "website_pwa_chat/static/src/scss/community_chat.scss",
+        ],
+        # The backend Discuss app, where the agents answer: the collapsible
+        # Soporte category that keeps 218 shops' conversations out of the
+        # Direct messages list.
+        "web.assets_backend": [
+            "website_pwa_chat/static/src/backend/support_sidebar_category.js",
         ],
     },
     "installable": True,

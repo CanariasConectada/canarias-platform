@@ -14,4 +14,26 @@
         </field>
     </record>
 
+    <!-- The list behind "Contenido de página" shows all 218 shops in one
+         flat run; which neighbourhood a row belongs to is the first thing
+         the operators scan for. Inherited on the base list so every screen
+         that lists companies gets the column, removable per user because it
+         is `optional`. -->
+    <record id="view_company_tree_zone" model="ir.ui.view">
+        <field name="name">res.company.list.zone</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_tree" />
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="commercial_zone" optional="show" />
+            </field>
+        </field>
+    </record>
+
+    <!-- No search-view inheritance on purpose: res.company has no search
+         view in base — the one in this database belongs to
+         `res_company_search_view`, another repository, and a hard dependency
+         is not worth a shortcut the list already offers as a custom
+         group-by now that the field is on it. -->
+
 </odoo>

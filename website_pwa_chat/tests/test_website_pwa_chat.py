@@ -199,7 +199,14 @@ class TestWebsiteChat(WebsiteChatMixin, HttpCase):
         The fixtures enable ``chat_enabled`` everywhere and leave
         ``chat_link_enabled`` off — exactly that launch state — so the page
         must serve while its own navbar stays silent about it.
+
+        The flag is forced off rather than assumed off: this suite also runs
+        against copies of production, where the link has been live since
+        2026-08-17, and a fixture assumption is not a state.
         """
+        self.websites.write({"chat_link_enabled": False})
+        self.registry.clear_cache("templates")
+        self.addCleanup(self.registry.clear_cache, "templates")
         response = self._get_index()
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("o_cc_chat_menu_link", response.text)

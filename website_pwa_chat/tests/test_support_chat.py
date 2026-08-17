@@ -64,6 +64,19 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
             self.env["discuss.channel"].sudo().search([("support_key", "!=", False)])
         )
 
+    def _enable_link(self):
+        """Turn the button on WITHOUT poisoning the next test.
+
+        The layout caches rendered fragments (`t-cache`), and the registry
+        cache outlives this test's rollback: a header rendered here with the
+        Comunidad entry in it would be served verbatim to the next test,
+        which asserts the entry is absent. Cleared going in (this test must
+        not read the off-state header either) and going out.
+        """
+        self.websites.write({"chat_link_enabled": True})
+        self.registry.clear_cache("templates")
+        self.addCleanup(self.registry.clear_cache, "templates")
+
     # ------------------------------------------------------------------
     # Getting one
     # ------------------------------------------------------------------
@@ -185,7 +198,7 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
         """
         # The button rides on the link opt-in, which the fixtures leave off
         # because launch left it off; the window is only reachable through it.
-        self.websites.write({"chat_link_enabled": True})
+        self._enable_link()
         self._forget_guest_cookie()
         before = self._support_channels()
 
@@ -203,7 +216,7 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
     def test_the_framed_page_strips_the_chrome_and_the_recursion(self):
         # With the link off the button is absent everywhere and the recursion
         # assertion below would pass without meaning anything.
-        self.websites.write({"chat_link_enabled": True})
+        self._enable_link()
         self._forget_guest_cookie()
         response = self.url_open(SUPPORT_URL + "?frame=1")
 
@@ -221,7 +234,7 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
         )
 
     def test_the_full_page_still_has_its_chrome(self):
-        self.websites.write({"chat_link_enabled": True})
+        self._enable_link()
         self._forget_guest_cookie()
         response = self.url_open(SUPPORT_URL)
 
@@ -238,7 +251,7 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
 
     def test_a_frame_value_other_than_one_means_the_full_page(self):
         """bool() on a query string would call "0" true; the visitor means no."""
-        self.websites.write({"chat_link_enabled": True})
+        self._enable_link()
         self._forget_guest_cookie()
         response = self.url_open(SUPPORT_URL + "?frame=0")
 
@@ -251,7 +264,7 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
         They do not serve /chat/soporte themselves, so their iframe has to
         point at the host website's own domain, frame flag included.
         """
-        self.websites.write({"chat_link_enabled": True})
+        self._enable_link()
         host = self.env["website"]._chat_host_website()
         host.domain = "https://portal.example"
         zone = self.env["website"].create(
@@ -320,6 +333,33 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
             response.headers["Location"].endswith("/chat/soporte?frame=1"),
             "posted from the window, the visitor must land back in the window",
         )
+
+    # ------------------------------------------------------------------
+    # The Discuss sidebar
+    # ------------------------------------------------------------------
+
+    def test_the_store_flags_support_channels_for_the_sidebar(self):
+        """The one bit the Soporte category in Discuss keys on.
+
+        A boolean, not the key: the sidebar only files the conversation, and
+        the key encodes partner and guest ids no client needs.
+        """
+        from odoo.addons.mail.tools.discuss import Store
+
+        self._forget_guest_cookie()
+        self.url_open(SUPPORT_URL)
+        support = self._support_channels()[0]
+        ordinary = self.channel_general
+
+        rows = (
+            Store()
+            .add(support + ordinary)
+            .get_result()
+            .get("discuss.channel", [])
+        )
+        by_id = {row["id"]: row for row in rows}
+        self.assertTrue(by_id[support.id]["is_support_channel"])
+        self.assertFalse(by_id[ordinary.id]["is_support_channel"])
 
     # ------------------------------------------------------------------
     # Being answered
