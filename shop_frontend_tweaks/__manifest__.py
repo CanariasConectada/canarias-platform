@@ -2,7 +2,7 @@
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl).
 {
     "name": "Shop Frontend Tweaks",
-    "version": "19.0.1.4.0",
+    "version": "19.0.2.0.0",
     "category": "Website/Website",
     "summary": "Shop tweaks: header, toolbar, searchable categories and "
     "recommended products",
@@ -22,7 +22,7 @@
     ],
     "assets": {
         "web.assets_frontend": [
-            "shop_frontend_tweaks/static/src/css/remove_shadows.css",
+            "shop_frontend_tweaks/static/src/css/product_card.css",
             "shop_frontend_tweaks/static/src/css/recommended.css",
             "shop_frontend_tweaks/static/src/css/ajax_loading.css",
         ],
