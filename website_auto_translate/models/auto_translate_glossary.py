@@ -94,35 +94,53 @@ class AutoTranslateGlossary(models.Model):
     # Cache
     # ------------------------------------------------------------------
     @api.model
-    @tools.ormcache()
-    def _index(self):
-        """Every rule, longest term first.
+    @tools.ormcache("lang")
+    def _index(self, lang=None):
+        """Every rule that applies to ``lang``, longest term first.
 
         Longest first is not tidiness. With both "Estrella Galicia" and
         "Galicia" in the glossary, matching the short one first would leave
         "Estrella" outside the guard and the engine would translate half a
         brand -- which is worse than translating all of it, because it still
         looks deliberate.
+
+        Passing ``lang`` drops the rules written for a *different* language,
+        and that is the difference between a guard and a gag. "cookies" was
+        added for German and Italian, where the engine was turning it into
+        biscuits; with no language filter it was fenced off in French too, and
+        the engine handed back "Las cookies sont de petits fichiers" -- unable
+        to resolve the article once the noun had been walled off. A term
+        scoped to another language is ordinary words here, and has to be
+        translatable as such.
+
+        ``lang=None`` still means "every rule", which is what :meth:`_restore`
+        wants: it needs to recognise anything that may come back.
         """
         rules = {}
         for entry in self.sudo().search([]):
-            rules.setdefault(entry.name, {})[entry.lang or ""] = entry.replacement or ""
+            scope = entry.lang or ""
+            if lang is not None and scope and scope != lang:
+                continue
+            rules.setdefault(entry.name, {})[scope] = entry.replacement or ""
         return tuple(
             (term, tuple(sorted(by_lang.items())))
             for term, by_lang in sorted(rules.items(), key=lambda kv: -len(kv[0]))
         )
 
     @api.model
-    @tools.ormcache()
-    def _pattern(self):
+    @tools.ormcache("lang")
+    def _pattern(self, lang=None):
         """One alternation for terms and entities together.
 
         A single pass matters: protecting terms and entities in two passes
         would let the second one match inside the ``<span>`` the first one just
         inserted, and nest guards until the restore no longer pairs up.
+
+        Cached per language because the term list is per language; entities are
+        in every one of them.
         """
         parts = []
-        for term, _rules in self._index():
+        for term, _rules in self._index(lang):
             escaped = re.escape(term)
             # Only fence a term that starts or ends on a word character.
             # "S.L." and "&" would never match with \b around them.
@@ -211,8 +229,12 @@ class AutoTranslateGlossary(models.Model):
     # Protecting and restoring
     # ------------------------------------------------------------------
     @api.model
-    def _protect(self, text, is_html, held=None):
-        """Wrap everything the engine must leave alone.
+    def _protect(self, text, is_html, held=None, target_lang=None):
+        """Wrap everything the engine must leave alone, for one language.
+
+        ``target_lang`` is what keeps a rule written for German from silencing
+        the same word in French. Leaving it out fences every rule in the
+        glossary, which is only right when there is no target to speak of.
 
         ``held`` is filled with what was fenced off, keyed case-insensitively,
         so :meth:`_restore` can put back the exact bytes that went out instead
@@ -230,7 +252,7 @@ class AutoTranslateGlossary(models.Model):
             return text
         if not is_html:
             text = str(escape(text))
-        pattern = self._pattern()
+        pattern = self._pattern(target_lang)
 
         def fence(match):
             found = match.group(0)

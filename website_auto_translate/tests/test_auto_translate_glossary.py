@@ -61,6 +61,50 @@ class TestAutoTranslateGlossary(TransactionCase):
         self.assertIn('<span translate="no">CHEETOS</span>', guarded)
         self.assertNotIn("Cheetos</span>landia", guarded)
 
+    def test_a_rule_written_for_one_language_only_fences_in_that_language(self):
+        """A guard in the wrong language is a gag.
+
+        "cookies" was added for German and Italian, where the engine was
+        turning it into biscuits. With no language filter the same word was
+        fenced off in French, and the engine handed back "Las cookies sont de
+        petits fichiers": it could not resolve the Spanish article once the
+        noun had been walled off. Measured on production, 39 sentences of the
+        cookie policy in Polish, French and Portuguese, 2026-08-17.
+        """
+        german = self.Glossary._protect(
+            "Programa Silver Economy", is_html=False, target_lang="de_DE"
+        )
+        self.assertIn('<span translate="no">Silver Economy</span>', german)
+
+        french = self.Glossary._protect(
+            "Programa Silver Economy", is_html=False, target_lang="fr_FR"
+        )
+        self.assertNotIn("<span", french)
+        self.assertEqual(french, "Programa Silver Economy")
+
+    def test_a_rule_for_every_language_is_still_fenced_everywhere(self):
+        """The filter must not cost the brands their fence.
+
+        `lang` empty means every language, and that is what a brand name uses.
+        """
+        for lang in ("de_DE", "fr_FR", "pl_PL", None):
+            guarded = self.Glossary._protect(
+                "Bolsa de Cheetos grande", is_html=False, target_lang=lang
+            )
+            self.assertIn(
+                '<span translate="no">Cheetos</span>',
+                guarded,
+                "Cheetos lost its fence for %s" % lang,
+            )
+
+    def test_an_entity_is_fenced_in_every_language(self):
+        """Entities are not a glossary rule and never belonged to a language."""
+        for lang in ("de_DE", "fr_FR", None):
+            guarded = self.Glossary._protect(
+                "<p>Uno&nbsp;dos</p>", is_html=True, target_lang=lang
+            )
+            self.assertIn('<span translate="no">&nbsp;</span>', guarded)
+
     def test_an_html_entity_is_fenced_off_too(self):
         """Both formats damage entities, so neither may see one.
 

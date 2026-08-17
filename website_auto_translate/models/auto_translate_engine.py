@@ -303,7 +303,9 @@ class AutoTranslateEngine(models.Model):
         # trusted: an engine is free to change the case of a guarded term, and
         # "&Nbsp;" is not the entity "&nbsp;", it is five visible characters.
         held = {}
-        guarded = [Glossary._protect(text, is_html, held) for text in texts]
+        guarded = [
+            Glossary._protect(text, is_html, held, target_lang) for text in texts
+        ]
 
         if params.get_param("website_auto_translate.mode", "single") == "jury":
             jury = self.search([("in_jury", "=", True)])
