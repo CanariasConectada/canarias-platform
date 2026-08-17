@@ -2,8 +2,22 @@
 # This file contains the translation of the following modules:
 # 	* website_pwa_chat
 #
-# Generated from the module's own .pot so every `#:` reference line survives.
-# See scratchpad/refresh_po.py for why that matters.
+# Generated from the module's own .pot, so every `#:` reference line and every
+# `#. module:` marker survives. Both are load-bearing: Odoo's reader refuses a
+# file whose entries have no module marker, and a `model_terms` entry without
+# its reference line imports as nothing at all -- silently, with no error.
+#
+# Scope is what a visitor reads: the chat pages and the controller messages.
+# The support queue in the backend stays in Spanish, because that screen is for
+# the people who answer and they work in Spanish.
+#
+# The three entries whose source is an `<i class="fa ..."/>` are left empty on
+# purpose. `xml_translate` discards a replacement that is not well-formed XML
+# without saying so, and a class name is not text -- there is nothing to gain
+# and a silent breakage to lose.
+#
+# Every language file in this directory is generated from this one, so this
+# note reads the same in all of them and only has to be corrected once.
 #
 msgid ""
 msgstr ""
@@ -16,7 +30,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
@@ -102,7 +115,7 @@ msgstr "Chat: inserire gli agenti di supporto nelle conversazioni aperte"
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_menu_entry
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.view_website_form_chat
 msgid "Community"
-msgstr ""
+msgstr "Comunità"
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_pending
@@ -111,7 +124,7 @@ msgid ""
 "                            mensajes se publican al momento y entras además en\n"
 "                            el canal de tu barrio. Es gratis y se hace en un\n"
 "                            minuto."
-msgstr ""
+msgstr "Con un account non si dovrebbe aspettare: i messaggi sono pubblicati al momento e si entra nel canale del tuo quartiere. E' libera e fatta tra un minuto."
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.discuss_channel_support_view_list
@@ -137,7 +150,7 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_index
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_pending
 msgid "Create my account"
-msgstr ""
+msgstr "Crea il mio account"
 
 #. module: website_pwa_chat
 #: model:ir.model,name:website_pwa_chat.model_discuss_channel
@@ -157,7 +170,7 @@ msgid ""
 "                                    cuenta. Si te registras, entras además en\n"
 "                                    el canal de tu barrio y tus mensajes se\n"
 "                                    publican al instante."
-msgstr ""
+msgstr "Sul canale generale è possibile scrivere senza account. Se ti registri, inserisci anche il tuo canale di quartiere e i tuoi messaggi vengono pubblicati istantaneamente."
 
 #. module: website_pwa_chat
 #: model:ir.model.fields,field_description:website_pwa_chat.field_discuss_channel__website_chat_published
@@ -174,7 +187,7 @@ msgstr "Link alla Comunità"
 msgid ""
 "Escribes como visitante: alguien del equipo lee\n"
 "                                tu mensaje antes de publicarlo."
-msgstr ""
+msgstr "Scrivi come visitatore: qualcuno della squadra legge il tuo messaggio prima di pubblicarlo."
 
 #. module: website_pwa_chat
 #. odoo-javascript
@@ -208,7 +221,7 @@ msgstr "Salva"
 msgid ""
 "Habla con tu barrio y con toda Canarias Conectada.\n"
 "                        Elige un canal para empezar."
-msgstr ""
+msgstr "Parla con il tuo quartiere e tutte le isole Canarie collegate. Scegli un canale per cominciare."
 
 #. module: website_pwa_chat
 #. odoo-python
@@ -220,7 +233,7 @@ msgstr "Stiamo parlando con %s."
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_index
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_pending
 msgid "I already have an account"
-msgstr ""
+msgstr "Ho già un account"
 
 #. module: website_pwa_chat
 #: model:ir.model.fields,field_description:website_pwa_chat.field_discuss_channel__id
@@ -245,7 +258,7 @@ msgstr ""
 msgid ""
 "Los canales de barrio son para vecinos y\n"
 "                                    comercios con cuenta"
-msgstr ""
+msgstr "I canali di vicinanza sono per i vicini e le imprese con"
 
 #. module: website_pwa_chat
 #: model_terms:ir.actions.act_window,help:website_pwa_chat.action_discuss_channel_support
@@ -261,7 +274,7 @@ msgstr "Non siamo riusciti a inviare il tuo messaggio. Riprova."
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
 msgid "No messages yet. Write the first one."
-msgstr ""
+msgstr "Nessun messaggio. Scrivi il primo."
 
 #. module: website_pwa_chat
 #: model:ir.model.fields,field_description:website_pwa_chat.field_discuss_channel__support_visitor_name
@@ -297,7 +310,7 @@ msgstr ""
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
 msgid "Send"
-msgstr ""
+msgstr "Invia"
 
 #. module: website_pwa_chat
 #: model:ir.model.fields,help:website_pwa_chat.field_discuss_channel__support_closed
@@ -343,7 +356,7 @@ msgstr ""
 msgid ""
 "Todavía no hay ningún canal disponible. Vuelve a\n"
 "                            intentarlo en un rato."
-msgstr ""
+msgstr "Non ci sono ancora canali disponibili. Riprova tra un po'."
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
@@ -408,7 +421,7 @@ msgstr ""
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
 msgid "Write your message…"
-msgstr ""
+msgstr "Scrivi il tuo messaggio…"
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_pending
@@ -416,24 +429,24 @@ msgid ""
 "Ya lo tenemos. Antes de publicarlo lo lee una persona\n"
 "                        del equipo, para que este sea un sitio en el que\n"
 "                        apetezca entrar. Solemos hacerlo en menos de"
-msgstr ""
+msgstr "Ci siamo. Prima di pubblicarlo, leggilo una persona della squadra, quindi questo è un sito dove vuoi entrare. Facciamolo in meno di"
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
 msgid "Your message"
-msgstr ""
+msgstr "Il tuo messaggio"
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_pending
 msgid "Your message is being reviewed"
-msgstr ""
+msgstr "Il tuo messaggio è stato esaminato"
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_pending
 msgid ""
 "minutos; en cuanto esté,\n"
 "                        aparecerá aquí sin que tengas que recargar nada."
-msgstr ""
+msgstr "minuti; quando è, apparirà qui senza dover portare nulla."
 
 #. module: website_pwa_chat
 #. odoo-python
@@ -452,4 +465,4 @@ msgstr ""
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
 msgid "← All channels"
-msgstr ""
+msgstr "← Tutti i canali"

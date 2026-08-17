@@ -2,14 +2,28 @@
 # This file contains the translation of the following modules:
 # 	* partner_microsite_manager
 #
-# Generated from the module's own .pot so every `#:` reference line survives.
-# See docs in scratchpad/gen_po.py for why that matters.
+# Scope is the footer only, on purpose.
 #
-# English is the technical base of Odoo's translatable jsonb, so this file
-# overwrites what every language without an entry of its own falls back to.
-# It is only safe because the module's pre-migration gives the Spanish source
-# its own es_ES key first. Do not ship an en.po for a module in this repo
-# without that guarantee: it is what destroyed 2134 records on 2026-08-14.
+# The footer of every microsite and every zone is this module's own template,
+# which has no website_id, so website_auto_translate leaves it alone -- and
+# rightly so: translating an addon's view in the database would fight the
+# module on every update. Its wording belongs here instead.
+#
+# The legal pages are deliberately NOT translated. A privacy policy or a set of
+# terms and conditions run through a machine translator is a liability, not a
+# service, and Spanish is the language they were written and reviewed in.
+#
+# There is an en.po, and it only became safe to ship one once the base was
+# protected. Odoo keeps en_US as the technical base of a translatable column,
+# and this module's views held their Spanish there with no es_ES entry of their
+# own; an en.po written before that would have overwritten the base, which is
+# precisely how 2134 records lost their Spanish on 2026-08-14. The
+# post-migration in 19.0.1.7.0 gives the Spanish a key of its own first, and it
+# has to be a post-migration because that is the only point where the records
+# exist and en_US still holds the Spanish the XML just wrote.
+#
+# Every language file in this directory is generated from this one, so this
+# note reads the same in all of them and only has to be corrected once.
 #
 msgid ""
 msgstr ""
@@ -17,25 +31,11 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "Last-Translator: Canarias Conectada\n"
 "Language-Team: \n"
-"Language: en\n"
+"Language: en_US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions
-msgid "Política de Cookies"
-msgstr "Cookie policy"
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
-msgid "Política de privacidad"
-msgstr "Privacy policy"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
@@ -44,5 +44,15 @@ msgstr "All rights reserved"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
+msgid "Política de privacidad"
+msgstr "Privacy policy"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
 msgid "Términos y condiciones"
 msgstr "Terms and conditions"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
+msgid "Política de Cookies"
+msgstr "Cookie policy"

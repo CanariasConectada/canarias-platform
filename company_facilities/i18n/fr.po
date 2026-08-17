@@ -20,11 +20,11 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "Last-Translator: Canarias Conectada\n"
 "Language-Team: \n"
-"Language: it_IT\n"
+"Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #. module: company_facilities
 #: model_terms:ir.actions.act_window,help:company_facilities.action_company_facility_category
@@ -38,17 +38,17 @@ msgstr ""
 #: model:company.facility.category,name:company_facilities.category_accessibility
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_category_form
 msgid "Accessibility"
-msgstr "Accessibilità"
+msgstr "Accessibilité"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_accessible_parking
 msgid "Accessible parking space"
-msgstr "Posto auto accessibile"
+msgstr "Espace de stationnement accessible"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_accessible_toilet
 msgid "Accessible toilet"
-msgstr "Bagno accessibile"
+msgstr "Toilettes accessibles"
 
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__active
@@ -79,7 +79,7 @@ msgstr ""
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_air_conditioning
 msgid "Air conditioning"
-msgstr "Aria condizionata"
+msgstr "Climatisation"
 
 #. module: company_facilities
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_category_form
@@ -92,37 +92,37 @@ msgstr ""
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_assistance_dogs
 msgid "Assistance dogs welcome"
-msgstr "Cani di assistenza ammessi"
+msgstr "Accueil des chiens d'assistance"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_bicycle_parking
 msgid "Bicycle parking"
-msgstr "Parcheggio per biciclette"
+msgstr "Stationnement à vélo"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_bus_stop
 msgid "Bus stop nearby"
-msgstr "Fermata dell'autobus vicina"
+msgstr "Arrêt de bus à proximité"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_click_and_collect
 msgid "Buy online, collect in shop"
-msgstr "Compra online, ritira in negozio"
+msgstr "Acheter en ligne, collectionner en magasin"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_nearby_parking
 msgid "Car park nearby"
-msgstr "Parcheggio nelle vicinanze"
+msgstr "Parking à proximité"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_card_payment
 msgid "Card payment"
-msgstr "Pagamento con carta"
+msgstr "Paiement par carte"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_cash_only
 msgid "Cash only"
-msgstr "Solo contanti"
+msgstr "En espèces seulement"
 
 #. module: company_facilities
 #: model:ir.model,name:company_facilities.model_res_company
@@ -132,17 +132,17 @@ msgstr ""
 #. module: company_facilities
 #: model:ir.model,name:company_facilities.model_company_facility
 msgid "Company Facility"
-msgstr "Struttura o servizio del negozio"
+msgstr "Entreprise"
 
 #. module: company_facilities
 #: model:ir.model,name:company_facilities.model_company_facility_category
 msgid "Company Facility Category"
-msgstr "Sezione di strutture e servizi"
+msgstr "Catégorie d'installation de l'entreprise"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_contactless
 msgid "Contactless payment"
-msgstr "Pagamento contactless"
+msgstr "Paiement sans contact"
 
 #. module: company_facilities
 #: model_terms:ir.actions.act_window,help:company_facilities.action_company_facility_category
@@ -164,7 +164,7 @@ msgstr ""
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__description
 msgid "Description"
-msgstr "Descrizione"
+msgstr "Désignation des marchandises"
 
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__display_name
@@ -176,7 +176,7 @@ msgstr ""
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_speaks_english
 msgid "English"
-msgstr "Inglese"
+msgstr "Changements climatiques"
 
 #. module: company_facilities
 #: model_terms:ir.actions.act_window,help:company_facilities.action_company_facility
@@ -194,17 +194,17 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:company_facilities.facilities_block
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_form_facilities
 msgid "Facilities and services"
-msgstr "Strutture e servizi"
+msgstr "Installations et services"
 
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_res_company__facility_block_title
 msgid "Facilities block title"
-msgstr "Titolo del blocco strutture"
+msgstr "Titre du bloc d'installations"
 
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility_category__facility_ids
 msgid "Facility"
-msgstr "Struttura o servizio"
+msgstr "Facilité"
 
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility_category__facility_count
@@ -215,7 +215,7 @@ msgstr ""
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_fitting_room
 msgid "Fitting rooms"
-msgstr "Camerini"
+msgstr "Salles de montage"
 
 #. module: company_facilities
 #: model:ir.model.fields,help:company_facilities.field_company_facility_category__icon
@@ -230,22 +230,22 @@ msgstr ""
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_free_wifi
 msgid "Free wifi"
-msgstr "Wifi gratuito"
+msgstr "Wifi gratuit"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_speaks_german
 msgid "German"
-msgstr "Tedesco"
+msgstr "Allemand"
 
 #. module: company_facilities
 #: model:company.facility.category,name:company_facilities.category_access
 msgid "Getting there"
-msgstr "Come arrivare"
+msgstr "Comment arriver"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_gift_wrapping
 msgid "Gift wrapping"
-msgstr "Confezione regalo"
+msgstr "Emballage cadeau"
 
 #. module: company_facilities
 #: model:ir.model.fields,help:company_facilities.field_res_company__facility_block_title
@@ -257,7 +257,7 @@ msgstr ""
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_home_delivery
 msgid "Home delivery"
-msgstr "Consegna a domicilio"
+msgstr "Livraison à domicile"
 
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__id
@@ -270,34 +270,34 @@ msgstr ""
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__icon
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility_category__icon
 msgid "Icon"
-msgstr "Icona"
+msgstr "Icône"
 
 #. module: company_facilities
 #: model:company.facility.category,name:company_facilities.category_premises
 msgid "In the shop"
-msgstr "In negozio"
+msgstr "Dans la boutique"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_invoice_on_request
 msgid "Invoice on request"
-msgstr "Fattura su richiesta"
+msgstr "Facture sur demande"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_speaks_italian
 msgid "Italian"
-msgstr "Italiano"
+msgstr "Italien"
 
 #. module: company_facilities
 #: model:ir.ui.menu,name:company_facilities.menu_company_facility
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_category_form
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_category_list
 msgid "Items"
-msgstr "Voci"
+msgstr "Éléments"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_large_print
 msgid "Large-print prices"
-msgstr "Prezzi a caratteri grandi"
+msgstr "Prix en gros"
 
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__write_uid
@@ -314,7 +314,7 @@ msgstr ""
 #. module: company_facilities
 #: model:res.groups,name:company_facilities.group_facility_manager
 msgid "Manage the facilities catalogue"
-msgstr "Gestire il catalogo di strutture e servizi"
+msgstr "Gérer le catalogue des installations"
 
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__name
@@ -326,7 +326,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__company_ids
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_form
 msgid "Offered by"
-msgstr "Offerto da"
+msgstr "Offert par"
 
 #. module: company_facilities
 #: model:ir.model.fields,help:company_facilities.field_company_facility__description
@@ -337,37 +337,37 @@ msgstr ""
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_whatsapp_orders
 msgid "Orders by WhatsApp"
-msgstr "Ordini su WhatsApp"
+msgstr "Commandes de WhatsApp"
 
 #. module: company_facilities
 #: model:company.facility.category,name:company_facilities.category_payment
 msgid "Payment"
-msgstr "Pagamento"
+msgstr "Paiement"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_mobile_payment
 msgid "Payment by phone"
-msgstr "Pagamento con il telefono"
+msgstr "Paiement par téléphone"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_pets_welcome
 msgid "Pets welcome"
-msgstr "Animali ammessi"
+msgstr "Animaux acceptés"
 
 #. module: company_facilities
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_form_facilities
 msgid "Pick what this shop offers"
-msgstr "Scegli cosa offre questo negozio"
+msgstr "Choisissez ce que cette boutique offre"
 
 #. module: company_facilities
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_form
 msgid "Ramp at the main entrance"
-msgstr "Rampa all'ingresso principale"
+msgstr "Rampe à l'entrée principale"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_repairs
 msgid "Repairs and after-sales"
-msgstr "Riparazioni e assistenza"
+msgstr "Réparations et après-vente"
 
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__sequence
@@ -378,7 +378,7 @@ msgstr ""
 #. module: company_facilities
 #: model:company.facility.category,name:company_facilities.category_service
 msgid "Service"
-msgstr "Servizio"
+msgstr "Services"
 
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_res_company__facility_block_enabled
@@ -388,30 +388,30 @@ msgstr ""
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_speaks_spanish
 msgid "Spanish"
-msgstr "Spagnolo"
+msgstr "Espagnol"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_staff_assistance
 msgid "Staff trained to assist"
-msgstr "Personale formato per assistere"
+msgstr "Personnel formé pour aider"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_step_free_access
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_form
 msgid "Step-free access"
-msgstr "Accesso senza gradini"
+msgstr "Accès sans étape"
 
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__category_id
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_search
 msgid "Subdivision"
-msgstr "Sezione"
+msgstr "Sous-division"
 
 #. module: company_facilities
 #: model:ir.actions.act_window,name:company_facilities.action_company_facility_category
 #: model:ir.ui.menu,name:company_facilities.menu_company_facility_category
 msgid "Subdivisions"
-msgstr "Sezioni"
+msgstr "Sous-divisions"
 
 #. module: company_facilities
 #: model:ir.model.constraint,message:company_facilities.constraint_company_facility_name_unique_per_category
@@ -426,12 +426,12 @@ msgstr ""
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_customer_toilet
 msgid "Toilet for customers"
-msgstr "Bagno per i clienti"
+msgstr "Toilettes pour les clients"
 
 #. module: company_facilities
 #: model:company.facility.category,name:company_facilities.category_languages
 msgid "We speak"
-msgstr "Parliamo"
+msgstr "Nous parlons"
 
 #. module: company_facilities
 #: model:ir.model.fields,help:company_facilities.field_res_company__facility_ids

@@ -2,8 +2,17 @@
 # This file contains the translation of the following modules:
 # 	* company_facilities
 #
-# Generated from the module's own .pot so every `#:` reference line survives.
-# See scratchpad/refresh_po.py for why that matters.
+# Generated from the module's own .pot, so every `#:` reference line and every
+# `#. module:` marker survives. Both are load-bearing: Odoo's reader refuses a
+# file whose entries have no module marker, and a `model_terms` entry without
+# its reference line imports as nothing at all -- silently, with no error.
+#
+# Scope is what a visitor reads: the names of the facilities themselves. The
+# field labels, help texts and constraint messages are deliberately left empty.
+# They are the administrators' screen, and the administrators work in Spanish.
+#
+# Every language file in this directory is generated from this one, so this
+# note reads the same in all of them and only has to be corrected once.
 #
 msgid ""
 msgstr ""
@@ -11,12 +20,11 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "Last-Translator: Canarias Conectada\n"
 "Language-Team: \n"
-"Language: de\n"
+"Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-
 
 #. module: company_facilities
 #: model_terms:ir.actions.act_window,help:company_facilities.action_company_facility_category

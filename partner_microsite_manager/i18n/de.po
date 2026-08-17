@@ -13,12 +13,17 @@
 # terms and conditions run through a machine translator is a liability, not a
 # service, and Spanish is the language they were written and reviewed in.
 #
-# There is no en.po for this module, and that is also deliberate. Odoo keeps
-# en_US as the technical base of a translatable column, and this module's views
-# hold their Spanish there with no es_ES entry of their own. An en.po would
-# overwrite that base, which is precisely how 2134 records lost their Spanish
-# on 2026-08-14. An English visitor reads the Spanish footer until the base is
-# protected; that is a blemish, not a loss.
+# There is an en.po, and it only became safe to ship one once the base was
+# protected. Odoo keeps en_US as the technical base of a translatable column,
+# and this module's views held their Spanish there with no es_ES entry of their
+# own; an en.po written before that would have overwritten the base, which is
+# precisely how 2134 records lost their Spanish on 2026-08-14. The
+# post-migration in 19.0.1.7.0 gives the Spanish a key of its own first, and it
+# has to be a post-migration because that is the only point where the records
+# exist and en_US still holds the Spanish the XML just wrote.
+#
+# Every language file in this directory is generated from this one, so this
+# note reads the same in all of them and only has to be corrected once.
 #
 msgid ""
 msgstr ""
@@ -26,7 +31,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "Last-Translator: Canarias Conectada\n"
 "Language-Team: \n"
-"Language: de\n"
+"Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
