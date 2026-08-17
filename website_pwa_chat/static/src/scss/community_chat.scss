@@ -97,6 +97,9 @@
     &:hover,
     &:focus-visible {
         color: #fff;
+        // The theme's a:hover underline outranks the base rule on hover, so
+        // the reset has to be restated here.
+        text-decoration: none;
         box-shadow: 0 0.35rem 1rem rgba(0, 0, 0, 0.32);
         transform: translateY(-1px);
     }
