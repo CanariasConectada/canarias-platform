@@ -1,0 +1,72 @@
+/* The facilities filter in the directory sidebar.
+ *
+ * The markup already wraps its chips; what stopped them wrapping was their
+ * width. In a sidebar column, a `btn-sm` with a full border, an icon and a
+ * label like "Compra por internet y recoge en tienda" takes the whole line, so
+ * fifteen chips became fifteen rows and the panel was taller than the results
+ * beside it.
+ *
+ * Asked for on 2026-08-17: "simplifica por favor el filtro del directorio".
+ */
+
+.o_wdcf_filter {
+    /* The card sits in a column of cards; a shadow on each one turns the
+     * sidebar into a stack of floating boxes. */
+    box-shadow: none !important;
+    border: 1px solid var(--o-border-color, #dee2e6) !important;
+}
+
+.o_wdcf_filter .card-body {
+    padding: 0.875rem 1rem;
+}
+
+/* A filter chip is not a call to action. Light, borderless, and small enough
+ * that three or four fit on a line. */
+.o_wdcf_filter .btn {
+    --bs-btn-padding-y: 0.2rem;
+    --bs-btn-padding-x: 0.5rem;
+    --bs-btn-font-size: 0.8125rem;
+    --bs-btn-border-width: 0;
+    border-radius: 1rem;
+    max-width: 100%;
+    text-align: left;
+    white-space: normal;
+    line-height: 1.25;
+}
+
+.o_wdcf_filter .btn-outline-secondary {
+    background-color: rgba(0, 0, 0, 0.04);
+    color: var(--o-color-4, #495057);
+}
+
+.o_wdcf_filter .btn-outline-secondary:hover,
+.o_wdcf_filter .btn-outline-secondary:focus-visible {
+    background-color: rgba(113, 75, 103, 0.1);
+    color: var(--scc-brand-primary, #714b67);
+}
+
+/* Ticked chips carry the brand, so what is on and what is off is readable at a
+ * glance rather than by reading. */
+.o_wdcf_filter .btn-primary {
+    background-color: var(--scc-brand-primary, #714b67);
+    border-color: var(--scc-brand-primary, #714b67);
+}
+
+/* The icon earns its place at scanning size, not at label size. */
+.o_wdcf_filter .btn .fa {
+    font-size: 0.75em;
+    opacity: 0.7;
+}
+
+/* The subdivision heading is a signpost, not a title. */
+.o_wdcf_filter .text-uppercase {
+    font-size: 0.6875rem;
+    letter-spacing: 0.02em;
+}
+
+/* Keyboard users get a ring; the background change alone is not a focus
+ * indicator. */
+.o_wdcf_filter .btn:focus-visible {
+    outline: 2px solid var(--scc-brand-primary, #714b67);
+    outline-offset: 2px;
+}

@@ -110,7 +110,14 @@ class WebsiteDirectoryFacilities(WebsiteDirectory):
             kw={key: value for key, value in kw.items() if key != PARAM},
         )
         entries = request.env["website.directory.entry"].sudo().search(domain)
-        return entries.company_id.facility_ids
+        # `.filtered("active")` and not a context flag: reading a many2many
+        # returns archived records too, so a subdivision retired from the
+        # catalogue would go on offering its chips here long after it stopped
+        # appearing on the shops' own pages. Same guard, same reason, as
+        # `res.company._facilities_by_category`.
+        return entries.company_id.facility_ids.filtered(
+            lambda facility: facility.active and facility.category_id.active
+        )
 
     def _facility_url(self, url, kw, facility_ids):
         """The current address with the ticks replaced by ``facility_ids``.

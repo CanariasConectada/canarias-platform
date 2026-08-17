@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website Directory - Company Facilities",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.1.0",
     "category": "Website",
     "summary": "Filter the business directory by the facilities a shop offers",
     "description": """
@@ -27,6 +27,11 @@
     "data": [
         "views/website_directory_templates.xml",
     ],
+    "assets": {
+        "web.assets_frontend": [
+            "website_directory_company_facilities/static/src/css/directory_facilities.css",
+        ],
+    },
     "installable": True,
     # Same as the certification bridge: whoever has both halves wants the
     # bridge, and nobody has to be told a third module exists.
