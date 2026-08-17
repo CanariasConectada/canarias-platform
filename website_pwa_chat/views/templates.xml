@@ -51,10 +51,18 @@
                 t-set="chat_menu_url"
                 t-value="website and website._chat_menu_url()"
             />
-            <li t-if="chat_menu_url" class="nav-item o_cc_chat_menu_item">
+            <!-- In the mobile offcanvas the <ul> carries mx-n3 and every core
+                 item pushes back with p-3 on its link (`is_vertical_nav`,
+                 website_templates.xml:424-431); without the same classes this
+                 entry hangs out of the panel's left edge, which is exactly
+                 how it shipped the first time. -->
+            <li
+                t-if="chat_menu_url"
+                t-attf-class="nav-item o_cc_chat_menu_item #{is_vertical_nav and 'border-top' or ''}"
+            >
                 <a
                     t-att-href="chat_menu_url"
-                    class="nav-link o_cc_chat_menu_link"
+                    t-attf-class="nav-link o_cc_chat_menu_link #{is_vertical_nav and 'p-3 text-wrap' or ''}"
                 >Comunidad</a>
             </li>
         </xpath>

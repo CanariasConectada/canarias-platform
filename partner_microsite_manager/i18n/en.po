@@ -56,3 +56,9 @@ msgstr "Terms and conditions"
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
 msgid "Política de Cookies"
 msgstr "Cookie policy"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/wizards/microsite_content_editor.py:0
+msgid "Page content of the shops"
+msgstr "Page content of the shops"
