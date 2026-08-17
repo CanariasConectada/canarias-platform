@@ -95,6 +95,48 @@ class MicrositeContentEditor(models.TransientModel):
         return list(CONTENT_FIELDS)
 
     @api.model
+    def action_open_page_content(self):
+        """What the "Page content" menu opens, decided by who is asking.
+
+        The menu is gated on ``group_website_restricted_editor``, which the
+        218 merchants hold -- and so does every administrator. An
+        administrator has no shop of their own, so the screen used to greet
+        them with "your account is not linked to a shop": a menu entry whose
+        only outcome was an error dialog.
+
+        The fields are the same either way; only the door differs. A merchant
+        gets the transient, which writes their own shop and nothing else. An
+        administrator gets the shops themselves, where the very same content
+        already sits on a page of the company form and where they are the ones
+        allowed to write it.
+        """
+        if self.env["res.company"]._get_own_microsite_company():
+            return {
+                "type": "ir.actions.act_window",
+                "name": _("Page content"),
+                "res_model": self._name,
+                "view_mode": "form",
+                "target": "new",
+            }
+        if self.env.user.has_group("base.group_erp_manager"):
+            return {
+                "type": "ir.actions.act_window",
+                "name": _("Page content of the shops"),
+                "res_model": "res.company",
+                "view_mode": "list,form",
+                # Deliberately not sudo: the list has to show what this user
+                # may actually open, not a promise it cannot keep.
+                "domain": [("website_id", "!=", False)],
+                "context": {"create": False},
+            }
+        raise UserError(
+            _(
+                "Your account is not linked to a shop with its own site, so "
+                "there is no page content to edit."
+            )
+        )
+
+    @api.model
     def default_get(self, fields_list):
         """Open on the caller's own shop, already filled in."""
         values = super().default_get(fields_list)

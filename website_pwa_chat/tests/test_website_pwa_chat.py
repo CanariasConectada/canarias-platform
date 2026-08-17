@@ -275,6 +275,49 @@ class TestWebsiteChat(WebsiteChatMixin, HttpCase):
         self.assertFalse(merchant.chat_link_enabled)
         self.assertFalse(merchant._chat_menu_url())
 
+    # ------------------------------------------------------------------
+    # The floating button
+    # ------------------------------------------------------------------
+
+    def test_the_floating_button_points_at_support_on_the_site_that_serves_it(self):
+        """Support, not the public square: a private conversation.
+
+        The bubble it replaces was Odoo's live chat, which with nobody
+        connected only ever answered "no operator is available". This one
+        needs nobody connected.
+        """
+        host = self.env["website"]._chat_host_website()
+        self.assertEqual(host._chat_support_url(), "/chat/soporte")
+
+    def test_a_linked_website_gets_an_absolute_support_url(self):
+        """The zone portals live on their own subdomains.
+
+        A relative ``/chat/soporte`` there would 404 on a site that does not
+        serve the route -- the same reasoning as the menu entry, and the same
+        helper, so the two can never drift apart.
+        """
+        host = self.env["website"]._chat_host_website()
+        host.domain = "https://canariasconectada.example"
+        self.assertEqual(
+            self._zone_portal()._chat_support_url(),
+            "https://canariasconectada.example/chat/soporte",
+        )
+
+    def test_a_merchant_microsite_gets_no_floating_button(self):
+        """214 of the 218 sites. A shop window is not a support desk."""
+        merchant = self.env["website"].create({"name": "WPC Merchant FAB"})
+        self.assertFalse(merchant._chat_support_url())
+
+    def test_the_button_disappears_with_the_link_opt_in(self):
+        """One switch governs the menu entry and the button alike.
+
+        Announcing the chat is a decision, and it has to be reversible from
+        the configuration rather than by a deploy.
+        """
+        host = self.env["website"]._chat_host_website()
+        host.chat_link_enabled = False
+        self.assertFalse(host._chat_support_url())
+
     def _zone_portal(self):
         """A website that only LINKS to the chat, like the three zone portals.
 

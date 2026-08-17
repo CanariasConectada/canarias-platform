@@ -556,7 +556,7 @@ msgstr ""
 #: model:ir.actions.act_window,name:company_certification.action_certification_type
 #: model:ir.ui.menu,name:company_certification.menu_certification_type
 msgid "Certification Types"
-msgstr ""
+msgstr "Tipos de certificación"
 
 #. module: company_certification
 #: model:res.groups,name:company_certification.group_certification_user
@@ -654,7 +654,7 @@ msgstr "Tipo de certificación de empresa"
 #: model:ir.actions.act_window,name:company_certification.action_company_certification
 #: model:ir.ui.menu,name:company_certification.menu_company_certification
 msgid "Company Certifications"
-msgstr ""
+msgstr "Certificaciones de empresa"
 
 #. module: company_certification
 #: model:survey.question,comments_message:company_certification.sust_economy_q13

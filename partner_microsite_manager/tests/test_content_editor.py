@@ -113,6 +113,48 @@ class TestMicrositeContentEditor(TransactionCase):
         with self.assertRaises(UserError):
             self._editor(nobody).default_get(["company_id"])
 
+    # ------------------------------------------------------------------
+    # What the menu opens, which is not the same screen for everybody
+    # ------------------------------------------------------------------
+
+    def test_a_merchant_gets_their_own_editor(self):
+        action = self._editor().action_open_page_content()
+        self.assertEqual(action["res_model"], "microsite.content.editor")
+        self.assertEqual(action["target"], "new")
+
+    def test_an_administrator_gets_the_shops_instead_of_an_error(self):
+        """Reported on 2026-08-17 with a screenshot of the dialog.
+
+        The menu is gated on `group_website_restricted_editor`, which every
+        administrator holds as well, and an administrator has no shop of their
+        own -- so the only thing the entry ever did for them was raise
+        "Operación no válida". The same fields already sit on a page of the
+        company form, which they may write; the menu now takes them there.
+        """
+        admin = new_test_user(
+            self.env,
+            login="microsite_admin",
+            groups="base.group_user,base.group_erp_manager,"
+            "website.group_website_restricted_editor",
+            context={"no_reset_password": True, "tracking_disable": True},
+        )
+        admin.company_id = self.env.ref("base.main_company")
+        action = self._editor(admin).action_open_page_content()
+        self.assertEqual(action["res_model"], "res.company")
+        self.assertIn(("website_id", "!=", False), action["domain"])
+
+    def test_somebody_with_neither_still_gets_told_why(self):
+        """No shop and no right to manage others: a sentence, not a traceback."""
+        nobody = new_test_user(
+            self.env,
+            login="microsite_neither",
+            groups="base.group_user,website.group_website_restricted_editor",
+            context={"no_reset_password": True, "tracking_disable": True},
+        )
+        nobody.company_id = self.env.ref("base.main_company")
+        with self.assertRaises(UserError):
+            self._editor(nobody).action_open_page_content()
+
     def test_the_way_in_is_where_a_merchant_already_works(self):
         menu = self.env.ref(
             "partner_microsite_manager.menu_own_microsite_content",

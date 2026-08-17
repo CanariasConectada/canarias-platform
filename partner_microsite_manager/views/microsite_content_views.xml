@@ -90,17 +90,21 @@
         </field>
     </record>
 
-    <record id="action_own_microsite_content" model="ir.actions.act_window">
+    <!-- A server action rather than a window action, because the right screen
+         depends on who clicked. The group on the menu is the one the 218
+         merchants hold, and every administrator holds it too; an
+         administrator has no shop of their own and used to be answered with
+         an error dialog. See `action_open_page_content`. -->
+    <record id="action_own_microsite_content" model="ir.actions.server">
         <field name="name">Page content</field>
-        <field name="res_model">microsite.content.editor</field>
-        <field name="view_mode">form</field>
-        <field name="target">new</field>
+        <field name="model_id" ref="model_microsite_content_editor"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_open_page_content()</field>
     </record>
 
     <!-- Website › Configuration, which is where a merchant already works.
-         `group_website_restricted_editor` is the group the 218 merchant
-         accounts actually hold; the screen itself resolves the shop from the
-         account, so the menu cannot be used to reach somebody else's page. -->
+         The screen itself resolves the shop from the account, so the menu
+         cannot be used to reach somebody else's page. -->
     <menuitem id="menu_own_microsite_content"
               name="Page content"
               parent="website.menu_website_configuration"

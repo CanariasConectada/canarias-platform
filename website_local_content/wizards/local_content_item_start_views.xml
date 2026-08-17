@@ -42,12 +42,17 @@
         <field name="model">website.local.content.item</field>
         <field name="inherit_id" ref="website_local_content.local_content_item_view_list"/>
         <field name="arch" type="xml">
+            <!-- `display="always"` puts the button in the control panel, beside
+                 where "New" would be. Without it the list renderer files a
+                 header button under the bar that only appears once rows are
+                 ticked, so the menu entry was the only way in. -->
             <xpath expr="//list" position="inside">
                 <header>
                     <button name="%(website_local_content.local_content_item_start_action)d"
                             type="action"
                             string="New Item"
-                            class="btn-primary"/>
+                            class="btn-primary"
+                            display="always"/>
                 </header>
             </xpath>
         </field>

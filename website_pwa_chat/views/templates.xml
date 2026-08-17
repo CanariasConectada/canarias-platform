@@ -386,4 +386,47 @@
         </t>
     </template>
 
+    <!-- ================================================================
+         The floating button
+         ================================================================
+
+         The one control a visitor looks for when they want to ask something.
+         What used to be there was Odoo's live chat, and with nobody connected
+         it answered "no operator is available, try again later": a bubble
+         whose only job was to say no. Its six agents are real, but a platform
+         of 218 shops has nobody sitting in a console, so "no operator" is the
+         normal state, not the exception.
+
+         This one needs nobody connected. It opens the support page, which
+         asks for a name and keeps the conversation in a queue somebody reads
+         later. A link, not a widget: no bundle, no socket, and it cannot
+         break into a dead end because there is nothing to be unavailable.
+
+         `_chat_support_url()` gates it on the same opt-in as the menu entry
+         and builds an absolute URL on the sites that only link to the chat,
+         so the three neighbourhood portals reach it on its own subdomain.
+    -->
+    <template
+        id="chat_support_bubble"
+        inherit_id="website.layout"
+        name="Soporte: botón flotante"
+    >
+        <xpath expr="//div[@id='wrapwrap']" position="inside">
+            <t
+                t-set="chat_support_url"
+                t-value="website and website._chat_support_url()"
+            />
+            <a
+                t-if="chat_support_url"
+                t-att-href="chat_support_url"
+                class="o_cc_chat_fab d-print-none"
+                aria-label="Hablar con soporte"
+                title="Hablar con soporte"
+            >
+                <i class="fa fa-comments" aria-hidden="true"/>
+                <span class="o_cc_chat_fab_text">Soporte</span>
+            </a>
+        </xpath>
+    </template>
+
 </odoo>

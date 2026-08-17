@@ -70,3 +70,51 @@
         font-size: 1.15rem;
     }
 }
+
+// The floating button. Deliberately a link that looks like a button rather
+// than a widget: nothing to load, nothing to connect to, and nothing that can
+// report itself unavailable. It replaces Odoo's live chat bubble, which with
+// no operator connected only ever said "try again later".
+//
+// Sits above the page but below Bootstrap's modal (1055) and offcanvas
+// backdrop, so it never floats over a dialog the visitor is reading.
+.o_cc_chat_fab {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 1030;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1rem;
+    border-radius: 2rem;
+    background: #714b67;
+    color: #fff;
+    text-decoration: none;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.25);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+    &:hover,
+    &:focus-visible {
+        color: #fff;
+        box-shadow: 0 0.35rem 1rem rgba(0, 0, 0, 0.32);
+        transform: translateY(-1px);
+    }
+
+    // Keyboard users get a visible ring; the shadow alone is not a focus
+    // indicator.
+    &:focus-visible {
+        outline: 2px solid #fff;
+        outline-offset: 2px;
+    }
+
+    // On a phone the label costs more room than it earns, and the icon plus
+    // the accessible name carry the meaning on their own.
+    .o_cc_chat_fab_text {
+        display: none;
+
+        @include media-breakpoint-up(sm) {
+            display: inline;
+        }
+    }
+}
