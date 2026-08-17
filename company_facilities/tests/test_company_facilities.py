@@ -113,13 +113,31 @@ class TestCompanyFacilities(TransactionCase):
         )
         self.assertIn("Facilities and services", rendered)
 
-    def test_the_block_stays_off_until_the_shop_asks_for_it(self):
-        """218 microsites belong to somebody else.
+    def test_a_new_shop_does_not_get_the_block_by_itself(self):
+        """The switch has to stay a decision, not a default.
 
-        The switch is what makes "leave only abinformatica with test content"
-        a setting rather than a promise.
+        It used to read `self.company`, which is the main company and has a
+        website, so the 2026-08-17 migration that switched the block on for
+        every existing shop turned this assertion into a lie about the field.
+        What still has to be true is the narrower thing: a shop created from
+        now on starts with the block off, and somebody turns it on.
         """
-        self.assertFalse(self.company.facility_block_enabled)
+        fresh = self.env["res.company"].create({"name": "Comercio Recién Creado"})
+        self.assertFalse(fresh.facility_block_enabled)
+
+    def test_the_existing_shops_were_switched_on_deliberately(self):
+        """ "habilita el tema por favor" (2026-08-17).
+
+        Safe to do to every shop at once because the block renders
+        `t-if="facility_groups"`: a shop that has ticked nothing still shows
+        nothing. What it buys is that the day a merchant ticks something, it
+        appears -- instead of appearing to do nothing, which is what "no lo veo
+        habilitado" was the first time round.
+        """
+        self.assertTrue(
+            self.company.facility_block_enabled,
+            "the migration switches on every shop that has a website",
+        )
 
     def test_the_block_reaches_a_homepage_built_in_the_website_builder(self):
         """None of the 219 migrated homepages calls the microsite template.

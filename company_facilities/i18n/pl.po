@@ -2,28 +2,17 @@
 # This file contains the translation of the following modules:
 # 	* company_facilities
 #
-# Generated from the module's own .pot, so every `#:` reference line and every
-# `#. module:` marker survives. Both are load-bearing: Odoo's reader refuses a
-# file whose entries have no module marker, and a `model_terms` entry without
-# its reference line imports as nothing at all -- silently, with no error.
-#
-# Scope is what a visitor reads: the names of the facilities themselves. The
-# field labels, help texts and constraint messages are deliberately left empty.
-# They are the administrators' screen, and the administrators work in Spanish.
-#
-# Every language file in this directory is generated from this one, so this
-# note reads the same in all of them and only has to be corrected once.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"Last-Translator: Canarias Conectada\n"
+"POT-Creation-Date: 2026-08-17 11:22+0000\n"
+"PO-Revision-Date: 2026-08-17 11:22+0000\n"
+"Last-Translator: \n"
 "Language-Team: \n"
-"Language: pl_PL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Content-Transfer-Encoding: \n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #. module: company_facilities
@@ -32,7 +21,12 @@ msgid ""
 "A subdivision groups what a shop offers — accessibility,\n"
 "                payment, parking — so a microsite shows four short lists\n"
 "                instead of one long row of icons."
-msgstr ""
+msgstr "Podział grup, co sklep oferuje - dostępność,\npłatności, parking - więc mikrostrona pokazuje cztery krótkie listy\nzamiast jednego długiego rzędu ikon."
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_access_ramp
+msgid "Access ramp"
+msgstr "Rampa dostępowa"
 
 #. module: company_facilities
 #: model:company.facility.category,name:company_facilities.category_accessibility
@@ -43,7 +37,7 @@ msgstr "Dostępność"
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_accessible_parking
 msgid "Accessible parking space"
-msgstr "Dostępny parking"
+msgstr "Miejsce parkingowe dla niepełnosprawnych"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_accessible_toilet
@@ -54,19 +48,19 @@ msgstr "Toaleta dostępna"
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__active
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility_category__active
 msgid "Active"
-msgstr ""
+msgstr "Aktywne"
 
 #. module: company_facilities
 #: model_terms:ir.actions.act_window,help:company_facilities.action_company_facility
 msgid "Add something a shop can offer"
-msgstr ""
+msgstr "Dodaj coś, co sklep może zaoferować"
 
 #. module: company_facilities
 #: model:res.groups,comment:company_facilities.group_facility_manager
 msgid ""
 "Add, rename and archive the subdivisions and the\n"
 "            items every shop picks from."
-msgstr ""
+msgstr "Dodać, zmienić nazwę i archiwum podpodziałów i\nprzedmioty, z których wybiera każdy sklep."
 
 #. module: company_facilities
 #: model:ir.model.fields,help:company_facilities.field_res_company__facility_block_enabled
@@ -74,7 +68,7 @@ msgid ""
 "Adds the block to this shop's site, above the footer. Off by default: the "
 "homepages were built page by page in the website builder, and nothing may "
 "appear on one of them without its owner asking for it."
-msgstr ""
+msgstr "Dodaje blok do tego sklepu, nad stopami. Domyślnie wyłączone: homepages zostały zbudowane strona po stronie w budowniczym strony internetowej, i nic nie może pojawić się na jednym z nich bez jego właściciela o to poprosić."
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_air_conditioning
@@ -87,7 +81,7 @@ msgstr "Klimatyzacja"
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_form
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_search
 msgid "Archived"
-msgstr ""
+msgstr "Archiwizacja"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_assistance_dogs
@@ -125,9 +119,19 @@ msgid "Cash only"
 msgstr "Tylko gotówka"
 
 #. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_children_area
+msgid "Children's area"
+msgstr "Kącik dla dzieci"
+
+#. module: company_facilities
+#: model:company.facility.category,name:company_facilities.category_comfort
+msgid "Comforts"
+msgstr "Udogodnienia"
+
+#. module: company_facilities
 #: model:ir.model,name:company_facilities.model_res_company
 msgid "Companies"
-msgstr ""
+msgstr "Przedsiębiorstwa"
 
 #. module: company_facilities
 #: model:ir.model,name:company_facilities.model_company_facility
@@ -147,19 +151,19 @@ msgstr "Płatność bezkontaktowa"
 #. module: company_facilities
 #: model_terms:ir.actions.act_window,help:company_facilities.action_company_facility_category
 msgid "Create a subdivision"
-msgstr ""
+msgstr "Utwórz podział"
 
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__create_uid
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility_category__create_uid
 msgid "Created by"
-msgstr ""
+msgstr "Stworzony przez"
 
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__create_date
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility_category__create_date
 msgid "Created on"
-msgstr ""
+msgstr "Utworzono"
 
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__description
@@ -169,9 +173,15 @@ msgstr "Opis"
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__display_name
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility_category__display_name
+#: model:ir.model.fields,field_description:company_facilities.field_microsite_content_editor__display_name
 #: model:ir.model.fields,field_description:company_facilities.field_res_company__display_name
 msgid "Display Name"
-msgstr ""
+msgstr "Wyświetl nazwę"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_lift
+msgid "Elevator"
+msgstr "Winda"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_speaks_english
@@ -184,7 +194,7 @@ msgid ""
 "Every shop picks from this list on its own form. Rename an item\n"
 "                here and it changes on every microsite at once — which is also\n"
 "                why it only has to be translated once."
-msgstr ""
+msgstr "Każdy sklep wybiera z tej listy na własnej formularzu. Zmień nazwę elementu\ntutaj i zmienia się na każdym mikromiejscu na raz - co jest również\ndlaczego musi być przetłumaczone tylko raz."
 
 #. module: company_facilities
 #: model:ir.actions.act_window,name:company_facilities.action_company_facility
@@ -193,6 +203,7 @@ msgstr ""
 #: model:res.groups.privilege,name:company_facilities.res_groups_privilege_facilities
 #: model_terms:ir.ui.view,arch_db:company_facilities.facilities_block
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_form_facilities
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_microsite_content_editor_form_facilities
 msgid "Facilities and services"
 msgstr "Usługi i usługi"
 
@@ -210,7 +221,12 @@ msgstr "Instrument"
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility_category__facility_count
 #: model:ir.model.fields,field_description:company_facilities.field_res_company__facility_count
 msgid "Facility Count"
-msgstr ""
+msgstr "Liczba obiektów"
+
+#. module: company_facilities
+#: model:company.facility.category,name:company_facilities.category_family_pets
+msgid "Family and pets"
+msgstr "Rodzina i zwierzęta domowe"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_fitting_room
@@ -220,12 +236,12 @@ msgstr "Pomieszczenia montażowe"
 #. module: company_facilities
 #: model:ir.model.fields,help:company_facilities.field_company_facility_category__icon
 msgid "Font Awesome class shown beside the heading, e.g. fa-wheelchair."
-msgstr ""
+msgstr "Klasa Font Awesome pokazana obok nagłówka, np. na wózku inwalidzkim."
 
 #. module: company_facilities
 #: model:ir.model.fields,help:company_facilities.field_company_facility__icon
 msgid "Font Awesome class shown beside the item, e.g. fa-wifi."
-msgstr ""
+msgstr "Klasa Font Awesome pokazana obok elementu, np. fa- wifi."
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_free_wifi
@@ -248,11 +264,21 @@ msgid "Gift wrapping"
 msgstr "Pakowanie prezentów"
 
 #. module: company_facilities
+#: model:ir.model.fields,field_description:company_facilities.field_microsite_content_editor__facility_block_title
+msgid "Heading"
+msgstr "Treść"
+
+#. module: company_facilities
 #: model:ir.model.fields,help:company_facilities.field_res_company__facility_block_title
 msgid ""
 "Heading of the block on the microsite. Left empty it reads “Facilities and "
 "services”."
-msgstr ""
+msgstr "Kierunek bloku na mikromiejscu. Po lewej jest napisane \"Udogodnienia i usługi\"."
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_high_chair_changing
+msgid "High chair and changing table"
+msgstr "Wysokie krzesełko i stół do przewijania"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_home_delivery
@@ -262,9 +288,10 @@ msgstr "Dostawa domowa"
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__id
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility_category__id
+#: model:ir.model.fields,field_description:company_facilities.field_microsite_content_editor__id
 #: model:ir.model.fields,field_description:company_facilities.field_res_company__id
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__icon
@@ -303,13 +330,18 @@ msgstr "Duże ceny druku"
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__write_uid
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility_category__write_uid
 msgid "Last Updated by"
-msgstr ""
+msgstr "Last Poprawiony przez"
 
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__write_date
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility_category__write_date
 msgid "Last Updated on"
-msgstr ""
+msgstr "Ostatnio zaktualizowane"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_charger_lightning
+msgid "Lightning charger"
+msgstr "Ładowarka Lightning"
 
 #. module: company_facilities
 #: model:res.groups,name:company_facilities.group_facility_manager
@@ -320,7 +352,14 @@ msgstr "Zarządzanie katalogiem obiektów"
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__name
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility_category__name
 msgid "Name"
-msgstr ""
+msgstr "Nazwa"
+
+#. module: company_facilities
+#: model:ir.model.fields,help:company_facilities.field_microsite_content_editor__facility_block_enabled
+msgid ""
+"Off by default. The ticks still feed the directory filter whether or not the"
+" block is shown."
+msgstr "Domyślnie wyłączone. Kleszcze nadal karmić filtr katalogowy bez względu na to, czy blok jest wyświetlany."
 
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__company_ids
@@ -332,12 +371,22 @@ msgstr "Oferowane przez"
 #: model:ir.model.fields,help:company_facilities.field_company_facility__description
 msgid ""
 "One short line under the name. Leave it empty when the name says everything."
-msgstr ""
+msgstr "Jedna krótka linia pod nazwiskiem. Zostaw puste, gdy nazwisko powie wszystko."
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_whatsapp_orders
 msgid "Orders by WhatsApp"
 msgstr "Zamówienia przez WhatsApp"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_terrace
+msgid "Outdoor terrace"
+msgstr "Taras zewnętrzny"
+
+#. module: company_facilities
+#: model:ir.model,name:company_facilities.model_microsite_content_editor
+msgid "Page content of my shop"
+msgstr "Zawartość strony w moim sklepie"
 
 #. module: company_facilities
 #: model:company.facility.category,name:company_facilities.category_payment
@@ -351,13 +400,19 @@ msgstr "Płatność telefoniczna"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_pets_welcome
-msgid "Pets welcome"
-msgstr "Zwierzęta mile widziane"
+msgid "Pet friendly"
+msgstr "Przyjazny zwierzętom"
 
 #. module: company_facilities
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_form_facilities
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_microsite_content_editor_form_facilities
 msgid "Pick what this shop offers"
 msgstr "Wybierz, co ten sklep oferuje"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_power_socket
+msgid "Power socket"
+msgstr "Gniazdo zasilania"
 
 #. module: company_facilities
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_form
@@ -370,10 +425,15 @@ msgid "Repairs and after-sales"
 msgstr "Naprawa i sprzedaż po sprzedaży"
 
 #. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_screens_music
+msgid "Screens and music"
+msgstr "Ekrany i muzyka"
+
+#. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__sequence
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility_category__sequence
 msgid "Sequence"
-msgstr ""
+msgstr "Sekwencja"
 
 #. module: company_facilities
 #: model:company.facility.category,name:company_facilities.category_service
@@ -383,7 +443,17 @@ msgstr "Usługa"
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_res_company__facility_block_enabled
 msgid "Show facilities on the website"
-msgstr ""
+msgstr "Pokaż obiekty na stronie internetowej"
+
+#. module: company_facilities
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_microsite_content_editor_form_facilities
+msgid "Show it on the page"
+msgstr "Pokaż na stronie"
+
+#. module: company_facilities
+#: model:ir.model.fields,field_description:company_facilities.field_microsite_content_editor__facility_block_enabled
+msgid "Show them on my page"
+msgstr "Pokaż je na mojej stronie"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_speaks_spanish
@@ -396,10 +466,14 @@ msgid "Staff trained to assist"
 msgstr "Personel szkolony do pomocy"
 
 #. module: company_facilities
-#: model:company.facility,name:company_facilities.facility_step_free_access
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_form
 msgid "Step-free access"
 msgstr "Step-free access"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_step_free_access
+msgid "Step-free entrance"
+msgstr "Wejście bez schodów"
 
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__category_id
@@ -416,12 +490,12 @@ msgstr "Podrejony"
 #. module: company_facilities
 #: model:ir.model.constraint,message:company_facilities.constraint_company_facility_name_unique_per_category
 msgid "That subdivision already has an item with that name."
-msgstr ""
+msgstr "Ten podział ma już element o tej nazwie."
 
 #. module: company_facilities
 #: model:ir.model.constraint,message:company_facilities.constraint_company_facility_category_name_unique
 msgid "There is already a subdivision with that name."
-msgstr ""
+msgstr "Jest już podział z tą nazwą."
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_customer_toilet
@@ -429,24 +503,53 @@ msgid "Toilet for customers"
 msgstr "Toaleta dla klientów"
 
 #. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_usb_adapter
+msgid "USB adapter"
+msgstr "Adapter USB"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_charger_usb_c
+msgid "USB-C charger"
+msgstr "Ładowarka USB-C"
+
+#. module: company_facilities
+#: model:company.facility,name:company_facilities.facility_waiting_area
+msgid "Waiting area"
+msgstr "Poczekalnia"
+
+#. module: company_facilities
 #: model:company.facility.category,name:company_facilities.category_languages
 msgid "We speak"
 msgstr "Rozmawiamy"
 
 #. module: company_facilities
+#: model:ir.model.fields,field_description:company_facilities.field_microsite_content_editor__facility_ids
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_microsite_content_editor_form_facilities
+msgid "What this shop offers"
+msgstr "Co ten sklep oferuje"
+
+#. module: company_facilities
 #: model:ir.model.fields,help:company_facilities.field_res_company__facility_ids
 msgid "What this shop offers. Shown on its microsite, grouped by subdivision."
-msgstr ""
+msgstr "Co ten sklep oferuje. Pokazane na mikromiejscu, pogrupowane według podziału."
+
+#. module: company_facilities
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_microsite_content_editor_form_facilities
+msgid ""
+"What you tick here is also what visitors can filter the\n"
+"                        directory by, whether or not you show the block on your\n"
+"                        own page."
+msgstr "To, co tutaj zaznaczyć jest również to, co odwiedzający mogą filtrować\nprzez katalog, czy wyświetlasz lub nie blok na swoim\nwłasna strona."
 
 #. module: company_facilities
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_category_form
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_category_list
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_form
 msgid "fa-wheelchair"
-msgstr ""
+msgstr "na wózku inwalidzkim"
 
 #. module: company_facilities
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_category_form
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_list
 msgid "fa-wifi"
-msgstr ""
+msgstr "fa- wifi"

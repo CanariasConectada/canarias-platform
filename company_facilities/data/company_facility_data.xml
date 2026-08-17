@@ -2,17 +2,30 @@
 <!-- Copyright 2026 Canarias Conectada
      License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-     A catalogue to start from, not a closed list: the client extends it from
-     Website > Configuration > Facilities and services.
+     THE CLIENT'S OWN CATALOGUE, three subdivisions of the six they specified
+     for task #87 on 2026-08-14. Payment, "Llegar y aparcar" and "Servicios al
+     cliente" were asked back out on 2026-08-17: the first two repeat what the
+     microsite already says on its own blocks, and a list long enough to need
+     reading is a list nobody reads. "Aseos para clientes" went with them.
+
+     What is left is what a shopper wants to know before walking in: whether
+     they can get in, whether they will be comfortable, and whether they can
+     bring who they are bringing.
+
+     Nothing was deleted. Everything retired is ARCHIVED by the migration in
+     19.0.2.0.0, relations intact, so a shop that had ticked one gets it back
+     the day somebody changes their mind.
 
      Written in English on purpose. Odoo keeps en_US as the technical base of
      every translatable column, so a record seeded in Spanish has its Spanish
      sitting in the base, exactly where an English translation later lands on
      top of it. That is how 2134 records lost their Spanish on 2026-08-14.
-     English here, Spanish in i18n/es.po, and nothing can overwrite anything.
+     English here, the client's own Spanish wording in i18n/es.po, and nothing
+     can overwrite anything.
 
      noupdate: renaming an item is the client's to do, and a module update must
-     not undo it. -->
+     not undo it. It also means this file cannot RENAME or MOVE a record that
+     already exists, the migration does that. -->
 <odoo noupdate="1">
 
     <!-- ============ Accessibility ============ -->
@@ -22,213 +35,126 @@
         <field name="sequence">10</field>
     </record>
 
-    <record id="facility_step_free_access" model="company.facility">
-        <field name="name">Step-free access</field>
+    <record id="facility_access_ramp" model="company.facility">
+        <field name="name">Access ramp</field>
         <field name="category_id" ref="category_accessibility"/>
         <field name="icon">fa-wheelchair</field>
         <field name="sequence">10</field>
+    </record>
+    <record id="facility_lift" model="company.facility">
+        <field name="name">Elevator</field>
+        <field name="category_id" ref="category_accessibility"/>
+        <field name="icon">fa-arrows-v</field>
+        <field name="sequence">20</field>
     </record>
     <record id="facility_accessible_toilet" model="company.facility">
         <field name="name">Accessible toilet</field>
         <field name="category_id" ref="category_accessibility"/>
-        <field name="icon">fa-wheelchair</field>
-        <field name="sequence">20</field>
-    </record>
-    <record id="facility_assistance_dogs" model="company.facility">
-        <field name="name">Assistance dogs welcome</field>
-        <field name="category_id" ref="category_accessibility"/>
-        <field name="icon">fa-paw</field>
+        <field name="icon">fa-bath</field>
         <field name="sequence">30</field>
-    </record>
-    <record id="facility_large_print" model="company.facility">
-        <field name="name">Large-print prices</field>
-        <field name="category_id" ref="category_accessibility"/>
-        <field name="icon">fa-font</field>
-        <field name="sequence">40</field>
-    </record>
-    <record id="facility_staff_assistance" model="company.facility">
-        <field name="name">Staff trained to assist</field>
-        <field name="category_id" ref="category_accessibility"/>
-        <field name="icon">fa-handshake-o</field>
-        <field name="sequence">50</field>
-    </record>
-
-    <!-- ============ Payment ============ -->
-    <record id="category_payment" model="company.facility.category">
-        <field name="name">Payment</field>
-        <field name="icon">fa-credit-card</field>
-        <field name="sequence">20</field>
-    </record>
-
-    <record id="facility_card_payment" model="company.facility">
-        <field name="name">Card payment</field>
-        <field name="category_id" ref="category_payment"/>
-        <field name="icon">fa-credit-card</field>
-        <field name="sequence">10</field>
-    </record>
-    <record id="facility_contactless" model="company.facility">
-        <field name="name">Contactless payment</field>
-        <field name="category_id" ref="category_payment"/>
-        <field name="icon">fa-wifi</field>
-        <field name="sequence">20</field>
-    </record>
-    <record id="facility_mobile_payment" model="company.facility">
-        <field name="name">Payment by phone</field>
-        <field name="category_id" ref="category_payment"/>
-        <field name="icon">fa-mobile</field>
-        <field name="sequence">30</field>
-    </record>
-    <record id="facility_cash_only" model="company.facility">
-        <field name="name">Cash only</field>
-        <field name="category_id" ref="category_payment"/>
-        <field name="icon">fa-money</field>
-        <field name="sequence">40</field>
-    </record>
-    <record id="facility_invoice_on_request" model="company.facility">
-        <field name="name">Invoice on request</field>
-        <field name="category_id" ref="category_payment"/>
-        <field name="icon">fa-file-text-o</field>
-        <field name="sequence">50</field>
-    </record>
-
-    <!-- ============ Getting there ============ -->
-    <record id="category_access" model="company.facility.category">
-        <field name="name">Getting there</field>
-        <field name="icon">fa-car</field>
-        <field name="sequence">30</field>
-    </record>
-
-    <record id="facility_nearby_parking" model="company.facility">
-        <field name="name">Car park nearby</field>
-        <field name="category_id" ref="category_access"/>
-        <field name="icon">fa-car</field>
-        <field name="sequence">10</field>
     </record>
     <record id="facility_accessible_parking" model="company.facility">
         <field name="name">Accessible parking space</field>
-        <field name="category_id" ref="category_access"/>
-        <field name="icon">fa-wheelchair</field>
-        <field name="sequence">20</field>
-    </record>
-    <record id="facility_bicycle_parking" model="company.facility">
-        <field name="name">Bicycle parking</field>
-        <field name="category_id" ref="category_access"/>
-        <field name="icon">fa-bicycle</field>
-        <field name="sequence">30</field>
-    </record>
-    <record id="facility_bus_stop" model="company.facility">
-        <field name="name">Bus stop nearby</field>
-        <field name="category_id" ref="category_access"/>
-        <field name="icon">fa-bus</field>
+        <field name="category_id" ref="category_accessibility"/>
+        <field name="icon">fa-wheelchair-alt</field>
         <field name="sequence">40</field>
     </record>
-
-    <!-- ============ Service ============ -->
-    <record id="category_service" model="company.facility.category">
-        <field name="name">Service</field>
-        <field name="icon">fa-bell-o</field>
-        <field name="sequence">40</field>
-    </record>
-
-    <record id="facility_home_delivery" model="company.facility">
-        <field name="name">Home delivery</field>
-        <field name="category_id" ref="category_service"/>
-        <field name="icon">fa-truck</field>
-        <field name="sequence">10</field>
-    </record>
-    <record id="facility_click_and_collect" model="company.facility">
-        <field name="name">Buy online, collect in shop</field>
-        <field name="category_id" ref="category_service"/>
-        <field name="icon">fa-shopping-bag</field>
-        <field name="sequence">20</field>
-    </record>
-    <record id="facility_gift_wrapping" model="company.facility">
-        <field name="name">Gift wrapping</field>
-        <field name="category_id" ref="category_service"/>
-        <field name="icon">fa-gift</field>
-        <field name="sequence">30</field>
-    </record>
-    <record id="facility_repairs" model="company.facility">
-        <field name="name">Repairs and after-sales</field>
-        <field name="category_id" ref="category_service"/>
-        <field name="icon">fa-wrench</field>
-        <field name="sequence">40</field>
-    </record>
-    <record id="facility_whatsapp_orders" model="company.facility">
-        <field name="name">Orders by WhatsApp</field>
-        <field name="category_id" ref="category_service"/>
-        <field name="icon">fa-whatsapp</field>
+    <record id="facility_step_free_access" model="company.facility">
+        <field name="name">Step-free entrance</field>
+        <field name="category_id" ref="category_accessibility"/>
+        <field name="icon">fa-sign-in</field>
         <field name="sequence">50</field>
     </record>
 
-    <!-- ============ In the shop ============ -->
-    <record id="category_premises" model="company.facility.category">
-        <field name="name">In the shop</field>
-        <field name="icon">fa-building-o</field>
-        <field name="sequence">50</field>
+    <!-- ============ Comforts ============ -->
+    <record id="category_comfort" model="company.facility.category">
+        <field name="name">Comforts</field>
+        <field name="icon">fa-coffee</field>
+        <field name="sequence">20</field>
     </record>
 
     <record id="facility_free_wifi" model="company.facility">
         <field name="name">Free wifi</field>
-        <field name="category_id" ref="category_premises"/>
+        <field name="category_id" ref="category_comfort"/>
         <field name="icon">fa-wifi</field>
         <field name="sequence">10</field>
     </record>
     <record id="facility_air_conditioning" model="company.facility">
         <field name="name">Air conditioning</field>
-        <field name="category_id" ref="category_premises"/>
+        <field name="category_id" ref="category_comfort"/>
         <field name="icon">fa-snowflake-o</field>
         <field name="sequence">20</field>
     </record>
-    <record id="facility_fitting_room" model="company.facility">
-        <field name="name">Fitting rooms</field>
-        <field name="category_id" ref="category_premises"/>
-        <field name="icon">fa-user</field>
+    <record id="facility_terrace" model="company.facility">
+        <field name="name">Outdoor terrace</field>
+        <field name="category_id" ref="category_comfort"/>
+        <field name="icon">fa-umbrella</field>
         <field name="sequence">30</field>
     </record>
-    <record id="facility_customer_toilet" model="company.facility">
-        <field name="name">Toilet for customers</field>
-        <field name="category_id" ref="category_premises"/>
-        <field name="icon">fa-tint</field>
+    <record id="facility_waiting_area" model="company.facility">
+        <field name="name">Waiting area</field>
+        <field name="category_id" ref="category_comfort"/>
+        <field name="icon">fa-users</field>
         <field name="sequence">40</field>
     </record>
-    <record id="facility_pets_welcome" model="company.facility">
-        <field name="name">Pets welcome</field>
-        <field name="category_id" ref="category_premises"/>
-        <field name="icon">fa-paw</field>
+    <record id="facility_screens_music" model="company.facility">
+        <field name="name">Screens and music</field>
+        <field name="category_id" ref="category_comfort"/>
+        <field name="icon">fa-music</field>
         <field name="sequence">50</field>
     </record>
-
-    <!-- ============ Languages ============ -->
-    <record id="category_languages" model="company.facility.category">
-        <field name="name">We speak</field>
-        <field name="icon">fa-language</field>
+    <!-- Charging. Asked for on 2026-08-17, and WHICH connector is the whole
+         question when a phone is at 4%: four entries rather than one, so a
+         shop ticks what it actually has. -->
+    <record id="facility_charger_usb_c" model="company.facility">
+        <field name="name">USB-C charger</field>
+        <field name="category_id" ref="category_comfort"/>
+        <field name="icon">fa-usb</field>
         <field name="sequence">60</field>
     </record>
+    <record id="facility_charger_lightning" model="company.facility">
+        <field name="name">Lightning charger</field>
+        <field name="category_id" ref="category_comfort"/>
+        <field name="icon">fa-bolt</field>
+        <field name="sequence">70</field>
+    </record>
+    <record id="facility_usb_adapter" model="company.facility">
+        <field name="name">USB adapter</field>
+        <field name="category_id" ref="category_comfort"/>
+        <field name="icon">fa-usb</field>
+        <field name="sequence">80</field>
+    </record>
+    <record id="facility_power_socket" model="company.facility">
+        <field name="name">Power socket</field>
+        <field name="category_id" ref="category_comfort"/>
+        <field name="icon">fa-plug</field>
+        <field name="sequence">90</field>
+    </record>
 
-    <record id="facility_speaks_spanish" model="company.facility">
-        <field name="name">Spanish</field>
-        <field name="category_id" ref="category_languages"/>
-        <field name="icon">fa-comment-o</field>
-        <field name="sequence">10</field>
-    </record>
-    <record id="facility_speaks_english" model="company.facility">
-        <field name="name">English</field>
-        <field name="category_id" ref="category_languages"/>
-        <field name="icon">fa-comment-o</field>
-        <field name="sequence">20</field>
-    </record>
-    <record id="facility_speaks_german" model="company.facility">
-        <field name="name">German</field>
-        <field name="category_id" ref="category_languages"/>
-        <field name="icon">fa-comment-o</field>
+    <!-- ============ Family and pets ============ -->
+    <record id="category_family_pets" model="company.facility.category">
+        <field name="name">Family and pets</field>
+        <field name="icon">fa-child</field>
         <field name="sequence">30</field>
     </record>
-    <record id="facility_speaks_italian" model="company.facility">
-        <field name="name">Italian</field>
-        <field name="category_id" ref="category_languages"/>
-        <field name="icon">fa-comment-o</field>
-        <field name="sequence">40</field>
+
+    <record id="facility_pets_welcome" model="company.facility">
+        <field name="name">Pet friendly</field>
+        <field name="category_id" ref="category_family_pets"/>
+        <field name="icon">fa-paw</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="facility_high_chair_changing" model="company.facility">
+        <field name="name">High chair and changing table</field>
+        <field name="category_id" ref="category_family_pets"/>
+        <field name="icon">fa-child</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="facility_children_area" model="company.facility">
+        <field name="name">Children's area</field>
+        <field name="category_id" ref="category_family_pets"/>
+        <field name="icon">fa-puzzle-piece</field>
+        <field name="sequence">30</field>
     </record>
 
 </odoo>
