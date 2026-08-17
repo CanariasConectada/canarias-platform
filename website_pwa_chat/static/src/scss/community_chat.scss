@@ -132,8 +132,11 @@
     z-index: 1030;
     display: flex;
     flex-direction: column;
-    width: min(24rem, calc(100vw - 2rem));
-    height: min(34rem, calc(100dvh - 6.5rem));
+    // Wrapped in calc() so the whole expression reaches the browser as CSS.
+    // Bare min() is intercepted by Odoo's Sass compiler, whose own min()
+    // cannot take a calc() argument and fails the ENTIRE frontend bundle.
+    width: calc(min(24rem, 100vw - 2rem));
+    height: calc(min(34rem, 100dvh - 6.5rem));
     overflow: hidden;
     border-radius: 1rem;
     background: #fff;
