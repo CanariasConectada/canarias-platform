@@ -521,10 +521,25 @@
                     root.className += " o_cc_skel_on";
                     window.setTimeout(done, MAX_WAIT);
                     window.addEventListener("load", function () {
-                        // One frame after load: the bundle has run by then, and
-                        // whichever of the two things it decided to show has
-                        // been laid out.
-                        window.requestAnimationFrame(done);
+                        // `load` means every resource arrived, NOT that the
+                        // page has anything to show: Odoo boots its module
+                        // system after it, so the OWL account picker mounts
+                        // later and core leaves the form `d-none` until then.
+                        // Taking the skeleton down here unconditionally left a
+                        // blank card between the logo and "o continúa como
+                        // invitado" -- the gap the user photographed on
+                        // 2026-08-17, which is exactly the wait this is
+                        // supposed to be covering.
+                        //
+                        // So `load` is a chance to finish early, never a
+                        // reason to. If neither outcome is on screen yet the
+                        // observer below is still watching, and MAX_WAIT is
+                        // still the backstop.
+                        window.requestAnimationFrame(function () {
+                            if (ready()) {
+                                done();
+                            }
+                        });
                     });
 
                     function ready() {
