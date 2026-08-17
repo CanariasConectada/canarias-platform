@@ -53,3 +53,31 @@ class TestEuEmblem(HttpCase):
 
         self.params.set_param("website_eu_emblem.url", "https://example.org/grant")
         self.assertIn("https://example.org/grant", self._home())
+
+    def test_the_emblem_is_the_same_height_as_the_site_logo(self):
+        """Asked for on 2026-08-17: "del mismo tamaño que el de los demás".
+
+        It was 1.75rem against the logo's 2.5rem, which read as a smaller,
+        secondary mark next to the brand.
+
+        Asserted on the variable rather than on a number: the theme sizes the
+        logo with `--logo-height`, so reading it is what keeps the two equal
+        when somebody changes the header, and is also what makes the emblem
+        shrink with the logo when the header condenses on scroll.
+        """
+        css = self._stylesheet()
+        self.assertIn("height: var(--logo-height, 2.5rem)", css)
+        self.assertNotIn("height: 1.75rem", css)
+
+    def _stylesheet(self):
+        import re
+
+        page = self.url_open("/")
+        self.assertEqual(page.status_code, 200)
+        match = re.search(
+            r'href="(/web/assets/[^"]*web\.assets_frontend[^"]*\.css)"', page.text
+        )
+        self.assertTrue(match, "the page has to load a frontend stylesheet")
+        bundle = self.url_open(match.group(1))
+        self.assertEqual(bundle.status_code, 200)
+        return bundle.text

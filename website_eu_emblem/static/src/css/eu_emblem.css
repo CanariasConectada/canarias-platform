@@ -14,12 +14,20 @@
     color: inherit;
     /* Never the tallest thing in the bar: the navbar sets its own height from
      * the site logo, and an emblem that exceeded it would change every
-     * header on the platform. */
-    max-height: 2rem;
+     * header on the platform. Same value the theme gives the logo, so the
+     * cap follows it rather than pinning the emblem to a number of its own. */
+    max-height: var(--logo-height, 2.5rem);
 }
 
 .o_cc_eu_emblem_flag {
-    height: 1.75rem;
+    /* The same height as the site logo, taken from the variable the theme
+     * sizes that logo with (`header .navbar-brand.logo img { height:
+     * var(--logo-height) }`). It was 1.75rem against the logo's 2.5rem, which
+     * read as a smaller, secondary mark -- asked for on 2026-08-17: "cuando
+     * aparece el logo de ue, tiene que ser del mismo tamaño que el de los
+     * demás". Reading the variable rather than repeating 2.5rem also means the
+     * emblem shrinks with the logo when the header condenses on scroll. */
+    height: var(--logo-height, 2.5rem);
     width: auto;
     display: block;
     /* A hairline keeps the flag's own blue from bleeding into a dark navbar. */

@@ -4,7 +4,7 @@
 {
     "name": "Website EU Emblem",
     "summary": "Show the European Union emblem and its funding statement in the header",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.1.0",
     "author": "Canarias Conectada",
     "website": "https://github.com/CanariasConectada/canarias-platform",
     "category": "Website",

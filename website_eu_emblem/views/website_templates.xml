@@ -7,7 +7,7 @@
     <template id="eu_emblem_content" name="EU Emblem content">
         <img src="/website_eu_emblem/static/src/img/eu_flag.svg"
              class="o_cc_eu_emblem_flag"
-             width="42" height="28"
+             width="60" height="40"
              t-att-alt="eu_emblem['statement'] or 'Unión Europea'"
              loading="lazy"/>
         <!-- Shown beside the flag on wide screens only: the statement is a
