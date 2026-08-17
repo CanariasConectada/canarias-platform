@@ -112,6 +112,64 @@ class TestSupportQueue(WebsiteChatMixin, HttpCase):
         channel.action_support_reopen()
         self.assertNotEqual(channel.support_state, "closed")
 
+    def test_the_agents_are_seated_but_not_in_their_sidebar(self):
+        """Reported 2026-08-17 with a screenshot of Mensajes directos.
+
+        A seat is not an invitation to look. With a button on every page of
+        218 shops, every visitor who lands on the support page opens a
+        conversation whether or not they type anything, and every one of them
+        was sitting pinned in the sidebar of every administrator.
+
+        Seated is still required -- only a member can answer and be notified --
+        so what has to be true is both halves at once.
+        """
+        channel = self._open_support()
+        agents = self.env["discuss.channel"]._support_agents()
+        self.assertTrue(agents, "the test is worthless without an agent to seat")
+
+        seats = channel.sudo().channel_member_ids.filtered(
+            lambda member: member.partner_id in agents.partner_id
+        )
+        self.assertTrue(seats, "an agent who is not a member cannot answer")
+        for seat in seats:
+            with self.subTest(agent=seat.partner_id.name):
+                self.assertFalse(
+                    seat.is_pinned,
+                    "an empty conversation must not sit in an agent's sidebar",
+                )
+
+    def test_a_conversation_somebody_writes_in_comes_back_on_its_own(self):
+        """Unpinned is not hidden: that distinction is the whole design.
+
+        Odoo re-pins a member once the channel has fresh interest, so the
+        sidebar ends up showing what has something new and the queue holds the
+        rest. If this ever fails, the noise was removed by hiding the signal
+        with it.
+        """
+        channel = self._open_support()
+        agents = self.env["discuss.channel"]._support_agents()
+        self._post_as_visitor(channel)
+        seats = channel.sudo().channel_member_ids.filtered(
+            lambda member: member.partner_id in agents.partner_id
+        )
+        for seat in seats:
+            with self.subTest(agent=seat.partner_id.name):
+                self.assertTrue(
+                    seat.is_pinned,
+                    "a visitor who wrote has to reach the people who answer",
+                )
+
+    def test_the_visitor_keeps_their_own_conversation_in_sight(self):
+        """It is their conversation; only the agents' seats are moved."""
+        channel = self._open_support()
+        agents = self.env["discuss.channel"]._support_agents()
+        theirs = channel.sudo().channel_member_ids.filtered(
+            lambda member: member.partner_id not in agents.partner_id
+        )
+        self.assertTrue(theirs, "the visitor has to be seated in their own thread")
+        for seat in theirs:
+            self.assertTrue(seat.is_pinned)
+
     def test_the_queue_is_a_screen_the_agents_can_reach(self):
         menu = self.env.ref(
             "website_pwa_chat.menu_discuss_channel_support", raise_if_not_found=False

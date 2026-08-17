@@ -368,15 +368,36 @@ class DiscussChannel(models.Model):
         return channel
 
     def _support_seat_agents(self):
-        """Put every current agent in the conversation, without disturbing the rest."""
+        """Put every current agent in the conversation, out of their way.
+
+        Seated, because only a member can answer and be notified. Unpinned,
+        because a seat is not an invitation to look: with 218 shops and a
+        button on every page, an administrator opening Discuss was met by a
+        wall of "Soporte · Visitante" down the whole Mensajes directos list,
+        one row per conversation ever opened, most of them empty. Reported
+        2026-08-17 with a screenshot of exactly that.
+
+        Odoo re-pins a member the moment the channel has fresh interest
+        (`_compute_is_pinned`: `channel.last_interest_dt >= member.unpin_dt`),
+        so a conversation somebody actually writes in comes back on its own.
+        What stays out of the sidebar is the noise -- an opened page nobody
+        typed in -- and the queue under Discusión > Soporte is where the rest
+        is read, which is what it was built for.
+
+        The visitor's own seat is never touched: it is their conversation.
+        """
         agents = self._support_agents()
         if not agents:
             return
+        now = fields.Datetime.now()
         for channel in self.sudo():
             seated = channel.channel_member_ids.partner_id
             missing = agents.partner_id - seated
             if missing:
                 channel._add_members(partners=missing, post_joined_message=False)
+            channel.channel_member_ids.filtered(
+                lambda member, partners=agents.partner_id: member.partner_id in partners
+            ).unpin_dt = now
 
     # ------------------------------------------------------------------
     # Support: what the administrators see, and for how long
