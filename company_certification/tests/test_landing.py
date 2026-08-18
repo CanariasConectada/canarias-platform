@@ -95,8 +95,19 @@ class TestCertificationLanding(HttpCase):
 
     # -- the certified-business list ------------------------------------
     def _certify(self, name, level="gold", score=100, with_site=True):
-        """A company holding this seal, optionally with a microsite."""
-        company = self.env["res.company"].create({"name": name})
+        """A company holding this seal, optionally with a microsite.
+
+        ``auto_microsite_generator`` (co-installed in the full CI run) gives
+        every newborn company a routable microsite, which would make the
+        siteless scenario unreachable and hand the sited ones a second,
+        auto-generated website. Creating the company under its documented
+        ``no_microsite_auto`` opt-out keeps this helper the only site maker.
+        """
+        company = (
+            self.env["res.company"]
+            .with_context(no_microsite_auto=True)
+            .create({"name": name})
+        )
         if with_site:
             self.env["website"].create(
                 {
