@@ -21,7 +21,17 @@ class TestShopDesign(HttpCase):
         cls.category = cls.env["product.public.category"].create(
             {"name": "WSC Alimentación"}
         )
-        cls.merchant = cls.env["res.company"].create({"name": "WSC Panadería SL"})
+        # auto_microsite_generator (co-installed in the full CI run) would
+        # give this newborn merchant a second, auto-provisioned website whose
+        # seeded domain then wins the company.website_id race against the
+        # explicit fixture site below. The suite builds its own site with the
+        # exact domain it asserts on, so create the company under the
+        # documented opt-out and keep this fixture the only site maker.
+        cls.merchant = (
+            cls.env["res.company"]
+            .with_context(no_microsite_auto=True)
+            .create({"name": "WSC Panadería SL"})
+        )
         cls.merchant_site = cls.env["website"].create(
             {
                 "name": "WSC Panadería",
@@ -37,6 +47,11 @@ class TestShopDesign(HttpCase):
                 "list_price": 25.0,
                 "company_ids": [(6, 0, [cls.merchant.id])],
                 "public_categ_ids": [(6, 0, [cls.category.id])],
+                # First in the shop order: a new product is born with the
+                # highest website_sequence, and on a database whose demo
+                # catalogue already fills page 1 the card under test would
+                # otherwise land on page 2, out of the rendered page.
+                "website_sequence": 1,
             }
         )
         # The portal is flagged AFTER the product exists so the marketplace
@@ -312,7 +327,14 @@ class TestShopDesign(HttpCase):
         """An archived merchant's catalogue must not come back through AJAX
         even on the aggregating portal — the record rule hides it once the
         marketplace links are gone, and the endpoint honours the rule."""
-        gone = self.env["res.company"].create({"name": "WSC Retirada SL"})
+        # Under the AMG opt-out: an auto-provisioned microsite would make the
+        # company unarchivable (core refuses to archive a company that still
+        # owns a website), and this scenario needs a bare, archivable merchant.
+        gone = (
+            self.env["res.company"]
+            .with_context(no_microsite_auto=True)
+            .create({"name": "WSC Retirada SL"})
+        )
         self.env["product.template"].create(
             {
                 "name": "WSC Producto Retirado",
