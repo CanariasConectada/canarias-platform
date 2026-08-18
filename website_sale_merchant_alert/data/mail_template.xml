@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data noupdate="1">
+        <record id="mail_template_merchant_alert" model="mail.template">
+            <field name="name">Website Order: Merchant Alert</field>
+            <field name="model_id" ref="sale.model_sale_order" />
+            <field name="subject">Nuevo pedido {{ object.name }} en tu tienda</field>
+            <field name="email_to">{{ ctx.get('merchant_email') }}</field>
+            <field name="lang">{{ object.company_id.partner_id.lang }}</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px; font-size: 14px;">
+    <p>Hola,</p>
+    <p>
+        Tu tienda <strong t-out="object.website_id.name"/> ha recibido el
+        pedido <strong t-out="object.name"/> por un total de
+        <strong t-out="format_amount(object.amount_total, object.currency_id)"/>.
+    </p>
+    <p>
+        Cliente: <t t-out="object.partner_id.name"/>
+        <t t-if="object.partner_id.email"> (<t t-out="object.partner_id.email"/>)</t>
+    </p>
+    <ul>
+        <li t-foreach="object.order_line.filtered(lambda l: not l.display_type)" t-as="line">
+            <t t-out="line.product_uom_qty"/> x <t t-out="line.name"/>
+        </li>
+    </ul>
+    <p>
+        Puedes gestionarlo desde tu panel:
+        <a t-attf-href="{{ object.get_base_url() }}/odoo/sales/{{ object.id }}">ver el pedido</a>.
+    </p>
+</div>
+            </field>
+            <field name="auto_delete" eval="False" />
+        </record>
+    </data>
+</odoo>
