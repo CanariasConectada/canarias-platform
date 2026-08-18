@@ -6,12 +6,12 @@
             <t t-if="website.zone_id or 'guanarteme' in website.domain or 'tamaraceite' in website.domain or 'lomolosfrailes' in website.domain">
                 <div class="row mb-3">
                     <div class="col-12">
-                        <div id="shop-directory-toolbar" class="btn-toolbar flex-wrap align-items-center justify-content-between gap-2 bg-light rounded p-3">
+                        <div id="shop-directory-toolbar" class="d-flex align-items-center justify-content-between bg-light rounded p-3">
                             <div class="products-count">
                                 <strong t-esc="search_count or len(products) or 0"/>
                                 <span class="text-muted ms-1">productos</span>
                             </div>
-                            <div class="d-flex align-items-center flex-wrap gap-2">
+                            <div class="d-flex align-items-center gap-3">
                                 <div class="btn-group view-mode-toggle" role="group">
                                     <button type="button" class="btn btn-outline-secondary btn-sm active" data-view="grid" onclick="setViewMode('grid')" title="Vista de cuadrícula">
                                         <i class="fa fa-th"/>
@@ -21,7 +21,7 @@
                                     </button>
                                 </div>
                                 <div class="d-flex align-items-center gap-2">
-                                    <span class="text-muted small d-none d-md-inline">Mostrar:</span>
+                                    <span class="text-muted small">Mostrar:</span>
                                     <div class="btn-group" role="group">
                                         <t t-set="current_ppg" t-value="request.httprequest.args.get('ppg') and int(request.httprequest.args.get('ppg')) or 12"/>
                                         <a t-att-href="'/shop?ppg=12&amp;' + request.httprequest.query_string.decode('utf-8').replace('ppg=', 'ppg_old=') if 'ppg=' in request.httprequest.query_string.decode('utf-8') else '/shop?ppg=12'" t-attf-class="btn btn-sm {{current_ppg == 12 and 'btn-primary' or 'btn-outline-secondary'}}" t-attf-style="{{current_ppg == 12 and 'background-color:#714B67;border-color:#714B67;' or ''}}">12</a>
@@ -36,8 +36,36 @@
             </t>
         </xpath>
     </template>
-
-    <!-- The toolbar styles live in static/src/css/zones_toolbar.css
-         (web.assets_frontend): an inline <style> appended to
-         website.layout's root rendered after </html>. -->
+    
+    <!-- Estilos CSS -->
+    <template id="zones_toolbar_styles" inherit_id="website.layout" name="Zones Toolbar Styles" priority="99">
+        <xpath expr="." position="inside">
+            <t t-if="website.zone_id or 'guanarteme' in website.domain or 'tamaraceite' in website.domain or 'lomolosfrailes' in website.domain">
+                <style type="text/css">
+                    #shop-directory-toolbar {
+                        width: 100% !important;
+                    }
+                    #shop-directory-toolbar .btn-primary {
+                        background-color: #714B67 !important;
+                        border-color: #714B67 !important;
+                        color: #fff !important;
+                    }
+                    #shop-directory-toolbar .btn-outline-secondary {
+                        color: #6c757d !important;
+                        border-color: #dee2e6 !important;
+                    }
+                    #shop-directory-toolbar .btn-outline-secondary:hover,
+                    #shop-directory-toolbar .btn-outline-secondary.active {
+                        background-color: #714B67 !important;
+                        border-color: #714B67 !important;
+                        color: #fff !important;
+                    }
+                    #shop-directory-toolbar strong {
+                        color: #714B67;
+                        font-size: 1.25rem;
+                    }
+                </style>
+            </t>
+        </xpath>
+    </template>
 </odoo>
