@@ -1,0 +1,131 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* website_sale_comparison_canarias
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: Canarias Conectada\n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: website_sale_comparison_canarias
+#: model:ir.module.module,summary:base.module_website_sale_comparison_canarias
+msgid "A modern, always-available product comparison on the Canarias shop"
+msgstr ""
+"Un comparador de productos moderno y siempre disponible en la tienda de "
+"Canarias"
+
+#. module: website_sale_comparison_canarias
+#: code:addons/website_sale_comparison_canarias/models/website.py:0
+msgid "All of Canarias Conectada"
+msgstr "Toda Canarias Conectada"
+
+#. module: website_sale_comparison_canarias
+#: code:addons/website_sale_comparison_canarias/static/src/js/comparison_modal.js:0
+msgid "All other zones"
+msgstr "Todas las demás zonas"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid "Choose which products to compare with. First the scope, then the category."
+msgstr ""
+"Elige con qué productos comparar. Primero el alcance, después la categoría."
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid "Close"
+msgstr "Cerrar"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.ajax_card_compare
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.card_compare_button
+msgid "Compare"
+msgstr "Comparar"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.product_page_compare_button
+msgid "Compare prices"
+msgstr "Comparar precios"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.product_page_compare_button
+msgid "Compare this price with other products"
+msgstr "Comparar este precio con otros productos"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.ajax_card_compare
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.card_compare_button
+msgid "Compare with other products"
+msgstr "Comparar con otros productos"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid "Comparison scope"
+msgstr "Alcance de la comparación"
+
+#. module: website_sale_comparison_canarias
+#: code:addons/website_sale_comparison_canarias/models/website.py:0
+msgid "My commercial zone: %s"
+msgstr "Mi zona comercial: %s"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid "No products in this category to compare."
+msgstr "No hay productos en esta categoría para comparar."
+
+#. module: website_sale_comparison_canarias
+#: code:addons/website_sale_comparison_canarias/models/website.py:0
+msgid "Only at %s"
+msgstr "Solo en %s"
+
+#. module: website_sale_comparison_canarias
+#: code:addons/website_sale_comparison_canarias/models/website.py:0
+msgid "Outside my commercial zone"
+msgstr "Fuera de mi zona comercial"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid "Search products by name"
+msgstr "Buscar productos por nombre"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid "Selected:"
+msgstr "Seleccionados:"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid "Showing"
+msgstr "Mostrando"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid "View comparison"
+msgstr "Ver comparativa"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid "Which zone?"
+msgstr "¿Con qué zona?"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid "of"
+msgstr "de"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid "of 4"
+msgstr "de 4"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid "products. Search to find the rest."
+msgstr "productos. Busca para ver el resto."

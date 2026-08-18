@@ -10,15 +10,18 @@ import comparisonUtils from "@website_sale_comparison/js/website_sale_comparison
  * The compare button on a shop card: shows whether the product is already in
  * the comparison, and opens the picker.
  *
- * Previously this read the list from `localStorage["comparelist_product_ids"]`
- * -- a key Odoo has not written since the comparison moved to the
- * `comparison_product_ids` COOKIE. Nothing crashed; the button simply never
- * lit up. Reading through core's own utils is what stops that from happening
- * again the next time core changes where it keeps the list.
+ * DELIBERATELY DECOUPLED from core's `.o_add_compare` hook. The button used
+ * to carry both classes, so core's interaction owned the click too: it added
+ * the product AND disabled the button (`comparisonUtils.updateDisabled`),
+ * after which the picker could never be opened again from that product. This
+ * button now only ever OPENS the modal — membership in the comparison is
+ * decided by the checkboxes inside it — so it must never be disabled.
  *
- * Core's own interaction still owns the click: it adds the product to the
- * comparison. This adds the picker on top, so one click both starts the
- * comparison and offers what to compare against.
+ * Membership is read from the cookie through core's own utils (the list moved
+ * from `localStorage` to the `comparison_product_ids` cookie once already;
+ * going through the utils is what keeps this correct the next time it moves).
+ * The modal announces every change with a `wscc:selection` event on the
+ * document, which is what keeps these buttons honest while it is open.
  */
 export class CompareButtons extends Interaction {
     static selector = "#wrapwrap";
@@ -29,10 +32,8 @@ export class CompareButtons extends Interaction {
 
     start() {
         this.paint();
-        // Core writes the cookie on its own click handler, which may run after
-        // ours; repainting on the next tick is enough to read the settled
-        // value without racing it.
         this.addListener(window, "pageshow", () => this.paint());
+        this.addListener(document, "wscc:selection", () => this.paint());
     }
 
     paint() {
@@ -63,7 +64,6 @@ export class CompareButtons extends Interaction {
         if (Modal) {
             Modal.getOrCreateInstance(modal).show();
         }
-        this.waitForTimeout(() => this.paint(), 100);
     }
 }
 

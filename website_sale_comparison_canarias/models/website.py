@@ -79,6 +79,66 @@ class Website(models.Model):
         zone = getattr(company, "commercial_zone", False)
         return zone if zone and zone != "canarias" else False
 
+    def _comparison_product_zone(self, product=None):
+        """The neighbourhood ``product`` belongs to, or the site's own.
+
+        "My commercial zone" is a question about the PRODUCT, not about where
+        the visitor happens to be standing: a Guanarteme jacket seen on the
+        portal still has Guanarteme as its zone, and that is precisely where
+        the question gets asked -- the portal itself is in no neighbourhood.
+
+        Derived through the owning merchant (the same subtraction
+        ``_comparison_owner_website`` does), whose company carries
+        ``commercial_zone``; "canarias" is the field's "no zone" default and
+        is treated as none. A product with no zone of its own falls back to
+        the website's zone, so a zone shop keeps answering with itself.
+        """
+        self.ensure_one()
+        owner = self._comparison_owner_website(product)
+        if owner:
+            zone = getattr(owner.company_id.sudo(), "commercial_zone", False)
+            if zone and zone != "canarias":
+                return zone
+        return self._comparison_current_zone()
+
+    def _comparison_zone_company_ids(self, zone):
+        """Ids of the companies of ``zone``, resolved as the zone shop does.
+
+        Answered by the zone website's own ``_zone_company_ids()`` whenever
+        that site exists, so "the companies of Guanarteme" can never disagree
+        with what the Guanarteme shop itself sells. The direct search below is
+        only for a zone that has companies but no shop yet, and is the same
+        query that helper runs.
+        """
+        if not zone:
+            return []
+        site = self._comparison_zone_websites().filtered(
+            lambda candidate: candidate.marketplace_zone == zone
+        )[:1]
+        if site:
+            return site._zone_company_ids()
+        if "commercial_zone" not in self.env["res.company"]._fields:
+            return []
+        return (
+            self.env["res.company"]
+            .sudo()
+            .search([("commercial_zone", "=", zone)])
+            .ids
+        )
+
+    def _comparison_outside_zone_company_ids(self, product=None):
+        """The companies to subtract for "outside my commercial zone".
+
+        This is NOT a visibility domain: what may be shown still comes from
+        the portal website's ``sale_product_domain()``. This only narrows that
+        already-safe catalogue by taking the product's own neighbourhood out
+        of it.
+        """
+        self.ensure_one()
+        return self._comparison_zone_company_ids(
+            self._comparison_product_zone(product)
+        )
+
     def _comparison_owner_website(self, product):
         """The site of the shop that actually sells ``product``.
 
@@ -101,6 +161,15 @@ class Website(models.Model):
             .company_id
         )
         owners = product.sudo().company_ids - marketplaces
+        # Zone-holder companies are bookkeeping, never the merchant. They
+        # normally fall with the marketplaces above (each zone company's site
+        # is a zone shop), but a zone company whose shop is not flagged --
+        # mid-setup, or with the flag toggled -- would otherwise masquerade
+        # as the owner. Asked of `zone_company_ownership` itself, so the two
+        # can never disagree about what a zone company is.
+        Company = self.env["res.company"].sudo()
+        if hasattr(Company, "_zone_companies"):
+            owners -= Company._zone_companies()
         for owner in owners:
             site = owner.website_id
             # A marketplace is never "the same shop", even if one slipped
@@ -122,13 +191,26 @@ class Website(models.Model):
             return self._comparison_portal_website()
         if scope == SCOPE_SHOP:
             return self._comparison_owner_website(product)
-        if scope in (SCOPE_ZONE, SCOPE_OTHER_ZONE):
-            key = zone if scope == SCOPE_OTHER_ZONE else self._comparison_current_zone()
+        if scope == SCOPE_ZONE:
+            key = self._comparison_product_zone(product)
             if not key:
                 return self.env["website"]
             return self._comparison_zone_websites().filtered(
                 lambda site: site.marketplace_zone == key
             )[:1]
+        if scope == SCOPE_OTHER_ZONE:
+            # A named zone is a refinement: that zone's own shop answers it.
+            if zone:
+                return self._comparison_zone_websites().filtered(
+                    lambda site: site.marketplace_zone == zone
+                )[:1]
+            # No zone named means "everything OUTSIDE this product's zone":
+            # the portal answers it, and the controller subtracts the zone's
+            # companies from the portal's own catalogue. Without a zone to be
+            # outside of, the scope does not exist here.
+            if self._comparison_product_zone(product):
+                return self._comparison_portal_website()
+            return self.env["website"]
         return self.env["website"]
 
     # ------------------------------------------------------------------
@@ -137,10 +219,10 @@ class Website(models.Model):
     def _comparison_scopes(self, product=None):
         """The scopes worth showing here, as data for the picker.
 
-        A scope is only offered when a site is behind it. On the portal there
-        is no "this neighbourhood", and on a shop with no other neighbourhood
-        configured there is no "another one" -- offering either would be a tab
-        that comes back empty.
+        A scope is only offered when a site is behind it. A product that
+        belongs to no neighbourhood offers neither "my zone" nor "outside my
+        zone" -- offering either would be a tab that comes back empty or, in
+        the outside case, one that silently equals the whole platform.
         """
         self.ensure_one()
         scopes = []
@@ -149,32 +231,35 @@ class Website(models.Model):
             scopes.append(
                 {
                     "key": SCOPE_ALL,
-                    "label": _("Toda Canarias Conectada"),
+                    "label": _("All of Canarias Conectada"),
                     "zones": [],
                 }
             )
-        current_zone = self._comparison_current_zone()
+        # The PRODUCT's zone, not the website's: a Guanarteme product seen on
+        # the portal still offers "my commercial zone: Guanarteme".
+        product_zone = self._comparison_product_zone(product)
         zone_sites = self._comparison_zone_websites()
-        current_site = zone_sites.filtered(
-            lambda site: site.marketplace_zone == current_zone
+        zone_site = zone_sites.filtered(
+            lambda site: site.marketplace_zone == product_zone
         )[:1]
-        if current_site:
+        if zone_site:
             scopes.append(
                 {
                     "key": SCOPE_ZONE,
-                    "label": _("Mi zona comercial: %s", current_site.name),
+                    "label": _("My commercial zone: %s", zone_site.name),
                     "zones": [],
                 }
             )
-        others = zone_sites - current_site
-        if others:
+        # "Outside" needs a zone to be outside of, and the portal to answer
+        # from. The other zone shops ride along as an optional refinement.
+        if portal and zone_site:
             scopes.append(
                 {
                     "key": SCOPE_OTHER_ZONE,
-                    "label": _("Otra zona comercial"),
+                    "label": _("Outside my commercial zone"),
                     "zones": [
                         {"key": site.marketplace_zone, "name": site.name}
-                        for site in others
+                        for site in zone_sites - zone_site
                     ],
                 }
             )
@@ -183,7 +268,7 @@ class Website(models.Model):
             scopes.append(
                 {
                     "key": SCOPE_SHOP,
-                    "label": _("Solo en %s", owner.name),
+                    "label": _("Only at %s", owner.name),
                     "zones": [],
                 }
             )

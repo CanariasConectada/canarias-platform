@@ -4,8 +4,13 @@
 
 import { Interaction } from "@web/public/interaction";
 import { registry } from "@web/core/registry";
+import { _t } from "@web/core/l10n/translation";
 import { rpc } from "@web/core/network/rpc";
 import comparisonUtils from "@website_sale_comparison/js/website_sale_comparison_utils";
+
+// How long a pause in typing means "done typing". Short enough to feel live,
+// long enough not to fire a request per keystroke.
+const SEARCH_DEBOUNCE_MS = 300;
 
 /**
  * Pick what to compare against, without leaving the shop.
@@ -32,6 +37,10 @@ export class ComparisonModal extends Interaction {
             scopes: [],
             scope: null,
             zone: "",
+            query: "",
+            // How many candidates the scope holds server-side; more than
+            // `products.length` means the pool was truncated at the cap.
+            total: 0,
             loading: false,
         };
         this.listEl = this.el.querySelector(".o_wscc_modal_list");
@@ -41,20 +50,39 @@ export class ComparisonModal extends Interaction {
         this.scopesEl = this.el.querySelector(".o_wscc_modal_scopes");
         this.zonesEl = this.el.querySelector(".o_wscc_modal_zones");
         this.zoneSelectEl = this.el.querySelector("#o_wscc_zone_select");
+        this.searchEl = this.el.querySelector(".o_wscc_modal_search_input");
+        this.truncatedEl = this.el.querySelector(".o_wscc_modal_truncated");
+        this.shownEl = this.el.querySelector(".o_wscc_modal_shown");
+        this.totalEl = this.el.querySelector(".o_wscc_modal_total");
+        this.goEl = this.el.querySelector(".o_wscc_modal_go");
     }
 
     start() {
         this.el.addEventListener("wscc:open", (ev) => this.open(ev.detail.templateId));
         this.el.addEventListener("click", (ev) => this.onClick(ev));
         this.el.addEventListener("change", (ev) => this.onChange(ev));
+        if (this.searchEl) {
+            // `debounced` cancels itself on destroy, so a half-typed query
+            // can never fire against a dead interaction.
+            this.addListener(
+                this.searchEl,
+                "input",
+                this.debounced(() => this.applySearch(), SEARCH_DEBOUNCE_MS)
+            );
+        }
     }
 
     async open(templateId) {
         this.state.templateId = templateId;
         // A fresh product is a fresh question: the scope the visitor picked
-        // for a jacket says nothing about the one they want for a drill.
+        // for a jacket says nothing about the one they want for a drill, and
+        // neither does the name they typed.
         this.state.scope = null;
         this.state.zone = "";
+        this.state.query = "";
+        if (this.searchEl) {
+            this.searchEl.value = "";
+        }
         await this.load({ keepCategories: false });
     }
 
@@ -64,7 +92,9 @@ export class ComparisonModal extends Interaction {
      * Changing the scope goes back to the server rather than filtering what
      * is already loaded, and it has to: "toda Canarias Conectada" is a
      * different catalogue, not a wider view of this one, and the price shown
-     * has to be the price of the shop being compared against.
+     * has to be the price of the shop being compared against. The search
+     * query goes back too, because the candidate pool is capped server-side
+     * and a client filter could never reach past the cap.
      */
     async load({ keepCategories }) {
         const previousCategories = this.state.activeCategoryIds;
@@ -75,11 +105,13 @@ export class ComparisonModal extends Interaction {
                     product_template_id: this.state.templateId,
                     scope: this.state.scope,
                     zone: this.state.zone,
+                    query: this.state.query,
                 })
             );
             this.state.products = data.products || [];
             this.state.categories = data.categories || [];
             this.state.scopes = data.scopes || [];
+            this.state.total = data.total || 0;
             // The server has the last word on the scope: it falls back when
             // the one asked for is not available here.
             this.state.scope = data.scope || null;
@@ -133,7 +165,14 @@ export class ComparisonModal extends Interaction {
         const zones = (current && current.zones) || [];
         this.zonesEl.classList.toggle("d-none", zones.length === 0);
         if (zones.length) {
+            // "Outside my zone" answers with one click (zone "") and the
+            // named zones stay available as an optional refinement.
+            const allOption = document.createElement("option");
+            allOption.value = "";
+            allOption.textContent = _t("All other zones");
+            allOption.selected = !this.state.zone;
             this.zoneSelectEl.replaceChildren(
+                allOption,
                 ...zones.map((zone) => {
                     const option = document.createElement("option");
                     option.value = zone.key;
@@ -146,7 +185,8 @@ export class ComparisonModal extends Interaction {
     }
 
     render() {
-        const compared = new Set(comparisonUtils.getComparisonProductIds());
+        const comparisonIds = comparisonUtils.getComparisonProductIds();
+        const compared = new Set(comparisonIds);
         const products = this.visibleProducts();
 
         this.renderScopes();
@@ -170,7 +210,41 @@ export class ComparisonModal extends Interaction {
             ...products.map((product) => this.renderProduct(product, compared))
         );
         this.emptyEl.classList.toggle("d-none", products.length > 0);
+
+        // "Showing 120 of N": the truth about the pool, not about the chip
+        // filter — chips narrow what is on screen, the cap narrows what came
+        // over the wire, and only the second one hides products the visitor
+        // cannot reach without searching.
+        const truncated = this.state.total > this.state.products.length;
+        this.truncatedEl.classList.toggle("d-none", !truncated);
+        if (truncated) {
+            this.shownEl.textContent = this.state.products.length;
+            this.totalEl.textContent = this.state.total;
+        }
+
         this.countEl.textContent = compared.size;
+        this.renderCallToAction(comparisonIds);
+    }
+
+    /**
+     * The footer CTA: disabled until there are at least two products to
+     * compare, and pointing at the comparison of exactly the ticked ones —
+     * the same URL core's bottom bar builds from the cookie.
+     */
+    renderCallToAction(comparisonIds) {
+        if (!this.goEl) {
+            return;
+        }
+        const enabled = comparisonIds.length >= 2;
+        this.goEl.classList.toggle("disabled", !enabled);
+        this.goEl.setAttribute("aria-disabled", enabled ? "false" : "true");
+        this.goEl.tabIndex = enabled ? 0 : -1;
+        this.goEl.setAttribute(
+            "href",
+            enabled
+                ? `/shop/compare?products=${encodeURIComponent(comparisonIds.join(","))}`
+                : "#"
+        );
     }
 
     renderProduct(product, compared) {
@@ -194,8 +268,16 @@ export class ComparisonModal extends Interaction {
         image.alt = "";
         image.loading = "lazy";
 
-        const name = document.createElement("span");
+        // The name links to the product page so a candidate can be inspected
+        // before being compared. A new tab, because closing the modal to look
+        // at one candidate would throw away the whole selection in progress.
+        // (Clicking a nested link does not toggle the wrapping label: label
+        // activation skips interactive targets.)
+        const name = document.createElement("a");
         name.className = "o_wscc_modal_name";
+        name.href = product.url;
+        name.target = "_blank";
+        name.rel = "noopener";
         name.textContent = product.name;
 
         const price = document.createElement("span");
@@ -204,6 +286,15 @@ export class ComparisonModal extends Interaction {
 
         row.append(input, image, name, price);
         return row;
+    }
+
+    applySearch() {
+        const query = this.searchEl.value.trim();
+        if (query === this.state.query) {
+            return;
+        }
+        this.state.query = query;
+        this.load({ keepCategories: true });
     }
 
     onChange(ev) {
@@ -225,11 +316,9 @@ export class ComparisonModal extends Interaction {
                 return;
             }
             this.state.scope = scope;
-            const chosen = this.state.scopes.find((s) => s.key === scope);
-            // Picking "otra zona comercial" has to land on a real zone, not
-            // on an empty select.
-            this.state.zone =
-                chosen && chosen.zones.length ? chosen.zones[0].key : "";
+            // "Outside my zone" opens on everything outside it (zone "");
+            // a named zone is one select away.
+            this.state.zone = "";
             this.load({ keepCategories: true });
             return;
         }
@@ -263,6 +352,9 @@ export class ComparisonModal extends Interaction {
                 comparisonUtils.removeComparisonProduct(variantId);
             }
             this.render();
+            // Tell the compare buttons on the page behind the modal, which
+            // paint themselves from the same cookie.
+            document.dispatchEvent(new CustomEvent("wscc:selection"));
         }
     }
 }

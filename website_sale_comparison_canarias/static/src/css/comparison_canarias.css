@@ -13,8 +13,9 @@
 
 /* -- the compare button on a product card -------------------------------- */
 /* Core keeps ``.o_add_compare`` hidden until the tile is hovered (it lives in
- * a visibility wrapper on the standard shop). Our button sits on the card
- * itself and must always show, so override that default. */
+ * a visibility wrapper on the standard shop). Our button no longer carries
+ * that class -- it only opens the picker -- but it sits inside the same card
+ * chrome, so it still insists on always showing. */
 .o_wscc_compare_btn {
     display: inline-flex !important;
     align-items: center;
@@ -123,6 +124,18 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+/* The name is a link to the product page (new tab), but the row should keep
+ * reading as one quiet list; the underline only appears on hover. */
+a.o_wscc_modal_name {
+    color: inherit;
+    text-decoration: none;
+}
+
+a.o_wscc_modal_name:hover,
+a.o_wscc_modal_name:focus-visible {
+    text-decoration: underline;
 }
 
 .o_wscc_modal_price {

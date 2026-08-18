@@ -2,7 +2,12 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 from odoo import http
+from odoo.fields import Domain
 from odoo.http import request
+
+from odoo.addons.website_sale_comparison_canarias.models.website import (
+    SCOPE_OTHER_ZONE,
+)
 
 # What the picker will show at most. The comparison table itself caps at four
 # products (``MAX_COMPARISON_PRODUCTS`` in core's utils); this is the size of
@@ -20,14 +25,14 @@ class WebsiteSaleComparisonCanarias(http.Controller):
         readonly=True,
     )
     def compare_candidates(
-        self, product_template_id=None, scope=None, zone=None, **kwargs
+        self, product_template_id=None, scope=None, zone=None, query=None, **kwargs
     ):
         """Products the visitor may compare the given one against.
 
         SCOPE IS A WEBSITE, NEVER A DOMAIN. Whichever of the four the visitor
-        picks -- the whole platform, this neighbourhood, another one, or the
-        shop that sells this product -- the answer is resolved to a website
-        and the candidates come from that website's own
+        picks -- the whole platform, the product's neighbourhood, everything
+        outside it, or the shop that sells this product -- the answer is
+        resolved to a website and the candidates come from that website's own
         ``sale_product_domain()``.
 
         That is the entire safety argument for exposing this to anonymous
@@ -41,6 +46,12 @@ class WebsiteSaleComparisonCanarias(http.Controller):
         An unknown or unavailable scope falls back to the default rather than
         being answered from the current site: a query string belongs to
         whoever is holding the address bar.
+
+        ``query`` narrows by name and "outside my commercial zone" subtracts
+        the product's own neighbourhood, and both are ONLY narrowing: every
+        extra leaf is AND-ed on top of the website-derived
+        ``sale_product_domain()``, so neither can widen what the resolved
+        shop already shows.
         """
         website = request.website
         Product = request.env["product.template"].sudo()
@@ -63,11 +74,26 @@ class WebsiteSaleComparisonCanarias(http.Controller):
                 "scopes": scopes,
                 "scope": scope,
                 "zone": zone or "",
+                "total": 0,
+                "limit": CANDIDATE_LIMIT,
             }
 
-        domain = target.sudo().sale_product_domain()
+        domain = Domain(target.sudo().sale_product_domain())
+        if scope == SCOPE_OTHER_ZONE and not zone:
+            # "Outside my commercial zone": the portal's catalogue minus the
+            # product's own neighbourhood. Subtracting can only narrow what
+            # the portal already shows, so the invariant holds.
+            excluded_company_ids = website._comparison_outside_zone_company_ids(
+                current
+            )
+            if excluded_company_ids:
+                domain &= Domain("company_ids", "not in", excluded_company_ids)
         if current:
-            domain = [*domain, ("id", "!=", current.id)]
+            domain &= Domain("id", "!=", current.id)
+        if query:
+            # Narrowing only: visibility still comes entirely from the
+            # website-derived domain above.
+            domain &= Domain("name", "ilike", query)
 
         # SEARCHED IN THE TARGET'S CONTEXT, not the visitor's. The domain alone
         # is not enough: `website_sale_marketplace` translates the `company_id`
@@ -77,9 +103,9 @@ class WebsiteSaleComparisonCanarias(http.Controller):
         # "solo en esta tienda" from the Guanarteme shop therefore came back
         # with 83 products instead of the shop's 56 -- the leaf said company 6
         # and the context widened it to the whole neighbourhood.
-        products = Product.with_context(website_id=target.id).search(
-            domain, limit=CANDIDATE_LIMIT, order="name"
-        )
+        Product = Product.with_context(website_id=target.id)
+        total = Product.search_count(domain)
+        products = Product.search(domain, limit=CANDIDATE_LIMIT, order="name")
 
         # Facets are built from what is actually on offer, not from the whole
         # category tree: a filter that returns nothing is worse than no filter.
@@ -102,6 +128,10 @@ class WebsiteSaleComparisonCanarias(http.Controller):
             "scopes": scopes,
             "scope": scope,
             "zone": zone or "",
+            # So the client can say "showing 120 of N" when the pool is
+            # bigger than what the modal renders.
+            "total": total,
+            "limit": CANDIDATE_LIMIT,
         }
 
     def _serialise(self, product, website):

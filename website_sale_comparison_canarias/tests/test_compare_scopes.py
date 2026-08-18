@@ -198,6 +198,57 @@ class TestCompareScopes(TransactionCase):
             self.shop._comparison_scope_website(SCOPE_OTHER_ZONE, zone="atlantis")
         )
 
+    def test_outside_the_zone_is_answered_by_the_portal(self):
+        """One click, no zone named: the portal's catalogue minus the
+        product's neighbourhood (the subtraction is the controller's)."""
+        self.assertEqual(
+            self.shop._comparison_scope_website(
+                SCOPE_OTHER_ZONE, product=self.product
+            ),
+            self.portal,
+        )
+
+    def test_outside_of_no_zone_resolves_to_nothing(self):
+        """A product in no neighbourhood has no outside."""
+        self.assertFalse(
+            self.portal._comparison_scope_website(
+                SCOPE_OTHER_ZONE, product=self.plain_product
+            )
+        )
+
+    # ------------------------------------------------------------------
+    # The product's zone
+    # ------------------------------------------------------------------
+    def test_the_zone_of_a_product_is_the_zone_of_its_merchant(self):
+        """Wherever the visitor is standing, including the portal."""
+        self.assertEqual(
+            self.portal._comparison_product_zone(self.product), "guanarteme"
+        )
+
+    def test_a_product_with_no_zone_falls_back_to_the_websites_zone(self):
+        """So a zone shop keeps answering with itself."""
+        self.assertEqual(
+            self.zone_b._comparison_product_zone(self.plain_product), "tamaraceite"
+        )
+
+    def test_a_product_with_no_zone_on_the_portal_has_none(self):
+        """The merchant's default "canarias" means "no neighbourhood", and
+        the portal has none to fall back to."""
+        self.assertFalse(self.portal._comparison_product_zone(self.plain_product))
+
+    def test_outside_zone_companies_are_the_companies_of_the_products_zone(self):
+        """The exact list ``website._zone_company_ids`` answers with:
+        every company of the zone, the product's own merchant included."""
+        excluded = self.portal._comparison_outside_zone_company_ids(self.product)
+        self.assertIn(self.zone_a_company.id, excluded)
+        self.assertIn(self.shop_company.id, excluded)
+        self.assertNotIn(self.zone_b_company.id, excluded)
+
+    def test_outside_zone_companies_of_a_zoneless_product_are_none(self):
+        self.assertEqual(
+            self.portal._comparison_outside_zone_company_ids(self.plain_product), []
+        )
+
     def test_an_unknown_scope_resolves_to_nothing(self):
         self.assertFalse(self.shop._comparison_scope_website("everything"))
 
@@ -211,9 +262,30 @@ class TestCompareScopes(TransactionCase):
         keys = self._keys(self.shop, self.product)
         self.assertEqual(keys, [SCOPE_ALL, SCOPE_ZONE, SCOPE_OTHER_ZONE, SCOPE_SHOP])
 
-    def test_the_portal_does_not_offer_a_zone_it_is_not_in(self):
-        """There is no "mi zona" on a site that belongs to no neighbourhood."""
-        self.assertNotIn(SCOPE_ZONE, self._keys(self.portal, self.product))
+    def test_the_portal_offers_the_zone_of_the_product(self):
+        """The zone is the PRODUCT's, not the website's.
+
+        The portal belongs to no neighbourhood, but a Guanarteme product seen
+        there still has one -- and that is exactly where the visitor asks the
+        question, because the portal is where every shop's products mix.
+        """
+        scopes = self.portal._comparison_scopes(self.product)
+        keys = [scope["key"] for scope in scopes]
+        self.assertIn(SCOPE_ZONE, keys)
+        zone_scope = next(s for s in scopes if s["key"] == SCOPE_ZONE)
+        self.assertIn(self.zone_a.name, zone_scope["label"])
+
+    def test_without_a_product_the_portal_still_offers_no_zone(self):
+        """No product and no neighbourhood of its own: nothing to scope to."""
+        self.assertNotIn(SCOPE_ZONE, self._keys(self.portal))
+        self.assertNotIn(SCOPE_OTHER_ZONE, self._keys(self.portal))
+
+    def test_a_product_in_no_zone_offers_no_zone_scopes_on_the_portal(self):
+        """Outside of nothing is everything, and "everything" already has
+        its own scope."""
+        keys = self._keys(self.portal, self.plain_product)
+        self.assertNotIn(SCOPE_ZONE, keys)
+        self.assertNotIn(SCOPE_OTHER_ZONE, keys)
 
     def test_a_zone_shop_does_not_offer_its_own_zone_twice(self):
         scopes = self.zone_a._comparison_scopes(self.product)
