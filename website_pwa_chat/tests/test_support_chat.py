@@ -62,6 +62,29 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
     def _support_channels(self):
         return self.env["discuss.channel"].sudo().search([("support_key", "!=", False)])
 
+    def _page_of_our_own(self):
+        """A published page of this suite's own, rendered by website.layout.
+
+        The window and the fab ride ``website.layout``, so any ordinary page
+        proves they ship platform-wide -- but not "/": a fresh database (CI,
+        the throwaway integration runs) has no theme installed and its
+        homepage answers an empty 200, which breaks every presence assertion
+        and silently satisfies every absence one. A page created here renders
+        through the layout on ANY database, themed or bare.
+        """
+        self.env["website.page"].create(
+            {
+                "name": "WPC Plain Page",
+                "url": "/wpc-plain-page",
+                "is_published": True,
+                "type": "qweb",
+                "key": "website_pwa_chat.wpc_plain_page",
+                "arch": '<t t-call="website.layout">'
+                '<div id="wrap"><p>wpc plain page</p></div></t>',
+            }
+        )
+        return "/wpc-plain-page"
+
     def _enable_link(self):
         """Turn the button on WITHOUT poisoning the next test.
 
@@ -218,11 +241,14 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
         # The button rides on the link opt-in, which the fixtures leave off
         # because launch left it off; the window is only reachable through it.
         self._enable_link()
+        page_url = self._page_of_our_own()
         self._forget_guest_cookie()
         before = self._support_channels()
 
-        response = self.url_open("/")
+        response = self.url_open(page_url)
 
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("wpc plain page", response.text)
         self.assertIn("o_cc_chat_window", response.text)
         self.assertIn('data-src="/chat/soporte?frame=1"', response.text)
         self.assertNotIn(
@@ -243,10 +269,17 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
         real link for the visitor with JavaScript off.
         """
         self._enable_link()
+        page_url = self._page_of_our_own()
         self._forget_guest_cookie()
 
-        response = self.url_open("/")
+        response = self.url_open(page_url)
 
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            "o_cc_chat_fab_zone",
+            response.text,
+            "no fab zone on an ordinary page means no button anywhere",
+        )
         fab_zone = response.text.split("o_cc_chat_fab_zone")[1]
         self.assertIn('data-href="/chat/soporte"', fab_zone)
         self.assertIn('role="button"', fab_zone)
