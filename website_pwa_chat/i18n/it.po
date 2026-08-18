@@ -476,6 +476,11 @@ msgstr "E con un account nemmeno questo: i tuoi messaggi vengono pubblicati all'
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
+msgid "Hablar con soporte"
+msgstr "Parla con l'assistenza"
+
+#. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
 msgid "Cerrar el chat"
 msgstr "Chiudi la chat"
 

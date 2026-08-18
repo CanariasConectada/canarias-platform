@@ -476,6 +476,11 @@ msgstr "Und mit einem Konto nicht einmal das: Ihre Nachrichten werden sofort ver
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
+msgid "Hablar con soporte"
+msgstr "Mit dem Support sprechen"
+
+#. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
 msgid "Cerrar el chat"
 msgstr "Chat schließen"
 

@@ -463,8 +463,11 @@
          empty support conversation PER PAGE VIEW across all 218 sites —
          the smoke-test flood of 2026-08-17, industrialised.
 
-         The <a href> is kept underneath: with JavaScript missing or broken
-         the button degrades to what it was, a link to the full page.
+         The button carries the URL in data-href, not href: the interaction
+         arrives in the lazy frontend bundle, and a real href on an unbound
+         fab means a tap navigates away (and opens a guest conversation
+         server-side). A <noscript> twin keeps the real link for the
+         no-JavaScript visitor.
 
          `_chat_support_url()` gates it on the same opt-in as the menu entry
          and builds an absolute URL on the sites that only link to the chat,
@@ -515,9 +518,19 @@
                         t-att-data-src="chat_support_url + '?frame=1'"
                     >&#160;</iframe>
                 </section>
+                <!-- data-href, not href: the interaction lives in the LAZY
+                     frontend bundle, and until it binds a real href makes the
+                     fab a plain link: a tap navigates away and /chat/soporte
+                     creates a guest server-side for every such tap. With the
+                     URL parked in data-href an unbound fab does nothing, and
+                     the <noscript> twin below keeps the no-JavaScript path.
+                     role="button" + tabindex="0" keep it focusable and honest
+                     now that it is no longer a link. -->
                 <a
-                    t-att-href="chat_support_url"
+                    t-att-data-href="chat_support_url"
                     class="o_cc_chat_fab"
+                    role="button"
+                    tabindex="0"
                     aria-label="Hablar con soporte"
                     aria-haspopup="dialog"
                     title="Hablar con soporte"
@@ -525,6 +538,26 @@
                     <i class="fa fa-comments" aria-hidden="true"/>
                     <span class="o_cc_chat_fab_text">Soporte</span>
                 </a>
+                <!-- With JavaScript off the interaction never hides the dead
+                     fab above, so this <style> does, and the real link takes
+                     its place. <noscript> in <body> may carry <style> and
+                     <a> alike. -->
+                <noscript>
+                    <style>
+                        .o_cc_chat_fab[data-href] {
+                            display: none;
+                        }
+                    </style>
+                    <a
+                        t-att-href="chat_support_url"
+                        class="o_cc_chat_fab"
+                        aria-label="Hablar con soporte"
+                        title="Hablar con soporte"
+                    >
+                        <i class="fa fa-comments" aria-hidden="true"/>
+                        <span class="o_cc_chat_fab_text">Soporte</span>
+                    </a>
+                </noscript>
             </div>
         </xpath>
     </template>

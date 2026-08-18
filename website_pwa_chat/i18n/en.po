@@ -476,6 +476,11 @@ msgstr "And with an account, not even that: your messages are published instantl
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
+msgid "Hablar con soporte"
+msgstr "Talk to support"
+
+#. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
 msgid "Cerrar el chat"
 msgstr "Close the chat"
 

@@ -83,6 +83,9 @@
     right: 1rem;
     bottom: 1rem;
     z-index: 1030;
+    // The URL lives in data-href, so without this an anchor that is no
+    // longer a link loses its pointer cursor.
+    cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
@@ -126,8 +129,13 @@
 // offcanvas is neutralised by the theme (`position: static; z-index: auto`),
 // so no stacking order can put it above a fixed button: the button has to
 // leave. `:has()` because the offcanvas and the button live in different
-// branches of the DOM.
-#wrapwrap:has([id^="top_menu_collapse"].show) .o_cc_chat_fab_zone {
+// branches of the DOM. `.showing` too: Bootstrap spends the 0.3s slide in
+// that class before `.show` lands, and the fab must not hover over the
+// panel while it opens. The second selector is the JS fallback -- the
+// interaction toggles it on show/hidden offcanvas events -- so browsers
+// without `:has()` hide the fab all the same.
+#wrapwrap:has([id^="top_menu_collapse"]:is(.show, .showing)) .o_cc_chat_fab_zone,
+.o_cc_chat_fab_zone.o_cc_chat_fab_zone_hidden {
     display: none;
 }
 
@@ -145,6 +153,10 @@
     // Bare min() is intercepted by Odoo's Sass compiler, whose own min()
     // cannot take a calc() argument and fails the ENTIRE frontend bundle.
     width: calc(min(24rem, 100vw - 2rem));
+    // The vh line is the fallback for browsers without dvh; the dvh line
+    // wins where it is understood and tracks the real visible viewport
+    // under mobile browser chrome.
+    height: calc(min(34rem, 100vh - 6.5rem));
     height: calc(min(34rem, 100dvh - 6.5rem));
     overflow: hidden;
     border-radius: 1rem;
@@ -159,6 +171,20 @@
     padding: 0.6rem 1rem;
     background: #714b67;
     color: #fff;
+}
+
+// A bare .btn-close is a ~24px square: too small a target for a thumb.
+// 2.75rem matches .o_cc_chat_support_icon; only the hit area grows -- the
+// glyph is a centred background-image and keeps its size. The negative
+// block margin keeps the header at its former height.
+.o_cc_chat_window_close {
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    margin-block: -0.5rem;
+    margin-inline-end: -0.5rem;
+    background-position: center;
+    flex: 0 0 auto;
 }
 
 .o_cc_chat_window_frame {

@@ -60,9 +60,7 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
         return user
 
     def _support_channels(self):
-        return (
-            self.env["discuss.channel"].sudo().search([("support_key", "!=", False)])
-        )
+        return self.env["discuss.channel"].sudo().search([("support_key", "!=", False)])
 
     def _enable_link(self):
         """Turn the button on WITHOUT poisoning the next test.
@@ -206,11 +204,38 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
 
         self.assertIn("o_cc_chat_window", response.text)
         self.assertIn('data-src="/chat/soporte?frame=1"', response.text)
-        self.assertNotIn('src="/chat/soporte?frame=1"', response.text.replace("data-src", ""))
+        self.assertNotIn(
+            'src="/chat/soporte?frame=1"', response.text.replace("data-src", "")
+        )
         self.assertEqual(
             self._support_channels(),
             before,
             "rendering a page must not open a support conversation",
+        )
+
+    def test_the_fab_is_a_button_with_a_noscript_link_underneath(self):
+        """The fab must not navigate before the (lazy) interaction binds.
+
+        ``data-href`` and no ``href``: a real href makes the unbound fab a
+        plain link, and a tap during the bundle's window navigates away and
+        opens a guest conversation server-side. The <noscript> twin keeps the
+        real link for the visitor with JavaScript off.
+        """
+        self._enable_link()
+        self._forget_guest_cookie()
+
+        response = self.url_open("/")
+
+        fab_zone = response.text.split("o_cc_chat_fab_zone")[1]
+        self.assertIn('data-href="/chat/soporte"', fab_zone)
+        self.assertIn('role="button"', fab_zone)
+        self.assertIn('tabindex="0"', fab_zone)
+        self.assertIn("<noscript>", fab_zone)
+        noscript = fab_zone.split("<noscript>")[1].split("</noscript>")[0]
+        self.assertIn(
+            'href="/chat/soporte"',
+            noscript,
+            "without JavaScript the fallback link is the only working fab",
         )
 
     def test_the_framed_page_strips_the_chrome_and_the_recursion(self):
@@ -351,12 +376,7 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
         support = self._support_channels()[0]
         ordinary = self.channel_general
 
-        rows = (
-            Store()
-            .add(support + ordinary)
-            .get_result()
-            .get("discuss.channel", [])
-        )
+        rows = Store().add(support + ordinary).get_result().get("discuss.channel", [])
         by_id = {row["id"]: row for row in rows}
         self.assertTrue(by_id[support.id]["is_support_channel"])
         self.assertFalse(by_id[ordinary.id]["is_support_channel"])

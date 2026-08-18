@@ -476,6 +476,11 @@ msgstr "A z kontem nawet to nie: Twoje wiadomości są publikowane od razu, bez 
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
+msgid "Hablar con soporte"
+msgstr "Porozmawiaj z pomocą techniczną"
+
+#. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
 msgid "Cerrar el chat"
 msgstr "Zamknij czat"
 

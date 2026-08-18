@@ -33,13 +33,57 @@ export class SupportWindow extends Interaction {
             return;
         }
         this.addListener(this.fabEl, "click", (event) => {
-            // Without JavaScript this listener never runs and the <a href>
-            // does what it always did: navigate to the full page.
+            // The fab carries its URL in data-href, so an unbound button
+            // navigates nowhere; the <noscript> twin in the template keeps
+            // the real link for the no-JavaScript visitor.
             event.preventDefault();
             this.toggle();
         });
+        // role="button" promises keyboard activation, and a data-href anchor
+        // no longer gets it for free from the browser.
+        this.addListener(this.fabEl, "keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                this.toggle();
+            }
+        });
         this.addListener(this.closeEl, "click", () => this.close());
         this.addListener(this.el.ownerDocument, "keydown", (event) => {
+            if (event.key === "Escape" && this.isOpen()) {
+                this.close();
+            }
+        });
+        // Escape must work once focus is INSIDE the frame too: keydown fires
+        // in the iframe's own document, which the page's listener never sees.
+        // Bound after every load because each load is a new document. The
+        // zone portals frame the host site cross-subdomain, where
+        // contentDocument is null -- there the page's own Escape handler
+        // still covers the pre-focus case, and the close button the rest.
+        this.addListener(this.frameEl, "load", () => this.bindFrameEscape());
+        // The stylesheet hides the fab under the open mobile menu with
+        // :has(.show), but Bootstrap spends 0.3s in .showing first and some
+        // browsers have no :has() at all -- there the fab floats over the
+        // offcanvas and steals its last tap. These events bubble to the
+        // document in every browser, so hiding never depends on :has().
+        this.addListener(this.el.ownerDocument, "show.bs.offcanvas", () => {
+            this.el.classList.add("o_cc_chat_fab_zone_hidden");
+        });
+        this.addListener(this.el.ownerDocument, "hidden.bs.offcanvas", () => {
+            this.el.classList.remove("o_cc_chat_fab_zone_hidden");
+        });
+    }
+
+    bindFrameEscape() {
+        let frameDoc = null;
+        try {
+            frameDoc = this.frameEl.contentDocument;
+        } catch {
+            frameDoc = null;
+        }
+        if (!frameDoc) {
+            return;
+        }
+        this.addListener(frameDoc, "keydown", (event) => {
             if (event.key === "Escape" && this.isOpen()) {
                 this.close();
             }
