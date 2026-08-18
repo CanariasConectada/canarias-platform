@@ -46,6 +46,7 @@
             state.selected[2] || state.selected[1] || state.selected[0] || null;
 
         initZoneSelect();
+        initNavSelects();
         initCategoryCascade();
         initAsyncSearch();
         initToolbar();
@@ -55,6 +56,25 @@
                 enhanceSelect(byId(id));
             }
         );
+    }
+
+    // ------------------------------------------------------------------
+    // Navigation selects: any select marked wd-nav-select navigates to the
+    // picked option's value. The generic hook the sidebar bridges (the
+    // facilities filter, and whatever comes next) build on: the server
+    // renders the URLs, this only follows them.
+    // ------------------------------------------------------------------
+    function initNavSelects() {
+        document
+            .querySelectorAll("select.wd-nav-select")
+            .forEach(function (select) {
+                select.addEventListener("change", function () {
+                    if (select.value) {
+                        window.location.href = select.value;
+                    }
+                });
+                enhanceSelect(select);
+            });
     }
 
     // ------------------------------------------------------------------

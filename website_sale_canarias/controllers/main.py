@@ -52,13 +52,16 @@ class WebsiteSaleCanarias(http.Controller):
                     .exists()
                 )
                 if category_record:
-                    # child_of, not an exact match: the sidebar is now two
-                    # levels and picking a main category promises everything
-                    # under it — which is also how core website_sale reads
-                    # ?category= on the full-page render, so the AJAX grid
-                    # and a reload agree.
+                    # child_of over the WHOLE merged group, not the one
+                    # record: the sidebar merges same-named categories into
+                    # one option, so picking "Accesorios" promises every
+                    # merchant's Accesorios and everything under them. The
+                    # full-page render widens the same way (_get_shop_domain
+                    # below), so the AJAX grid and a reload agree.
                     domain &= Domain(
-                        "public_categ_ids", "child_of", category_record.id
+                        "public_categ_ids",
+                        "child_of",
+                        website._wsc_merged_category_ids(category_record.id),
                     )
             if search:
                 domain &= Domain("name", "ilike", search)
@@ -99,9 +102,11 @@ class WebsiteSaleCanarias(http.Controller):
                 "category_id": category_record.id if category_record else None,
                 "category_name": category_record.name if category_record else None,
                 "search": search,
-                "price": {"min": min_value, "max": max_value}
-                if (min_value or max_value)
-                else {},
+                "price": (
+                    {"min": min_value, "max": max_value}
+                    if (min_value or max_value)
+                    else {}
+                ),
                 "filters_active": bool(
                     category_record or search or min_value or max_value
                 ),

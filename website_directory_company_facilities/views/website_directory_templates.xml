@@ -26,20 +26,43 @@
                            t-att-href="facility_filter_clear_url"
                            class="small text-decoration-none">Quitar</a>
                     </div>
+                    <!-- One dropdown per subdivision, the selection shown as
+                         removable pills right below it: chips-per-option do
+                         not scale past a handful of facilities, a dropdown
+                         does. Picking an option navigates to the URL the
+                         controller built for it (wd-nav-select), so the
+                         filter still survives shared URLs and bookmarks and
+                         degrades to a no-op without JavaScript. -->
                     <t t-foreach="facility_filter_groups" t-as="group">
                         <div class="mb-3">
-                            <div class="text-muted small text-uppercase fw-semibold mb-2">
+                            <label class="text-muted small text-uppercase fw-semibold mb-2 d-block"
+                                   t-att-for="'o_wdcf_add_%s' % group['id']">
                                 <i t-if="group['icon']"
                                    t-attf-class="fa #{group['icon']} me-1"/>
                                 <t t-out="group['name']"/>
-                            </div>
-                            <div class="d-flex flex-wrap gap-2">
-                                <t t-foreach="group['facilities']" t-as="facility">
+                            </label>
+                            <t t-set="wdcf_available"
+                               t-value="[item for item in group['facilities'] if not item['selected']]"/>
+                            <t t-set="wdcf_selected"
+                               t-value="[item for item in group['facilities'] if item['selected']]"/>
+                            <select t-if="wdcf_available"
+                                    t-att-id="'o_wdcf_add_%s' % group['id']"
+                                    class="form-select wd-nav-select o_wdcf_add">
+                                <option value="" selected="selected">Todos</option>
+                                <t t-foreach="wdcf_available" t-as="facility">
+                                    <option t-att-value="facility['url']"
+                                            t-esc="facility['name']"/>
+                                </t>
+                            </select>
+                            <div t-if="wdcf_selected" class="d-flex flex-wrap gap-2 mt-2">
+                                <t t-foreach="wdcf_selected" t-as="facility">
                                     <a t-att-href="facility['url']"
-                                       t-attf-class="btn btn-sm #{'btn-primary' if facility['selected'] else 'btn-outline-secondary'}"
-                                       t-att-aria-pressed="'true' if facility['selected'] else 'false'">
+                                       class="btn btn-sm btn-primary o_wdcf_pill"
+                                       aria-pressed="true"
+                                       t-att-aria-label="'Quitar filtro %s' % facility['name']">
                                         <i t-attf-class="fa #{facility['icon']} me-1"/>
                                         <t t-out="facility['name']"/>
+                                        <i class="fa fa-times ms-2" role="presentation"/>
                                     </a>
                                 </t>
                             </div>

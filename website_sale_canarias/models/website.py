@@ -7,6 +7,18 @@ from odoo import models
 from odoo.fields import Domain
 
 
+def _wsc_merge_key(name):
+    """The identity under which same-named categories merge.
+
+    Each merchant creates their own "Accesorios" category, so the aggregated
+    shop would otherwise offer the same label five or six times. Categories
+    merge when their names match after trimming, collapsing inner whitespace
+    and case-folding — nothing smarter, because a visitor reading two options
+    spelled identically cannot tell them apart either.
+    """
+    return " ".join((name or "").split()).casefold()
+
+
 class Website(models.Model):
     _inherit = "website"
 
@@ -57,7 +69,7 @@ class Website(models.Model):
         return categories.sorted(lambda category: (category.name or "").lower())
 
     def _wsc_shop_category_tree(self):
-        """The shop's categories in two levels, nothing pruned.
+        """The shop's categories in two levels, merged by name, nothing pruned.
 
         Same category SET as ``_wsc_shop_categories`` — this only changes the
         shape. Each category hangs under its topmost ancestor that is itself
@@ -66,8 +78,16 @@ class Website(models.Model):
         level, so every category the flat sidebar listed is still offered:
         either as a main category or as a subcategory of one.
 
-        Returns a list of ``{"category": record, "children": [records]}``
-        nodes, both levels sorted alphabetically like the flat list was.
+        Categories spelling the same name (see ``_wsc_merge_key``) collapse
+        into ONE option per level: every merchant creates their own
+        "Accesorios", and the aggregated shop must offer one "Accesorios"
+        that means all of them. Each node therefore carries the whole
+        recordset it stands for, plus a stable representative ``id`` (the
+        lowest) that the URL and the ``<option>`` values use.
+
+        Returns a list of ``{"id": int, "name": str, "categories": recordset,
+        "children": [same-shaped dicts]}`` nodes, both levels sorted
+        alphabetically like the flat list was.
         """
         self.ensure_one()
         categories = self._wsc_shop_categories()
@@ -82,18 +102,45 @@ class Website(models.Model):
                     top = node
             return top
 
-        nodes = {}
+        def merged_entry(records):
+            # Sorted so the representative id — what the URL carries — does
+            # not depend on which merchant's record the loop met first.
+            records = records.sorted("id")
+            return {
+                "id": records[0].id,
+                "name": records[0].name,
+                "categories": records,
+            }
+
+        raw_nodes = {}
         for category in categories:
             top = topmost_listed_ancestor(category)
-            node = nodes.setdefault(top.id, {"category": top, "children": []})
+            node = raw_nodes.setdefault(top.id, {"top": top, "children": []})
             if category.id != top.id:
                 node["children"].append(category)
-        tree = sorted(
-            nodes.values(),
-            key=lambda node: (node["category"].name or "").lower(),
-        )
-        for node in tree:
-            node["children"].sort(key=lambda child: (child.name or "").lower())
+
+        empty = self.env["product.public.category"]
+        merged_tops = {}
+        for raw in raw_nodes.values():
+            key = _wsc_merge_key(raw["top"].name)
+            slot = merged_tops.setdefault(key, {"tops": empty, "children": empty})
+            slot["tops"] |= raw["top"]
+            for child in raw["children"]:
+                slot["children"] |= child
+
+        tree = []
+        for slot in merged_tops.values():
+            node = merged_entry(slot["tops"])
+            child_groups = {}
+            for child in slot["children"]:
+                child_groups.setdefault(_wsc_merge_key(child.name), empty)
+                child_groups[_wsc_merge_key(child.name)] |= child
+            node["children"] = sorted(
+                (merged_entry(records) for records in child_groups.values()),
+                key=lambda entry: (entry["name"] or "").lower(),
+            )
+            tree.append(node)
+        tree.sort(key=lambda entry: (entry["name"] or "").lower())
         return tree
 
     def _wsc_shop_category_json(self, tree=None):
@@ -109,10 +156,10 @@ class Website(models.Model):
         return json.dumps(
             [
                 {
-                    "id": node["category"].id,
-                    "name": node["category"].name,
+                    "id": node["id"],
+                    "name": node["name"],
                     "children": [
-                        {"id": child.id, "name": child.name}
+                        {"id": child["id"], "name": child["name"]}
                         for child in node["children"]
                     ],
                 }
@@ -123,9 +170,11 @@ class Website(models.Model):
     def _wsc_selected_category_path(self, category, tree=None):
         """Where ``category`` sits in the two-level tree: ``(top_id, sub_id)``.
 
-        ``sub_id`` is ``None`` when the selection IS a top level. Both are
-        ``None`` when nothing is selected or the category is not offered by
-        this shop (a hand-typed ``?category=`` for another site's category).
+        Both are REPRESENTATIVE ids: selecting any member of a merged group
+        highlights the group's single option. ``sub_id`` is ``None`` when the
+        selection IS a top level. Both are ``None`` when nothing is selected
+        or the category is not offered by this shop (a hand-typed
+        ``?category=`` for another site's category).
         """
         self.ensure_one()
         if not category:
@@ -133,11 +182,31 @@ class Website(models.Model):
         if tree is None:
             tree = self._wsc_shop_category_tree()
         for node in tree:
-            if node["category"].id == category.id:
-                return (category.id, None)
-            if category.id in [child.id for child in node["children"]]:
-                return (node["category"].id, category.id)
+            if category.id in node["categories"].ids:
+                return (node["id"], None)
+            for child in node["children"]:
+                if category.id in child["categories"].ids:
+                    return (node["id"], child["id"])
         return (None, None)
+
+    def _wsc_merged_category_ids(self, category_id):
+        """Every category id the option holding ``category_id`` stands for.
+
+        The filter's promise is the LABEL, not the record: asking for
+        "Accesorios" must return every merchant's Accesorios, so whoever
+        builds a category domain widens the picked id to its whole merged
+        group. An id this shop does not offer comes back alone — the domain
+        stays valid and the shop's own product domain keeps it harmless.
+        """
+        self.ensure_one()
+        tree = self._wsc_shop_category_tree()
+        for node in tree:
+            if category_id in node["categories"].ids:
+                return node["categories"].ids
+            for child in node["children"]:
+                if category_id in child["categories"].ids:
+                    return child["categories"].ids
+        return [category_id]
 
     def _wsc_zone_sites(self):
         """The marketplace websites the zone switcher offers, portal first.

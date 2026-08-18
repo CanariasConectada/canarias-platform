@@ -115,9 +115,22 @@ class WebsiteDirectoryFacilities(WebsiteDirectory):
         # catalogue would go on offering its chips here long after it stopped
         # appearing on the shops' own pages. Same guard, same reason, as
         # `res.company._facilities_by_category`.
-        return entries.company_id.facility_ids.filtered(
+        pool = entries.company_id.facility_ids.filtered(
             lambda facility: facility.active and facility.category_id.active
         )
+        if not pool:
+            # Nothing to derive chips from — the other filters (a
+            # certification, a search) left zero results, or the shops that
+            # did come back declare no facilities. The panel must not vanish
+            # with them: it is part of the page's navigation, and hiding it
+            # strands the visitor on the page they most need to back out of.
+            # Fall back to the whole catalogue.
+            pool = (
+                request.env["company.facility"]
+                .sudo()
+                .search([("category_id.active", "=", True)])
+            )
+        return pool
 
     def _facility_url(self, url, kw, facility_ids):
         """The current address with the ticks replaced by ``facility_ids``.

@@ -114,3 +114,32 @@ class TestFacilityFilter(TransactionCase):
             "/comercio", {"search": "muebles", "facility": str(self.ramp.id)}, []
         )
         self.assertEqual(url, "/comercio?search=muebles")
+
+    def test_an_empty_listing_still_offers_the_whole_panel(self):
+        """A filter combination with zero results must not eat the panel.
+
+        The chips are derived from the result set, so a certification or a
+        search that matches nothing would otherwise derive an empty panel —
+        and the page would lose its navigation exactly when the visitor
+        needs it to back out. Asked for on 2026-08-18: "Desaparece el filtro
+        de abajo cuando colocas sostenibilidad".
+        """
+        with MockRequest(self.env, website=self.website):
+            pool = self.controller._facility_pool(
+                None, {"search": "wdcf-nada-se-llama-asi-9317"}
+            )
+        self.assertIn(self.ramp, pool)
+        self.assertIn(self.parking, pool)
+
+    def test_groups_split_selection_from_offer(self):
+        """The template hangs the dropdown on the unselected entries and the
+        pills on the selected ones; the controller must mark each entry."""
+        with MockRequest(self.env, website=self.website):
+            groups = self.controller._facility_filter_groups(
+                [self.ramp.id], None, "/comercio", {"facility": str(self.ramp.id)}
+            )
+        by_name = {
+            entry["name"]: entry for group in groups for entry in group["facilities"]
+        }
+        self.assertTrue(by_name["Rampa"]["selected"])
+        self.assertFalse(by_name["Aparcamiento"]["selected"])

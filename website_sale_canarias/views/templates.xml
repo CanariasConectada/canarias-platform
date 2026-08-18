@@ -183,13 +183,13 @@
                     <option value="" t-att-selected="'selected' if not wsc_path[0] else None">Todas las categorías</option>
                     <t t-foreach="wsc_tree" t-as="wsc_node">
                         <option
-                            t-att-value="wsc_node['category'].id"
-                            t-att-selected="'selected' if wsc_path[0] == wsc_node['category'].id else None"
-                            t-esc="wsc_node['category'].name"
+                            t-att-value="wsc_node['id']"
+                            t-att-selected="'selected' if wsc_path[0] == wsc_node['id'] else None"
+                            t-esc="wsc_node['name']"
                         />
                     </t>
                 </select>
-                <t t-set="wsc_selected_nodes" t-value="[node for node in wsc_tree if node['category'].id == wsc_path[0]]"/>
+                <t t-set="wsc_selected_nodes" t-value="[node for node in wsc_tree if node['id'] == wsc_path[0]]"/>
                 <t t-set="wsc_selected_node" t-value="wsc_selected_nodes[0] if wsc_selected_nodes else None"/>
                 <div
                     t-att-id="'wsc_subcategory_wrap' + wsc_sfx"
@@ -203,9 +203,9 @@
                         <t t-if="wsc_selected_node">
                             <t t-foreach="wsc_selected_node['children']" t-as="wsc_child">
                                 <option
-                                    t-att-value="wsc_child.id"
-                                    t-att-selected="'selected' if wsc_path[1] == wsc_child.id else None"
-                                    t-esc="wsc_child.name"
+                                    t-att-value="wsc_child['id']"
+                                    t-att-selected="'selected' if wsc_path[1] == wsc_child['id'] else None"
+                                    t-esc="wsc_child['name']"
                                 />
                             </t>
                         </t>

@@ -109,14 +109,19 @@ class TestShopDesign(HttpCase):
     def test_category_tree_hangs_children_under_their_parent(self):
         child, _product = self._add_child_category_product()
         tree = self.portal._wsc_shop_category_tree()
-        node = [n for n in tree if n["category"] == self.category]
+        node = [n for n in tree if self.category in n["categories"]]
         self.assertTrue(node, "the parent category must be a top level")
-        self.assertIn(child, node[0]["children"])
+        self.assertIn(
+            child,
+            [c for entry in node[0]["children"] for c in entry["categories"]],
+        )
         # Nothing pruned: the flat set and the tree carry the same categories.
         flat = self.portal._wsc_shop_categories()
-        in_tree = {n["category"].id for n in tree}
+        in_tree = set()
         for n in tree:
-            in_tree.update(c.id for c in n["children"])
+            in_tree.update(n["categories"].ids)
+            for entry in n["children"]:
+                in_tree.update(entry["categories"].ids)
         self.assertEqual(set(flat.ids), in_tree)
 
     def test_selected_category_path_places_the_selection(self):
@@ -163,12 +168,18 @@ class TestShopDesign(HttpCase):
             }
         )
         tree = self.portal._wsc_shop_category_tree()
-        node = [n for n in tree if n["category"] == self.category]
+        node = [n for n in tree if self.category in n["categories"]]
         self.assertTrue(node)
-        self.assertIn(leaf, node[0]["children"])
+        self.assertIn(
+            leaf,
+            [c for entry in node[0]["children"] for c in entry["categories"]],
+        )
+        top_ids = set()
+        for n in tree:
+            top_ids.update(n["categories"].ids)
         self.assertNotIn(
-            middle,
-            [n["category"] for n in tree],
+            middle.id,
+            top_ids,
             "a category no product carries is not a filter option",
         )
 
@@ -178,6 +189,79 @@ class TestShopDesign(HttpCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("wsc_subcategory_select", response.text)
         self.assertIn(child.name, response.text)
+
+    # ------------------------------------------------------------------
+    # Same-named categories merge into one option
+    # ------------------------------------------------------------------
+
+    def _add_same_named_categories(self):
+        """Two same-named categories, each with one product filed under it —
+        the duplication every real merchant onboarding produced (each shop
+        creates its own 'Accesorios')."""
+        twin_a = self.env["product.public.category"].create({"name": "WSC Accesorios"})
+        # Different spacing and case on purpose: merging must survive the
+        # ways two humans type the same label.
+        twin_b = self.env["product.public.category"].create({"name": "wsc  ACCESORIOS"})
+        products = self.env["product.template"].create(
+            [
+                {
+                    "name": "WSC Correa Artesana",
+                    "sale_ok": True,
+                    "is_published": True,
+                    "list_price": 9.0,
+                    "company_ids": [(6, 0, [self.merchant.id])],
+                    "public_categ_ids": [(6, 0, [twin_a.id])],
+                    "website_sequence": 2,
+                },
+                {
+                    "name": "WSC Funda de Timple",
+                    "sale_ok": True,
+                    "is_published": True,
+                    "list_price": 19.0,
+                    "company_ids": [(6, 0, [self.merchant.id])],
+                    "public_categ_ids": [(6, 0, [twin_b.id])],
+                    "website_sequence": 3,
+                },
+            ]
+        )
+        return twin_a, twin_b, products
+
+    def test_same_named_categories_become_one_option(self):
+        twin_a, twin_b, _products = self._add_same_named_categories()
+        tree = self.portal._wsc_shop_category_tree()
+        holding = [
+            n for n in tree if twin_a in n["categories"] or twin_b in n["categories"]
+        ]
+        self.assertEqual(len(holding), 1, "one label, one option")
+        self.assertIn(twin_a, holding[0]["categories"])
+        self.assertIn(twin_b, holding[0]["categories"])
+        # The representative id is the stable, lowest one; both members
+        # resolve to the same merged group.
+        expected = sorted([twin_a.id, twin_b.id])
+        self.assertEqual(holding[0]["id"], expected[0])
+        self.assertEqual(self.portal._wsc_merged_category_ids(twin_a.id), expected)
+        self.assertEqual(self.portal._wsc_merged_category_ids(twin_b.id), expected)
+
+    def test_ajax_merged_category_returns_both_merchants_products(self):
+        twin_a, twin_b, products = self._add_same_named_categories()
+        result = self._ajax("?category=%s" % min(twin_a.id, twin_b.id))
+        for product in products:
+            self.assertIn(product.name, result["html"])
+        # Picking the NON-representative member widens all the same: the
+        # promise belongs to the label, not to whichever record carries it.
+        result = self._ajax("?category=%s" % max(twin_a.id, twin_b.id))
+        for product in products:
+            self.assertIn(product.name, result["html"])
+
+    def test_full_page_reload_keeps_the_merged_group(self):
+        """A reload renders through core's _get_shop_domain: without the
+        widening override the grid would narrow to one record's subtree and
+        disagree with the AJAX view of the same select."""
+        twin_a, twin_b, products = self._add_same_named_categories()
+        response = self.url_open("/shop?category=%s" % min(twin_a.id, twin_b.id))
+        self.assertEqual(response.status_code, 200)
+        for product in products:
+            self.assertIn(product.name, response.text)
 
     # ------------------------------------------------------------------
     # The mobile toolbar and the offcanvas

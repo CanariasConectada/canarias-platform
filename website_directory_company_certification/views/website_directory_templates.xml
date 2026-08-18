@@ -44,8 +44,15 @@
                             <a t-attf-href="{{ base_url }}?certification={{ '' if selected_certification == cert_type.code else cert_type.code }}"
                                t-attf-class="btn btn-sm text-start {{
                                    'btn-primary' if selected_certification == cert_type.code else 'btn-outline-secondary'
-                               }}">
+                               }}"
+                               t-att-aria-pressed="'true' if selected_certification == cert_type.code else 'false'"
+                               t-att-aria-label="('Quitar filtro %s' % cert_type.name) if selected_certification == cert_type.code else None">
                                 <t t-esc="cert_type.name"/>
+                                <!-- The selected chip toggles OFF on click; the
+                                     cross is what tells the visitor so. -->
+                                <i t-if="selected_certification == cert_type.code"
+                                   class="fa fa-times float-end mt-1"
+                                   role="presentation"/>
                             </a>
                         </t>
                     </div>
