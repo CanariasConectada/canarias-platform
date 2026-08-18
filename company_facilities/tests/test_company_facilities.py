@@ -113,17 +113,18 @@ class TestCompanyFacilities(TransactionCase):
         )
         self.assertIn("Facilities and services", rendered)
 
-    def test_a_new_shop_does_not_get_the_block_by_itself(self):
-        """The switch has to stay a decision, not a default.
+    def test_a_new_shop_gets_the_block_at_birth(self):
+        """A new shop is born with the full corporate format.
 
-        It used to read `self.company`, which is the main company and has a
-        website, so the 2026-08-17 migration that switched the block on for
-        every existing shop turned this assertion into a lie about the field.
-        What still has to be true is the narrower thing: a shop created from
-        now on starts with the block off, and somebody turns it on.
+        This reverses the earlier "the switch has to stay a decision"
+        stance on purpose: the 2026-08-17 migration switched the block on
+        for every existing shop, so a shop created after it must not be the
+        odd one out. Safe as a default for the same reason the migration
+        was safe: the block renders ``t-if="facility_groups"``, so a shop
+        that has ticked nothing still shows nothing.
         """
         fresh = self.env["res.company"].create({"name": "Comercio Recién Creado"})
-        self.assertFalse(fresh.facility_block_enabled)
+        self.assertTrue(fresh.facility_block_enabled)
 
     def test_the_existing_shops_were_switched_on_deliberately(self):
         """ "habilita el tema por favor" (2026-08-17).

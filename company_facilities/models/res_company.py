@@ -24,10 +24,13 @@ class ResCompany(models.Model):
     )
     facility_block_enabled = fields.Boolean(
         string="Show facilities on the website",
-        help="Adds the block to this shop's site, above the footer. Off by "
-        "default: the homepages were built page by page in the website "
-        "builder, and nothing may appear on one of them without its owner "
-        "asking for it.",
+        default=True,
+        help="Adds the block to this shop's site, above the footer. On by "
+        "default: a new merchant company is born with the full corporate "
+        "format, and the block is harmless while the shop has ticked no "
+        "facility (it renders nothing). Existing shops were switched on by "
+        "the 2026-08-17 migration; untick it to hide the block on a "
+        "specific shop.",
     )
     facility_count = fields.Integer(compute="_compute_facility_count")
 
