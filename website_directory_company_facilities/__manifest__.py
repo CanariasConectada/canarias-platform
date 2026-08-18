@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website Directory - Company Facilities",
-    "version": "19.0.1.1.0",
+    "version": "19.0.1.2.0",
     "category": "Website",
     "summary": "Filter the business directory by the facilities a shop offers",
     "description": """
