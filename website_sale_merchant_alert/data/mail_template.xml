@@ -5,7 +5,8 @@
             <field name="name">Website Order: Merchant Alert</field>
             <field name="model_id" ref="sale.model_sale_order" />
             <field name="subject">Nuevo pedido {{ object.name }} en tu tienda</field>
-            <field name="email_to">{{ ctx.get('merchant_email') }}</field>
+            <!-- email_to is supplied via email_values at send time; a ctx
+                 lookup here silently rendered empty through send_mail. -->
             <field name="lang">{{ object.company_id.partner_id.lang }}</field>
             <field name="body_html" type="html">
 <div style="margin: 0px; padding: 0px; font-size: 14px;">

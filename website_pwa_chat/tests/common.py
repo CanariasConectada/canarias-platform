@@ -109,13 +109,16 @@ class WebsiteChatMixin(ZoneChannelMixin):
         return self.url_open("/chat/%s" % channel.id, cookies=self._cookies_for(guest))
 
     def _channel_link(self, channel):
-        """The exact href the index renders for a channel.
+        """A regex for the href the index renders for a channel.
 
-        Compared with the closing quote included so that ``/chat/1`` cannot
-        match inside ``/chat/12`` -- the ids of four records seeded one after
-        another are exactly the range where that silently happens.
+        The closing quote is included so that ``/chat/1`` cannot match
+        inside ``/chat/12`` -- the ids of four records seeded one after
+        another are exactly the range where that silently happens. A
+        multilang database prefixes the language code for a non-default
+        visitor language, so the pattern tolerates an optional prefix;
+        use assertRegex/assertNotRegex with it.
         """
-        return 'href="/chat/%s"' % channel.id
+        return r'href="(?:/[a-z]{2}(?:_[A-Z]{2})?)?/chat/%s"' % channel.id
 
     # ------------------------------------------------------------------
     # Posting and moderating

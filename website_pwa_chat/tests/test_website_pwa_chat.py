@@ -83,14 +83,14 @@ class TestWebsiteChat(WebsiteChatMixin, HttpCase):
         """
         response = self._get_index()
         self.assertEqual(response.status_code, 200)
-        self.assertIn(self._channel_link(self.channel_general), response.text)
+        self.assertRegex(response.text, self._channel_link(self.channel_general))
         for channel in (
             self.channel_guanarteme,
             self.channel_tamaraceite,
             self.channel_lomo,
         ):
             with self.subTest(channel=channel.name):
-                self.assertNotIn(self._channel_link(channel), response.text)
+                self.assertNotRegex(response.text, self._channel_link(channel))
 
     def test_registered_user_is_offered_all_four_channels(self):
         """The control without which the test above proves nothing.
@@ -107,7 +107,7 @@ class TestWebsiteChat(WebsiteChatMixin, HttpCase):
         self.assertEqual(response.status_code, 200)
         for channel in self.managed_channels:
             with self.subTest(channel=channel.name):
-                self.assertIn(self._channel_link(channel), response.text)
+                self.assertRegex(response.text, self._channel_link(channel))
 
     def test_an_unpublished_channel_is_not_offered_to_a_user_who_can_read_it(self):
         """The publication flag has to be the thing that decides, not the ACL.
@@ -148,14 +148,14 @@ class TestWebsiteChat(WebsiteChatMixin, HttpCase):
         response = self.url_open("/chat")
 
         self.assertEqual(response.status_code, 200)
-        self.assertNotIn(
-            self._channel_link(internal_channel),
+        self.assertNotRegex(
             response.text,
+            self._channel_link(internal_channel),
             "an unpublished channel must never reach the community page",
         )
-        self.assertIn(
-            self._channel_link(self.channel_general),
+        self.assertRegex(
             response.text,
+            self._channel_link(self.channel_general),
             "and the published one still has to be there",
         )
 
@@ -362,7 +362,9 @@ class TestWebsiteChat(WebsiteChatMixin, HttpCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(UNDER_REVIEW, response.text)
         self.assertIn(HELD_BODY, response.text)
-        self.assertIn("Crear mi cuenta", response.text)
+        # The signup CTA, asserted by destination rather than by its
+        # translated label so the test survives any database language.
+        self.assertIn("/web/signup", response.text)
 
     def test_a_held_message_is_invisible_to_every_other_visitor(self):
         """The hold has to be a hold, not a badge on a published message.

@@ -51,6 +51,11 @@ class SaleOrder(models.Model):
             partners[:1].email if partners else False
         )
         if template and recipient:
-            template.sudo().with_context(merchant_email=recipient).send_mail(
-                self.id, email_layout_xmlid="mail.mail_notification_light"
+            # email_values, not context: send_mail does not carry the
+            # context into field rendering, and an empty email_to falls
+            # back to the record's default recipients - the buyer.
+            template.sudo().send_mail(
+                self.id,
+                email_values={"email_to": recipient},
+                email_layout_xmlid="mail.mail_notification_light",
             )
