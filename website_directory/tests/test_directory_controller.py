@@ -62,6 +62,35 @@ class TestDirectoryController(HttpCase):
         self.assertIn("WDC Alpha Bakery", response.text)
         self.assertIn("WDC Beta Cafe", response.text)
 
+    def test_sidebar_levels_zone_then_category_then_extras(self):
+        """The filters read top-down as levels: where (zone), then what
+        (category), then the bridge modules' refinements underneath."""
+        response = self.url_open("/comercio")
+        self.assertEqual(response.status_code, 200)
+        zone = response.text.find('id="wd_zone_card"')
+        category = response.text.find('id="wd_category_card"')
+        extras = response.text.find('id="o_wd_sidebar_extra"')
+        self.assertGreater(zone, -1)
+        self.assertGreater(category, zone, "category filter must follow zone")
+        self.assertGreater(extras, category, "bridge filters close the column")
+
+    def test_category_filter_offers_every_active_root(self):
+        """No pruning: every active root category is an option; an archived
+        one is not offered."""
+        archived = self.env["res.company.category"].create(
+            {"name": "WDC Archived Root", "type": "view", "active": False}
+        )
+        response = self.url_open("/comercio")
+        self.assertEqual(response.status_code, 200)
+        roots = (
+            self.env["res.company.category"]
+            .sudo()
+            .search([("parent_id", "=", False)])
+        )
+        self.assertNotIn(archived, roots)
+        self.assertIn("WDC Root", response.text)
+        self.assertNotIn("WDC Archived Root", response.text)
+
     def test_browser_title_does_not_repeat_the_site_name(self):
         """The tab says where you are; the site name is appended by the layout.
 
