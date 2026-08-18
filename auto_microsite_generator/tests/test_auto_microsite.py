@@ -27,16 +27,121 @@ class TestAutoMicrosite(TransactionCase):
 
         page = self._homepage_page(website)
         self.assertTrue(page, "A homepage at '/' must exist.")
-        self.assertEqual(
-            page.view_id.key,
-            f"auto_microsite_generator.homepage_{company.id}",
-        )
+        if hasattr(company, "_publish_microsite_homepage"):
+            # partner_microsite_manager installed: born with the rich
+            # corporate homepage instead of the generic hero.
+            expected_key = f"partner_microsite_manager.microsite_homepage_{company.id}"
+        else:
+            expected_key = f"auto_microsite_generator.homepage_{company.id}"
+        self.assertEqual(page.view_id.key, expected_key)
         self.assertTrue(page.is_published)
 
         directory = self.env["website.menu"].search(
             [("website_id", "=", website.id), ("url", "=", "/comercio")]
         )
         self.assertTrue(directory, "The Directory menu entry must be created.")
+
+    def test_new_website_is_born_with_the_corporate_look(self):
+        company = self.env["res.company"].create({"name": "Themed Shop"})
+        website = company.website_id
+        if "is_microsite_themed" not in website._fields:
+            self.skipTest("partner_microsite_manager is not installed")
+        self.assertTrue(
+            website.is_microsite_themed,
+            "A new microsite must be born with the corporate look.",
+        )
+
+    def test_domain_is_built_from_the_suffix_parameter(self):
+        self.env["ir.config_parameter"].sudo().set_param(
+            "auto_microsite_generator.domain_suffix", ".canariasconectada.es"
+        )
+        company = self.env["res.company"].create({"name": "Routed Shop"})
+        self.assertEqual(
+            company.website_id.domain,
+            "https://routedshop.canariasconectada.es",
+            "A new microsite must be born routable under the production "
+            "domain convention.",
+        )
+
+    def test_empty_suffix_parameter_warns_about_unroutable_site(self):
+        self.env["ir.config_parameter"].sudo().set_param(
+            "auto_microsite_generator.domain_suffix", ""
+        )
+        logger_name = "odoo.addons.auto_microsite_generator.models.res_company"
+        with self.assertLogs(logger_name, level="WARNING") as capture:
+            company = self.env["res.company"].create({"name": "Unroutable Shop"})
+        self.assertFalse(company.website_id.domain)
+        self.assertTrue(
+            any("domain_suffix" in message for message in capture.output),
+            "An empty suffix must be flagged loudly: the site is unroutable.",
+        )
+
+    def test_zone_dropdown_is_created(self):
+        company = self.env["res.company"].create({"name": "Zoned Shop"})
+        website = company.website_id
+        parent = self.env["website.menu"].search(
+            [("website_id", "=", website.id), ("name", "=", "Zonas Comerciales")]
+        )
+        self.assertEqual(len(parent), 1, "The zone dropdown must exist once.")
+        self.assertEqual(parent.url, "#")
+        self.assertEqual(parent.sequence, 40)
+        children = parent.child_id.sorted(key=lambda m: m.sequence)
+        self.assertEqual(
+            [(menu.name, menu.url) for menu in children],
+            [
+                ("Todas", "https://canariasconectada.es"),
+                ("Guanarteme", "https://guanarteme.canariasconectada.es"),
+                ("Lomo Los Frailes", "https://lomolosfrailes.canariasconectada.es"),
+                ("Tamaraceite", "https://tamaraceite.canariasconectada.es"),
+            ],
+        )
+
+    def test_stock_event_and_course_menus_are_pruned(self):
+        company = self.env["res.company"].create({"name": "Pruned Shop"})
+        website = company.website_id
+        self.assertFalse(
+            self.env["website.menu"].search_count(
+                [
+                    ("website_id", "=", website.id),
+                    ("url", "in", ["/event", "/slides"]),
+                ]
+            ),
+            "The stock Events/Courses entries must not survive on a new "
+            "microsite.",
+        )
+
+    def test_prune_never_touches_an_existing_website(self):
+        company = (
+            self.env["res.company"]
+            .with_context(no_microsite_auto=True)
+            .create({"name": "Curated Menu Shop"})
+        )
+        website = self.env["website"].create(
+            {"name": "Curated Menu WS", "company_id": company.id}
+        )
+        # website_id is a stored compute WITHOUT depends: flag it for
+        # recomputation so the generation pass sees the EXISTING website
+        # (a bare invalidation would leave it stale at False).
+        self.env.add_to_compute(company._fields["website_id"], company)
+        self.assertEqual(company.website_id, website)
+        root = self.env["website.menu"].search(
+            [("website_id", "=", website.id), ("parent_id", "=", False)],
+            limit=1,
+        )
+        eventos = self.env["website.menu"].create(
+            {
+                "name": "Eventos",
+                "url": "/event",
+                "parent_id": root.id,
+                "website_id": website.id,
+            }
+        )
+        # Re-running generation on an EXISTING website must stay create-only.
+        company._auto_generate_microsite()
+        self.assertTrue(
+            eventos.exists(),
+            "The prune pass must never run on an already existing website.",
+        )
 
     def test_homepage_renders_company_name(self):
         company = self.env["res.company"].create({"name": "Rendered Shop"})
@@ -55,12 +160,23 @@ class TestAutoMicrosite(TransactionCase):
         before = Menu.search_count(
             [("website_id", "=", website.id), ("url", "=", "/comercio")]
         )
+        zone_domain = [
+            ("website_id", "=", website.id),
+            ("name", "=", "Zonas Comerciales"),
+        ]
+        zone_before = Menu.search_count(zone_domain)
         company._auto_generate_microsite()
         after = Menu.search_count(
             [("website_id", "=", website.id), ("url", "=", "/comercio")]
         )
         self.assertEqual(before, 1)
         self.assertEqual(after, 1, "Re-running must not duplicate menu entries.")
+        self.assertEqual(zone_before, 1)
+        self.assertEqual(
+            Menu.search_count(zone_domain),
+            1,
+            "Re-running must not duplicate the zone dropdown.",
+        )
 
     # ------------------------------------------------------------------
     # Guards
@@ -240,6 +356,19 @@ class TestAutoMicrosite(TransactionCase):
     # Fix 4: uninstall must drop the runtime-generated homepages.
     # ------------------------------------------------------------------
     def test_uninstall_hook_removes_generated_homepages(self):
+        # The hook cleans the GENERIC homepages (module key prefix). With
+        # partner_microsite_manager installed a new company is born with the
+        # rich homepage instead, so suppress the upgrade step to exercise
+        # the generic path the hook is responsible for.
+        res_company = type(self.env["res.company"])
+        if hasattr(res_company, "_publish_microsite_homepage"):
+            patcher = patch.object(
+                res_company,
+                "_publish_microsite_homepage",
+                lambda self, website: None,
+            )
+            patcher.start()
+            self.addCleanup(patcher.stop)
         company = self.env["res.company"].create({"name": "Uninstall Shop"})
         page = self._homepage_page(company.website_id)
         view = page.view_id

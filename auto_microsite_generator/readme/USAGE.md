@@ -16,10 +16,12 @@ Two system parameters (Settings > Technical > Parameters > System Parameters):
 
 * `auto_microsite_generator.enabled` (default `True`): set to `False` to turn
   the automatism off globally without uninstalling the module.
-* `auto_microsite_generator.domain_suffix` (default empty): when set (e.g.
-  `.canariasconectada.es`), a default website domain is built from the company
-  name, such as `https://bakery.canariasconectada.es`. Left empty, websites are
-  created without a domain so the data migration can assign the real ones.
+* `auto_microsite_generator.domain_suffix` (seeded to `.canariasconectada.es`,
+  `noupdate`): a default website domain is built from the company name, such
+  as `https://bakery.canariasconectada.es`, so a new microsite is born
+  routable. Emptied on purpose, websites are created without a domain and a
+  warning is logged, because such a site is unroutable until the parameter is
+  set again.
 
 The automatism can also be skipped per transaction by passing
 `no_microsite_auto=True` in the context of `res.company.create` (used by the

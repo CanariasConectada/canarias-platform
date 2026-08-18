@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo noupdate="1">
+
+    <!-- Domain suffix appended to the normalized company name when the
+         website of a new microsite is provisioned, producing the production
+         convention: https://<name>.canariasconectada.es. noupdate: an admin
+         emptying or changing it on purpose must survive module upgrades. -->
+    <record id="config_parameter_domain_suffix" model="ir.config_parameter">
+        <field name="key">auto_microsite_generator.domain_suffix</field>
+        <field name="value">.canariasconectada.es</field>
+    </record>
+
+</odoo>

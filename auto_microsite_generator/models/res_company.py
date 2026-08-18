@@ -19,11 +19,42 @@ MIGRATION_XMLID_MODULE = "canarias_mig"
 # automatism on or off without uninstalling the module. Defaults to enabled.
 ENABLE_PARAM = "auto_microsite_generator.enabled"
 
-# Optional domain suffix used to build a default website domain from the
-# company name, e.g. ".canariasconectada.es" -> https://bakery.canariasconectada.es
-# Empty by default: the data migration owns real domains (it only "casa
-# dominios" afterwards), and empty domains keep test routing unambiguous.
+# Domain suffix used to build a default website domain from the company
+# name, e.g. ".canariasconectada.es" -> https://bakery.canariasconectada.es
+# Seeded by data/ir_config_parameter.xml (noupdate) to the production
+# convention, so a newly created microsite is born routable. When the
+# parameter is emptied on purpose the website is created without a domain
+# and a warning is logged (see _microsite_default_domain).
 DOMAIN_SUFFIX_PARAM = "auto_microsite_generator.domain_suffix"
+
+# "Zonas Comerciales" dropdown created on every new microsite: the
+# navigation that ties the network together (from any merchant's website a
+# visitor can jump to the other zones). Labels and URLs mirror the
+# production menus restored by the one-off fix f18_zone_menu_restore; the
+# zone names are proper nouns and the two Spanish labels are the production
+# wording, so none of them go through translation.
+ZONE_MENU_NAME = "Zonas Comerciales"
+ZONE_MENU_SEQUENCE = 40
+ZONE_MENU_CHILDREN = (
+    ("Todas", "https://canariasconectada.es", 10),
+    ("Guanarteme", "https://guanarteme.canariasconectada.es", 20),
+    ("Lomo Los Frailes", "https://lomolosfrailes.canariasconectada.es", 30),
+    ("Tamaraceite", "https://tamaraceite.canariasconectada.es", 40),
+)
+# Presence is decided on this url, not on the parent's label: a dropdown
+# somebody renamed still has the links and must be left alone (same probe
+# as f18_zone_menu_restore).
+ZONE_MENU_PROBE_URL = ZONE_MENU_CHILDREN[1][1]
+
+# Stock menu entries that core copy_menu_hierarchy copies from the template
+# menus onto every new website. Production does not give them to merchant
+# microsites (see the one-off fix f20_menu_parity), so they are pruned from
+# a FRESHLY created website only. Only the stock labels are ever removed:
+# a renamed entry is somebody's decision.
+STOCK_MENUS_TO_PRUNE = (
+    ("/event", ("Eventos", "Events")),
+    ("/slides", ("Cursos", "Courses")),
+)
 
 # Structural / umbrella company names that must not receive a microsite.
 PROTECTED_NAME_PATTERNS = (
@@ -101,12 +132,16 @@ class ResCompany(models.Model):
                 self.display_name,
             )
             return
+        # A falsy website_id here means the website is about to be created:
+        # the prune pass below only ever runs on that freshly created site.
+        fresh = not self.website_id
         website = self._get_or_create_microsite_website()
         if not website:
             return
         migrated = self._microsite_has_migrated_content(website)
-        self._ensure_microsite_menu(website, skip=migrated)
+        self._ensure_microsite_menu(website, skip=migrated, prune_defaults=fresh)
         self._ensure_microsite_homepage(website)
+        self._ensure_microsite_rich_homepage(website)
 
     # ------------------------------------------------------------------
     # Guards
@@ -177,6 +212,11 @@ class ResCompany(models.Model):
         if self.website_id:
             return self.website_id
         values = {"name": self.name, "company_id": self.id}
+        # Born with the corporate microsite look when partner_microsite_manager
+        # is installed. Probed on the field registry so this module keeps
+        # depending only on ``website``.
+        if "is_microsite_themed" in self.env["website"]._fields:
+            values["is_microsite_themed"] = True
         domain = self._microsite_default_domain()
         if domain:
             values["domain"] = domain
@@ -195,18 +235,31 @@ class ResCompany(models.Model):
             self.env["ir.config_parameter"].sudo().get_param(DOMAIN_SUFFIX_PARAM, "")
         )
         if not suffix:
+            _logger.warning(
+                "Config parameter %s is empty: the website of %s is created "
+                "without a domain and is unroutable until the parameter is "
+                "set (production convention: '.canariasconectada.es').",
+                DOMAIN_SUFFIX_PARAM,
+                self.display_name,
+            )
             return ""
         return f"https://{_normalize_subdomain(self.name)}{suffix}"
 
     # ------------------------------------------------------------------
     # Menu (create-only, never destructive)
     # ------------------------------------------------------------------
-    def _ensure_microsite_menu(self, website, skip=False):
+    def _ensure_microsite_menu(self, website, skip=False, prune_defaults=False):
         """Ensure the standard top-menu entries exist on ``website``.
 
         Create-only by design: existing menus are never renamed or removed,
         so migrated navigation and manual edits survive. When the website
         already carries migrated menus the whole step is skipped.
+
+        ``prune_defaults`` is the single exception to create-only, and the
+        caller sets it ONLY for a freshly created website: the stock
+        Events/Courses entries that core ``copy_menu_hierarchy`` just copied
+        onto it are removed (see :data:`STOCK_MENUS_TO_PRUNE`). It is never
+        set on an existing website, so navigation someone curated survives.
         """
         self.ensure_one()
         if skip:
@@ -246,16 +299,78 @@ class ResCompany(models.Model):
                         "sequence": sequence,
                     }
                 )
+        self._ensure_zone_menu_dropdown(Menu, website, root)
+        if prune_defaults:
+            self._prune_stock_menus(Menu, website)
+
+    def _ensure_zone_menu_dropdown(self, Menu, website, root):
+        """Create the "Zonas Comerciales" dropdown when it is missing.
+
+        Create-only, like the rest of the menu step: presence is probed on
+        one of the child URLs (not on the parent label) so a renamed
+        dropdown is recognised and left alone.
+        """
+        self.ensure_one()
+        if Menu.search_count(
+            [("website_id", "=", website.id), ("url", "=", ZONE_MENU_PROBE_URL)]
+        ):
+            return
+        parent = Menu.create(
+            {
+                "name": ZONE_MENU_NAME,
+                "url": "#",
+                "parent_id": root.id,
+                "sequence": ZONE_MENU_SEQUENCE,
+                "website_id": website.id,
+            }
+        )
+        Menu.create(
+            [
+                {
+                    "name": name,
+                    "url": url,
+                    "parent_id": parent.id,
+                    "sequence": sequence,
+                    "website_id": website.id,
+                }
+                for name, url, sequence in ZONE_MENU_CHILDREN
+            ]
+        )
+
+    def _prune_stock_menus(self, Menu, website):
+        """Remove the stock Events/Courses entries from a NEW website.
+
+        Mirrors the one-off fix f20_menu_parity: production does not link
+        ``/event`` (nor ``/slides``) from merchant microsites, but core
+        ``copy_menu_hierarchy`` copies both onto every new website. Guarded
+        twice, like f20: entries not carrying the stock label are kept (a
+        renamed menu is somebody's decision) and entries with children are
+        kept. Only ever called for the website this very generation pass
+        just created, so no curated navigation can be lost.
+        """
+        self.ensure_one()
+        for url, stock_labels in STOCK_MENUS_TO_PRUNE:
+            for menu in Menu.search(
+                [("website_id", "=", website.id), ("url", "=", url)]
+            ):
+                if menu.name not in stock_labels or menu.child_id:
+                    continue
+                menu.unlink()
 
     # ------------------------------------------------------------------
     # Homepage
     # ------------------------------------------------------------------
-    def _get_microsite_homepage_arch(self):
+    def _get_generic_microsite_homepage_arch(self):
         """Thin homepage wrapper calling the shared microsite content template.
 
         Returned as canonical XML (no trailing newline): ir.ui.view re-serializes
         arch_db on write, so keeping this a fixed point of that serialization is
         what makes :meth:`_ensure_microsite_homepage` a true idempotent no-op.
+
+        Named "generic" on purpose: ``partner_microsite_manager`` defines its
+        own ``_get_microsite_homepage_arch`` on this very model, and with both
+        modules installed a shared name would be resolved by module load
+        order -- whichever loads last would silently shadow the other.
         """
         self.ensure_one()
         return (
@@ -289,7 +404,14 @@ class ResCompany(models.Model):
                 "Microsite %s: kept migrated homepage untouched.", website.name
             )
             return page
-        arch = self._get_microsite_homepage_arch()
+        if page and page.view_id.key == self._microsite_rich_homepage_key():
+            # The rich corporate homepage (partner_microsite_manager) already
+            # supersedes the generic one: rewriting it back would undo
+            # _ensure_microsite_rich_homepage and churn the view on re-runs.
+            if not page.is_published:
+                page.is_published = True
+            return page
+        arch = self._get_generic_microsite_homepage_arch()
         view_key = f"auto_microsite_generator.homepage_{self.id}"
         if page:
             # Idempotent refresh: only write what actually changed so re-runs do
@@ -324,3 +446,49 @@ class ResCompany(models.Model):
                 "is_published": True,
             }
         )
+
+    def _microsite_rich_homepage_key(self):
+        """View key ``partner_microsite_manager`` gives this company's homepage."""
+        self.ensure_one()
+        return f"partner_microsite_manager.microsite_homepage_{self.id}"
+
+    def _ensure_microsite_rich_homepage(self, website):
+        """Upgrade the generic homepage to the corporate microsite homepage.
+
+        ``partner_microsite_manager`` ships the dynamic corporate homepage
+        and its publication machinery. When it is installed, a brand-new
+        microsite is born with that rich homepage instead of the generic
+        hero; when it is not, the generic homepage from
+        :meth:`_ensure_microsite_homepage` stays. Probed with ``hasattr`` so
+        this module keeps depending only on ``website``.
+
+        The publication runs in its own nested savepoint: the per-company
+        savepoint of :meth:`create` already shields the company creation,
+        but a failure here must not take the website and its generic
+        homepage down with it either.
+        """
+        self.ensure_one()
+        if not hasattr(self, "_publish_microsite_homepage"):
+            return
+        page = (
+            self.env["website.page"]
+            .sudo()
+            .search([("website_id", "=", website.id), ("url", "=", "/")], limit=1)
+        )
+        if page and (
+            self._is_migrated_record(page) or self._is_migrated_record(page.view_id)
+        ):
+            return
+        if page and page.view_id.key == self._microsite_rich_homepage_key():
+            # Already the corporate homepage: publishing again would only
+            # churn the view (write_date bumps, COW copies, ...).
+            return
+        try:
+            with self.env.cr.savepoint():
+                self._publish_microsite_homepage(website)
+        except Exception:  # noqa: BLE001 - defensive: log and keep going
+            _logger.exception(
+                "Rich homepage publication failed for %s; the generic "
+                "homepage stays.",
+                website.name,
+            )
