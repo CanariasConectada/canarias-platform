@@ -50,9 +50,16 @@ class TestWebsiteChat(WebsiteChatMixin, HttpCase):
         installed app. ``wrapwrap`` is checked alongside because a manifest tag
         could in principle be injected anywhere; the two together say "this is
         the website layout".
+
+        Skipped once the redirect bridge retires the page; the bridge's own
+        suite covers /community. ``allow_redirects=False`` because /community
+        is ALSO served inside the website layout, so a followed 301 would
+        satisfy every assertion here against the wrong page.
         """
-        response = self._get_index()
+        self._skip_if_community_redirect()
+        response = self._get_index(allow_redirects=False)
         self.assertEqual(response.status_code, 200)
+        self.assertIn("o_cc_chat_page", response.text)
         self.assertIn('rel="manifest"', response.text)
         self.assertIn("/website_pwa/manifest.webmanifest", response.text)
         self.assertIn('id="wrapwrap"', response.text)
@@ -62,9 +69,18 @@ class TestWebsiteChat(WebsiteChatMixin, HttpCase):
 
         Asserted separately from the index because they are two templates and
         only one of them was checked the first time round.
+
+        Skipped once the redirect bridge retires the page; the bridge's own
+        suite covers /community. ``allow_redirects=False`` because /community
+        is ALSO served inside the website layout, so a followed 301 would
+        satisfy every assertion here against the wrong page.
         """
-        response = self._get_channel(self.channel_general, self.visitor)
+        self._skip_if_community_redirect()
+        response = self._get_channel(
+            self.channel_general, self.visitor, allow_redirects=False
+        )
         self.assertEqual(response.status_code, 200)
+        self.assertIn("o_cc_chat_page", response.text)
         self.assertIn('rel="manifest"', response.text)
         self.assertIn('id="wrapwrap"', response.text)
 
@@ -80,7 +96,11 @@ class TestWebsiteChat(WebsiteChatMixin, HttpCase):
         door that will not open is how a product teaches people it is broken,
         so the assertion is exact absence of the three, not just presence of
         the one.
+
+        Skipped once the redirect bridge retires the list page; the bridge's
+        own suite covers the replacement behaviour.
         """
+        self._skip_if_community_redirect()
         response = self._get_index()
         self.assertEqual(response.status_code, 200)
         self.assertRegex(response.text, self._channel_link(self.channel_general))
@@ -100,7 +120,11 @@ class TestWebsiteChat(WebsiteChatMixin, HttpCase):
         anonymous" from "broken for all", and it uses a PORTAL user -- who has
         no ``base.group_user`` -- because that is the case a naive gate on
         ``base.group_portal`` or on ``base.group_user`` would each get wrong.
+
+        Skipped once the redirect bridge retires the list page; the bridge's
+        own suite covers the replacement behaviour.
         """
+        self._skip_if_community_redirect()
         self.authenticate("dcz_merchant", "dcz_merchant")
         self._forget_guest_cookie()
         response = self.url_open("/chat")
@@ -129,7 +153,11 @@ class TestWebsiteChat(WebsiteChatMixin, HttpCase):
         The general channel is asserted alongside so a list that renders
         nothing at all -- the other way to make the first assertion true --
         cannot be mistaken for a pass.
+
+        Skipped once the redirect bridge retires the list page; the bridge's
+        own suite covers the replacement behaviour.
         """
+        self._skip_if_community_redirect()
         internal_channel = self.env.ref("mail.channel_all_employees")
         self.assertFalse(
             internal_channel.website_chat_published,
@@ -166,7 +194,12 @@ class TestWebsiteChat(WebsiteChatMixin, HttpCase):
         The list is what the visitor sees; this is what happens when they type
         the URL anyway. Both go through the same ``search()``, which is the
         point: there is one gate, not a display filter with a hole behind it.
+
+        Skipped once the redirect bridge retires the channel pages (every
+        /chat/<id> then answers 301, visible or not); the bridge's own suite
+        covers the replacement behaviour.
         """
+        self._skip_if_community_redirect()
         response = self._get_channel(self.channel_guanarteme, self.visitor)
         self.assertEqual(response.status_code, 404)
 
@@ -203,12 +236,20 @@ class TestWebsiteChat(WebsiteChatMixin, HttpCase):
         The flag is forced off rather than assumed off: this suite also runs
         against copies of production, where the link has been live since
         2026-08-17, and a fixture assumption is not a state.
+
+        Skipped once the redirect bridge retires the page; the bridge's own
+        suite covers the replacement behaviour. ``allow_redirects=False``
+        and the page marker, because a followed 301 to /community -- a page
+        with no menu link either -- would satisfy the absence assertion
+        against the wrong page.
         """
+        self._skip_if_community_redirect()
         self.websites.write({"chat_link_enabled": False})
         self.registry.clear_cache("templates")
         self.addCleanup(self.registry.clear_cache, "templates")
-        response = self._get_index()
+        response = self._get_index(allow_redirects=False)
         self.assertEqual(response.status_code, 200)
+        self.assertIn("o_cc_chat_page", response.text)
         self.assertNotIn("o_cc_chat_menu_link", response.text)
 
     def test_the_host_website_links_to_its_own_chat(self):
@@ -217,7 +258,12 @@ class TestWebsiteChat(WebsiteChatMixin, HttpCase):
         Same origin, so an absolute URL would be wrong here in exactly the
         deployments where it is hardest to notice: local and staging, where
         the stored domain is not the one the browser is on.
+
+        Skipped once the redirect bridge retires the page and repoints the
+        entry at /community; the bridge's own suite covers the replacement
+        behaviour.
         """
+        self._skip_if_community_redirect()
         self.websites.write({"chat_link_enabled": True})
         response = self._get_index()
         self.assertEqual(response.status_code, 200)
@@ -233,7 +279,11 @@ class TestWebsiteChat(WebsiteChatMixin, HttpCase):
         host is resolved from ``chat_enabled``, never from an id: the URL below
         has to follow the DATA, so the test moves the flag and expects the link
         to move with it.
+
+        Skipped once the redirect bridge repoints the entry at /community;
+        the bridge's own suite covers the replacement behaviour.
         """
+        self._skip_if_community_redirect()
         # Resolved the way the code resolves it, so the fixture cannot
         # accidentally point at a different website than the one under test.
         host = self.env["website"]._chat_host_website()
@@ -251,7 +301,12 @@ class TestWebsiteChat(WebsiteChatMixin, HttpCase):
         Without the scheme the browser reads ``canariasconectada.example/chat``
         as a RELATIVE path and keeps the visitor on the microsite they were
         on -- a broken link that returns 404 instead of looking broken.
+
+        Skipped once the redirect bridge repoints the entry at /community;
+        the bridge's own suite covers the replacement behaviour, bare
+        hostname included.
         """
+        self._skip_if_community_redirect()
         host = self.env["website"]._chat_host_website()
         host.domain = "canariasconectada.example"
         self.assertEqual(
@@ -348,7 +403,11 @@ class TestWebsiteChat(WebsiteChatMixin, HttpCase):
         the queue really has the row, and the page tells the AUTHOR in words
         they will understand -- with the invitation to register next to it,
         which is the only reason the hold is worth showing at all.
+
+        Skipped once the redirect bridge retires the channel page the second
+        half reads; the bridge's own suite covers the replacement behaviour.
         """
+        self._skip_if_community_redirect()
         result = self._post_over_http(self.channel_general, self.visitor)
         self.assertFalse(
             result["message_id"],
@@ -373,11 +432,21 @@ class TestWebsiteChat(WebsiteChatMixin, HttpCase):
         publish unmoderated text. The phrase leaking without the body would be
         harmless-looking and still wrong: it would tell a stranger that
         somebody, somewhere, is waiting for review.
+
+        Skipped once the redirect bridge retires the channel page; the
+        bridge's own suite covers the replacement behaviour.
+        ``allow_redirects=False`` and the page marker, because a followed
+        301 to /community -- which never renders anybody's messages -- would
+        satisfy both absence assertions against the wrong page.
         """
+        self._skip_if_community_redirect()
         self._post_over_http(self.channel_general, self.visitor)
 
-        response = self._get_channel(self.channel_general, self.other_visitor)
+        response = self._get_channel(
+            self.channel_general, self.other_visitor, allow_redirects=False
+        )
         self.assertEqual(response.status_code, 200)
+        self.assertIn("o_cc_chat_page", response.text)
         self.assertNotIn(HELD_BODY, response.text)
         self.assertNotIn(UNDER_REVIEW, response.text)
 
@@ -389,11 +458,21 @@ class TestWebsiteChat(WebsiteChatMixin, HttpCase):
         ``base.public_partner`` every anonymous request on the platform shares.
         Matching held rows on a partner without excluding that one would show
         every anonymous visitor every other anonymous visitor's message.
+
+        Skipped once the redirect bridge retires the channel page; the
+        bridge's own suite covers the replacement behaviour.
+        ``allow_redirects=False`` and the page marker, because a followed
+        301 to /community -- which never renders anybody's messages -- would
+        satisfy both absence assertions against the wrong page.
         """
+        self._skip_if_community_redirect()
         self._post_over_http(self.channel_general, self.visitor)
 
-        response = self._get_channel(self.channel_general, guest=None)
+        response = self._get_channel(
+            self.channel_general, guest=None, allow_redirects=False
+        )
         self.assertEqual(response.status_code, 200)
+        self.assertIn("o_cc_chat_page", response.text)
         self.assertNotIn(HELD_BODY, response.text)
         self.assertNotIn(UNDER_REVIEW, response.text)
 
@@ -432,7 +511,11 @@ class TestWebsiteChat(WebsiteChatMixin, HttpCase):
         could come from the pending block and the test would pass with nothing
         published. The author's own page is checked too, for the other half --
         that the "en revisión" card goes away instead of doubling the message.
+
+        Skipped once the redirect bridge retires the channel page both reads
+        go through; the bridge's own suite covers the replacement behaviour.
         """
+        self._skip_if_community_redirect()
         self._post_over_http(self.channel_general, self.visitor)
         held = self._held_rows(self.channel_general, self.visitor)
         self._approve(held)
@@ -451,7 +534,11 @@ class TestWebsiteChat(WebsiteChatMixin, HttpCase):
         The page renders every pending row of its caller in one card, which is
         exactly the arrangement in which "the card disappeared" gets mistaken
         for "everything was approved".
+
+        Skipped once the redirect bridge retires the channel page; the
+        bridge's own suite covers the replacement behaviour.
         """
+        self._skip_if_community_redirect()
         self._post_over_http(self.channel_general, self.visitor, body=HELD_BODY)
         self._post_over_http(self.channel_general, self.visitor, body=OTHER_HELD_BODY)
         held = self._held_rows(self.channel_general, self.visitor)
@@ -473,7 +560,12 @@ class TestWebsiteChat(WebsiteChatMixin, HttpCase):
         ``moderate_portal`` off, so the promise the page makes to a visitor --
         "create an account and your messages publish at once" -- is a claim
         about configuration that can silently stop being true.
+
+        Skipped once the redirect bridge retires the channel page the
+        read-back goes through; the bridge's own suite covers the
+        replacement behaviour.
         """
+        self._skip_if_community_redirect()
         self.authenticate("dcz_resident", "dcz_resident")
         self._forget_guest_cookie()
         result = self._post_over_http(

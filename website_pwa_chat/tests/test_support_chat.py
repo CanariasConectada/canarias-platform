@@ -80,6 +80,12 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
     # ------------------------------------------------------------------
 
     def test_the_channel_list_offers_the_support_line(self):
+        """Skipped once the redirect bridge retires the /chat list page.
+
+        The bridge's own suite covers the replacement behaviour, support
+        surviving the retirement included.
+        """
+        self._skip_if_community_redirect()
         self._forget_guest_cookie()
         response = self.url_open("/chat")
         self.assertIn(SUPPORT_CALL, response.text)
@@ -125,13 +131,23 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
     # ------------------------------------------------------------------
 
     def test_the_support_conversation_is_never_on_the_public_list(self):
+        """Skipped once the redirect bridge retires the /chat list page;
+        the bridge's own suite covers the replacement behaviour.
+
+        ``allow_redirects=False`` and the list marker, because a followed
+        301 to /community -- which lists no channels at all -- would satisfy
+        the absence assertion against the wrong page.
+        """
+        self._skip_if_community_redirect()
         self._forget_guest_cookie()
         self.url_open(SUPPORT_URL)
         channel = self._support_channels()[0]
 
         self._forget_guest_cookie()
-        listed = self.url_open("/chat")
+        listed = self.url_open("/chat", allow_redirects=False)
 
+        self.assertEqual(listed.status_code, 200)
+        self.assertIn("o_cc_chat_channels", listed.text)
         self.assertNotIn("/chat/%s" % channel.id, listed.text)
         self.assertFalse(
             channel.website_chat_published,
@@ -139,6 +155,11 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
         )
 
     def test_another_visitor_cannot_open_it(self):
+        """Skipped once the redirect bridge retires the /chat/<id> pages
+        (every one then answers 301, mine or not); the bridge's own suite
+        covers the replacement behaviour.
+        """
+        self._skip_if_community_redirect()
         self._forget_guest_cookie()
         self.url_open(SUPPORT_URL)
         channel = self._support_channels()[0]

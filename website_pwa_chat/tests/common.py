@@ -69,6 +69,30 @@ class WebsiteChatMixin(ZoneChannelMixin):
         )
 
     # ------------------------------------------------------------------
+    # The retired pages
+    # ------------------------------------------------------------------
+
+    def _skip_if_community_redirect(self):
+        """Skip a test whose subject is retired behind /community.
+
+        ``website_pwa_chat_community_redirect`` turns /chat and /chat/<id>
+        into 301s to /community and points the Comunidad menu entry there
+        BY DESIGN. With the bridge installed, the standalone community
+        pages this suite asserts no longer exist; the replacement
+        behaviour (the redirects, the menu URL, and the support feature
+        surviving intact) is covered by the bridge's own suite,
+        ``website_pwa_chat_community_redirect/tests``.
+        """
+        bridge = self.env["ir.module.module"]._get(
+            "website_pwa_chat_community_redirect"
+        )
+        if bridge.state == "installed":
+            self.skipTest(
+                "community pages retired behind /community; the redirect "
+                "bridge's own suite covers the replacement behaviour"
+            )
+
+    # ------------------------------------------------------------------
     # Sessions
     # ------------------------------------------------------------------
 
@@ -102,11 +126,19 @@ class WebsiteChatMixin(ZoneChannelMixin):
     # The pages
     # ------------------------------------------------------------------
 
-    def _get_index(self, guest=None):
-        return self.url_open("/chat", cookies=self._cookies_for(guest))
+    def _get_index(self, guest=None, allow_redirects=True):
+        return self.url_open(
+            "/chat",
+            cookies=self._cookies_for(guest),
+            allow_redirects=allow_redirects,
+        )
 
-    def _get_channel(self, channel, guest=None):
-        return self.url_open("/chat/%s" % channel.id, cookies=self._cookies_for(guest))
+    def _get_channel(self, channel, guest=None, allow_redirects=True):
+        return self.url_open(
+            "/chat/%s" % channel.id,
+            cookies=self._cookies_for(guest),
+            allow_redirects=allow_redirects,
+        )
 
     def _channel_link(self, channel):
         """A regex for the href the index renders for a channel.
