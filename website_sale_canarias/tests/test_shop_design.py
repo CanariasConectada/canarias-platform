@@ -114,9 +114,7 @@ class TestShopDesign(HttpCase):
             self.portal._wsc_selected_category_path(child),
             (self.category.id, child.id),
         )
-        self.assertEqual(
-            self.portal._wsc_selected_category_path(None), (None, None)
-        )
+        self.assertEqual(self.portal._wsc_selected_category_path(None), (None, None))
 
     def test_ajax_parent_category_includes_the_childs_products(self):
         """Picking a main category promises everything under it: a product
@@ -167,6 +165,38 @@ class TestShopDesign(HttpCase):
         self.assertIn(child.name, response.text)
 
     # ------------------------------------------------------------------
+    # The mobile toolbar and the offcanvas
+    # ------------------------------------------------------------------
+
+    def test_mobile_toolbar_reopens_the_filters_in_the_offcanvas(self):
+        """Below lg the sidebar is display-none and the stock header — the
+        only #o_wsale_offcanvas toggle — is gone: the slim toolbar's button
+        and the offcanvas copy of the filter cards are the only way to
+        filter or switch zones on a phone."""
+        self.portal.domain = "https://wsc-portal.example"
+        self.env["website"].create(
+            {
+                "name": "WSC Zona Móvil",
+                "domain": "https://wsc-zona-movil.example",
+                "is_marketplace": True,
+            }
+        )
+        response = self.url_open("/shop")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("o_wsc_filters_btn", response.text)
+        self.assertIn('data-bs-target="#o_wsale_offcanvas"', response.text)
+        # The offcanvas holds its own suffixed instance of every filter card
+        # (same fragment as the sidebar, so the two can never drift).
+        self.assertIn("wsc_category_select_offcanvas", response.text)
+        self.assertIn("wsc_zone_select_offcanvas", response.text)
+        offcanvas = response.text.split('id="o_wsale_offcanvas"')[1]
+        self.assertIn(
+            "o_wsc_zone_card",
+            offcanvas,
+            "the zone switcher must be reachable from a phone",
+        )
+
+    # ------------------------------------------------------------------
     # The zone switcher
     # ------------------------------------------------------------------
 
@@ -181,9 +211,11 @@ class TestShopDesign(HttpCase):
                 "is_marketplace": True,
             }
         )
-        selection = self.env["website"]._fields[
-            "marketplace_zone"
-        ]._description_selection(self.env)
+        selection = (
+            self.env["website"]
+            ._fields["marketplace_zone"]
+            ._description_selection(self.env)
+        )
         if selection:
             zone_site.marketplace_zone = selection[0][0]
         sites = self.portal._wsc_zone_sites()
@@ -212,9 +244,7 @@ class TestShopDesign(HttpCase):
                 "is_marketplace": True,
             }
         )
-        response = self.url_open(
-            "/shop", headers={"Host": "wsc-panaderia.example"}
-        )
+        response = self.url_open("/shop", headers={"Host": "wsc-panaderia.example"})
         self.assertNotIn("wsc_zone_select", response.text)
 
     # ------------------------------------------------------------------
@@ -255,17 +285,22 @@ class TestShopDesign(HttpCase):
         merchant's published product must never reach the first's shop AJAX.
         """
         other = self.env["res.company"].create({"name": "WSC Otra SL"})
-        other_site = self.env["website"].create(
-            {"name": "WSC Otra", "company_id": other.id,
-             "domain": "https://wsc-otra.example"}
+        self.env["website"].create(
+            {
+                "name": "WSC Otra",
+                "company_id": other.id,
+                "domain": "https://wsc-otra.example",
+            }
         )
-        self.env["product.template"].create({
-            "name": "WSC Producto Ajeno",
-            "sale_ok": True,
-            "is_published": True,
-            "list_price": 7.0,
-            "company_ids": [(6, 0, [other.id])],
-        })
+        self.env["product.template"].create(
+            {
+                "name": "WSC Producto Ajeno",
+                "sale_ok": True,
+                "is_published": True,
+                "list_price": 7.0,
+                "company_ids": [(6, 0, [other.id])],
+            }
+        )
         response = self.url_open(
             "/shop/ajax/products", headers={"Host": "wsc-panaderia.example"}
         )
@@ -278,13 +313,15 @@ class TestShopDesign(HttpCase):
         even on the aggregating portal — the record rule hides it once the
         marketplace links are gone, and the endpoint honours the rule."""
         gone = self.env["res.company"].create({"name": "WSC Retirada SL"})
-        self.env["product.template"].create({
-            "name": "WSC Producto Retirado",
-            "sale_ok": True,
-            "is_published": True,
-            "list_price": 3.0,
-            "company_ids": [(6, 0, [gone.id])],
-        })
+        self.env["product.template"].create(
+            {
+                "name": "WSC Producto Retirado",
+                "sale_ok": True,
+                "is_published": True,
+                "list_price": 3.0,
+                "company_ids": [(6, 0, [gone.id])],
+            }
+        )
         gone.active = False
         result = self._ajax()
         self.assertNotIn("WSC Producto Retirado", result["html"])
@@ -294,9 +331,7 @@ class TestShopDesign(HttpCase):
     # ------------------------------------------------------------------
 
     def test_microsite_gets_no_hero_and_no_badge(self):
-        response = self.url_open(
-            "/shop", headers={"Host": "wsc-panaderia.example"}
-        )
+        response = self.url_open("/shop", headers={"Host": "wsc-panaderia.example"})
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("Tienda Canarias Conectada", response.text)
         self.assertNotIn("o_wsc_pill_badge", response.text)

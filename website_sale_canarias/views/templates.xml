@@ -84,14 +84,32 @@
          ================================================================
          Category pills, inline search and the sort dropdown. Production
          removes them on every website, aggregated shops and microsites
-         alike; the sidebar carries the filters instead. -->
+         alike; the sidebar carries the filters instead.
+
+         The header was also the only holder of the #o_wsale_offcanvas
+         toggle, and the sidebar is d-none below lg: without the slim
+         toolbar below, a phone had NO way to filter or switch zones. The
+         button reopens the stock offcanvas, which shop_offcanvas_filters
+         fills with the same filter cards the sidebar shows. -->
     <template
         id="shop_hide_stock_header"
         inherit_id="website_sale.products"
         name="Canarias Shop: no stock toolbar"
         priority="30"
     >
-        <xpath expr="//header[@id='o_wsale_products_header']" position="replace"/>
+        <xpath expr="//header[@id='o_wsale_products_header']" position="replace">
+            <div class="d-lg-none pt-3 pb-2 o_wsc_mobile_toolbar">
+                <button
+                    type="button"
+                    class="btn btn-outline-secondary w-100 o_wsc_filters_btn"
+                    data-bs-toggle="offcanvas"
+                    data-bs-target="#o_wsale_offcanvas"
+                    aria-controls="o_wsale_offcanvas"
+                >
+                    <i class="fa fa-sliders me-2" aria-hidden="true"/>Filtros
+                </button>
+            </div>
+        </xpath>
     </template>
 
     <!-- ================================================================
@@ -101,6 +119,103 @@
          JS upgrades the plain <select> into the directory's wd-select).
          The category set is the shop's real product set — a zone shop only
          offers its neighbourhood's categories. -->
+    <template id="shop_filters" name="Canarias Shop: filter cards">
+        <!-- Rendered twice on one page — desktop aside and mobile
+             offcanvas — so every id gets the caller's suffix and the
+             script wires each instance by suffix. -->
+        <t t-set="wsc_sfx" t-value="wsc_id_suffix or ''"/>
+        <!-- Zone switcher: the aggregated shops are one platform
+             seen from four addresses, and this select is how a
+             visitor moves between them. Each option's value is
+             the target site's own /shop URL — picking one is a
+             plain navigation, exactly like the directory's zone
+             filter. The list comes from the marketplace websites
+             themselves (see _wsc_zone_sites), so it is never
+             edited here when a neighbourhood opens or closes. -->
+        <t t-if="website.is_marketplace">
+            <t t-set="wsc_zone_sites" t-value="website._wsc_zone_sites()"/>
+            <div t-if="len(wsc_zone_sites) &gt; 1" class="card border-0 shadow-sm mb-3 wd-filter-card o_wsc_zone_card">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold fs-6">
+                        <i class="fa fa-map-marker text-primary me-2"/>Zona comercial
+                    </h5>
+                </div>
+                <div class="card-body" style="overflow: visible;">
+                    <select t-att-id="'wsc_zone_select' + wsc_sfx" class="form-select o_wsc_zone_select" style="width: 100%;">
+                        <t t-foreach="wsc_zone_sites" t-as="wsc_site">
+                            <option
+                                t-att-value="wsc_site.domain.rstrip('/') + '/shop'"
+                                t-att-selected="'selected' if wsc_site.id == website.id else None"
+                                t-esc="wsc_site._wsc_zone_label() or 'Todas las zonas'"
+                            />
+                        </t>
+                    </select>
+                </div>
+            </div>
+        </t>
+        <div class="card border-0 shadow-sm mb-3 wd-filter-card o_wsc_category_card">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold fs-6">
+                    <i class="fa fa-folder-open text-primary me-2"/>
+                    <t t-set="wsc_zone_label" t-value="website._wsc_zone_label()"/>
+                    <t t-if="wsc_zone_label">Categorías de <t t-esc="wsc_zone_label"/></t>
+                    <t t-else="">Categorías</t>
+                </h5>
+            </div>
+            <div class="card-body" style="overflow: visible;">
+                <!-- Two levels, directory-style: a main category
+                     select, and a subcategory select that only
+                     appears once a main category with children is
+                     chosen. The initial state is server-rendered
+                     (correct without JS); the cascade on change
+                     is the script's job, fed by this JSON. -->
+                <t t-set="wsc_tree" t-value="website._wsc_shop_category_tree()"/>
+                <t t-set="wsc_path" t-value="website._wsc_selected_category_path(category, wsc_tree)"/>
+                <div
+                    t-att-id="'wsc_category_data' + wsc_sfx"
+                    class="d-none"
+                    t-att-data-tree="website._wsc_shop_category_json(wsc_tree)"
+                />
+                <label class="form-label small text-muted mb-1" t-att-for="'wsc_category_select' + wsc_sfx">
+                    <i class="fa fa-folder-open me-1"/>Categoría
+                </label>
+                <select t-att-id="'wsc_category_select' + wsc_sfx" class="form-select o_wsc_category_select" style="width: 100%;">
+                    <option value="" t-att-selected="'selected' if not wsc_path[0] else None">Todas las categorías</option>
+                    <t t-foreach="wsc_tree" t-as="wsc_node">
+                        <option
+                            t-att-value="wsc_node['category'].id"
+                            t-att-selected="'selected' if wsc_path[0] == wsc_node['category'].id else None"
+                            t-esc="wsc_node['category'].name"
+                        />
+                    </t>
+                </select>
+                <t t-set="wsc_selected_nodes" t-value="[node for node in wsc_tree if node['category'].id == wsc_path[0]]"/>
+                <t t-set="wsc_selected_node" t-value="wsc_selected_nodes[0] if wsc_selected_nodes else None"/>
+                <div
+                    t-att-id="'wsc_subcategory_wrap' + wsc_sfx"
+                    t-att-class="'mt-3' if wsc_selected_node and wsc_selected_node['children'] else 'mt-3 d-none'"
+                >
+                    <label class="form-label small text-muted mb-1" t-att-for="'wsc_subcategory_select' + wsc_sfx">
+                        <i class="fa fa-folder me-1"/>Subcategoría
+                    </label>
+                    <select t-att-id="'wsc_subcategory_select' + wsc_sfx" class="form-select o_wsc_subcategory_select" style="width: 100%;">
+                        <option value="" t-att-selected="'selected' if not wsc_path[1] else None">Todas las subcategorías</option>
+                        <t t-if="wsc_selected_node">
+                            <t t-foreach="wsc_selected_node['children']" t-as="wsc_child">
+                                <option
+                                    t-att-value="wsc_child.id"
+                                    t-att-selected="'selected' if wsc_path[1] == wsc_child.id else None"
+                                    t-esc="wsc_child.name"
+                                />
+                            </t>
+                        </t>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <t t-call="website_sale.filter_products_price"/>
+    </template>
+
     <template
         id="shop_sidebar"
         inherit_id="website_sale.products"
@@ -114,100 +229,39 @@
             >
                 <t t-call="website_sale.sidebar_dropzone_at_top"/>
                 <div class="o_wsale_products_grid_before_rail vh-100 ms-n2 px-lg-2 ps-2 overflow-y-scroll">
-                    <!-- Zone switcher: the aggregated shops are one platform
-                         seen from four addresses, and this select is how a
-                         visitor moves between them. Each option's value is
-                         the target site's own /shop URL — picking one is a
-                         plain navigation, exactly like the directory's zone
-                         filter. The list comes from the marketplace websites
-                         themselves (see _wsc_zone_sites), so it is never
-                         edited here when a neighbourhood opens or closes. -->
-                    <t t-if="website.is_marketplace">
-                        <t t-set="wsc_zone_sites" t-value="website._wsc_zone_sites()"/>
-                        <div t-if="len(wsc_zone_sites) &gt; 1" class="card border-0 shadow-sm mb-3 wd-filter-card o_wsc_zone_card">
-                            <div class="card-header bg-white py-3">
-                                <h5 class="mb-0 fw-bold fs-6">
-                                    <i class="fa fa-map-marker text-primary me-2"/>Zona comercial
-                                </h5>
-                            </div>
-                            <div class="card-body" style="overflow: visible;">
-                                <select id="wsc_zone_select" class="form-select" style="width: 100%;">
-                                    <t t-foreach="wsc_zone_sites" t-as="wsc_site">
-                                        <option
-                                            t-att-value="wsc_site.domain.rstrip('/') + '/shop'"
-                                            t-att-selected="'selected' if wsc_site.id == website.id else None"
-                                            t-esc="wsc_site._wsc_zone_label() or 'Todas las zonas'"
-                                        />
-                                    </t>
-                                </select>
-                            </div>
-                        </div>
-                    </t>
-                    <div class="card border-0 shadow-sm mb-3 wd-filter-card o_wsc_category_card">
-                        <div class="card-header bg-white py-3">
-                            <h5 class="mb-0 fw-bold fs-6">
-                                <i class="fa fa-folder-open text-primary me-2"/>
-                                <t t-set="wsc_zone_label" t-value="website._wsc_zone_label()"/>
-                                <t t-if="wsc_zone_label">Categorías de <t t-esc="wsc_zone_label"/></t>
-                                <t t-else="">Categorías</t>
-                            </h5>
-                        </div>
-                        <div class="card-body" style="overflow: visible;">
-                            <!-- Two levels, directory-style: a main category
-                                 select, and a subcategory select that only
-                                 appears once a main category with children is
-                                 chosen. The initial state is server-rendered
-                                 (correct without JS); the cascade on change
-                                 is the script's job, fed by this JSON. -->
-                            <t t-set="wsc_tree" t-value="website._wsc_shop_category_tree()"/>
-                            <t t-set="wsc_path" t-value="website._wsc_selected_category_path(category, wsc_tree)"/>
-                            <div
-                                id="wsc_category_data"
-                                class="d-none"
-                                t-att-data-tree="website._wsc_shop_category_json(wsc_tree)"
-                            />
-                            <label class="form-label small text-muted mb-1" for="wsc_category_select">
-                                <i class="fa fa-folder-open me-1"/>Categoría
-                            </label>
-                            <select id="wsc_category_select" class="form-select" style="width: 100%;">
-                                <option value="" t-att-selected="'selected' if not wsc_path[0] else None">Todas las categorías</option>
-                                <t t-foreach="wsc_tree" t-as="wsc_node">
-                                    <option
-                                        t-att-value="wsc_node['category'].id"
-                                        t-att-selected="'selected' if wsc_path[0] == wsc_node['category'].id else None"
-                                        t-esc="wsc_node['category'].name"
-                                    />
-                                </t>
-                            </select>
-                            <t t-set="wsc_selected_nodes" t-value="[node for node in wsc_tree if node['category'].id == wsc_path[0]]"/>
-                            <t t-set="wsc_selected_node" t-value="wsc_selected_nodes[0] if wsc_selected_nodes else None"/>
-                            <div
-                                id="wsc_subcategory_wrap"
-                                t-att-class="'mt-3' if wsc_selected_node and wsc_selected_node['children'] else 'mt-3 d-none'"
-                            >
-                                <label class="form-label small text-muted mb-1" for="wsc_subcategory_select">
-                                    <i class="fa fa-folder me-1"/>Subcategoría
-                                </label>
-                                <select id="wsc_subcategory_select" class="form-select" style="width: 100%;">
-                                    <option value="" t-att-selected="'selected' if not wsc_path[1] else None">Todas las subcategorías</option>
-                                    <t t-if="wsc_selected_node">
-                                        <t t-foreach="wsc_selected_node['children']" t-as="wsc_child">
-                                            <option
-                                                t-att-value="wsc_child.id"
-                                                t-att-selected="'selected' if wsc_path[1] == wsc_child.id else None"
-                                                t-esc="wsc_child.name"
-                                            />
-                                        </t>
-                                    </t>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <t t-call="website_sale.filter_products_price"/>
+                    <t t-call="website_sale_canarias.shop_filters"/>
                     <t t-call="website_sale.sidebar_dropzone_at_bottom"/>
                 </div>
             </aside>
         </xpath>
+    </template>
+
+    <!-- ================================================================
+         The offcanvas carries the same filters
+         ================================================================
+         The sidebar above is d-none below lg, and the mobile toolbar's
+         button opens the stock #o_wsale_offcanvas — so the same filter
+         fragment renders at the top of its scrollable body, with its own
+         id suffix. -->
+    <template
+        id="shop_offcanvas_filters"
+        inherit_id="website_sale.o_wsale_offcanvas"
+        name="Canarias Shop: offcanvas filters"
+        priority="30"
+    >
+        <xpath expr="//div[@id='o_wsale_offcanvas_content']/*[1]" position="before">
+            <div class="p-3 o_wsc_offcanvas_filters">
+                <t t-call="website_sale_canarias.shop_filters">
+                    <t t-set="wsc_id_suffix" t-valuef="_offcanvas"/>
+                </t>
+            </div>
+        </xpath>
+        <!-- The fragment already ends with the price filter; core's own
+             conditional copy right below it would double the slider. -->
+        <xpath
+            expr="//div[@id='o_wsale_offcanvas_content']/t[@t-call='website_sale.filter_products_price']"
+            position="replace"
+        />
     </template>
 
     <!-- ================================================================

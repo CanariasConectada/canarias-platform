@@ -168,6 +168,9 @@
         busy: false,
         minPrice: 0,
         maxPrice: 0,
+        // The active category, kept here because the two filter instances
+        // (sidebar and offcanvas) can disagree after an AJAX change.
+        category: null,
 
         grid: function () {
             return (
@@ -310,8 +313,10 @@
         return input ? input.value : "";
     }
 
-    function categoryTree() {
-        var node = document.getElementById("wsc_category_data");
+    function categoryTree(suffix) {
+        var node =
+            document.getElementById("wsc_category_data" + (suffix || "")) ||
+            document.getElementById("wsc_category_data");
         if (!node) {
             return [];
         }
@@ -331,11 +336,18 @@
         return null;
     }
 
-    function setup() {
+    /*
+     * The filter cards render twice — the desktop sidebar and the mobile
+     * offcanvas — each with its own id suffix, so every control is wired
+     * per instance. The loader tracks the active category itself: the two
+     * instances are never visible at the same breakpoint, so the one the
+     * visitor last touched is the truth.
+     */
+    function wireFilterGroup(suffix) {
         // Zone switcher: each option's value is another marketplace's /shop
         // URL, so picking a zone is a plain navigation — no AJAX, the other
         // site renders its own shop.
-        var zoneSelect = document.getElementById("wsc_zone_select");
+        var zoneSelect = document.getElementById("wsc_zone_select" + suffix);
         if (zoneSelect) {
             enhanceSelect(zoneSelect);
             zoneSelect.addEventListener("change", function () {
@@ -345,10 +357,10 @@
             });
         }
 
-        var select = document.getElementById("wsc_category_select");
-        var subSelect = document.getElementById("wsc_subcategory_select");
-        var subWrap = document.getElementById("wsc_subcategory_wrap");
-        var tree = categoryTree();
+        var select = document.getElementById("wsc_category_select" + suffix);
+        var subSelect = document.getElementById("wsc_subcategory_select" + suffix);
+        var subWrap = document.getElementById("wsc_subcategory_wrap" + suffix);
+        var tree = categoryTree(suffix);
         if (select) {
             enhanceSelect(select);
             select.addEventListener("change", function () {
@@ -371,42 +383,47 @@
                     subWrap.classList.toggle("d-none", !children.length);
                     subSelect.dispatchEvent(new Event("wsc:refresh"));
                 }
-                loader.load(select.value || null, currentSearch());
+                loader.category = select.value || null;
+                loader.load(loader.category, currentSearch());
             });
         }
         if (subSelect) {
             enhanceSelect(subSelect);
             subSelect.addEventListener("change", function () {
-                loader.load(
-                    subSelect.value || (select && select.value) || null,
-                    currentSearch()
-                );
+                loader.category =
+                    subSelect.value || (select && select.value) || null;
+                loader.load(loader.category, currentSearch());
             });
         }
+    }
 
-        ["min_price", "max_price"].forEach(function (name) {
-            var input = document.querySelector(
-                'input[name="' + name + '"], input#' + name
-            );
-            if (!input) {
+    function wirePriceInputs() {
+        var inputs = document.querySelectorAll(
+            'input[name="min_price"], input#min_price, ' +
+                'input[name="max_price"], input#max_price'
+        );
+        inputs.forEach(function (input) {
+            if (input.dataset.wscWired) {
                 return;
             }
+            input.dataset.wscWired = "1";
             input.addEventListener("change", function () {
+                // Read min and max from the input's OWN filter block: the
+                // price widget renders once per filter instance and the
+                // untouched instance may hold stale values.
+                var scope =
+                    input.closest("#o_wsale_price_range_option") || document;
                 loader.minPrice =
                     parseFloat(
-                        (document.querySelector('input[name="min_price"]') || {}).value
+                        (scope.querySelector('input[name="min_price"]') || {})
+                            .value
                     ) || 0;
                 loader.maxPrice =
                     parseFloat(
-                        (document.querySelector('input[name="max_price"]') || {}).value
+                        (scope.querySelector('input[name="max_price"]') || {})
+                            .value
                     ) || 0;
-                var params = new URLSearchParams(window.location.search);
-                loader.load(
-                    (subSelect && subSelect.value) ||
-                        (select && select.value) ||
-                        params.get("category"),
-                    currentSearch()
-                );
+                loader.load(loader.category, currentSearch());
             });
             // The stock price filter submits a GET form; with the AJAX
             // loader in charge that reload is pure flicker.
@@ -418,6 +435,14 @@
                 });
             }
         });
+    }
+
+    function setup() {
+        loader.category =
+            new URLSearchParams(window.location.search).get("category") || null;
+
+        ["", "_offcanvas"].forEach(wireFilterGroup);
+        wirePriceInputs();
 
         rewriteMerchantLinks();
 
