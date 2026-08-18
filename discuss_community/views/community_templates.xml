@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!--
+        The anonymous face of /community: two doors, nothing else.
+
+        Reuses website_login_branding's card classes (o_cc_login_wrap /
+        o_cc_login_card / o_cc_guest_btn) on purpose: its stylesheet ships in
+        web.assets_frontend platform-wide, so this page inherits the exact
+        branded card of the auth pages without one line of new CSS.
+
+        Source strings are English; Spanish lives in i18n/es.po like every
+        translatable term of the platform.
+    -->
+    <template id="community_landing" name="Community Landing">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <div class="o_cc_login_wrap d-flex justify-content-center py-5">
+                    <div class="o_cc_login_card card border-0 shadow-sm">
+                        <div class="card-body p-4 p-sm-5 text-center">
+                            <h1 class="h4 mb-3">Join the community</h1>
+                            <!-- Single-line text nodes on purpose: the msgid
+                                 of a template term is its verbatim text, and
+                                 a reflowed paragraph would silently orphan
+                                 the es.po entry. -->
+                            <p class="text-muted mb-4">Chat with your neighbourhood: no forms, no waiting.</p>
+                            <!--
+                                POST on purpose: the button mints (or reuses)
+                                an account, and a mutating route must never be
+                                a link a prefetcher can follow. The framework
+                                validates the csrf token server-side.
+                            -->
+                            <form action="/community/guest" method="post">
+                                <input
+                                    type="hidden"
+                                    name="csrf_token"
+                                    t-att-value="request.csrf_token()"
+                                />
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary w-100 o_cc_guest_btn"
+                                >Enter as guest</button>
+                            </form>
+                            <a
+                                href="/web/signup"
+                                class="btn btn-outline-secondary w-100 mt-2"
+                            >Create my account</a>
+                            <p class="text-muted small mt-3 mb-0">With an account you keep your name and your conversations on every visit.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

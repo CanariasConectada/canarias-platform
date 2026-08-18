@@ -1,0 +1,55 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* discuss_community
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: discuss_community
+#: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
+msgid "Join the community"
+msgstr "Únete a la comunidad"
+
+#. module: discuss_community
+#: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
+msgid "Chat with your neighbourhood: no forms, no waiting."
+msgstr "Chatea con tu barrio: sin formularios, sin esperas."
+
+#. module: discuss_community
+#: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
+msgid "Enter as guest"
+msgstr "Entrar como invitado"
+
+#. module: discuss_community
+#: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
+msgid "Create my account"
+msgstr "Crear mi cuenta"
+
+#. module: discuss_community
+#: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
+msgid "With an account you keep your name and your conversations on every visit."
+msgstr "Con una cuenta conservas tu nombre y tus conversaciones en cada visita."
+
+#. module: discuss_community
+#: model:res.groups,name:discuss_community.group_community_member
+msgid "Community Member"
+msgstr "Miembro de la comunidad"
+
+#. module: discuss_community
+#: model:ir.model.fields,field_description:discuss_community.field_res_users__is_community_guest
+msgid "Community Guest"
+msgstr "Invitado de la comunidad"
+
+#. module: discuss_community
+#: model:ir.cron,name:discuss_community.cron_gc_community_guests
+msgid "Discuss Community: purge idle guest accounts"
+msgstr "Discuss Community: purgar cuentas de invitado inactivas"
