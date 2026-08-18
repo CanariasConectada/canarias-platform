@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Writing group_ids on an existing menu REPLACES its gate (a
+         menuitem's groups attribute would only ADD). Dashboards ships
+         with no groups at all, so every internal user - merchants
+         included - saw it. Platform staff keeps it via group_system. -->
+    <record id="spreadsheet_dashboard.spreadsheet_dashboard_menu_root" model="ir.ui.menu">
+        <field name="group_ids" eval="[(6, 0, [ref('base.group_system')])]" />
+    </record>
+</odoo>
