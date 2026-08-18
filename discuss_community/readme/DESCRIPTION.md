@@ -32,8 +32,12 @@ implication), lives in the platform company only, and:
   neighbourhood one. Merchants keep their company-derived zone untouched.
 
 The `/community` page routes by identity: internal sessions go to `/odoo`,
-portal sessions keep the legacy `/chat`, and anonymous visitors get the two
-doors on the platform's branded card.
+anonymous visitors get the two doors on the platform's branded card, and
+portal sessions (merchants, portal guests) get the same card with a note and
+a log-out link instead of the doors — a portal account is not a community
+account, and since Phase 3 retires the legacy `/chat` pages behind a 301
+back to `/community` (`website_pwa_chat_community_redirect`), this branch
+must render rather than redirect to stay loop-free.
 
 Security posture of internal community members
 ----------------------------------------------

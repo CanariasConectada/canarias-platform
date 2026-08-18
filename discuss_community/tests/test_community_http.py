@@ -92,20 +92,66 @@ class TestCommunityRoutes(CommunityMixin, HttpCase):
             "internal users must be redirected to the backend",
         )
 
-    def test_logged_portal_user_keeps_the_website_chat(self):
-        """A portal session is not community: /chat stays their surface.
+    def test_logged_portal_user_gets_the_card_with_a_note(self):
+        """A portal session is not community: it gets the card, not /chat.
 
-        Phase 1 does not migrate merchants or existing portal accounts; the
-        page must route them to what they already use, not to a backend that
-        would bounce them.
+        Phase 1 routed these sessions to the legacy /chat pages; Phase 3
+        retires those pages behind a 301 back to /community
+        (``website_pwa_chat_community_redirect``), so a redirect to /chat
+        here would loop. The branch must RENDER: the card with a note and a
+        log-out door, and neither of the two anonymous doors -- both would
+        be dead buttons under an authenticated session (/community/guest
+        refuses to mint or swap, /web/signup fights the login).
         """
         self.authenticate("dcm_portal", "dcm_portal")
         response = self.url_open("/community", allow_redirects=False)
-        self.assertIn(response.status_code, (301, 302, 303, 307))
-        self.assertTrue(
-            response.headers.get("Location", "").endswith("/chat"),
-            "portal users must be routed to the website chat",
+        self.assertEqual(
+            response.status_code,
+            200,
+            "the portal branch must render, never redirect: /chat 301s back "
+            "here once the Phase 3 bridge is installed",
         )
+        self.assertIn("o_cc_portal_note", response.text)
+        self.assertIn("/web/session/logout?redirect=/community", response.text)
+        self.assertNotIn(
+            'action="/community/guest"',
+            response.text,
+            "the guest door is a dead button under an authenticated session",
+        )
+        self.assertNotIn(
+            'href="/web/signup"',
+            response.text,
+            "so is signup; only the log-out door may be offered",
+        )
+
+    def test_community_never_redirects_anybody_to_chat(self):
+        """The /community half of the no-loop contract, per persona.
+
+        Phase 3's bridge makes /chat answer 301 /community, so ANY answer
+        from this route pointing at /chat is a loop waiting for the bridge.
+        Asserted for the three session shapes the route distinguishes:
+        anonymous and portal must render (200), internal must leave for
+        /odoo -- never for /chat.
+        """
+        personas = (
+            ("anonymous", None),
+            ("portal", "dcm_portal"),
+            ("internal member", "dcm_member"),
+        )
+        for label, login in personas:
+            with self.subTest(persona=label):
+                self.authenticate(login, login)
+                response = self.url_open("/community", allow_redirects=False)
+                location = response.headers.get("Location", "")
+                self.assertFalse(
+                    location.rstrip("/").endswith("/chat"),
+                    "/community sent the %s persona to /chat: that is a "
+                    "redirect loop once the Phase 3 bridge is installed" % label,
+                )
+                if login == "dcm_member":
+                    self.assertTrue(location.endswith("/odoo"))
+                else:
+                    self.assertEqual(response.status_code, 200)
 
     # ------------------------------------------------------------------
     # /community/guest

@@ -107,7 +107,16 @@ class CommunityAccess(Home):
         * Internal session (community member, merchant staff, admin): the
           community lives in the Discuss backend now, go there.
         * Other authenticated session (portal merchant, portal guest): the
-          legacy website chat is still their community surface in Phase 1.
+          card again, with a note and a log-out door instead of the two
+          entries. Phase 1 sent these sessions to the legacy /chat pages;
+          Phase 3 retires those pages behind a 301 BACK to this route
+          (``website_pwa_chat_community_redirect``), so answering /chat here
+          would loop. A portal account is not a community account and there
+          is nothing to promote it into -- community members are internal --
+          so the honest answer is a page that says so and offers the one
+          move that works: log out, then come in through a door. This
+          branch renders, never redirects, which is what makes the
+          /community <-> /chat pair loop-free for every persona.
         * Anonymous: the minimal page with the two entries -- guest button
           (POST, one click) and account creation (signup).
         """
@@ -115,7 +124,10 @@ class CommunityAccess(Home):
             user = request.env["res.users"].sudo().browse(request.session.uid)
             if user.exists() and not user.share:
                 return request.redirect("/odoo")
-            return request.redirect("/chat")
+            return request.render(
+                "discuss_community.community_landing",
+                {"portal_session": bool(user.exists())},
+            )
         return request.render("discuss_community.community_landing", {})
 
     @http.route(

@@ -53,3 +53,13 @@ msgstr "Invitado de la comunidad"
 #: model:ir.cron,name:discuss_community.cron_gc_community_guests
 msgid "Discuss Community: purge idle guest accounts"
 msgstr "Discuss Community: purgar cuentas de invitado inactivas"
+
+#. module: discuss_community
+#: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
+msgid "Your current account is not a community account. Log out first, then come back in as a guest or create a community account."
+msgstr "Tu cuenta actual no es una cuenta de la comunidad. Cierra sesión primero y vuelve a entrar como invitado o crea una cuenta de la comunidad."
+
+#. module: discuss_community
+#: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
+msgid "Log out and continue"
+msgstr "Cerrar sesión y continuar"

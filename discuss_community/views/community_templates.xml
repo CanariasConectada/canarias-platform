@@ -27,12 +27,29 @@
                                  the es.po entry. -->
                             <p class="text-muted mb-4">Chat with your neighbourhood: no forms, no waiting.</p>
                             <!--
+                                A portal session (merchant, portal guest) is
+                                shown the card, not the doors: /community/guest
+                                refuses to mint or swap under an authenticated
+                                session and /web/signup would fight the login,
+                                so both doors would be dead buttons. The one
+                                move that works is logging out first; core's
+                                /web/session/logout takes a redirect and lands
+                                the visitor back here, anonymous, doors open.
+                            -->
+                            <t t-if="portal_session">
+                                <p class="text-muted mb-4 o_cc_portal_note">Your current account is not a community account. Log out first, then come back in as a guest or create a community account.</p>
+                                <a
+                                    href="/web/session/logout?redirect=/community"
+                                    class="btn btn-primary w-100"
+                                >Log out and continue</a>
+                            </t>
+                            <!--
                                 POST on purpose: the button mints (or reuses)
                                 an account, and a mutating route must never be
                                 a link a prefetcher can follow. The framework
                                 validates the csrf token server-side.
                             -->
-                            <form action="/community/guest" method="post">
+                            <form t-if="not portal_session" action="/community/guest" method="post">
                                 <input
                                     type="hidden"
                                     name="csrf_token"
@@ -44,10 +61,11 @@
                                 >Enter as guest</button>
                             </form>
                             <a
+                                t-if="not portal_session"
                                 href="/web/signup"
                                 class="btn btn-outline-secondary w-100 mt-2"
                             >Create my account</a>
-                            <p class="text-muted small mt-3 mb-0">With an account you keep your name and your conversations on every visit.</p>
+                            <p t-if="not portal_session" class="text-muted small mt-3 mb-0">With an account you keep your name and your conversations on every visit.</p>
                         </div>
                     </div>
                 </div>
