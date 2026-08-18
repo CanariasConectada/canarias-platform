@@ -19,14 +19,16 @@ SHOP TOOLBAR
               name="Shop Toolbar" priority="94">
         <xpath expr="//div[hasclass('o_wsale_products_main_row')]" position="before">
             <div id="shop-directory-toolbar" class="mb-3">
-                <div class="d-flex align-items-center justify-content-between bg-light rounded p-3">
+                <!-- flex-wrap: the controls group alone is ~300px, which
+                     overflows a 360px viewport without it. -->
+                <div class="d-flex flex-wrap align-items-center justify-content-between bg-light rounded p-3 gap-2">
                     <!-- Product counter -->
                     <div class="products-count">
                         <strong t-out="search_count or len(products) or 0"/>
                         <span class="text-muted ms-1">productos</span>
                     </div>
                     <!-- Controls -->
-                    <div class="d-flex align-items-center gap-3">
+                    <div class="d-flex flex-wrap align-items-center gap-2 gap-md-3">
                         <!-- Grid/List toggle -->
                         <div class="btn-group view-mode-toggle" role="group">
                             <button type="button" class="btn btn-outline-secondary btn-sm active"
@@ -40,7 +42,7 @@ SHOP TOOLBAR
                         </div>
                         <!-- PPG selector -->
                         <div class="d-flex align-items-center gap-2">
-                            <span class="text-muted small">Mostrar:</span>
+                            <span class="text-muted small d-none d-md-inline">Mostrar:</span>
                             <div class="btn-group" role="group">
                                 <t t-set="current_ppg" t-value="(request.httprequest.args.get('ppg') or '').isdecimal() and int(request.httprequest.args.get('ppg')) or 12"/>
                                 <a t-att-href="keep(ppg=12, page=1)"
