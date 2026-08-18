@@ -69,14 +69,18 @@ class ResCompany(models.Model):
     def _get_directory_website_url(self):
         """Public URL of the company for the directory entry.
 
-        Priority: extension hook > partner website > company website domain.
+        Priority: extension hook > company website domain > partner website.
+        The company's own microsite outranks whatever external site the
+        merchant typed on their contact card: the directory exists to send
+        visitors INTO the platform, and the microsite links back to the
+        external site anyway.
         """
         self.ensure_one()
         url = self._get_directory_extra_website_url()
-        if not url:
-            url = self.partner_id.website or ""
         if not url and self.website_id.domain:
             url = self.website_id.domain
+        if not url:
+            url = self.partner_id.website or ""
         if url and not url.startswith(("http://", "https://")):
             url = f"https://{url}"
         return url
