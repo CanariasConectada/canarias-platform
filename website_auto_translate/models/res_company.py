@@ -9,11 +9,12 @@ class ResCompany(models.Model):
 
     auto_translate_enabled = fields.Boolean(
         string="Translate this shop automatically",
-        default=False,
+        default=True,
         help="Content owned by this company is queued for automatic "
-        "translation whenever it is saved. Off by default so the rollout can "
-        "start with the portal and the commercial zones rather than every shop "
-        "at once.",
+        "translation whenever it is saved. On by default: a new merchant "
+        "company opts into the rollout at birth, so its microsite is born "
+        "with the full corporate format (the rollout already covers every "
+        "existing shop). Untick it to keep a specific shop out.",
     )
 
     def _auto_translate_companies(self):

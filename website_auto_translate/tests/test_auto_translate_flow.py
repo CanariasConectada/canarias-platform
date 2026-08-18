@@ -104,8 +104,18 @@ class TestAutoTranslateFlow(TransactionCase):
 
         self.assertFalse(self._jobs_for(product))
 
+    def test_a_new_shop_is_opted_in_at_birth(self):
+        """A merchant company created today joins the rollout by default.
+
+        The rollout already covers every existing shop, so a newly
+        auto-created microsite must be born with translations enabled
+        instead of silently staying Spanish-only.
+        """
+        newborn = self.env["res.company"].create({"name": "Auto Translate Newborn"})
+        self.assertTrue(newborn.auto_translate_enabled)
+
     def test_a_shop_that_did_not_opt_in_is_left_alone(self):
-        """The rollout starts with the portal and the zones, not 216 shops."""
+        """Opting a specific shop out still keeps its content untouched."""
         outsider = self.env["res.company"].create(
             {"name": "Auto Translate Outsider", "auto_translate_enabled": False}
         )
