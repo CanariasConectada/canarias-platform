@@ -40,13 +40,19 @@ class TestCompareScopes(TransactionCase):
         #
         # Held open for the whole class rather than the fixtures alone: the
         # pending recompute is flushed again at the start of every test.
-        cls.startClassPatcher(
-            patch.object(
-                type(cls.env["delivery.carrier"]),
-                "_check_warehouses_have_same_company",
-                lambda self: None,
+        #
+        # Only when website_sale_collect is actually installed: on the clean
+        # CI database the module (and its constraint) does not exist, and
+        # patching a missing attribute aborts the whole class in setUpClass.
+        carrier_cls = type(cls.env["delivery.carrier"])
+        if hasattr(carrier_cls, "_check_warehouses_have_same_company"):
+            cls.startClassPatcher(
+                patch.object(
+                    carrier_cls,
+                    "_check_warehouses_have_same_company",
+                    lambda self: None,
+                )
             )
-        )
         # The marketplace backfill is `website_sale_marketplace`'s business and
         # is tested there. Here it would link the whole catalogue -- 1576
         # products on a copy of production -- to a throwaway company, for no

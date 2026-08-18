@@ -179,14 +179,19 @@ class TestCompareCandidatesZones(HttpCase):
         # Same two patches as the scope tests, for the same reasons: creating
         # ANY company trips website_sale_collect's warehouse/company check,
         # and the marketplace backfill would link the whole catalogue to the
-        # fixture sites for no assertion.
-        cls.startClassPatcher(
-            patch.object(
-                type(cls.env["delivery.carrier"]),
-                "_check_warehouses_have_same_company",
-                lambda self: None,
+        # fixture sites for no assertion. The carrier patch only applies when
+        # website_sale_collect is actually installed (it is absent on the
+        # clean CI database, and patching a missing attribute aborts the
+        # class in setUpClass).
+        carrier_cls = type(cls.env["delivery.carrier"])
+        if hasattr(carrier_cls, "_check_warehouses_have_same_company"):
+            cls.startClassPatcher(
+                patch.object(
+                    carrier_cls,
+                    "_check_warehouses_have_same_company",
+                    lambda self: None,
+                )
             )
-        )
         cls.startClassPatcher(
             patch.object(
                 type(cls.env["website"]),

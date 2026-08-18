@@ -20,13 +20,18 @@ class TestComparisonCanarias(HttpCase):
         # is not its own. That blocks onboarding a merchant, not just this
         # test, and is reported separately; held open for the whole class
         # because the pending recompute is flushed again in every setUp.
-        cls.startClassPatcher(
-            patch.object(
-                type(cls.env["delivery.carrier"]),
-                "_check_warehouses_have_same_company",
-                lambda self: None,
+        # Only when website_sale_collect is actually installed: it is absent
+        # on the clean CI database, and patching a missing attribute aborts
+        # the whole class in setUpClass.
+        carrier_cls = type(cls.env["delivery.carrier"])
+        if hasattr(carrier_cls, "_check_warehouses_have_same_company"):
+            cls.startClassPatcher(
+                patch.object(
+                    carrier_cls,
+                    "_check_warehouses_have_same_company",
+                    lambda self: None,
+                )
             )
-        )
         cls.merchant = cls.env["res.company"].create({"name": "WSCC Tienda"})
         cls.env["website"].create(
             {
