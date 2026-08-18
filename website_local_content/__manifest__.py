@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website Local Content",
-    "version": "19.0.1.7.0",
+    "version": "19.0.1.8.0",
     "category": "Website",
     "summary": "Parameterizable local content galleries (places, memories, ...)",
     "author": "MikeColangelo",
@@ -35,6 +35,7 @@
     "assets": {
         "web.assets_frontend": [
             "website_local_content/static/src/css/website_local_content.css",
+            "website_local_content/static/src/js/website_local_content.js",
         ],
     },
     "installable": True,

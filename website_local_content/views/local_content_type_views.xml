@@ -41,6 +41,16 @@
                     <group>
                         <field name="description"/>
                     </group>
+                    <group string="Public Page Design">
+                        <group>
+                            <field name="hero_subtitle"/>
+                            <field name="hero_image" widget="image" class="oe_avatar"/>
+                        </group>
+                        <group>
+                            <field name="sponsor_name"/>
+                            <field name="sponsor_logo" widget="image" class="oe_avatar"/>
+                        </group>
+                    </group>
                 </sheet>
             </form>
         </field>

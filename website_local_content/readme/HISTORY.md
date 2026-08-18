@@ -1,3 +1,29 @@
+## 19.0.1.8.0 (2026-08-18)
+
+Port of the legacy visual design of the Living Memory and Places of
+Interest pages (design parity only, no comments/maps/submission form):
+
+- Index: full-bleed photo hero (`hero_image` / `hero_subtitle` on the
+  content type, seeded with the legacy artwork) with the search box inside
+  it; sidebar filters rebuilt as stacked cards with auto-submit selects
+  (category with counts, decades, emoji sort labels, 12/24/48 page size),
+  total badge, active-search badge and a "Remove filters" button; results
+  header bar with count and active-filter chips.
+- Cards: legacy layout (220px photo, hover lift + zoom, bottom gradient
+  overlay with year/likes/rating badges, category badge over the image)
+  and a floating AJAX like button (vanilla JS `fetch` against the existing
+  like route, CSRF included, `<noscript>` form fallback).
+- Pager: legacy hand-built pagination (every page number, chevrons, query
+  string preserved, anchored to `#entries_grid`) plus a page caption.
+- Detail: legacy two-column layout — main card (image, title, badges,
+  story, location, opening hours), gallery card, read-only reviews;
+  sidebar with back button, information card and read-only rating card.
+- New `?limit=` parameter whitelisted to 12/24/48; "best rated" sort; grid
+  images served as `image_512` and the detail image as `image_1024`.
+- New `sponsor_logo` / `sponsor_name` on the content type, rendered as a
+  centered band at the bottom of every page of the type; seeded with the
+  Gobierno de Canarias logo on Living Memory only (grant acknowledgement).
+
 ## 19.0.1.5.0 (2026-07-28)
 
 Read-only display of the legacy ratings, restoring parity with the old

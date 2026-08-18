@@ -21,7 +21,7 @@ msgstr ""
 #. module: website_local_content
 #: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
 msgid "<i class=\"fa fa-arrow-left me-1\"/>Back to"
-msgstr ""
+msgstr "<i class=\"fa fa-arrow-left me-1\"/>Volver a"
 
 #. module: website_local_content
 #: model:ir.model.fields,field_description:website_local_content.field_website_local_content_category__active
@@ -200,12 +200,12 @@ msgstr "Década"
 #. module: website_local_content
 #: model:ir.model.fields,help:website_local_content.field_website_local_content_item__decade
 msgid "Decade of the photograph, computed from the photo year."
-msgstr ""
+msgstr "Década de la fotografía, calculada a partir del año de la foto."
 
 #. module: website_local_content
 #: model:ir.model.fields,field_description:website_local_content.field_website_local_content_type__description
 msgid "Description"
-msgstr ""
+msgstr "Descripción"
 
 #. module: website_local_content
 #: model:ir.model.fields,field_description:website_local_content.field_website_local_content_category__display_name
@@ -260,7 +260,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__image_ids
 #: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_form
 msgid "Gallery"
-msgstr ""
+msgstr "Galería"
 
 #. module: website_local_content
 #: model:website.local.content.type,description:website_local_content.content_type_living_memory
@@ -466,7 +466,7 @@ msgstr ""
 #. module: website_local_content
 #: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_form
 msgid "Location"
-msgstr ""
+msgstr "Ubicación"
 
 #. module: website_local_content
 #: model:ir.model.fields,help:website_local_content.field_website_local_content_item__body
@@ -936,7 +936,7 @@ msgstr ""
 #. module: website_local_content
 #: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
 msgid "breadcrumb"
-msgstr ""
+msgstr "ruta de navegación"
 
 #. module: website_local_content
 #: model_terms:ir.ui.view,arch_db:website_local_content.content_index
@@ -957,3 +957,238 @@ msgstr "valoraciones"
 #: model_terms:ir.ui.view,arch_db:website_local_content.content_index
 msgid "s"
 msgstr ""
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "<i class=\"fa fa-search me-2 text-primary\"/>Search"
+msgstr "<i class=\"fa fa-search me-2 text-primary\"/>Buscar"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "<i class=\"fa fa-tags text-primary me-2\"/>Category"
+msgstr "<i class=\"fa fa-tags text-primary me-2\"/>Categoría"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "All subcategories"
+msgstr "Todas las subcategorías"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "<i class=\"fa fa-calendar text-primary me-2\"/>Decade"
+msgstr "<i class=\"fa fa-calendar text-primary me-2\"/>Década"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "All decades"
+msgstr "Todas las décadas"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "<i class=\"fa fa-sort text-primary me-2\"/>Sort by"
+msgstr "<i class=\"fa fa-sort text-primary me-2\"/>Ordenar por"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "⭐ Best rated"
+msgstr "⭐ Mejor valorados"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "❤️ Most liked"
+msgstr "❤️ Más gustados"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "🕐 Newest first"
+msgstr "🕐 Más recientes primero"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "📅 Oldest first"
+msgstr "📅 Más antiguos primero"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "📷 Photo year (newest)"
+msgstr "📷 Año de la foto (más reciente)"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "📷 Photo year (oldest)"
+msgstr "📷 Año de la foto (más antiguo)"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "<i class=\"fa fa-list-ol text-primary me-2\"/>Show"
+msgstr "<i class=\"fa fa-list-ol text-primary me-2\"/>Mostrar"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "per page"
+msgstr "por página"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "in total"
+msgstr "en total"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "<i class=\"fa fa-trash me-2\"/>Remove filters"
+msgstr "<i class=\"fa fa-trash me-2\"/>Quitar filtros"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "Page navigation"
+msgstr "Navegación de páginas"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "Previous"
+msgstr "Anterior"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "Next"
+msgstr "Siguiente"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "Page"
+msgstr "Página"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "of"
+msgstr "de"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "Story"
+msgstr "Historia"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "<i class=\"fa fa-map-marker text-primary me-2\"/>Location"
+msgstr "<i class=\"fa fa-map-marker text-primary me-2\"/>Ubicación"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "<i class=\"fa fa-clock-o text-primary me-2\"/>Opening Hours"
+msgstr "<i class=\"fa fa-clock-o text-primary me-2\"/>Horario"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "<i class=\"fa fa-images me-2 text-primary\"/>Gallery"
+msgstr "<i class=\"fa fa-images me-2 text-primary\"/>Galería"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "<i class=\"fa fa-arrow-left me-2\"/>Back to"
+msgstr "<i class=\"fa fa-arrow-left me-2\"/>Volver a"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "<i class=\"fa fa-user me-2\"/>Information"
+msgstr "<i class=\"fa fa-user me-2\"/>Información"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "<strong>Shared by:</strong>"
+msgstr "<strong>Compartido por:</strong>"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "Anonymous"
+msgstr "Anónimo"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "likes"
+msgstr "me gusta"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "<i class=\"fa fa-star me-2 text-warning\"/>Rating"
+msgstr "<i class=\"fa fa-star me-2 text-warning\"/>Valoración"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "ratings"
+msgstr "valoraciones"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_like_button
+msgid "Like"
+msgstr "Me gusta"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_type_view_form
+msgid "Public Page Design"
+msgstr "Diseño de la página pública"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_type__hero_image
+msgid "Hero Image"
+msgstr "Imagen de cabecera"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_type__hero_subtitle
+msgid "Hero Subtitle"
+msgstr "Subtítulo de cabecera"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_type__sponsor_logo
+msgid "Sponsor Logo"
+msgstr "Logotipo del patrocinador"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_type__sponsor_name
+msgid "Sponsor Name"
+msgstr "Nombre del patrocinador"
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_type__hero_image
+msgid ""
+"Full-width photograph behind the hero of the public index page. A plain "
+"gradient is used when empty."
+msgstr ""
+"Fotografía a ancho completo detrás de la cabecera de la página pública de "
+"índice. Si está vacía se usa un degradado plano."
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_type__hero_subtitle
+msgid ""
+"Short tagline shown under the title inside the hero. Falls back to the "
+"description when empty."
+msgstr ""
+"Lema corto mostrado bajo el título dentro de la cabecera. Si está vacío se "
+"usa la descripción."
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_type__sponsor_logo
+msgid ""
+"Institutional logo shown in a band at the bottom of every public page of "
+"this type (e.g. the Gobierno de Canarias mark on Living Memory). Nothing is"
+" rendered when empty."
+msgstr ""
+"Logotipo institucional mostrado en una banda al pie de todas las páginas "
+"públicas de este tipo (p. ej., la marca del Gobierno de Canarias en Memoria"
+" Viva). Si está vacío no se muestra nada."
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_type__sponsor_name
+msgid "Accessible name of the sponsor logo (image alt text)."
+msgstr "Nombre accesible del logotipo del patrocinador (texto alternativo de la imagen)."
+
+#. module: website_local_content
+#: model:website.local.content.type,hero_subtitle:website_local_content.content_type_living_memory
+#: model:website.local.content.type,hero_subtitle:website_local_content.content_type_places_of_interest
+msgid "Discover and share the stories of the neighbourhood"
+msgstr "Descubre y comparte las historias del barrio"
+
+#. module: website_local_content
+#: model:website.local.content.type,sponsor_name:website_local_content.content_type_living_memory
+msgid "Gobierno de Canarias"
+msgstr "Gobierno de Canarias"

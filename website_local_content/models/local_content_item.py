@@ -372,10 +372,18 @@ class LocalContentItem(models.Model):
         return not self.website_ids or website in self.website_ids
 
     # --- Public rendering helpers -----------------------------------------
-    def get_image_url(self):
-        """URL of the streamed public image (see the ``/img`` route)."""
+    def get_image_url(self, size=None):
+        """URL of the streamed public image (see the ``/img`` route).
+
+        ``size`` selects a pre-computed variant of ``image.mixin`` (512 for
+        the grid cards, 1024 for the detail page); the full ``image_1920``
+        is served when no size is given.
+        """
         self.ensure_one()
-        return f"/explora/{self.type_id.url_slug}/img/{self.id}"
+        url = f"/explora/{self.type_id.url_slug}/img/{self.id}"
+        if size:
+            url += f"?size={size}"
+        return url
 
     def get_external_website_url(self):
         """Safe ``href`` for the external link shown on the detail page.
