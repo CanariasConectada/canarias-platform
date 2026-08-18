@@ -100,8 +100,13 @@ class ResCompany(models.Model):
             # on the entry that reads _get_directory_website_url() live.
             "active": self.show_in_directory,
         }
+        # The 2026 logo recovery restored merchant logos onto website.logo;
+        # most companies never got one of their own, so the card falls back
+        # to the site's logo rather than showing a placeholder.
         if self.logo:
             values["image_1920"] = self.logo
+        elif self.website_id.logo:
+            values["image_1920"] = self.website_id.logo
         return values
 
     def _sync_to_directory_entry(self):
