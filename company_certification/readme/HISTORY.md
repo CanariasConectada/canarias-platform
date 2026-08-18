@@ -1,3 +1,21 @@
+## 19.0.2.4.0 (2026-08-18)
+
+- The per-question recommendation is now read-only guidance under the
+  question instead of a comment box. `comments_allowed` used to render the
+  recommendation as the placeholder of a free-comment TEXTAREA, so merchants
+  thought they had to write something. The recommendation is appended to the
+  question `description` as a final muted paragraph; `comments_message` is
+  kept as data because the result page's improvement cards read it. The
+  survey data files are `noupdate`, so a post-migration applies the same
+  transform (per installed language) to the live records.
+- The "Cerrar" button on the result page is wrapped like the core buttons of
+  its flex row, so it no longer stretches into a misshapen oval next to
+  "Volver a hacer". The retake button is now hidden for certification
+  surveys at its call site: the vertical modules overwrite the `t-if`
+  attribute inside `survey.survey_button_retake` (last one wins, each
+  keeping only its own flag), which let the button leak back onto
+  certification surveys and bypass the cooldown.
+
 ## 19.0.2.1.0 (2026-08-14)
 
 - One list of evaluations for every seal, grouped by seal, replacing the one
