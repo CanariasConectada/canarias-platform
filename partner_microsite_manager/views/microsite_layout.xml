@@ -27,58 +27,33 @@
                 >
                     <footer class="bg-black text-light py-4">
                         <div class="container">
-                            <!-- Social networks -->
-                            <div class="row justify-content-center mb-3">
+                            <!-- Social networks. Website value first, owning
+                                 company's value as fallback per network (see
+                                 website._pmm_footer_social_links): merchants
+                                 fill the links on the company form, and those
+                                 values must not sit there invisible. Nothing
+                                 renders when both sides are empty. -->
+                            <t
+                                t-set="pmm_social_links"
+                                t-value="website._pmm_footer_social_links()"
+                            />
+                            <div
+                                t-if="pmm_social_links"
+                                class="row justify-content-center mb-3"
+                            >
                                 <div class="col-auto d-flex gap-3 align-items-center">
                                     <a
-                                        t-if="website.social_facebook"
-                                        t-att-href="website.social_facebook"
+                                        t-foreach="pmm_social_links"
+                                        t-as="pmm_link"
+                                        t-att-href="pmm_link['href']"
                                         target="_blank"
                                         class="link-light"
-                                        title="Facebook"
-                                        aria-label="Facebook"
+                                        t-att-title="pmm_link['title']"
+                                        t-att-aria-label="pmm_link['title']"
                                     >
-                                        <i class="fa fa-facebook fa-lg"/>
-                                    </a>
-                                    <a
-                                        t-if="website.social_instagram"
-                                        t-att-href="website.social_instagram"
-                                        target="_blank"
-                                        class="link-light"
-                                        title="Instagram"
-                                        aria-label="Instagram"
-                                    >
-                                        <i class="fa fa-instagram fa-lg"/>
-                                    </a>
-                                    <a
-                                        t-if="website.social_twitter"
-                                        t-att-href="website.social_twitter"
-                                        target="_blank"
-                                        class="link-light"
-                                        title="X/Twitter"
-                                        aria-label="X/Twitter"
-                                    >
-                                        <i class="fa fa-twitter fa-lg"/>
-                                    </a>
-                                    <a
-                                        t-if="website.social_youtube"
-                                        t-att-href="website.social_youtube"
-                                        target="_blank"
-                                        class="link-light"
-                                        title="YouTube"
-                                        aria-label="YouTube"
-                                    >
-                                        <i class="fa fa-youtube-play fa-lg"/>
-                                    </a>
-                                    <a
-                                        t-if="website.social_linkedin"
-                                        t-att-href="website.social_linkedin"
-                                        target="_blank"
-                                        class="link-light"
-                                        title="LinkedIn"
-                                        aria-label="LinkedIn"
-                                    >
-                                        <i class="fa fa-linkedin fa-lg"/>
+                                        <i
+                                            t-attf-class="fa #{pmm_link['icon']} fa-lg"
+                                        />
                                     </a>
                                 </div>
                             </div>

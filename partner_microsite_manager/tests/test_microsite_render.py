@@ -109,3 +109,46 @@ class TestMicrositeRender(TransactionCase):
         self.company.microsite_phone2 = "603222222"
         html = self._render_homepage_content()
         self.assertIn("603222222", html)
+
+    # ------------------------------------------------------------------
+    # Footer social links: website value first, company value as fallback
+    # ------------------------------------------------------------------
+    _SOCIAL_FIELDS = (
+        "social_facebook",
+        "social_instagram",
+        "social_twitter",
+        "social_youtube",
+        "social_linkedin",
+    )
+
+    def _clear_socials(self):
+        # website.social_* defaults from the main company (core behaviour),
+        # so both sides are cleared explicitly for a deterministic start.
+        empty = dict.fromkeys(self._SOCIAL_FIELDS, False)
+        self.website.write(empty)
+        self.company.write(empty)
+
+    def test_footer_socials_fall_back_to_the_company(self):
+        self._clear_socials()
+        self.company.social_instagram = "https://instagram.com/rendershop"
+        links = self.website._pmm_footer_social_links()
+        self.assertEqual(
+            [link["href"] for link in links],
+            ["https://instagram.com/rendershop"],
+            "A link filled on the company form must reach the footer.",
+        )
+
+    def test_footer_socials_website_value_wins(self):
+        self._clear_socials()
+        self.company.social_facebook = "https://facebook.com/company-value"
+        self.website.social_facebook = "https://facebook.com/website-value"
+        links = self.website._pmm_footer_social_links()
+        self.assertEqual(
+            [link["href"] for link in links],
+            ["https://facebook.com/website-value"],
+            "A hand-typed website value must never be shadowed.",
+        )
+
+    def test_footer_socials_render_nothing_when_both_empty(self):
+        self._clear_socials()
+        self.assertEqual(self.website._pmm_footer_social_links(), [])

@@ -11,6 +11,18 @@ _CERT_LEVEL_COLORS = {
     "bronze": "#CD7F32",
 }
 
+# Networks shown in the microsite footer, in display order. Field name on
+# both website and res.company (the ``social_media`` module, a base
+# dependency of ``website``, defines the company side), visible title and
+# FontAwesome icon class.
+_FOOTER_SOCIAL_NETWORKS = (
+    ("social_facebook", "Facebook", "fa-facebook"),
+    ("social_instagram", "Instagram", "fa-instagram"),
+    ("social_twitter", "X/Twitter", "fa-twitter"),
+    ("social_youtube", "YouTube", "fa-youtube-play"),
+    ("social_linkedin", "LinkedIn", "fa-linkedin"),
+)
+
 
 class Website(models.Model):
     _inherit = "website"
@@ -25,6 +37,28 @@ class Website(models.Model):
         "social links, legal pages and certification badges) on this "
         "website. Leave off for the directory and the main website.",
     )
+
+    def _pmm_footer_social_links(self):
+        """Social links for the microsite footer, per network, with fallback.
+
+        The website value wins; when it is empty the owning COMPANY's value
+        fills in. Rationale (measured at the origin, see the migration
+        script ``website_social_from_company.py``): the legacy footer read
+        only ``website.social_*`` while merchants filled the links on the
+        company form, so correct values sat there invisible. Falling back
+        per network keeps a hand-typed website value untouched and still
+        renders nothing when both sides are empty.
+
+        Rendered in a public (sudo) website context.
+        """
+        self.ensure_one()
+        company = self.company_id.sudo()
+        links = []
+        for field_name, title, icon in _FOOTER_SOCIAL_NETWORKS:
+            href = self[field_name] or company[field_name]
+            if href:
+                links.append({"href": href, "title": title, "icon": icon})
+        return links
 
     def _pmm_footer_certifications(self):
         """Certification badges to show in the microsite footer.
