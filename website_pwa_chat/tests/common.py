@@ -14,7 +14,10 @@ OTHER_HELD_BODY = "gofio escaldado para dos"
 # Asserted as a substring rather than through a marker class because it is the
 # PRODUCT promise, not a DOM detail: if the wording ever stops saying this, the
 # visitor stops being told what happened to their message.
-UNDER_REVIEW = "en revisión"
+# The held-message card's own class, closing quote included so the
+# always-present o_cc_chat_pending_zone container never matches. Asserting
+# the translated phrase broke on CI, whose fresh DB renders en_US.
+UNDER_REVIEW = 'o_cc_chat_pending"'
 
 
 class WebsiteChatMixin(ZoneChannelMixin):
@@ -36,7 +39,9 @@ class WebsiteChatMixin(ZoneChannelMixin):
         # the flags everywhere removes that variable, and the test that proves
         # the switch really gates the route turns them all back off.
         cls.websites = cls.env["website"].search([])
-        cls.websites.write({"chat_enabled": True, "pwa_enabled": True})
+        cls.websites.write(
+            {"chat_enabled": True, "pwa_enabled": True, "chat_link_enabled": True}
+        )
 
         cls.moderator = cls.env["res.users"].create(
             {

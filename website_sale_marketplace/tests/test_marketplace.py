@@ -23,13 +23,19 @@ class MarketplaceCommon:
         # the new company's warehouse meets an in_store delivery method that
         # is not its own. It blocks onboarding a merchant, not just this test,
         # and is reported separately.
-        cls.startClassPatcher(
-            patch.object(
-                type(cls.env["delivery.carrier"]),
-                "_check_warehouses_have_same_company",
-                lambda self: None,
+        # The patched check is contributed by website_sale_collect, which a
+        # minimal CI install does not load; the guard keeps the test valid
+        # in both worlds instead of exploding in setUpClass.
+        if hasattr(
+            type(cls.env["delivery.carrier"]), "_check_warehouses_have_same_company"
+        ):
+            cls.startClassPatcher(
+                patch.object(
+                    type(cls.env["delivery.carrier"]),
+                    "_check_warehouses_have_same_company",
+                    lambda self: None,
+                )
             )
-        )
         cls.website = cls.env.ref("website.default_website")
         cls.mp_company = cls.website.company_id or cls.env.company
         cls.company_b = cls.env["res.company"].create({"name": "MP Merchant B"})
