@@ -77,6 +77,11 @@
                                     <p class="small mb-3">
                                         <i class="fa fa-shield me-1"/>
                                         <a
+                                            href="/aviso-legal"
+                                            class="link-light text-decoration-none"
+                                        >Aviso legal</a>
+                                        <span class="mx-2">·</span>
+                                        <a
                                             href="/politica-privacidad"
                                             class="link-light text-decoration-none"
                                         >Política de privacidad</a>
@@ -114,6 +119,53 @@
                 </div>
             </t>
             <t t-else="">$0</t>
+        </xpath>
+    </template>
+
+    <!-- Legal links for the websites that do NOT use the corporate microsite
+         footer (the portal and the non-themed shops keep their own designed
+         footer, which is copy-on-write DB content with no legal links in it).
+
+         Anchored on ``footer#bottom`` (portal.frontend_layout) rather than on
+         ``div#footer`` on purpose: after ``microsite_corporate_footer`` the
+         combined arch holds one ``div#footer`` per branch and an xpath on it
+         would land inside the wrong one. Appending at the end of the footer
+         element works whatever a website's COW footer content looks like,
+         without touching any DB content. Priority 110 so it applies after the
+         footer replacement above. -->
+    <template
+        id="footer_platform_legal_links"
+        inherit_id="website.layout"
+        name="Footer Legal Links (non-microsite)"
+        priority="110"
+    >
+        <xpath expr="//footer[@id='bottom']" position="inside">
+            <div
+                t-if="not no_footer and website and not website.is_microsite_themed"
+                class="o_pmm_footer_legal border-top py-2"
+            >
+                <div class="container text-center small">
+                    <a
+                        href="/aviso-legal"
+                        class="text-decoration-none"
+                    >Aviso legal</a>
+                    <span class="mx-2">·</span>
+                    <a
+                        href="/politica-privacidad"
+                        class="text-decoration-none"
+                    >Política de privacidad</a>
+                    <span class="mx-2">·</span>
+                    <a
+                        href="/terminos-condiciones"
+                        class="text-decoration-none"
+                    >Términos y condiciones</a>
+                    <span class="mx-2">·</span>
+                    <a
+                        href="/politica-cookies"
+                        class="text-decoration-none"
+                    >Política de Cookies</a>
+                </div>
+            </div>
         </xpath>
     </template>
 

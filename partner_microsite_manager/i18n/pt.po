@@ -9,9 +9,10 @@
 # rightly so: translating an addon's view in the database would fight the
 # module on every update. Its wording belongs here instead.
 #
-# The legal pages are deliberately NOT translated. A privacy policy or a set of
-# terms and conditions run through a machine translator is a liability, not a
-# service, and Spanish is the language they were written and reviewed in.
+# The legal pages ARE machine-translated since 19.0.2.0.0, but through the
+# website_auto_translate queue (enqueued by the post-migration), not through
+# these files: every legal page carries a clause saying the non-Spanish
+# versions are automatic translations and the Spanish text prevails.
 #
 # There is an en.po, and it only became safe to ship one once the base was
 # protected. Odoo keeps en_US as the technical base of a translatable column,
@@ -56,6 +57,11 @@ msgstr "Termos e Condições"
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
 msgid "Política de Cookies"
 msgstr "Política de Cookies"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
+msgid "Aviso legal"
+msgstr "Aviso legal"
 
 #. module: partner_microsite_manager
 #. odoo-python

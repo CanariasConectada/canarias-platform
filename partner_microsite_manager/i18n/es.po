@@ -5,6 +5,11 @@
 # Generated from the module's own .pot so every `#:` reference line survives.
 # See scratchpad/refresh_po.py for why that matters.
 #
+# The legal page templates (rewritten in 19.0.2.0.0) are not listed here:
+# their Spanish source gets its own es_ES key from that version's
+# post-migration, and their other languages come from the
+# website_auto_translate queue, not from .po files.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
@@ -16,60 +21,6 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice
-msgid ", la"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions
-msgid ""
-". El acceso\n"
-"                                    al sitio implica la aceptación de estas\n"
-"                                    condiciones."
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions
-msgid "1. Introducción"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy
-msgid "1. Responsable del tratamiento"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions
-msgid "2. Condiciones de uso"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy
-msgid "2. Datos que recopilamos"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy
-msgid "3. Derechos de los interesados"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions
-msgid "3. Propiedad intelectual"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions
-msgid "4. Legislación aplicable"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy
-msgid "4. Ley aplicable"
-msgstr ""
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
@@ -86,63 +37,6 @@ msgstr ""
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_partner_form_microsite
 msgid "<span class=\"o_stat_text\">Microsite</span>"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice
-msgid "<strong>Correo electrónico: </strong>"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy
-msgid "<strong>Correo electrónico:</strong>"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice
-msgid "<strong>Denominación: </strong>"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy
-msgid "<strong>Dirección:</strong>"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice
-msgid "<strong>Domicilio: </strong>"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice
-msgid "<strong>NIF/CIF: </strong>"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy
-msgid "<strong>Nombre:</strong>"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice
-msgid "<strong>Sitio web: </strong>"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice
-msgid "<strong>Teléfono: </strong>"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy
-msgid ""
-"<strong>Técnicas:</strong> imprescindibles para\n"
-"                                    la navegación y el proceso de compra.\n"
-"                                    <strong>De personalización:</strong> recuerdan\n"
-"                                    sus preferencias (idioma, región).\n"
-"                                    <strong>Analíticas y de terceros:</strong>\n"
-"                                    permiten medir el uso del sitio y la\n"
-"                                    interacción con redes sociales."
 msgstr ""
 
 #. module: partner_microsite_manager
@@ -178,11 +72,6 @@ msgstr "Dirección"
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
 msgid "All rights reserved"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice
-msgid "Aviso Legal"
 msgstr ""
 
 #. module: partner_microsite_manager
@@ -238,18 +127,8 @@ msgid "Company of this contact that owns a website (microsite)."
 msgstr ""
 
 #. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice
-msgid "Condiciones de uso"
-msgstr ""
-
-#. module: partner_microsite_manager
 #: model:ir.model,name:partner_microsite_manager.model_res_config_settings
 msgid "Config Settings"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions
-msgid "Consulte también nuestra"
 msgstr ""
 
 #. module: partner_microsite_manager
@@ -313,11 +192,6 @@ msgid "Custom Map URL"
 msgstr "URL de mapa personalizado"
 
 #. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy
-msgid "Datos necesarios para la prestación de nuestros servicios."
-msgstr ""
-
-#. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_delivery_info
 msgid "Delivery"
 msgstr "Entrega"
@@ -343,36 +217,10 @@ msgid "Display Name"
 msgstr ""
 
 #. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions
-msgid ""
-"El sitio actúa como intermediario de información\n"
-"                                    sobre productos y servicios y no garantiza la\n"
-"                                    exactitud, disponibilidad o precio de los\n"
-"                                    ofrecidos por terceros."
-msgstr ""
-
-#. module: partner_microsite_manager
 #: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_map_url
 msgid ""
 "Embeddable map URL. When empty, a Google Maps embed is built from the "
 "company address."
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice
-msgid ""
-"En cumplimiento del artículo 10 de la Ley 34/2002,\n"
-"                            de servicios de la sociedad de la información y de\n"
-"                            comercio electrónico (LSSI-CE), se informa de los\n"
-"                            siguientes datos identificativos:"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions
-msgid ""
-"Estas condiciones se rigen por la legislación\n"
-"                                    española y los juzgados de Las Palmas de Gran\n"
-"                                    Canaria."
 msgstr ""
 
 #. module: partner_microsite_manager
@@ -384,11 +232,6 @@ msgstr ""
 #. odoo-python
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 msgid "Friday"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy
-msgid "Gestión de cookies"
 msgstr ""
 
 #. module: partner_microsite_manager
@@ -443,16 +286,6 @@ msgid "Identity"
 msgstr "Identidad"
 
 #. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy
-msgid "Información de contacto (nombre, email, teléfono)."
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy
-msgid "Información de navegación (cookies, dirección IP)."
-msgstr ""
-
-#. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
 msgid "Instagram"
 msgstr ""
@@ -486,34 +319,10 @@ msgid ""
 msgstr "Formato de horario no válido. Ejemplo esperado: 'L-V 10:00-13:30 / L-V 16:30-20:00 / S 10:00-14:00'."
 
 #. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy
-msgid ""
-"La resolución de conflictos se rige por la\n"
-"                                    legislación española y los juzgados y tribunales\n"
-"                                    de Las Palmas de Gran Canaria."
-msgstr ""
-
-#. module: partner_microsite_manager
 #: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_button_text
 msgid ""
 "Label of the call-to-action button of the hero section. Falls back to "
 "'Shop'."
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy
-msgid ""
-"Las cookies son pequeños archivos de datos que\n"
-"                                    se almacenan en su dispositivo al visitar una\n"
-"                                    página web y permiten recopilar información\n"
-"                                    relativa a su navegación."
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions
-msgid ""
-"Las presentes condiciones regulan el acceso y\n"
-"                                    uso de este sitio web, propiedad de"
 msgstr ""
 
 #. module: partner_microsite_manager
@@ -532,22 +341,10 @@ msgid "LinkedIn"
 msgstr ""
 
 #. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions
-msgid ""
-"Los contenidos, marcas y logotipos corresponden\n"
-"                                    a"
-msgstr ""
-
-#. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_map_url
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
 msgid "Map"
 msgstr "Mapa"
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy
-msgid "Mediante la presente Política de Privacidad,"
-msgstr ""
 
 #. module: partner_microsite_manager
 #. odoo-python
@@ -634,14 +431,6 @@ msgid "Parking and directions"
 msgstr "Aparcamiento y cómo llegar"
 
 #. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice
-msgid ""
-"Pendiente del texto definitivo de la asesoría\n"
-"                                jurídica. Hasta que se incorpore, siguen siendo\n"
-"                                de aplicación la"
-msgstr ""
-
-#. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_phone
 msgid "Phone"
 msgstr ""
@@ -651,13 +440,6 @@ msgstr ""
 msgid ""
 "Phone shown on the microsite. Falls back to the company contact's phone when"
 " empty."
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions
-msgid "Política de Privacidad"
 msgstr ""
 
 #. module: partner_microsite_manager
@@ -699,22 +481,6 @@ msgstr "Publicación"
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 msgid "Publish Homepage"
 msgstr "Publicar portada"
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy
-msgid ""
-"Puede ejercer sus derechos de acceso,\n"
-"                                    rectificación, supresión, oposición, limitación\n"
-"                                    y portabilidad escribiendo a"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy
-msgid ""
-"Puede permitir, bloquear o eliminar las cookies\n"
-"                                    instaladas mediante la configuración de su\n"
-"                                    navegador."
-msgstr ""
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,help:partner_microsite_manager.field_res_config_settings__is_microsite_themed
@@ -836,11 +602,6 @@ msgid "Thursday"
 msgstr ""
 
 #. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice
-msgid "Titular del sitio web"
-msgstr ""
-
-#. module: partner_microsite_manager
 #. odoo-python
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 msgid ""
@@ -868,12 +629,6 @@ msgstr ""
 #. odoo-python
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 msgid "Tuesday"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions
-msgid "Términos y Condiciones"
 msgstr ""
 
 #. module: partner_microsite_manager
@@ -928,51 +683,9 @@ msgid ""
 msgstr "Tu cuenta no está vinculada a un comercio con sitio propio, así que no hay contenido de página que editar."
 
 #. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice
-msgid "de este sitio."
-msgstr ""
-
-#. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "e.g. L-V 10:00-13:30 / L-V 16:30-20:00 / S 10:00-14:00"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy
-msgid ""
-"muestra su compromiso con el cumplimiento de\n"
-"                                    la normativa aplicable al tratamiento de datos\n"
-"                                    personales (RGPD UE 2016/679, LOPDGDD 3/2018 y\n"
-"                                    LSSI 34/2002)."
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions
-msgid ""
-"o a sus\n"
-"                                    legítimos titulares. Queda prohibida su\n"
-"                                    reproducción sin autorización."
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice
-msgid "y los"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions
-msgid "y nuestra"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy
-msgid "¿Qué cookies utilizamos?"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy
-msgid "¿Qué son las cookies?"
 msgstr ""
 
 #. module: partner_microsite_manager
