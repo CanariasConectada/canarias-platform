@@ -8,6 +8,14 @@
     background: linear-gradient(135deg, #1a3a5c 0%, #2c6e91 100%);
 }
 
+/* On a phone 120px of padding drowns the content: near half a screen of
+   photograph before the first word. */
+@media (max-width: 576px) {
+    .wlc-hero {
+        padding: 48px 0;
+    }
+}
+
 .wlc-hero-overlay {
     background: rgba(13, 71, 161, 0.55);
 }
@@ -52,10 +60,11 @@
     overflow: hidden;
 }
 
-/* Floating like button over the card image. */
+/* Floating like button over the card image. 2.5rem: a 36px square is
+   under the ~44px touch-target floor. */
 .wlc-like-btn {
-    width: 36px;
-    height: 36px;
+    width: 2.5rem;
+    height: 2.5rem;
     padding: 0;
     z-index: 10;
 }

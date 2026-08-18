@@ -111,7 +111,10 @@
         <t t-call="website.layout">
             <div id="wrap" class="oe_structure">
                 <!-- Hero with background photograph and overlay -->
-                <section class="py-5 border-bottom position-relative wlc-hero"
+                <!-- No py-5: its !important padding was silently winning
+                     over .wlc-hero's 120px design (the stylesheet also
+                     shrinks it on small screens). -->
+                <section class="border-bottom position-relative wlc-hero"
                          t-attf-style="{{ 'background: url(%s) center/cover no-repeat;' % content_type.get_hero_image_url() if content_type.hero_image else '' }}">
                     <div class="position-absolute top-0 start-0 w-100 h-100 wlc-hero-overlay"/>
                     <div class="container position-relative wlc-hero-content">
