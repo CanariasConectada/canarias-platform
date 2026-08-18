@@ -71,6 +71,153 @@ class TestShopDesign(HttpCase):
         self.assertIn("WSC Alimentación", response.text)
 
     # ------------------------------------------------------------------
+    # The two-level category tree
+    # ------------------------------------------------------------------
+
+    def _add_child_category_product(self):
+        """A product filed only under a child of the existing category."""
+        child = self.env["product.public.category"].create(
+            {"name": "WSC Panadería Artesana", "parent_id": self.category.id}
+        )
+        product = self.env["product.template"].create(
+            {
+                "name": "WSC Bollo de Anís",
+                "sale_ok": True,
+                "is_published": True,
+                "list_price": 4.0,
+                "company_ids": [(6, 0, [self.merchant.id])],
+                "public_categ_ids": [(6, 0, [child.id])],
+            }
+        )
+        return child, product
+
+    def test_category_tree_hangs_children_under_their_parent(self):
+        child, _product = self._add_child_category_product()
+        tree = self.portal._wsc_shop_category_tree()
+        node = [n for n in tree if n["category"] == self.category]
+        self.assertTrue(node, "the parent category must be a top level")
+        self.assertIn(child, node[0]["children"])
+        # Nothing pruned: the flat set and the tree carry the same categories.
+        flat = self.portal._wsc_shop_categories()
+        in_tree = {n["category"].id for n in tree}
+        for n in tree:
+            in_tree.update(c.id for c in n["children"])
+        self.assertEqual(set(flat.ids), in_tree)
+
+    def test_selected_category_path_places_the_selection(self):
+        child, _product = self._add_child_category_product()
+        self.assertEqual(
+            self.portal._wsc_selected_category_path(self.category),
+            (self.category.id, None),
+        )
+        self.assertEqual(
+            self.portal._wsc_selected_category_path(child),
+            (self.category.id, child.id),
+        )
+        self.assertEqual(
+            self.portal._wsc_selected_category_path(None), (None, None)
+        )
+
+    def test_ajax_parent_category_includes_the_childs_products(self):
+        """Picking a main category promises everything under it: a product
+        filed ONLY under a child must come back for the parent — this is the
+        child_of contract, and an exact-match domain would fail it."""
+        child, product = self._add_child_category_product()
+        result = self._ajax("?category=%s" % self.category.id)
+        self.assertIn(product.name, result["html"])
+        by_child = self._ajax("?category=%s" % child.id)
+        self.assertIn(product.name, by_child["html"])
+        self.assertNotIn("WSC Pan de Millo", by_child["html"])
+
+    def test_category_tree_bridges_an_unlisted_middle_level(self):
+        """A leaf whose immediate parent sells nothing here still hangs under
+        the listed grandparent — the tree walks the whole ancestor chain, not
+        one step."""
+        middle = self.env["product.public.category"].create(
+            {"name": "WSC Nivel Fantasma", "parent_id": self.category.id}
+        )
+        leaf = self.env["product.public.category"].create(
+            {"name": "WSC Hoja Profunda", "parent_id": middle.id}
+        )
+        self.env["product.template"].create(
+            {
+                "name": "WSC Producto Profundo",
+                "sale_ok": True,
+                "is_published": True,
+                "list_price": 2.0,
+                "company_ids": [(6, 0, [self.merchant.id])],
+                "public_categ_ids": [(6, 0, [leaf.id])],
+            }
+        )
+        tree = self.portal._wsc_shop_category_tree()
+        node = [n for n in tree if n["category"] == self.category]
+        self.assertTrue(node)
+        self.assertIn(leaf, node[0]["children"])
+        self.assertNotIn(
+            middle,
+            [n["category"] for n in tree],
+            "a category no product carries is not a filter option",
+        )
+
+    def test_sidebar_renders_the_subcategory_level(self):
+        child, _product = self._add_child_category_product()
+        response = self.url_open("/shop?category=%s" % self.category.id)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("wsc_subcategory_select", response.text)
+        self.assertIn(child.name, response.text)
+
+    # ------------------------------------------------------------------
+    # The zone switcher
+    # ------------------------------------------------------------------
+
+    def test_zone_switcher_derives_from_marketplace_websites(self):
+        """The switcher is configuration, not a hardcoded list: flag a second
+        marketplace website and it appears, portal first."""
+        self.portal.domain = "https://wsc-portal.example"
+        zone_site = self.env["website"].create(
+            {
+                "name": "WSC Zona",
+                "domain": "https://wsc-zona.example",
+                "is_marketplace": True,
+            }
+        )
+        selection = self.env["website"]._fields[
+            "marketplace_zone"
+        ]._description_selection(self.env)
+        if selection:
+            zone_site.marketplace_zone = selection[0][0]
+        sites = self.portal._wsc_zone_sites()
+        self.assertEqual(sites[0], self.portal, "the portal leads the list")
+        self.assertIn(zone_site, sites)
+
+        response = self.url_open("/shop")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("wsc_zone_select", response.text)
+        self.assertIn("Todas las zonas", response.text)
+        self.assertIn("https://wsc-zona.example/shop", response.text)
+
+    def test_zone_switcher_needs_at_least_two_shops(self):
+        """A switcher with one destination is dead UI — with only the portal
+        flagged, the card stays off the page."""
+        response = self.url_open("/shop")
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("wsc_zone_select", response.text)
+
+    def test_microsite_gets_no_zone_switcher(self):
+        self.portal.domain = "https://wsc-portal.example"
+        self.env["website"].create(
+            {
+                "name": "WSC Zona",
+                "domain": "https://wsc-zona.example",
+                "is_marketplace": True,
+            }
+        )
+        response = self.url_open(
+            "/shop", headers={"Host": "wsc-panaderia.example"}
+        )
+        self.assertNotIn("wsc_zone_select", response.text)
+
+    # ------------------------------------------------------------------
     # The AJAX endpoint
     # ------------------------------------------------------------------
 

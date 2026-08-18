@@ -52,7 +52,14 @@ class WebsiteSaleCanarias(http.Controller):
                     .exists()
                 )
                 if category_record:
-                    domain &= Domain("public_categ_ids", "in", category_record.ids)
+                    # child_of, not an exact match: the sidebar is now two
+                    # levels and picking a main category promises everything
+                    # under it — which is also how core website_sale reads
+                    # ?category= on the full-page render, so the AJAX grid
+                    # and a reload agree.
+                    domain &= Domain(
+                        "public_categ_ids", "child_of", category_record.id
+                    )
             if search:
                 domain &= Domain("name", "ilike", search)
 

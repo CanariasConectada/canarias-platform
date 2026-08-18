@@ -107,6 +107,14 @@
         }
 
         toggle.textContent = label();
+        // Keep the toggle honest when the cascade repopulates the select or
+        // sets its value from code: any change event re-reads the label.
+        select.addEventListener("change", function () {
+            toggle.textContent = label();
+        });
+        select.addEventListener("wsc:refresh", function () {
+            toggle.textContent = label();
+        });
         toggle.addEventListener("click", function (event) {
             event.preventDefault();
             if (panel.classList.contains("d-none")) {
@@ -302,12 +310,77 @@
         return input ? input.value : "";
     }
 
+    function categoryTree() {
+        var node = document.getElementById("wsc_category_data");
+        if (!node) {
+            return [];
+        }
+        try {
+            return JSON.parse(node.dataset.tree || "[]");
+        } catch (error) {
+            return [];
+        }
+    }
+
+    function findNode(nodes, id) {
+        for (var i = 0; i < nodes.length; i++) {
+            if (String(nodes[i].id) === String(id)) {
+                return nodes[i];
+            }
+        }
+        return null;
+    }
+
     function setup() {
+        // Zone switcher: each option's value is another marketplace's /shop
+        // URL, so picking a zone is a plain navigation — no AJAX, the other
+        // site renders its own shop.
+        var zoneSelect = document.getElementById("wsc_zone_select");
+        if (zoneSelect) {
+            enhanceSelect(zoneSelect);
+            zoneSelect.addEventListener("change", function () {
+                if (zoneSelect.value) {
+                    window.location.href = zoneSelect.value;
+                }
+            });
+        }
+
         var select = document.getElementById("wsc_category_select");
+        var subSelect = document.getElementById("wsc_subcategory_select");
+        var subWrap = document.getElementById("wsc_subcategory_wrap");
+        var tree = categoryTree();
         if (select) {
             enhanceSelect(select);
             select.addEventListener("change", function () {
+                // Repopulate the subcategory level for the new main
+                // category; the products load on the main category itself
+                // (the endpoint includes its children).
+                if (subSelect && subWrap) {
+                    while (subSelect.options.length > 1) {
+                        subSelect.remove(1);
+                    }
+                    subSelect.value = "";
+                    var node = select.value ? findNode(tree, select.value) : null;
+                    var children = (node && node.children) || [];
+                    children.forEach(function (child) {
+                        var option = document.createElement("option");
+                        option.value = child.id;
+                        option.textContent = child.name;
+                        subSelect.appendChild(option);
+                    });
+                    subWrap.classList.toggle("d-none", !children.length);
+                    subSelect.dispatchEvent(new Event("wsc:refresh"));
+                }
                 loader.load(select.value || null, currentSearch());
+            });
+        }
+        if (subSelect) {
+            enhanceSelect(subSelect);
+            subSelect.addEventListener("change", function () {
+                loader.load(
+                    subSelect.value || (select && select.value) || null,
+                    currentSearch()
+                );
             });
         }
 
@@ -329,7 +402,9 @@
                     ) || 0;
                 var params = new URLSearchParams(window.location.search);
                 loader.load(
-                    (select && select.value) || params.get("category"),
+                    (subSelect && subSelect.value) ||
+                        (select && select.value) ||
+                        params.get("category"),
                     currentSearch()
                 );
             });

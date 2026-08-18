@@ -114,6 +114,35 @@
             >
                 <t t-call="website_sale.sidebar_dropzone_at_top"/>
                 <div class="o_wsale_products_grid_before_rail vh-100 ms-n2 px-lg-2 ps-2 overflow-y-scroll">
+                    <!-- Zone switcher: the aggregated shops are one platform
+                         seen from four addresses, and this select is how a
+                         visitor moves between them. Each option's value is
+                         the target site's own /shop URL — picking one is a
+                         plain navigation, exactly like the directory's zone
+                         filter. The list comes from the marketplace websites
+                         themselves (see _wsc_zone_sites), so it is never
+                         edited here when a neighbourhood opens or closes. -->
+                    <t t-if="website.is_marketplace">
+                        <t t-set="wsc_zone_sites" t-value="website._wsc_zone_sites()"/>
+                        <div t-if="len(wsc_zone_sites) &gt; 1" class="card border-0 shadow-sm mb-3 wd-filter-card o_wsc_zone_card">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0 fw-bold fs-6">
+                                    <i class="fa fa-map-marker text-primary me-2"/>Zona comercial
+                                </h5>
+                            </div>
+                            <div class="card-body" style="overflow: visible;">
+                                <select id="wsc_zone_select" class="form-select" style="width: 100%;">
+                                    <t t-foreach="wsc_zone_sites" t-as="wsc_site">
+                                        <option
+                                            t-att-value="wsc_site.domain.rstrip('/') + '/shop'"
+                                            t-att-selected="'selected' if wsc_site.id == website.id else None"
+                                            t-esc="wsc_site._wsc_zone_label() or 'Todas las zonas'"
+                                        />
+                                    </t>
+                                </select>
+                            </div>
+                        </div>
+                    </t>
                     <div class="card border-0 shadow-sm mb-3 wd-filter-card o_wsc_category_card">
                         <div class="card-header bg-white py-3">
                             <h5 class="mb-0 fw-bold fs-6">
@@ -124,16 +153,54 @@
                             </h5>
                         </div>
                         <div class="card-body" style="overflow: visible;">
+                            <!-- Two levels, directory-style: a main category
+                                 select, and a subcategory select that only
+                                 appears once a main category with children is
+                                 chosen. The initial state is server-rendered
+                                 (correct without JS); the cascade on change
+                                 is the script's job, fed by this JSON. -->
+                            <t t-set="wsc_tree" t-value="website._wsc_shop_category_tree()"/>
+                            <t t-set="wsc_path" t-value="website._wsc_selected_category_path(category, wsc_tree)"/>
+                            <div
+                                id="wsc_category_data"
+                                class="d-none"
+                                t-att-data-tree="website._wsc_shop_category_json(wsc_tree)"
+                            />
+                            <label class="form-label small text-muted mb-1" for="wsc_category_select">
+                                <i class="fa fa-folder-open me-1"/>Categoría
+                            </label>
                             <select id="wsc_category_select" class="form-select" style="width: 100%;">
-                                <option value="" t-att-selected="'selected' if not category else None">Todas las categorías</option>
-                                <t t-foreach="website._wsc_shop_categories()" t-as="wsc_cat">
+                                <option value="" t-att-selected="'selected' if not wsc_path[0] else None">Todas las categorías</option>
+                                <t t-foreach="wsc_tree" t-as="wsc_node">
                                     <option
-                                        t-att-value="wsc_cat.id"
-                                        t-att-selected="'selected' if category and category.id == wsc_cat.id else None"
-                                        t-esc="wsc_cat.name"
+                                        t-att-value="wsc_node['category'].id"
+                                        t-att-selected="'selected' if wsc_path[0] == wsc_node['category'].id else None"
+                                        t-esc="wsc_node['category'].name"
                                     />
                                 </t>
                             </select>
+                            <t t-set="wsc_selected_nodes" t-value="[node for node in wsc_tree if node['category'].id == wsc_path[0]]"/>
+                            <t t-set="wsc_selected_node" t-value="wsc_selected_nodes[0] if wsc_selected_nodes else None"/>
+                            <div
+                                id="wsc_subcategory_wrap"
+                                t-att-class="'mt-3' if wsc_selected_node and wsc_selected_node['children'] else 'mt-3 d-none'"
+                            >
+                                <label class="form-label small text-muted mb-1" for="wsc_subcategory_select">
+                                    <i class="fa fa-folder me-1"/>Subcategoría
+                                </label>
+                                <select id="wsc_subcategory_select" class="form-select" style="width: 100%;">
+                                    <option value="" t-att-selected="'selected' if not wsc_path[1] else None">Todas las subcategorías</option>
+                                    <t t-if="wsc_selected_node">
+                                        <t t-foreach="wsc_selected_node['children']" t-as="wsc_child">
+                                            <option
+                                                t-att-value="wsc_child.id"
+                                                t-att-selected="'selected' if wsc_path[1] == wsc_child.id else None"
+                                                t-esc="wsc_child.name"
+                                            />
+                                        </t>
+                                    </t>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <t t-call="website_sale.filter_products_price"/>
