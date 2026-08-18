@@ -3,7 +3,7 @@
 from dateutil.relativedelta import relativedelta
 
 from odoo import fields
-from odoo.tests import tagged
+from odoo.tests import HttpCase, tagged
 from odoo.tests.common import TransactionCase
 
 from odoo.addons.website_directory_company_certification.controllers.main import (
@@ -65,3 +65,18 @@ class TestDirectoryCertificationFilter(TransactionCase):
             self.cert_type,
         )
         self.assertFalse(self.plain_company._get_valid_certifications())
+
+
+@tagged("post_install", "-at_install")
+class TestDirectoryCertificationRendering(HttpCase):
+    """The sidebar card as the visitor meets it."""
+
+    def test_filter_card_carries_the_chip_styling_hook(self):
+        """The card class is what the stylesheet hangs the legible chip
+        treatment on; without it the chips fall back to the theme's amber
+        outline with near-white text."""
+        response = self.url_open("/comercio")
+        self.assertEqual(response.status_code, 200)
+        # The seed certification types ship with company_certification, so
+        # the card renders on a bare database.
+        self.assertIn("o_wdcc_filter", response.text)

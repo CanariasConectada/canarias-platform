@@ -34,7 +34,7 @@
     <!-- Sidebar filter card in the extension hook. -->
     <template id="directory_sidebar_certification" inherit_id="website_directory.directory_sidebar_extra">
         <xpath expr="//div[@id='o_wd_sidebar_extra']" position="inside">
-            <div t-if="certification_types" class="card border-0 shadow-sm mb-3">
+            <div t-if="certification_types" class="card border-0 shadow-sm mb-3 o_wdcc_filter">
                 <div class="card-body">
                     <h6 class="card-title fw-bold mb-3">
                         <i class="fa fa-certificate me-2"/>Certifications
