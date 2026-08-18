@@ -168,11 +168,16 @@
     <!-- Full-width banner with an optional fixed background image.
          Parameters: banner_title, banner_image_field, banner_has_image. -->
     <template id="microsite_banner" name="Microsite Banner">
+        <!-- background-attachment lives in .o_pmm_banner_fixed (see
+             microsite_banner.scss), not inline: iOS Safari breaks
+             `fixed` combined with `cover`, so the class only turns it on
+             for hover-capable viewports from lg up and everything else
+             scrolls. -->
         <section
             t-if="banner_title or banner_has_image"
-            class="pt104 pb120"
+            t-attf-class="pt104 pb120 #{'o_pmm_banner_fixed' if banner_has_image else ''}"
             data-name="Banner"
-            t-attf-style="#{'background-image: url(/web/image/res.company/%s/%s); background-size: cover; background-position: center; background-attachment: fixed;' % (company.id, banner_image_field) if banner_has_image else 'background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);'} position: relative;"
+            t-attf-style="#{'background-image: url(/web/image/res.company/%s/%s); background-size: cover; background-position: center;' % (company.id, banner_image_field) if banner_has_image else 'background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);'} position: relative;"
         >
             <div
                 t-if="banner_has_image"
