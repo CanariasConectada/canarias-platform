@@ -27,10 +27,17 @@
      * sidebar into a stack of floating boxes. */
     box-shadow: none !important;
     border: 1px solid var(--o-border-color, #dee2e6) !important;
+    /* The theme clips every .card's overflow for its rounded corners
+     * (website_directory.css documents the same trap on .wd-filter-card).
+     * This card's own class never matched that rule, so the dropdown panel
+     * -- absolutely positioned, opening below the toggle -- was beheaded at
+     * the card's bottom edge the moment the option list grew past it. */
+    overflow: visible !important;
 }
 
 .o_wdcf_filter .card-body {
     padding: 0.875rem 1rem;
+    overflow: visible !important;
 }
 
 /* A filter chip is not a call to action. Light, borderless, and small enough

@@ -4,12 +4,12 @@
 {
     "name": "Website EU Emblem",
     "summary": "Show the European Union emblem and its funding statement in the header",
-    "version": "19.0.1.1.0",
+    "version": "19.0.1.2.0",
     "author": "Canarias Conectada",
     "website": "https://github.com/CanariasConectada/canarias-platform",
     "category": "Website",
     "license": "AGPL-3",
-    "depends": ["website"],
+    "depends": ["website", "website_sale"],
     "data": [
         "views/res_config_settings_views.xml",
         "views/website_templates.xml",

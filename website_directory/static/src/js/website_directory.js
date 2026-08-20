@@ -26,6 +26,24 @@
         return document.getElementById(id);
     }
 
+    // Query string params outside this module's own known set (search,
+    // category, view, ppg, page): whatever a bridge module's filter put
+    // there (facility=1,2 / certification=sustainability / ...).
+    var KNOWN_PARAMS = ["search", "category", "view", "ppg", "page"];
+
+    function currentExtraParams() {
+        var extra = {};
+        new URLSearchParams(window.location.search).forEach(function (
+            value,
+            key
+        ) {
+            if (KNOWN_PARAMS.indexOf(key) === -1) {
+                extra[key] = value;
+            }
+        });
+        return extra;
+    }
+
     function init() {
         var dataNode = byId("wd_data");
         if (!dataNode) {
@@ -44,6 +62,14 @@
         state.search = dataNode.dataset.search || "";
         state.category =
             state.selected[2] || state.selected[1] || state.selected[0] || null;
+        // Every query string param this base module does not itself manage
+        // (bridge modules' "facility", "certification", and whatever comes
+        // next) is carried verbatim through every AJAX round trip below, so
+        // ticking a category or typing a search never silently drops a
+        // filter a bridge module added. Read once, at load, from the address
+        // bar that rendered this exact page: it already reflects every
+        // active filter, managed or not.
+        state.extra = currentExtraParams();
 
         initZoneSelect();
         initNavSelects();
@@ -417,6 +443,11 @@
         if (params.page > 1) {
             query.set("page", params.page);
         }
+        Object.keys(params.extra || {}).forEach(function (key) {
+            if (params.extra[key]) {
+                query.set(key, params.extra[key]);
+            }
+        });
         return query.toString();
     }
 

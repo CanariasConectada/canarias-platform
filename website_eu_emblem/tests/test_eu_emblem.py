@@ -69,6 +69,18 @@ class TestEuEmblem(HttpCase):
         self.assertIn("height: var(--logo-height, 2.5rem)", css)
         self.assertNotIn("height: 1.75rem", css)
 
+    def test_the_emblem_sits_before_the_cart(self):
+        """Asked for on 2026-08-20: "colocala antes del carrito".
+
+        DOM order, not CSS: the emblem's `<li>` has to precede the cart's in
+        the markup for "before" to mean anything with a left-to-right,
+        top-to-bottom navbar.
+        """
+        page = self._home()
+        self.assertIn(FLAG, page)
+        self.assertIn("o_wsale_my_cart", page)
+        self.assertLess(page.index(FLAG), page.index("o_wsale_my_cart"))
+
     def _stylesheet(self):
         import re
 

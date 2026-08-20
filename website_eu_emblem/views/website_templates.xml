@@ -18,22 +18,34 @@
               t-out="eu_emblem['statement']"/>
     </template>
 
-    <!-- Anchored on the brand placeholder because that is the one part of the
-         header every variant calls: this platform alone has six in use
-         (header_call_to_action_stretched / _large / _sidebar,
-         header_search_box_input, header_text_element, header_call_to_action),
-         and appending to the placeholder reaches all of them without touching
-         a single per-website COW view.
+    <!-- Anchored on the cart link rather than the brand placeholder: asked
+         for on 2026-08-20, "mueve el logo de la ue de la izquierda a la
+         derecha, colocala antes del carrito". `website_sale.header_cart_link`
+         is, like `website.placeholder_header_brand`, the ONE template every
+         header variant renders through a single `t-call`: this platform
+         has six header variants in use (header_call_to_action_stretched /
+         _large / _sidebar, header_search_box_input, header_text_element,
+         header_call_to_action), each inserting the SAME cart template rather
+         than its own copy of the `<li>`. Inheriting that one template reaches
+         every variant's cart, wherever it sits, without touching a single
+         per-website COW view: the exact reason the brand placeholder was
+         chosen before.
 
-         `position="inside"` on the template root rather than an xpath onto the
-         logo: core replaces `#o_fake_navbar_brand` with the site logo only
-         when the "Header Brand Logo" option is active, so an xpath naming
-         either of them would break on the sites using the other. -->
-    <template id="header_eu_emblem" inherit_id="website.placeholder_header_brand"
+         The xpath targets the leading divider `<li>` (`Make sure the cart
+         and related menus are not folded`, see core's comment on it), not
+         the cart `<li>` itself, so the divider and the cart it guards stay
+         adjacent and `autohideMenu` keeps folding them as one unit; the
+         emblem lands immediately before that pair, i.e. immediately before
+         the cart. -->
+    <template id="header_eu_emblem" inherit_id="website_sale.header_cart_link"
               name="EU Emblem in the header">
-        <xpath expr="." position="inside">
+        <!-- `hasclass()` reads the `class` attribute; this `<li>` carries its
+             classes as `t-attf-class` (a QWeb templating attribute, resolved
+             at render time, not inherit time), so the match has to be a
+             literal substring check on that attribute instead. -->
+        <xpath expr="//li[contains(@t-attf-class, 'divider')]" position="before">
             <t t-set="eu_emblem" t-value="website._eu_emblem_values()"/>
-            <t t-if="eu_emblem['enabled']">
+            <li t-if="eu_emblem['enabled']" class="d-flex align-items-center o_cc_eu_emblem_item">
                 <a t-if="eu_emblem['url']"
                    t-att-href="eu_emblem['url']"
                    class="o_cc_eu_emblem"
@@ -45,7 +57,7 @@
                       t-att-title="eu_emblem['statement'] or None">
                     <t t-call="website_eu_emblem.eu_emblem_content"/>
                 </span>
-            </t>
+            </li>
         </xpath>
     </template>
 </odoo>

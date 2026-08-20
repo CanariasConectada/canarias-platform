@@ -64,7 +64,21 @@ export class CommunityChat extends Interaction {
                 this.send();
             }
         });
+        // The floating window's idle-close (support_window.js) needs to know
+        // the visitor typed something, and this page is what the window
+        // frames -- often cross-subdomain, where the parent cannot read a
+        // single keystroke of a document it does not own. `postMessage`
+        // is the one channel that crosses that boundary by design, so it
+        // is the only reliable way to say "someone is here" regardless of
+        // which of the platform's 218 hosts is doing the framing.
+        this.addListener(this.inputEl, "input", () => this.notifyParentActivity());
         this.scrollToBottom();
+    }
+
+    notifyParentActivity() {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({type: "o_cc_chat_activity"}, "*");
+        }
     }
 
     /**
@@ -130,6 +144,7 @@ export class CommunityChat extends Interaction {
             return;
         }
         this.isSending = true;
+        this.notifyParentActivity();
         this.hideError();
         let result = null;
         try {

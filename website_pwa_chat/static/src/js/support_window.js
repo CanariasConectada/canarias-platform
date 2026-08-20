@@ -18,6 +18,11 @@ import {Interaction} from "@web/public/interaction";
  * page of all 218 sites. An iframe that loaded eagerly would open one empty
  * support conversation per page view platform-wide.
  */
+// Asked for on 2026-08-20: "si ha pasado una hora y no ha escrito nada el
+// visitante, quiero que quitemos el chat". An open window nobody is using is
+// a guest conversation left dangling, on every one of the 218 sites.
+const IDLE_TIMEOUT_MS = 60 * 60 * 1000;
+
 export class SupportWindow extends Interaction {
     static selector = ".o_cc_chat_fab_zone";
 
@@ -26,6 +31,7 @@ export class SupportWindow extends Interaction {
         this.windowEl = this.el.querySelector(".o_cc_chat_window");
         this.frameEl = this.el.querySelector(".o_cc_chat_window_frame");
         this.closeEl = this.el.querySelector(".o_cc_chat_window_close");
+        this.idleTimer = null;
     }
 
     start() {
@@ -71,6 +77,36 @@ export class SupportWindow extends Interaction {
         this.addListener(this.el.ownerDocument, "hidden.bs.offcanvas", () => {
             this.el.classList.remove("o_cc_chat_fab_zone_hidden");
         });
+        // The activity ping from community_chat.js, inside the frame. Most
+        // of the platform frames the chat cross-subdomain, where nothing
+        // about the frame's own document is readable from here -- not even a
+        // click -- so `postMessage` is the only signal this window can trust
+        // regardless of which site is doing the framing. `event.source` is
+        // still readable across origins (only the document behind it is
+        // not), so this cannot be spoofed by anything else running on the
+        // page: only the frame this window itself created can be its source.
+        this.addListener(window, "message", (event) => {
+            if (
+                event.source === this.frameEl.contentWindow &&
+                event.data &&
+                event.data.type === "o_cc_chat_activity"
+            ) {
+                this.armIdleTimer();
+            }
+        });
+        this.registerCleanup(() => this.clearIdleTimer());
+    }
+
+    armIdleTimer() {
+        this.clearIdleTimer();
+        this.idleTimer = setTimeout(() => this.close(true), IDLE_TIMEOUT_MS);
+    }
+
+    clearIdleTimer() {
+        if (this.idleTimer) {
+            clearTimeout(this.idleTimer);
+            this.idleTimer = null;
+        }
     }
 
     bindFrameEscape() {
@@ -111,14 +147,21 @@ export class SupportWindow extends Interaction {
         // The frame is another document, so focus lands on its body: enough
         // for a keyboard user to Tab straight into the conversation.
         this.frameEl.focus();
+        this.armIdleTimer();
     }
 
-    close() {
+    close(auto = false) {
         this.windowEl.classList.add("d-none");
         this.fabEl.setAttribute("aria-expanded", "false");
         // Hand focus back to the button that opened it, so closing with
-        // Escape does not drop a keyboard user at the top of the page.
-        this.fabEl.focus();
+        // Escape does not drop a keyboard user at the top of the page. Not
+        // when the idle timer is what triggered this: the visitor is, by
+        // definition, off doing something else, and yanking focus onto the
+        // fab would interrupt whatever that is.
+        if (!auto) {
+            this.fabEl.focus();
+        }
+        this.clearIdleTimer();
     }
 }
 
