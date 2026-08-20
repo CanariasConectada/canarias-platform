@@ -145,6 +145,59 @@ class TestCommunityShape(CommunityMixin, TransactionCase):
             "the employee is auto-seated, the community member is not",
         )
 
+    def test_migrated_merchant_is_not_seated_in_the_employees_channel(self):
+        """The same carve-out, for the OTHER population that leaked.
+
+        Fixed in production on 2026-08-20: 116 merchant accounts (never
+        touching ``discuss_community`` at all -- they carry a group some
+        pre-repo migration script granted directly) were real members of
+        this channel, each one reading the other 115's names in its sidebar.
+        The group has no xmlid of its own in a fresh test database, so this
+        mints one locally under the SAME technical name the carve-out looks
+        up (``discuss_community.group_migrated_merchant``), proving the
+        mechanism without depending on production-only data.
+        """
+        migrated_group = self.env["res.groups"].create(
+            {"name": "Comerciante (migración)"}
+        )
+        self.env["ir.model.data"].create(
+            {
+                "name": "group_migrated_merchant",
+                "module": "discuss_community",
+                "model": "res.groups",
+                "res_id": migrated_group.id,
+            }
+        )
+        merchant = (
+            self.env["res.users"]
+            .with_context(no_reset_password=True)
+            .create(
+                {
+                    "name": "DCM Migrated Merchant",
+                    "login": "dcm_migrated_merchant",
+                    "password": "dcm_migrated_merchant",
+                    "email": "dcm_migrated_merchant@example.com",
+                    "company_id": self.main_company.id,
+                    "company_ids": [(6, 0, self.main_company.ids)],
+                    "group_ids": [(6, 0, (self.internal_group | migrated_group).ids)],
+                }
+            )
+        )
+        seated = (
+            self.env["discuss.channel.member"]
+            .sudo()
+            .search_count(
+                [
+                    ("channel_id", "=", self.employees_channel.id),
+                    ("partner_id", "=", merchant.partner_id.id),
+                ]
+            )
+        )
+        self.assertFalse(
+            seated,
+            "a migrated merchant must not be auto-seated in the staff's " "own channel",
+        )
+
 
 @tagged("post_install", "-at_install")
 class TestCommunityLandingAndSignup(CommunityMixin, TransactionCase):
