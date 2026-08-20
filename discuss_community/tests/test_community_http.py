@@ -211,3 +211,29 @@ class TestCommunityRoutes(CommunityMixin, HttpCase):
             )
         finally:
             icp.set_param(COMMUNITY_GUEST_WINDOW_COUNT_PARAM, "0")
+
+
+@tagged("post_install", "-at_install")
+class TestLoginGuestDoor(HttpCase):
+    """Asked for on 2026-08-20: /login's guest button = the Comunidad door.
+
+    website_login_branding's own suite only checks that A guest button
+    exists (see its comment on why it stopped asserting the URL); this is
+    where the actual door it opens is pinned down, since only this module
+    knows which one that should be.
+    """
+
+    def test_login_guest_button_posts_to_the_community_door(self):
+        response = self.url_open("/web/login")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            'action="/community/guest"',
+            response.text,
+            "the /login guest button must open the same door as /community, "
+            "not website_login_branding's portal-guest /guest/enter",
+        )
+        self.assertNotIn(
+            'action="/guest/enter"',
+            response.text,
+            "the old portal-guest door must no longer be wired on /login",
+        )

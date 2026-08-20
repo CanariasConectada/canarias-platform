@@ -73,4 +73,30 @@
         </t>
     </template>
 
+    <!--
+        Asked for on 2026-08-20: "los que inician sesión como invitado en
+        '/login' [deben] entrar igual que como si entraran en comunidad".
+
+        Before this, /login's guest button posted to website_login_branding's
+        own /guest/enter, which mints a PORTAL account (no backend access) —
+        a different shape and a different population from the INTERNAL
+        community guest /community/guest mints (see the long rationale on
+        each controller). Two doors, two kinds of guest, was the bug: the
+        same "Entrar como invitado" wording promised the same thing and
+        delivered different accounts depending on which page carried it.
+
+        Repointing the /login form's action is enough: the button's copy,
+        CSRF token and `redirect` passthrough are already identical to
+        /community's own form (both descend from the same branded card), so
+        the visitor's browser lands in the exact flow /community/guest
+        documents, including its default target, the Discuss backend.
+    -->
+    <template id="login_guest_uses_community_door"
+              inherit_id="website_login_branding.login_layout_branding"
+              name="Login guest button: same door as Comunidad">
+        <xpath expr="//form[@action='/guest/enter']" position="attributes">
+            <attribute name="action">/community/guest</attribute>
+        </xpath>
+    </template>
+
 </odoo>
