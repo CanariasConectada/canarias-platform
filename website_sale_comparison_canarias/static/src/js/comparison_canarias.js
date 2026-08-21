@@ -59,10 +59,15 @@ export class CompareButtons extends Interaction {
         );
         // Bootstrap is what renders the dialog; asking for it through the
         // global keeps this file free of a hard import that would fail on any
-        // page where the shop assets are not loaded.
-        const Modal = window.bootstrap && window.bootstrap.Modal;
-        if (Modal) {
-            Modal.getOrCreateInstance(modal).show();
+        // page where the shop assets are not loaded. Odoo 19's frontend does
+        // NOT expose `window.bootstrap` (that was the old jQuery-era global);
+        // its own trimmed bundle exposes each component directly on `window`
+        // instead (`window.Modal`, `window.Popover`, ...), the same way core
+        // itself opens dialogs (e.g. website_event's registration modal). The
+        // old `window.bootstrap.Modal` check always failed, so the button
+        // opened nothing -- reported 2026-08-21 as "no funciona".
+        if (window.Modal) {
+            window.Modal.n(modal).show();
         }
     }
 }

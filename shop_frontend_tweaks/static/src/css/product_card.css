@@ -134,12 +134,19 @@
 }
 
 /* Secondary action, secondary weight: the compare control was an outlined
- * pill competing with "Añadir a la cesta" for the eye. */
+ * pill competing with "Añadir a la cesta" for the eye.
+ *
+ * NOT ``var(--o-color-4, ...)``: that slot is themeable per site, and on
+ * this platform's active palette it resolves to pure white
+ * (``#FFFFFF``) -- white text on a transparent button over a white card is
+ * invisible, which is why the button was reported as "missing" from the
+ * shop grid on 2026-08-21 when it was actually rendering, just unreadable.
+ * A literal grey has no such dependency. */
 .oe_product_cart .o_wscc_compare_btn_sm {
     --bs-btn-padding-y: 0.15rem;
     --bs-btn-padding-x: 0.5rem;
     border: 0;
-    color: var(--o-color-4, #6c757d);
+    color: #6c757d;
     font-size: 0.8125rem;
 }
 
