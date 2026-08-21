@@ -87,50 +87,27 @@ class WebsiteDirectoryFacilities(WebsiteDirectory):
     # Building the panel
     # ------------------------------------------------------------------
     def _facility_pool(self, zone, kw):
-        """Facilities at least one shop in THIS listing actually offers.
+        """The whole active catalogue, always -- not what shops happen to offer.
 
-        Built from the same domain the listing uses, with the facility ticks
-        taken back out. Two reasons, and neither is cosmetic: a chip that can
-        only ever return zero results is a dead end, and a chip already ticked
-        has to stay on the panel so it can be un-ticked.
-
-        Reusing ``_get_search_domain`` rather than writing a second one keeps
-        the panel honest about which shops the zone, the category and the
-        search box have already excluded.
+        Changed on 2026-08-21 from "derived from the current listing" (a shop
+        with a ramp made "Rampa de acceso" appear, nothing else did) to the
+        full catalogue: as of that date only 1 of 216 companies had ANY
+        facility assigned at all, so the derived panel showed two threadbare
+        groups and hid entire categories -- "Familia y mascotas" included,
+        with real, active, always-relevant items -- purely because nobody had
+        adopted them yet. A panel that only shows what has already been
+        picked can never be how a merchant discovers there is something to
+        pick. ``category_id.active`` is still the one gate: an archived
+        category (or an archived individual facility) drops out on its own,
+        same as before -- the parameters are kept for that signature and for
+        callers that still narrow by zone/search, even though the pool itself
+        no longer depends on them.
         """
-        category_id = kw.get("category")
-        try:
-            category_id = int(category_id) if category_id else None
-        except (TypeError, ValueError):
-            category_id = None
-        domain = self._get_search_domain(
-            zone=zone,
-            category_id=category_id,
-            search=(kw.get("search") or "").strip(),
-            kw={key: value for key, value in kw.items() if key != PARAM},
+        return (
+            request.env["company.facility"]
+            .sudo()
+            .search([("category_id.active", "=", True)])
         )
-        entries = request.env["website.directory.entry"].sudo().search(domain)
-        # `.filtered("active")` and not a context flag: reading a many2many
-        # returns archived records too, so a subdivision retired from the
-        # catalogue would go on offering its chips here long after it stopped
-        # appearing on the shops' own pages. Same guard, same reason, as
-        # `res.company._facilities_by_category`.
-        pool = entries.company_id.facility_ids.filtered(
-            lambda facility: facility.active and facility.category_id.active
-        )
-        if not pool:
-            # Nothing to derive chips from — the other filters (a
-            # certification, a search) left zero results, or the shops that
-            # did come back declare no facilities. The panel must not vanish
-            # with them: it is part of the page's navigation, and hiding it
-            # strands the visitor on the page they most need to back out of.
-            # Fall back to the whole catalogue.
-            pool = (
-                request.env["company.facility"]
-                .sudo()
-                .search([("category_id.active", "=", True)])
-            )
-        return pool
 
     def _facility_url(self, url, kw, facility_ids):
         """The current address with the ticks replaced by ``facility_ids``.

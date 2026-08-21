@@ -118,11 +118,15 @@ class TestFacilityFilter(TransactionCase):
     def test_an_empty_listing_still_offers_the_whole_panel(self):
         """A filter combination with zero results must not eat the panel.
 
-        The chips are derived from the result set, so a certification or a
-        search that matches nothing would otherwise derive an empty panel —
-        and the page would lose its navigation exactly when the visitor
-        needs it to back out. Asked for on 2026-08-18: "Desaparece el filtro
-        de abajo cuando colocas sostenibilidad".
+        Originally about the chips being derived from the result set (a
+        certification or a search matching nothing would derive an empty
+        panel, Asked for on 2026-08-18: "Desaparece el filtro de abajo cuando
+        colocas sostenibilidad"). The panel is now the whole active catalogue
+        UNCONDITIONALLY (2026-08-21: as of that date only 1 of 216 companies
+        had ANY facility assigned, so deriving from real adoption hid whole
+        categories nobody had picked yet, "Familia y mascotas" included), so
+        this also stands as the regression test for that: neither fixture
+        facility is assigned to any company, and both must still show.
         """
         with MockRequest(self.env, website=self.website):
             pool = self.controller._facility_pool(
@@ -130,6 +134,28 @@ class TestFacilityFilter(TransactionCase):
             )
         self.assertIn(self.ramp, pool)
         self.assertIn(self.parking, pool)
+
+    def test_an_archived_category_or_facility_never_shows(self):
+        """The one gate the whole-catalogue pool still respects.
+
+        Two distinct ways in: a facility archived on its own, and a facility
+        whose CATEGORY is archived (the facility itself untouched) -- the
+        panel must drop both, the same way it always excluded them from a
+        shop's own listing.
+        """
+        archived_facility = self.env["company.facility"].create(
+            {"name": "WDCF Archivada", "category_id": self.access.id, "active": False}
+        )
+        archived_category = self.env["company.facility.category"].create(
+            {"name": "WDCF Categoría archivada", "sequence": 3, "active": False}
+        )
+        orphaned_facility = self.env["company.facility"].create(
+            {"name": "WDCF Huérfana", "category_id": archived_category.id}
+        )
+        with MockRequest(self.env, website=self.website):
+            pool = self.controller._facility_pool(None, {})
+        self.assertNotIn(archived_facility, pool)
+        self.assertNotIn(orphaned_facility, pool)
 
     def test_groups_split_selection_from_offer(self):
         """The template hangs the dropdown on the unselected entries and the
