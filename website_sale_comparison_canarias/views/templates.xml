@@ -23,7 +23,7 @@
          checkboxes inside it. -->
     <!-- NO ``aria-label`` on these buttons, on purpose: they already carry
          visible text, and Odoo's arch translation only substitutes the FIRST
-         occurrence of a source string within one view -- with an
+         occurrence of a source string within one view. With an
          ``aria-label`` repeating the same words as the visible ``<span>``,
          the attribute translated and the span the visitor actually reads
          stayed in English. Reported 2026-08-21. A redundant aria-label on a
