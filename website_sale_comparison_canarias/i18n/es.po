@@ -32,6 +32,44 @@ msgid "All other zones"
 msgstr "Todas las demás zonas"
 
 #. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.card_compare_button
+msgid ""
+"<span class=\"fa fa-exchange fa-fw o_not-animable\"/>\n"
+"                    <span class=\"o_label small ms-1\">Compare</span>"
+msgstr ""
+"<span class=\"fa fa-exchange fa-fw o_not-animable\"/>\n"
+"                    <span class=\"o_label small ms-1\">Comparar</span>"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.ajax_card_compare
+msgid ""
+"<span class=\"fa fa-exchange fa-fw o_not-animable\"/>\n"
+"                <span class=\"o_label small ms-1\">Compare</span>"
+msgstr ""
+"<span class=\"fa fa-exchange fa-fw o_not-animable\"/>\n"
+"                <span class=\"o_label small ms-1\">Comparar</span>"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.product_page_compare_button
+msgid ""
+"<span class=\"fa fa-exchange fa-fw o_not-animable\"/>\n"
+"                    <span class=\"o_label ms-1\">Compare prices</span>"
+msgstr ""
+"<span class=\"fa fa-exchange fa-fw o_not-animable\"/>\n"
+"                    <span class=\"o_label ms-1\">Comparar precios</span>"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid ""
+"<span class=\"me-auto small text-muted\">\n"
+"                                Selected: <span class=\"o_wscc_modal_count\">0</span> of 4\n"
+"                            </span>"
+msgstr ""
+"<span class=\"me-auto small text-muted\">\n"
+"                                Seleccionados: <span class=\"o_wscc_modal_count\">0</span> de 4\n"
+"                            </span>"
+
+#. module: website_sale_comparison_canarias
 #: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
 msgid "Choose which products to compare with. First the scope, then the category."
 msgstr ""
@@ -43,14 +81,7 @@ msgid "Close"
 msgstr "Cerrar"
 
 #. module: website_sale_comparison_canarias
-#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.ajax_card_compare
-#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.card_compare_button
-msgid "Compare"
-msgstr "Comparar"
-
-#. module: website_sale_comparison_canarias
 #: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
-#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.product_page_compare_button
 msgid "Compare prices"
 msgstr "Comparar precios"
 
@@ -97,13 +128,12 @@ msgstr "Buscar productos por nombre"
 
 #. module: website_sale_comparison_canarias
 #: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
-msgid "Selected:"
-msgstr "Seleccionados:"
-
-#. module: website_sale_comparison_canarias
-#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
-msgid "Showing"
-msgstr "Mostrando"
+msgid ""
+"Showing <span class=\"o_wscc_modal_shown\">0</span> of <span "
+"class=\"o_wscc_modal_total\">0</span> products. Search to find the rest."
+msgstr ""
+"Mostrando <span class=\"o_wscc_modal_shown\">0</span> de <span "
+"class=\"o_wscc_modal_total\">0</span> productos. Busca para ver el resto."
 
 #. module: website_sale_comparison_canarias
 #: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
@@ -114,18 +144,3 @@ msgstr "Ver comparativa"
 #: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
 msgid "Which zone?"
 msgstr "¿Con qué zona?"
-
-#. module: website_sale_comparison_canarias
-#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
-msgid "of"
-msgstr "de"
-
-#. module: website_sale_comparison_canarias
-#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
-msgid "of 4"
-msgstr "de 4"
-
-#. module: website_sale_comparison_canarias
-#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
-msgid "products. Search to find the rest."
-msgstr "productos. Busca para ver el resto."
