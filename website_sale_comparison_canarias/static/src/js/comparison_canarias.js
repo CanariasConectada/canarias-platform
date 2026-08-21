@@ -65,9 +65,13 @@ export class CompareButtons extends Interaction {
         // instead (`window.Modal`, `window.Popover`, ...), the same way core
         // itself opens dialogs (e.g. website_event's registration modal). The
         // old `window.bootstrap.Modal` check always failed, so the button
-        // opened nothing -- reported 2026-08-21 as "no funciona".
+        // opened nothing -- reported 2026-08-21 as "no funciona". First fix
+        // tried `window.Modal.n(...)`, copied from a grep hit in core's own
+        // source tree -- but `.n` only exists on the pre-built/minified
+        // bundle those files ship as; the plain global class exposes the
+        // real, unminified static method inherited from BaseComponent.
         if (window.Modal) {
-            window.Modal.n(modal).show();
+            window.Modal.getOrCreateInstance(modal).show();
         }
     }
 }
