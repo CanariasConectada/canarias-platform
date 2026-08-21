@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website Sale Comparison — Canarias",
-    "version": "19.0.3.3.0",
+    "version": "19.0.3.4.0",
     "category": "Website",
     "summary": "A modern, always-available product comparison on the Canarias shop",
     "author": "MikeColangelo",

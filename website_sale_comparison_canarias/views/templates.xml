@@ -21,6 +21,14 @@
          job is to OPEN THE PICKER meant it worked exactly once. These buttons
          only open the modal; adding to the comparison happens through the
          checkboxes inside it. -->
+    <!-- NO ``aria-label`` on these buttons, on purpose: they already carry
+         visible text, and Odoo's arch translation only substitutes the FIRST
+         occurrence of a source string within one view -- with an
+         ``aria-label`` repeating the same words as the visible ``<span>``,
+         the attribute translated and the span the visitor actually reads
+         stayed in English. Reported 2026-08-21. A redundant aria-label on a
+         button that already has visible text is unnecessary for
+         accessibility anyway. -->
     <!-- The Canarias aggregated shop hides the whole add-to-cart button row
          (the cart lives on each merchant's own site), and core injects its
          compare button INTO that row — so on our shop it never rendered.
@@ -38,7 +46,6 @@
                     type="button"
                     class="btn o_wscc_compare_btn o_wscc_compare_btn_sm"
                     title="Compare with other products"
-                    aria-label="Compare"
                     t-att-data-product-template-id="product.id"
                     t-att-data-product-product-id="product.product_variant_id.id"
                 >
@@ -66,7 +73,6 @@
                 type="button"
                 class="btn btn-sm o_wscc_compare_btn o_wscc_compare_btn_sm mt-1"
                 title="Compare with other products"
-                aria-label="Compare"
                 t-att-data-product-template-id="product.id"
                 t-att-data-product-product-id="product.product_variant_id.id"
             >
@@ -99,7 +105,6 @@
                     type="button"
                     class="btn btn-outline-primary o_wscc_compare_btn"
                     title="Compare this price with other products"
-                    aria-label="Compare prices"
                     t-att-data-product-template-id="product.id"
                     t-att-data-product-product-id="product.product_variant_id.id"
                 >
