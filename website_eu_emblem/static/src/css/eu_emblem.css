@@ -20,14 +20,18 @@
 }
 
 .o_cc_eu_emblem_flag {
-    /* The same height as the site logo, taken from the variable the theme
-     * sizes that logo with (`header .navbar-brand.logo img { height:
-     * var(--logo-height) }`). It was 1.75rem against the logo's 2.5rem, which
-     * read as a smaller, secondary mark -- asked for on 2026-08-17: "cuando
-     * aparece el logo de ue, tiene que ser del mismo tamaño que el de los
-     * demás". Reading the variable rather than repeating 2.5rem also means the
-     * emblem shrinks with the logo when the header condenses on scroll. */
-    height: var(--logo-height, 2.5rem);
+    /* Matching the site logo's raw CSS height (as done until 2026-08-21) does
+     * NOT read as the same size: the logo is a square mark, the flag is a
+     * 3:2 rectangle, so equal height made the flag ~48% wider and visually
+     * dominant -- reported 2026-08-21 ("se ve muy grande el logo de la ue").
+     * Matching the logo's WIDTH instead (its height, since it is square) is
+     * what actually reads as "the same size". At the flag's fixed 3:2 aspect
+     * ratio, width = height * 1.5, so height must be logo-height / 1.5 for
+     * the two widths to come out equal. Still derived from --logo-height
+     * (not a flat rem value) so the emblem keeps shrinking with the logo
+     * when the header condenses on scroll, per the 2026-08-17 request this
+     * preserves. */
+    height: calc(var(--logo-height, 2.5rem) / 1.5);
     width: auto;
     display: block;
     /* A hairline keeps the flag's own blue from bleeding into a dark navbar. */
