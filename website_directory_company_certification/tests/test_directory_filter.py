@@ -66,6 +66,30 @@ class TestDirectoryCertificationFilter(TransactionCase):
         )
         self.assertFalse(self.plain_company._get_valid_certifications())
 
+    def test_toggling_the_certification_keeps_the_category_filter(self):
+        """Clicking "Sostenibilidad" must not throw away the category.
+
+        Reported 2026-08-21: the chip's address used to be built in the
+        template as ``{{ base_url }}?certification=...``, which drops every
+        other active filter. The address is now built on the server, the
+        same way ``website_directory_company_facilities`` already does it.
+        """
+        controller = WebsiteDirectoryCertification()
+        url = controller._certification_url(
+            "/comercio", {"search": "pan", "category": "12"}, "silver"
+        )
+        self.assertIn("search=pan", url)
+        self.assertIn("category=12", url)
+        self.assertIn("certification=silver", url)
+
+    def test_clicking_the_active_chip_clears_only_the_certification(self):
+        controller = WebsiteDirectoryCertification()
+        url = controller._certification_url(
+            "/comercio", {"category": "12", "certification": "silver"}, ""
+        )
+        self.assertIn("category=12", url)
+        self.assertNotIn("certification", url)
+
 
 @tagged("post_install", "-at_install")
 class TestDirectoryCertificationRendering(HttpCase):

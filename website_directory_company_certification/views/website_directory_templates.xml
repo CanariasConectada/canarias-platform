@@ -41,7 +41,7 @@
                     </h6>
                     <div class="d-flex flex-column gap-2">
                         <t t-foreach="certification_types" t-as="cert_type">
-                            <a t-attf-href="{{ base_url }}?certification={{ '' if selected_certification == cert_type.code else cert_type.code }}"
+                            <a t-att-href="certification_urls.get(cert_type.code)"
                                t-attf-class="btn btn-sm text-start {{
                                    'btn-primary' if selected_certification == cert_type.code else 'btn-outline-secondary'
                                }}"
