@@ -15,12 +15,17 @@
          variant id, so the gate is simply too strict for a marketplace that
          compares whole products, not variants of one.
 
-         DELIBERATELY NOT ``o_add_compare`` and NOT ``data-action``: those are
-         the hooks core's comparison interaction listens on, and its handler
-         disables the button after the first click — which for a button whose
-         job is to OPEN THE PICKER meant it worked exactly once. These buttons
-         only open the modal; adding to the comparison happens through the
-         checkboxes inside it. -->
+         ``o_add_compare`` IS carried this time, on purpose (2026-08-21):
+         the visitor asked to keep the shop grid on core's own one-by-one
+         flow (click a card, it joins the comparison, the bottom bar picks
+         it up) and reserve the scoped picker (category + "which shop")
+         for the product page alone, where the question of WHAT to compare
+         against actually needs asking. ``o_wscc_compare_btn`` stays for the
+         legible/always-visible skin; ``o_add_compare`` is what makes core's
+         OWN ``ProductComparison`` interaction own the click, exactly the
+         way it owns its own button, disable-after-add included, which is
+         no longer a problem now that this button does not ALSO have to stay
+         clickable to reopen a picker. -->
     <!-- NO ``aria-label`` on these buttons, on purpose: they already carry
          visible text, and Odoo's arch translation only substitutes the FIRST
          occurrence of a source string within one view. With an
@@ -44,8 +49,9 @@
             <div t-if="product.product_variant_id" class="o_wscc_compare_wrap mt-1">
                 <button
                     type="button"
-                    class="btn o_wscc_compare_btn o_wscc_compare_btn_sm"
+                    class="btn o_wscc_compare_btn o_wscc_compare_btn_sm o_add_compare"
                     title="Compare with other products"
+                    data-action="o_comparelist"
                     t-att-data-product-template-id="product.id"
                     t-att-data-product-product-id="product.product_variant_id.id"
                 >
@@ -71,8 +77,9 @@
             <button
                 t-if="product.product_variant_id"
                 type="button"
-                class="btn btn-sm o_wscc_compare_btn o_wscc_compare_btn_sm mt-1"
+                class="btn btn-sm o_wscc_compare_btn o_wscc_compare_btn_sm mt-1 o_add_compare"
                 title="Compare with other products"
+                data-action="o_comparelist"
                 t-att-data-product-template-id="product.id"
                 t-att-data-product-product-id="product.product_variant_id.id"
             >
@@ -103,7 +110,7 @@
             <div t-if="product.product_variant_id" class="o_wscc_compare_wrap mb-4">
                 <button
                     type="button"
-                    class="btn btn-outline-primary o_wscc_compare_btn"
+                    class="btn btn-outline-primary o_wscc_compare_btn o_wscc_compare_btn_picker"
                     title="Compare this price with other products"
                     t-att-data-product-template-id="product.id"
                     t-att-data-product-product-id="product.product_variant_id.id"
@@ -119,9 +126,12 @@
          The picker
          ================================================================
          Rendered once per page, next to the shop, and driven by the
-         `wscc:open` event the card buttons dispatch. One modal for the whole
-         grid rather than one per card: a thousand-product zone shop would
-         otherwise ship a thousand copies of this markup. -->
+         `wscc:open` event the product page's own `o_wscc_compare_btn_picker`
+         button dispatches (the shop-grid cards join the comparison directly
+         through core's own `o_add_compare` now; only the product page still
+         asks "compare against what"). One modal for the whole grid rather
+         than one per card: a thousand-product zone shop would otherwise ship
+         a thousand copies of this markup. -->
     <template id="comparison_modal" inherit_id="website.layout"
               name="Comparison picker modal (Canarias)">
         <xpath expr="//div[@id='wrapwrap']" position="inside">
@@ -156,8 +166,18 @@
                                  product in no neighbourhood offers neither
                                  "my zone" nor "outside my zone". A tab that
                                  comes back empty is worse than one that is
-                                 not offered. -->
-                            <div class="o_wscc_modal_scopes btn-group flex-wrap mb-3"
+                                 not offered.
+
+                                 `d-flex flex-wrap gap-2`, not `btn-group`:
+                                 a button group merges its members' borders
+                                 into one connected strip, which reads fine
+                                 on a single row but turned into a cramped,
+                                 gapless block once a fourth scope ("Only at
+                                 ...") pushed onto its own row underneath —
+                                 reported 2026-08-21 ("corrige los
+                                 paddings"). Independent chips with a real
+                                 gap between them wrap cleanly at any width. -->
+                            <div class="o_wscc_modal_scopes d-flex flex-wrap gap-2 mb-3"
                                  role="group" aria-label="Comparison scope"/>
                             <div class="o_wscc_modal_zones mb-3 d-none">
                                 <label class="form-label small text-muted mb-1"

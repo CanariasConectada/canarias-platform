@@ -7,27 +7,32 @@ import { registry } from "@web/core/registry";
 import comparisonUtils from "@website_sale_comparison/js/website_sale_comparison_utils";
 
 /**
- * The compare button on a shop card: shows whether the product is already in
- * the comparison, and opens the picker.
+ * The compare button on the product page: opens the scoped picker (which
+ * shop, which category) to choose what to compare against.
  *
- * DELIBERATELY DECOUPLED from core's `.o_add_compare` hook. The button used
- * to carry both classes, so core's interaction owned the click too: it added
- * the product AND disabled the button (`comparisonUtils.updateDisabled`),
- * after which the picker could never be opened again from that product. This
- * button now only ever OPENS the modal — membership in the comparison is
- * decided by the checkboxes inside it — so it must never be disabled.
+ * ONLY the product page button (`.o_wscc_compare_btn_picker`) goes through
+ * this class. The shop-grid cards carry core's own `.o_add_compare` instead
+ * (2026-08-21): the visitor asked to keep the grid on core's stock
+ * one-by-one flow — click a card, it joins the comparison, the bottom bar
+ * picks it up — and reserve "compare against what" for the product page,
+ * where that question actually needs asking. Before this button ALSO
+ * carried `.o_add_compare`, the two interactions raced: core added the
+ * product AND disabled the button, after which the picker could never be
+ * opened again from that product. It is scoped to the picker class alone
+ * now, so it can stay permanently clickable without that conflict.
  *
  * Membership is read from the cookie through core's own utils (the list moved
  * from `localStorage` to the `comparison_product_ids` cookie once already;
  * going through the utils is what keeps this correct the next time it moves).
  * The modal announces every change with a `wscc:selection` event on the
- * document, which is what keeps these buttons honest while it is open.
+ * document, which is what keeps this button's own "already in the
+ * comparison" state honest while it is open.
  */
 export class CompareButtons extends Interaction {
     static selector = "#wrapwrap";
 
     dynamicContent = {
-        ".o_wscc_compare_btn": { "t-on-click": this.onCompareClick },
+        ".o_wscc_compare_btn_picker": { "t-on-click": this.onCompareClick },
     };
 
     start() {
@@ -38,7 +43,7 @@ export class CompareButtons extends Interaction {
 
     paint() {
         const ids = new Set(comparisonUtils.getComparisonProductIds());
-        for (const button of this.el.querySelectorAll(".o_wscc_compare_btn")) {
+        for (const button of this.el.querySelectorAll(".o_wscc_compare_btn_picker")) {
             const productId = parseInt(button.dataset.productProductId, 10);
             const on = ids.has(productId);
             button.classList.toggle("active", on);
@@ -47,7 +52,7 @@ export class CompareButtons extends Interaction {
     }
 
     onCompareClick(ev) {
-        const button = ev.target.closest(".o_wscc_compare_btn");
+        const button = ev.target.closest(".o_wscc_compare_btn_picker");
         const modal = document.querySelector(".o_wscc_compare_modal");
         if (!button || !modal) {
             return;

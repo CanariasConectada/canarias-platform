@@ -85,6 +85,28 @@
  * a compact list rather than a second grid of cards. Rebuilding the grid here
  * would compete with the shop behind the modal for attention. */
 
+/* More breathing room around the modal's own sections: the header, body and
+ * footer inherited Bootstrap's default 1rem all round, tight for a dialog
+ * this dense (intro line, search, scopes, zone select, category chips,
+ * list). Reported 2026-08-21 ("corrige los paddings"). */
+.o_wscc_compare_modal .modal-body {
+    padding: 1.25rem 1.5rem;
+}
+
+.o_wscc_compare_modal .modal-header,
+.o_wscc_compare_modal .modal-footer {
+    padding: 1rem 1.5rem;
+}
+
+/* Independent chips now (see templates.xml), so each one needs its own
+ * padding back -- a `btn-group` member relies on the group for width, a
+ * standalone `.btn-sm` alone is a little tight for a label as long as "Mi
+ * zona comercial: Zona Comercial Guanarteme". */
+.o_wscc_modal_scopes .o_wscc_modal_scope {
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+}
+
 .o_wscc_modal_chip {
     border: 1px solid rgba(0, 0, 0, 0.15);
     border-radius: 999px;

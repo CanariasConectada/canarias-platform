@@ -52,8 +52,23 @@ class WebsiteSaleComparisonCanarias(http.Controller):
         extra leaf is AND-ed on top of the website-derived
         ``sale_product_domain()``, so neither can widen what the resolved
         shop already shows.
+
+        LANGUAGE IS SET BY HAND. ``http_routing``'s frontend language
+        resolution (URL prefix > ``frontend_lang`` cookie > context > site
+        default) only runs its redirect/context dance for ``type="http"``
+        routes -- a ``type="jsonrpc"`` route never gets it, so
+        ``request.env.context['lang']`` stayed at the DB's base language no
+        matter what the visitor's cookie said. Confirmed live: the page
+        itself rendered ``lang="es-ES"`` while this same request, same
+        cookie, answered in English. ``request.lang`` IS still computed
+        correctly at routing time (it is read straight off the cookie, not
+        off this dispatcher's context), so re-applying it here is enough --
+        reported 2026-08-21 ("corrije el idioma").
         """
         website = request.website
+        lang = request.lang.code if hasattr(request, "lang") else request.env.lang
+        request.env = request.env(context=dict(request.env.context, lang=lang))
+        website = website.with_env(request.env)
         Product = request.env["product.template"].sudo()
 
         current = Product.browse(int(product_template_id or 0)).exists()
