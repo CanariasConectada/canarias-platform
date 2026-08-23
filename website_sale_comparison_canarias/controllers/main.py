@@ -70,6 +70,13 @@ class WebsiteSaleComparisonCanarias(http.Controller):
         request.env = request.env(context=dict(request.env.context, lang=lang))
         website = website.with_env(request.env)
         Product = request.env["product.template"].sudo()
+        _debug_lang = {
+            "has_request_lang": hasattr(request, "lang"),
+            "request_lang_code": getattr(getattr(request, "lang", None), "code", None),
+            "env_context_lang": request.env.context.get("lang"),
+            "cookie_frontend_lang": request.httprequest.cookies.get("frontend_lang"),
+            "website_env_lang": website.env.context.get("lang"),
+        }
 
         current = Product.browse(int(product_template_id or 0)).exists()
         scopes = website._comparison_scopes(current)
@@ -130,6 +137,7 @@ class WebsiteSaleComparisonCanarias(http.Controller):
                 categories[category.id] = category.name
 
         return {
+            "_debug_lang": _debug_lang,
             "current": self._serialise(current, target) if current else None,
             # The categories of the product they clicked, so the modal can open
             # already narrowed to "things like this one" -- which is what was
