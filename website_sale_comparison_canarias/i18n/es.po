@@ -2,6 +2,16 @@
 # This file contains the translation of the following modules:
 # 	* website_sale_comparison_canarias
 #
+# Every code:addons/... entry below needs a "#. odoo-python" (or
+# "#. odoo-javascript" for a .js source) comment line ABOVE its own
+# "#: code:..." reference. Without it, Odoo's CodeTranslations loader
+# (odoo/tools/translate.py, PYTHON_TRANSLATION_COMMENT filter) silently
+# drops the entry -- it never reaches _(), no matter how correctly the
+# request's language context is set. The four scope labels here
+# ("All of Canarias Conectada", "My commercial zone: %s", ...) shipped
+# without that marker from the start and stayed in English through three
+# separate context/routing fixes before this was found -- confirmed live
+# with env.context['lang'] == 'es_ES' and the label still in English.
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
@@ -22,11 +32,13 @@ msgstr ""
 "Canarias"
 
 #. module: website_sale_comparison_canarias
+#. odoo-python
 #: code:addons/website_sale_comparison_canarias/models/website.py:0
 msgid "All of Canarias Conectada"
 msgstr "Toda Canarias Conectada"
 
 #. module: website_sale_comparison_canarias
+#. odoo-javascript
 #: code:addons/website_sale_comparison_canarias/static/src/js/comparison_modal.js:0
 msgid "All other zones"
 msgstr "Todas las demás zonas"
@@ -102,6 +114,7 @@ msgid "Comparison scope"
 msgstr "Alcance de la comparación"
 
 #. module: website_sale_comparison_canarias
+#. odoo-python
 #: code:addons/website_sale_comparison_canarias/models/website.py:0
 msgid "My commercial zone: %s"
 msgstr "Mi zona comercial: %s"
@@ -112,11 +125,13 @@ msgid "No products in this category to compare."
 msgstr "No hay productos en esta categoría para comparar."
 
 #. module: website_sale_comparison_canarias
+#. odoo-python
 #: code:addons/website_sale_comparison_canarias/models/website.py:0
 msgid "Only at %s"
 msgstr "Solo en %s"
 
 #. module: website_sale_comparison_canarias
+#. odoo-python
 #: code:addons/website_sale_comparison_canarias/models/website.py:0
 msgid "Outside my commercial zone"
 msgstr "Fuera de mi zona comercial"

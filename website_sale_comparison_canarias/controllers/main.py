@@ -58,25 +58,21 @@ class WebsiteSaleComparisonCanarias(http.Controller):
         default) only runs its redirect/context dance for ``type="http"``
         routes -- a ``type="jsonrpc"`` route never gets it, so
         ``request.env.context['lang']`` stayed at the DB's base language no
-        matter what the visitor's cookie said. Confirmed live: the page
-        itself rendered ``lang="es-ES"`` while this same request, same
-        cookie, answered in English. ``request.lang`` IS still computed
-        correctly at routing time (it is read straight off the cookie, not
-        off this dispatcher's context), so re-applying it here is enough --
-        reported 2026-08-21 ("corrije el idioma").
+        matter what the visitor's cookie said. ``request.lang`` IS still
+        computed correctly at routing time (it is read straight off the
+        cookie, not off this dispatcher's context), so re-applying it here
+        is enough for VIEW/record translations.
+
+        This alone did NOT fix the scope labels, though (still English with
+        a confirmed ``env.context['lang'] == 'es_ES'``): a SEPARATE bug in
+        ``i18n/es.po`` was masking it -- see the comment there. Both were
+        reported 2026-08-21/23 ("corrije el idioma").
         """
         website = request.website
         lang = request.lang.code if hasattr(request, "lang") else request.env.lang
         request.env = request.env(context=dict(request.env.context, lang=lang))
         website = website.with_env(request.env)
         Product = request.env["product.template"].sudo()
-        _debug_lang = {
-            "has_request_lang": hasattr(request, "lang"),
-            "request_lang_code": getattr(getattr(request, "lang", None), "code", None),
-            "env_context_lang": request.env.context.get("lang"),
-            "cookie_frontend_lang": request.httprequest.cookies.get("frontend_lang"),
-            "website_env_lang": website.env.context.get("lang"),
-        }
 
         current = Product.browse(int(product_template_id or 0)).exists()
         scopes = website._comparison_scopes(current)
@@ -137,7 +133,6 @@ class WebsiteSaleComparisonCanarias(http.Controller):
                 categories[category.id] = category.name
 
         return {
-            "_debug_lang": _debug_lang,
             "current": self._serialise(current, target) if current else None,
             # The categories of the product they clicked, so the modal can open
             # already narrowed to "things like this one" -- which is what was
