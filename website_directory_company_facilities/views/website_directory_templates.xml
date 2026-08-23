@@ -24,7 +24,7 @@
                         </h6>
                         <a t-if="selected_facility_ids"
                            t-att-href="facility_filter_clear_url"
-                           class="small text-decoration-none">Quitar</a>
+                           class="wd-filter-link small text-decoration-none">Quitar</a>
                     </div>
                     <!-- One dropdown per subdivision, the selection shown as
                          removable pills right below it: chips-per-option do
@@ -57,7 +57,7 @@
                             <div t-if="wdcf_selected" class="d-flex flex-wrap gap-2 mt-2">
                                 <t t-foreach="wdcf_selected" t-as="facility">
                                     <a t-att-href="facility['url']"
-                                       class="btn btn-sm btn-primary o_wdcf_pill"
+                                       class="wd-filter-link btn btn-sm btn-primary o_wdcf_pill"
                                        aria-pressed="true"
                                        t-att-aria-label="'Quitar filtro %s' % facility['name']">
                                         <i t-attf-class="fa #{facility['icon']} me-1"/>
@@ -70,6 +70,23 @@
                     </t>
                 </div>
             </div>
+        </xpath>
+    </template>
+
+    <!-- Top active-filters summary: one chip per ticked facility. -->
+    <template id="directory_active_filters_facilities" inherit_id="website_directory.directory_active_filters_extra">
+        <xpath expr="//span[@id='o_wd_active_filters_extra']" position="inside">
+            <t t-if="selected_facility_ids">
+                <t t-foreach="request.env['company.facility'].sudo().browse(selected_facility_ids)" t-as="wdcf_active_facility">
+                    <span class="badge bg-primary wd-filter-chip d-inline-flex align-items-center">
+                        <i t-attf-class="fa #{wdcf_active_facility.icon or 'fa-check'} me-1"/>
+                        <t t-esc="wdcf_active_facility.name"/>
+                        <a t-att-href="facility_remove_urls.get(wdcf_active_facility.id)"
+                           class="wd-filter-link wd-filter-chip-x"
+                           t-attf-aria-label="Quitar filtro {{ wdcf_active_facility.name }}">×</a>
+                    </span>
+                </t>
+            </t>
         </xpath>
     </template>
 

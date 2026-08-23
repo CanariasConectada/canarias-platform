@@ -5,6 +5,8 @@ import json
 import logging
 import random
 
+from werkzeug.urls import url_encode
+
 from odoo import http
 from odoo.exceptions import AccessError, UserError
 from odoo.fields import Domain
@@ -328,6 +330,24 @@ class WebsiteDirectory(http.Controller):
         except (TypeError, ValueError):
             return default
 
+    def _clear_filter_url(self, url, kw, drop=()):
+        """The current address with ``drop`` removed, everything else kept.
+
+        Same reasoning as the bridge modules' own ``_facility_url`` /
+        ``_certification_url``: a "×" built as a bare ``/comercio`` (what
+        this used to be, for category AND for zone) threw away every other
+        active filter along with the one the visitor actually clicked to
+        remove -- reported 2026-08-21 as part of the same "combining
+        filters" complaint.
+        """
+        args = {
+            key: value
+            for key, value in kw.items()
+            if key not in drop and key != "page" and value
+        }
+        query = url_encode(args)
+        return "%s?%s" % (url, query) if query else url
+
     def _prepare_directory_values(self, page=1, zone=None, url="/comercio", **kw):
         """Single implementation of domain + shuffle + pager + categories."""
         page = self._sanitize_int(kw.get("page", page), 1)
@@ -380,6 +400,10 @@ class WebsiteDirectory(http.Controller):
             "selected_category": category_id,
             "selected_category_path": selected_path,
             "zone_options": self._get_zone_options(),
+            "category_clear_url": self._clear_filter_url(
+                "/comercio", kw, drop={"category"}
+            ),
+            "zone_clear_url": self._clear_filter_url("/comercio", kw),
         }
 
     def _get_extra_pager_args(self, kw):
@@ -466,7 +490,16 @@ class WebsiteDirectory(http.Controller):
         sitemap=False,
     )
     def directory_ajax_search(self, **kw):
-        """Partial rendering (cards + pager) for the async filters."""
+        """Partial rendering (cards, pager AND the sidebar hook) for the
+        async filters.
+
+        The sidebar is re-rendered too, not just the results: a bridge
+        filter's own chip (certification, facilities) has to show its OWN
+        new active/inactive state after an AJAX round trip, the same way
+        the category cascade already updates itself client-side. Rendering
+        it fresh server-side is simpler than teaching every bridge module's
+        chip to track that state in JS.
+        """
         current_zone = self._get_zone_from_website(request.website)
         values = self._prepare_directory_values(
             zone=current_zone if current_zone != DEFAULT_ZONE else None,
@@ -474,7 +507,7 @@ class WebsiteDirectory(http.Controller):
             **kw,
         )
         values["current_zone"] = current_zone
-        response = request.render("website_directory.directory_search_results", values)
+        response = request.render("website_directory.directory_ajax_response", values)
         return self._set_shuffle_cookie_if_needed(response)
 
     @http.route(

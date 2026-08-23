@@ -51,6 +51,14 @@
     text-align: left;
     white-space: normal;
     line-height: 1.25;
+    /* Bootstrap's `.btn` is `inline-block`, so a trailing "x" icon aligns to
+     * the label's own baseline instead of its visual center -- worse still
+     * on a label long enough to wrap (`white-space: normal` above), where
+     * the "x" then sits at the wrong LINE entirely. Flex centers every
+     * child on one cross-axis regardless of how many lines the label
+     * takes. Reported 2026-08-21 ("centra las x"). */
+    display: inline-flex;
+    align-items: center;
 }
 
 /* Off state: dark text on a light neutral pill — readable before hovering. */

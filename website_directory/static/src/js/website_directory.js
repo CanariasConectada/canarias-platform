@@ -44,6 +44,42 @@
         return extra;
     }
 
+    // ------------------------------------------------------------------
+    // Turn a server-built filter URL (a select option's value, a chip's
+    // href, a pill's "remove" link) into a fetchResults() call instead of
+    // a full navigation. The URL already encodes the COMPLETE target state
+    // -- every bridge filter builds it that way precisely so a click never
+    // drops a sibling filter -- so re-deriving `changes` from its query
+    // string is enough: known params are read directly, and anything else
+    // (facility, certification, whatever a future bridge adds) replaces
+    // `state.extra` wholesale, which both adds a fresh one and drops one
+    // the visitor just turned off.
+    // ------------------------------------------------------------------
+    function changesFromQuery(query) {
+        var params = new URLSearchParams(query);
+        var changes = {extra: {}};
+        params.forEach(function (value, key) {
+            if (KNOWN_PARAMS.indexOf(key) === -1) {
+                changes.extra[key] = value;
+            }
+        });
+        changes.search = params.get("search") || "";
+        var category = params.get("category");
+        changes.category = category ? parseInt(category, 10) || null : null;
+        changes.view = params.get("view") || "grid";
+        changes.ppg = parseInt(params.get("ppg"), 10) || 21;
+        // A filter change always starts back at page 1: the answer's size
+        // changed, so the old page number rarely still means anything.
+        changes.page = 1;
+        return changes;
+    }
+
+    function followFilterUrl(url) {
+        var queryIndex = url.indexOf("?");
+        var query = queryIndex === -1 ? "" : url.slice(queryIndex + 1);
+        fetchResults(changesFromQuery(query));
+    }
+
     function init() {
         var dataNode = byId("wd_data");
         if (!dataNode) {
@@ -71,12 +107,26 @@
         // active filter, managed or not.
         state.extra = currentExtraParams();
 
-        initZoneSelect();
-        initNavSelects();
-        initCategoryCascade();
+        initSidebar();
         initAsyncSearch();
         initToolbar();
         initPagination();
+        initFilterLinks();
+    }
+
+    // ------------------------------------------------------------------
+    // Everything living inside #wd_sidebar: the zone select, the category
+    // cascade, and whatever a bridge module (certification, facilities)
+    // added to the extension hook. Re-run after every AJAX round trip that
+    // swaps this whole block in fresh, not just at page load -- a select's
+    // 'change' listener and the enhanced-dropdown wrapper both attach to
+    // ONE specific DOM node, which the swap just replaced with a new one
+    // that has neither yet.
+    // ------------------------------------------------------------------
+    function initSidebar() {
+        initZoneSelect();
+        initNavSelects();
+        initCategoryCascade();
         ["wd_zone_select", "wd_cat_l1", "wd_cat_l2", "wd_cat_l3"].forEach(
             function (id) {
                 enhanceSelect(byId(id));
@@ -85,10 +135,14 @@
     }
 
     // ------------------------------------------------------------------
-    // Navigation selects: any select marked wd-nav-select navigates to the
-    // picked option's value. The generic hook the sidebar bridges (the
-    // facilities filter, and whatever comes next) build on: the server
-    // renders the URLs, this only follows them.
+    // Navigation selects: any select marked wd-nav-select follows the
+    // picked option's value through the same AJAX pipeline as the category
+    // cascade, instead of a full page navigation. The generic hook the
+    // sidebar bridges (the facilities filter, and whatever comes next)
+    // build on: the server renders the URLs, this only follows them --
+    // async now, so ticking "Rampa de acceso" no longer reloads the page
+    // out from under a category the visitor already picked (reported
+    // 2026-08-21).
     // ------------------------------------------------------------------
     function initNavSelects() {
         document
@@ -96,11 +150,34 @@
             .forEach(function (select) {
                 select.addEventListener("change", function () {
                     if (select.value) {
-                        window.location.href = select.value;
+                        followFilterUrl(select.value);
                     }
                 });
                 enhanceSelect(select);
             });
+    }
+
+    // ------------------------------------------------------------------
+    // Filter chip / pill links: any anchor marked wd-filter-link (the
+    // certification chips, the facilities "Quitar"/pill remove buttons, the
+    // active-filters summary at the top) follows its href through the same
+    // AJAX pipeline. Delegated on #wrap so chips re-rendered by an AJAX
+    // response (a fresh sidebar, a fresh summary bar) are wired without
+    // re-scanning the DOM after every fetch.
+    // ------------------------------------------------------------------
+    function initFilterLinks() {
+        var wrap = byId("wrap");
+        if (!wrap) {
+            return;
+        }
+        wrap.addEventListener("click", function (event) {
+            var link = event.target.closest("a.wd-filter-link");
+            if (!link) {
+                return;
+            }
+            event.preventDefault();
+            followFilterUrl(link.getAttribute("href"));
+        });
     }
 
     // ------------------------------------------------------------------
@@ -480,10 +557,26 @@
                 return response.text();
             })
             .then(function (html) {
+                // The AJAX response carries two named blocks (results AND a
+                // fresh sidebar) in one response body; pull each out by id
+                // and inject into its own live container. A bridge filter's
+                // chip has to show its own new active/inactive state after
+                // this round trip, same as the category cascade already
+                // does client-side -- re-rendering the whole sidebar is
+                // simpler than teaching every bridge chip to track that in
+                // JS, and this is the one place that pays for it.
+                var doc = new DOMParser().parseFromString(html, "text/html");
+                var resultsSource = doc.getElementById("wd_ajax_results");
+                var sidebarSource = doc.getElementById("wd_ajax_sidebar");
                 var results = byId("wd_results");
-                if (results) {
-                    results.innerHTML = html;
+                if (results && resultsSource) {
+                    results.innerHTML = resultsSource.innerHTML;
                     results.scrollIntoView({behavior: "smooth", block: "start"});
+                }
+                var sidebar = byId("wd_sidebar");
+                if (sidebar && sidebarSource) {
+                    sidebar.innerHTML = sidebarSource.innerHTML;
+                    initSidebar();
                 }
                 if (window.history && window.history.pushState) {
                     window.history.pushState(

@@ -102,17 +102,32 @@
     <!-- AJAX partial: active filter badges + results. -->
     <template id="directory_search_results" name="Directory Search Results">
         <div class="wd-active-filters mb-3 d-flex flex-wrap gap-2 align-items-center">
-            <span t-if="search" class="badge bg-info d-inline-flex align-items-center">
+            <span t-if="search" class="badge bg-info wd-filter-chip d-inline-flex align-items-center">
                 <i class="fa fa-search me-1"/>
                 <t t-esc="search"/>
             </span>
+            <span t-if="current_zone and current_zone != 'canarias'" class="badge bg-primary wd-filter-chip d-inline-flex align-items-center">
+                <i class="fa fa-map-marker me-1"/>
+                <t t-esc="dict(zone_options).get(current_zone, current_zone)"/>
+                <!-- Not wd-filter-link: the zone is a different site/domain
+                     in the multi-website setup, not a query-string filter,
+                     so removing it is a real navigation like the zone
+                     select already is. -->
+                <a t-att-href="zone_clear_url" class="wd-filter-chip-x" aria-label="Quitar filtro de zona">×</a>
+            </span>
             <t t-if="selected_category">
                 <t t-set="filter_category_obj" t-value="request.env['res.company.category'].sudo().browse(selected_category)"/>
-                <span t-if="filter_category_obj.exists()" class="badge bg-primary d-inline-flex align-items-center">
+                <span t-if="filter_category_obj.exists()" class="badge bg-primary wd-filter-chip d-inline-flex align-items-center">
                     <i class="fa fa-folder me-1"/>
                     <t t-esc="filter_category_obj.name"/>
+                    <a t-att-href="category_clear_url" class="wd-filter-link wd-filter-chip-x" aria-label="Quitar filtro de categoría">×</a>
                 </span>
             </t>
+            <!-- Extension hook: bridge modules (certification, facilities...)
+                 add their own removable chip here, next to search/zone/
+                 category, so the visitor sees every active filter in one
+                 place instead of hunting for it in each sidebar card. -->
+            <t t-call="website_directory.directory_active_filters_extra"/>
             <!-- Red trash: wipes every active filter (search, category, zone)
                  by reloading the bare directory page. Only rendered when
                  there is something to clear. -->
@@ -134,6 +149,119 @@
          sidebar. The base module renders nothing here. -->
     <template id="directory_sidebar_extra" name="Directory Sidebar Extension Hook">
         <div id="o_wd_sidebar_extra"/>
+    </template>
+
+    <!-- Extension hook: bridge modules add their own chip to the top
+         active-filters summary here. The base module renders nothing.
+         `display: contents` so the wrapper itself never becomes a flex/gap
+         item alongside the chips a bridge module inserts inside it. -->
+    <template id="directory_active_filters_extra" name="Directory Active Filters Extension Hook">
+        <span id="o_wd_active_filters_extra" style="display: contents;"/>
+    </template>
+
+    <!-- The whole left column: zone, the category cascade, and the bridge
+         hook. Its own template (not inlined in the page) so the AJAX
+         response below can re-render the exact same markup: every card in
+         here shows a "Filtering by: ... [x]" state that would otherwise go
+         stale the moment a sibling filter changed through AJAX. -->
+    <template id="directory_sidebar" name="Directory Sidebar">
+        <!-- Zone filter -->
+        <div class="card border-0 shadow-sm mb-3 wd-filter-card" id="wd_zone_card">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold fs-6"><i class="fa fa-map-marker text-primary me-2"/>Commercial Zone</h5>
+            </div>
+            <div class="card-body">
+                <select class="form-select" id="wd_zone_select" t-att-data-current="current_zone or 'canarias'">
+                    <option value="/comercio" t-att-selected="not current_zone or current_zone == 'canarias' or None">All zones</option>
+                    <t t-foreach="zone_options" t-as="zone_option">
+                        <option t-if="zone_option[0] != 'canarias'" t-att-value="'/comercio/zona/%s' % zone_option[0]" t-att-selected="current_zone == zone_option[0] or None" t-esc="zone_option[1]"/>
+                    </t>
+                </select>
+                <div t-if="current_zone and current_zone != 'canarias'" class="mt-3">
+                    <small class="text-muted d-block mb-1">Filtering by:</small>
+                    <span class="badge bg-primary wd-filter-chip d-inline-flex align-items-center">
+                        <t t-esc="dict(zone_options).get(current_zone, current_zone)"/>
+                        <a t-att-href="zone_clear_url" class="wd-filter-chip-x" aria-label="Quitar filtro de zona">×</a>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cascading category filter -->
+        <div class="card border-0 shadow-sm mb-3 wd-filter-card" id="wd_category_card">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold fs-6"><i class="fa fa-tags text-primary me-2"/>Category</h5>
+                <div id="wd_category_loader" class="spinner-border spinner-border-sm text-primary d-none" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <form action="/comercio" method="get" id="wd_category_form" autocomplete="off">
+                    <input type="hidden" name="search" t-att-value="search or ''"/>
+                    <div class="mb-3">
+                        <label class="form-label small text-muted mb-1" for="wd_cat_l1">
+                            <i class="fa fa-folder-open me-1"/>Main category
+                        </label>
+                        <select name="category" class="form-select" id="wd_cat_l1">
+                            <option value="">All categories</option>
+                            <t t-foreach="category_tree" t-as="root">
+                                <option t-att-value="root['id']" t-att-selected="selected_category_path[0] == root['id'] or None" t-esc="root['name']"/>
+                            </t>
+                        </select>
+                    </div>
+                    <div class="mb-3 d-none" id="wd_cat_l2_wrap">
+                        <label class="form-label small text-muted mb-1" for="wd_cat_l2">
+                            <i class="fa fa-folder me-1"/>Subcategory
+                        </label>
+                        <select class="form-select" id="wd_cat_l2">
+                            <option value="">All subcategories</option>
+                        </select>
+                    </div>
+                    <div class="mb-3 d-none" id="wd_cat_l3_wrap">
+                        <label class="form-label small text-muted mb-1" for="wd_cat_l3">
+                            <i class="fa fa-file-text me-1"/>Specialty
+                        </label>
+                        <select class="form-select" id="wd_cat_l3">
+                            <option value="">All specialties</option>
+                        </select>
+                    </div>
+                </form>
+                <div t-if="selected_category" class="mt-3 pt-3 border-top" id="wd_category_badge">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <small class="text-muted">Filtering by:</small>
+                        <a t-att-href="category_clear_url" class="wd-filter-link btn btn-sm btn-outline-secondary py-0 px-2">
+                            <i class="fa fa-times me-1"/>Clear
+                        </a>
+                    </div>
+                    <div class="d-flex flex-wrap gap-1">
+                        <t t-set="selected_category_obj" t-value="request.env['res.company.category'].sudo().browse(selected_category)"/>
+                        <span t-if="selected_category_obj.exists()" class="badge bg-primary">
+                            <i class="fa fa-folder-open me-1"/><t t-esc="selected_category_obj.complete_name"/>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Extension hook for bridge modules. -->
+        <t t-call="website_directory.directory_sidebar_extra"/>
+    </template>
+
+    <!-- Rendered by the AJAX endpoint only: the results partial AND a fresh
+         sidebar in one response, so a bridge filter's own chip (and the
+         category "Filtering by" card) shows its new active/inactive state
+         without a full page reload. Split into two named blocks the
+         frontend script pulls apart and injects into their own live
+         containers: #wd_results never touches the sidebar's DOM, or every
+         selectbox inside it would need re-creating on every keystroke of
+         the search box. -->
+    <template id="directory_ajax_response" name="Directory AJAX Response">
+        <div id="wd_ajax_results">
+            <t t-call="website_directory.directory_search_results"/>
+        </div>
+        <div id="wd_ajax_sidebar">
+            <t t-call="website_directory.directory_sidebar"/>
+        </div>
     </template>
 
     <!-- Main page. -->
@@ -208,86 +336,9 @@
 
                     <div class="row">
                         <aside class="col-lg-3 mb-4">
-                            <!-- Zone filter -->
-                            <div class="card border-0 shadow-sm mb-3 wd-filter-card" id="wd_zone_card">
-                                <div class="card-header bg-white py-3">
-                                    <h5 class="mb-0 fw-bold fs-6"><i class="fa fa-map-marker text-primary me-2"/>Commercial Zone</h5>
-                                </div>
-                                <div class="card-body">
-                                    <select class="form-select" id="wd_zone_select" t-att-data-current="current_zone or 'canarias'">
-                                        <option value="/comercio" t-att-selected="not current_zone or current_zone == 'canarias' or None">All zones</option>
-                                        <t t-foreach="zone_options" t-as="zone_option">
-                                            <option t-if="zone_option[0] != 'canarias'" t-att-value="'/comercio/zona/%s' % zone_option[0]" t-att-selected="current_zone == zone_option[0] or None" t-esc="zone_option[1]"/>
-                                        </t>
-                                    </select>
-                                    <div t-if="current_zone and current_zone != 'canarias'" class="mt-3">
-                                        <small class="text-muted d-block mb-1">Filtering by:</small>
-                                        <span class="badge bg-primary d-inline-flex align-items-center">
-                                            <t t-esc="dict(zone_options).get(current_zone, current_zone)"/>
-                                            <a href="/comercio" class="text-white ms-2 text-decoration-none fw-bold">×</a>
-                                        </span>
-                                    </div>
-                                </div>
+                            <div id="wd_sidebar">
+                                <t t-call="website_directory.directory_sidebar"/>
                             </div>
-
-                            <!-- Cascading category filter -->
-                            <div class="card border-0 shadow-sm mb-3 wd-filter-card" id="wd_category_card">
-                                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0 fw-bold fs-6"><i class="fa fa-tags text-primary me-2"/>Category</h5>
-                                    <div id="wd_category_loader" class="spinner-border spinner-border-sm text-primary d-none" role="status">
-                                        <span class="visually-hidden">Loading...</span>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <form action="/comercio" method="get" id="wd_category_form" autocomplete="off">
-                                        <input type="hidden" name="search" t-att-value="search or ''"/>
-                                        <div class="mb-3">
-                                            <label class="form-label small text-muted mb-1" for="wd_cat_l1">
-                                                <i class="fa fa-folder-open me-1"/>Main category
-                                            </label>
-                                            <select name="category" class="form-select" id="wd_cat_l1">
-                                                <option value="">All categories</option>
-                                                <t t-foreach="category_tree" t-as="root">
-                                                    <option t-att-value="root['id']" t-att-selected="selected_category_path[0] == root['id'] or None" t-esc="root['name']"/>
-                                                </t>
-                                            </select>
-                                        </div>
-                                        <div class="mb-3 d-none" id="wd_cat_l2_wrap">
-                                            <label class="form-label small text-muted mb-1" for="wd_cat_l2">
-                                                <i class="fa fa-folder me-1"/>Subcategory
-                                            </label>
-                                            <select class="form-select" id="wd_cat_l2">
-                                                <option value="">All subcategories</option>
-                                            </select>
-                                        </div>
-                                        <div class="mb-3 d-none" id="wd_cat_l3_wrap">
-                                            <label class="form-label small text-muted mb-1" for="wd_cat_l3">
-                                                <i class="fa fa-file-text me-1"/>Specialty
-                                            </label>
-                                            <select class="form-select" id="wd_cat_l3">
-                                                <option value="">All specialties</option>
-                                            </select>
-                                        </div>
-                                    </form>
-                                    <div t-if="selected_category" class="mt-3 pt-3 border-top" id="wd_category_badge">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <small class="text-muted">Filtering by:</small>
-                                            <a href="/comercio" class="btn btn-sm btn-outline-secondary py-0 px-2">
-                                                <i class="fa fa-times me-1"/>Clear
-                                            </a>
-                                        </div>
-                                        <div class="d-flex flex-wrap gap-1">
-                                            <t t-set="selected_category_obj" t-value="request.env['res.company.category'].sudo().browse(selected_category)"/>
-                                            <span t-if="selected_category_obj.exists()" class="badge bg-primary">
-                                                <i class="fa fa-folder-open me-1"/><t t-esc="selected_category_obj.complete_name"/>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Extension hook for bridge modules. -->
-                            <t t-call="website_directory.directory_sidebar_extra"/>
                         </aside>
 
                         <div class="col-lg-9">
