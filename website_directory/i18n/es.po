@@ -15,17 +15,17 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: website_directory
-#: model_terms:ir.ui.view,arch_db:website_directory.directory_index
+#: model_terms:ir.ui.view,arch_db:website_directory.directory_sidebar
 msgid "<i class=\"fa fa-file-text me-1\"/>Specialty"
 msgstr "<i class=\"fa fa-file-text me-1\"/>Especialidad"
 
 #. module: website_directory
-#: model_terms:ir.ui.view,arch_db:website_directory.directory_index
+#: model_terms:ir.ui.view,arch_db:website_directory.directory_sidebar
 msgid "<i class=\"fa fa-folder me-1\"/>Subcategory"
 msgstr "<i class=\"fa fa-folder me-1\"/>Subcategoría"
 
 #. module: website_directory
-#: model_terms:ir.ui.view,arch_db:website_directory.directory_index
+#: model_terms:ir.ui.view,arch_db:website_directory.directory_sidebar
 msgid "<i class=\"fa fa-folder-open me-1\"/>Main category"
 msgstr "<i class=\"fa fa-folder-open me-1\"/>Categoría principal"
 
@@ -45,7 +45,7 @@ msgid "<i class=\"fa fa-globe me-1\"/>Website not available"
 msgstr "<i class=\"fa fa-globe me-1\"/>Web no disponible"
 
 #. module: website_directory
-#: model_terms:ir.ui.view,arch_db:website_directory.directory_index
+#: model_terms:ir.ui.view,arch_db:website_directory.directory_sidebar
 msgid "<i class=\"fa fa-map-marker text-primary me-2\"/>Commercial Zone"
 msgstr "<i class=\"fa fa-map-marker text-primary me-2\"/>Zona Comercial"
 
@@ -55,54 +55,60 @@ msgid "<i class=\"fa fa-search me-2\"/>Search"
 msgstr "<i class=\"fa fa-search me-2\"/>Buscar"
 
 #. module: website_directory
-#: model_terms:ir.ui.view,arch_db:website_directory.directory_index
+#: model_terms:ir.ui.view,arch_db:website_directory.directory_sidebar
 msgid "<i class=\"fa fa-tags text-primary me-2\"/>Category"
 msgstr "<i class=\"fa fa-tags text-primary me-2\"/>Categoría"
 
 #. module: website_directory
-#: model_terms:ir.ui.view,arch_db:website_directory.directory_index
+#: model_terms:ir.ui.view,arch_db:website_directory.directory_sidebar
 msgid "<i class=\"fa fa-times me-1\"/>Clear"
 msgstr "<i class=\"fa fa-times me-1\"/>Limpiar"
 
 #. module: website_directory
-#: model_terms:ir.ui.view,arch_db:website_directory.directory_index
+#: model_terms:ir.ui.view,arch_db:website_directory.directory_sidebar
 msgid "<option value=\"\">All categories</option>"
 msgstr "<option value=\"\">Todas las categorías</option>"
 
 #. module: website_directory
-#: model_terms:ir.ui.view,arch_db:website_directory.directory_index
-msgid ""
-"<select class=\"form-select\" id=\"wd_cat_l2\">\n"
-"                                                <option value=\"\">All subcategories</option>\n"
-"                                            </select>"
+#: model_terms:ir.ui.view,arch_db:website_directory.my_business
+msgid "<option value=\"\">— Sin categoría —</option>"
 msgstr ""
-"<select class=\"form-select\" id=\"wd_cat_l2\">\n"
-"                                                <option value=\"\">Todas las subcategorías</option>\n"
-"                                            </select>"
 
 #. module: website_directory
-#: model_terms:ir.ui.view,arch_db:website_directory.directory_index
+#: model_terms:ir.ui.view,arch_db:website_directory.directory_sidebar
 msgid ""
-"<select class=\"form-select\" id=\"wd_cat_l3\">\n"
-"                                                <option value=\"\">All specialties</option>\n"
-"                                            </select>"
+"<select class=\"form-select\" id=\"wd_cat_l2\">\n"
+"                            <option value=\"\">All subcategories</option>\n"
+"                        </select>"
 msgstr ""
-"<select class=\"form-select\" id=\"wd_cat_l3\">\n"
-"                                                <option value=\"\">Todas las especialidades</option>\n"
-"                                            </select>"
+"<select class=\"form-select\" id=\"wd_cat_l2\">\n"
+"                            <option value=\"\">Todas las subcategorías</option>\n"
+"                        </select>"
 
 #. module: website_directory
-#: model_terms:ir.ui.view,arch_db:website_directory.directory_index
+#: model_terms:ir.ui.view,arch_db:website_directory.directory_sidebar
+msgid ""
+"<select class=\"form-select\" id=\"wd_cat_l3\">\n"
+"                            <option value=\"\">All specialties</option>\n"
+"                        </select>"
+msgstr ""
+"<select class=\"form-select\" id=\"wd_cat_l3\">\n"
+"                            <option value=\"\">Todas las especialidades</option>\n"
+"                        </select>"
+
+#. module: website_directory
+#: model_terms:ir.ui.view,arch_db:website_directory.directory_sidebar
 msgid "<small class=\"text-muted d-block mb-1\">Filtering by:</small>"
 msgstr "<small class=\"text-muted d-block mb-1\">Filtrando por:</small>"
 
 #. module: website_directory
-#: model_terms:ir.ui.view,arch_db:website_directory.directory_index
+#: model_terms:ir.ui.view,arch_db:website_directory.directory_sidebar
 msgid "<small class=\"text-muted\">Filtering by:</small>"
 msgstr "<small class=\"text-muted\">Filtrando por:</small>"
 
 #. module: website_directory
 #: model_terms:ir.ui.view,arch_db:website_directory.directory_index
+#: model_terms:ir.ui.view,arch_db:website_directory.directory_sidebar
 msgid "<span class=\"visually-hidden\">Loading...</span>"
 msgstr "<span class=\"visually-hidden\">Cargando...</span>"
 
@@ -112,7 +118,7 @@ msgid "Active"
 msgstr "Activo"
 
 #. module: website_directory
-#: model_terms:ir.ui.view,arch_db:website_directory.directory_index
+#: model_terms:ir.ui.view,arch_db:website_directory.directory_sidebar
 msgid "All zones"
 msgstr "Todas las zonas"
 
@@ -122,15 +128,12 @@ msgid "Business Directory"
 msgstr "Directorio Canarias Conectada"
 
 #. module: website_directory
-#: model_terms:ir.ui.view,arch_db:website_directory.directory_index
-msgid "Directory of shops"
-msgstr "Directorio de comercios"
-
-#. module: website_directory
 #: model:ir.model.fields,help:website_directory.field_website_directory_entry__category_id
 msgid ""
 "Business category, taken from the company. Edit it on the company form."
-msgstr "Categoría de negocio, tomada de la compañía. Edítala en la ficha de la compañía."
+msgstr ""
+"Categoría de negocio, tomada de la compañía. Edítala en la ficha de la "
+"compañía."
 
 #. module: website_directory
 #: model:ir.model.fields,field_description:website_directory.field_website_directory_entry__can_publish
@@ -148,16 +151,33 @@ msgid "Category"
 msgstr "Categoría"
 
 #. module: website_directory
+#: model_terms:ir.ui.view,arch_db:website_directory.my_business
+msgid "Categoría actual"
+msgstr ""
+
+#. module: website_directory
+#: model_terms:ir.ui.view,arch_db:website_directory.my_business
+msgid "Categoría guardada."
+msgstr ""
+
+#. module: website_directory
 #: model:ir.model.fields,field_description:website_directory.field_website_directory_entry__city
 msgid "City"
 msgstr "Ciudad"
+
+#. module: website_directory
+#: model_terms:ir.ui.view,arch_db:website_directory.directory_search_results
+msgid "Clear all filters"
+msgstr "Borrar todos los filtros"
 
 #. module: website_directory
 #: model:ir.model.fields,help:website_directory.field_website_directory_entry__zone
 msgid ""
 "Commercial zone of the business. Kept as historical data until the new zone "
 "module lands (see the module roadmap)."
-msgstr "Zona comercial del comercio. Se conserva como dato histórico hasta que llegue el nuevo módulo de zonas (ver la hoja de ruta del módulo)."
+msgstr ""
+"Zona comercial del comercio. Se conserva como dato histórico hasta que "
+"llegue el nuevo módulo de zonas (ver la hoja de ruta del módulo)."
 
 #. module: website_directory
 #: model:ir.model,name:website_directory.model_res_company
@@ -168,6 +188,16 @@ msgstr "Compañías"
 #: model:ir.model.fields,field_description:website_directory.field_website_directory_entry__company_id
 msgid "Company"
 msgstr "Compañía"
+
+#. module: website_directory
+#: model:ir.model,name:website_directory.model_res_partner
+msgid "Contact"
+msgstr ""
+
+#. module: website_directory
+#: model:ir.model,website_form_label:website_directory.model_res_partner
+msgid "Create a Customer"
+msgstr ""
 
 #. module: website_directory
 #: model:ir.model.fields,field_description:website_directory.field_website_directory_entry__create_uid
@@ -185,16 +215,29 @@ msgid "Description"
 msgstr "Descripción"
 
 #. module: website_directory
-#. odoo-python
-#: code:addons/website_directory/models/res_company.py:0
-msgid "Directory synchronized"
-msgstr "Directorio sincronizado"
+#: model:ir.model.fields,field_description:website_directory.field_res_company__directory_sync_pending
+msgid "Directory Sync Pending"
+msgstr "Sincronización del directorio pendiente"
+
+#. module: website_directory
+#: model_terms:ir.ui.view,arch_db:website_directory.directory_index
+msgid "Directory of shops"
+msgstr "Directorio de comercios"
 
 #. module: website_directory
 #: model:ir.model.fields,field_description:website_directory.field_res_company__display_name
+#: model:ir.model.fields,field_description:website_directory.field_res_partner__display_name
 #: model:ir.model.fields,field_description:website_directory.field_website_directory_entry__display_name
 msgid "Display Name"
 msgstr "Nombre mostrado"
+
+#. module: website_directory
+#: model_terms:ir.ui.view,arch_db:website_directory.my_business
+msgid ""
+"Elige la categoría con la que tu negocio aparece en\n"
+"                            el directorio. Es la que usan los clientes para\n"
+"                            encontrarte."
+msgstr ""
 
 #. module: website_directory
 #: model:ir.model.fields,field_description:website_directory.field_website_directory_entry__email
@@ -203,19 +246,17 @@ msgstr "Correo electrónico"
 
 #. module: website_directory
 #: model:ir.model.fields,help:website_directory.field_website_directory_entry__website_url
-msgid "External microsite or website of the business."
-msgstr "Microsite o web externa del comercio."
+msgid ""
+"External microsite or website of the business, taken from the company "
+"(microsite modules > partner website > website domain)."
+msgstr ""
+"Microsite o web externa del comercio, tomada de la compañía (módulos de "
+"microsite > web del contacto > dominio del sitio web)."
 
 #. module: website_directory
 #: model_terms:ir.ui.view,arch_db:website_directory.directory_index
 msgid "Find the best businesses and services in your area"
 msgstr "Encuentra los mejores comercios y servicios de tu zona"
-
-#. module: website_directory
-#: model_terms:ir.ui.view,arch_db:website_directory.view_company_form_inherit_directory
-msgid ""
-"Force the synchronization of this company with its website directory entry."
-msgstr "Fuerza la sincronización de esta compañía con su entrada en el directorio web."
 
 #. module: website_directory
 #: model_terms:ir.ui.view,arch_db:website_directory.directory_index
@@ -228,7 +269,13 @@ msgid "Guanarteme"
 msgstr "Guanarteme"
 
 #. module: website_directory
+#: model_terms:ir.ui.view,arch_db:website_directory.my_business
+msgid "Guardar"
+msgstr ""
+
+#. module: website_directory
 #: model:ir.model.fields,field_description:website_directory.field_res_company__id
+#: model:ir.model.fields,field_description:website_directory.field_res_partner__id
 #: model:ir.model.fields,field_description:website_directory.field_website_directory_entry__id
 msgid "ID"
 msgstr "ID"
@@ -268,7 +315,9 @@ msgstr "Imagen 512"
 msgid ""
 "Inactive entries are hidden from the public directory. This flag is kept in "
 "sync with the company 'Show in Directory' checkbox."
-msgstr "Las entradas inactivas se ocultan del directorio público. Esta marca se sincroniza con la casilla 'Mostrar en directorio' de la compañía."
+msgstr ""
+"Las entradas inactivas se ocultan del directorio público. Esta marca se "
+"sincroniza con la casilla 'Mostrar en directorio' de la compañía."
 
 #. module: website_directory
 #: model:ir.model.fields,field_description:website_directory.field_website_directory_entry__is_published
@@ -307,9 +356,30 @@ msgid "No businesses found"
 msgstr "No se encontraron comercios"
 
 #. module: website_directory
+#: model_terms:ir.ui.view,arch_db:website_directory.my_business
+msgid "No se pudo guardar la categoría. Vuelve a intentarlo."
+msgstr ""
+
+#. module: website_directory
+#: model_terms:ir.ui.view,arch_db:website_directory.my_business
+msgid "Nueva categoría"
+msgstr ""
+
+#. module: website_directory
 #: model:ir.model.fields,field_description:website_directory.field_website_directory_entry__phone
 msgid "Phone"
 msgstr "Teléfono"
+
+#. module: website_directory
+#: model_terms:ir.ui.view,arch_db:website_directory.directory_search_results
+msgid "Quitar filtro de categoría"
+msgstr ""
+
+#. module: website_directory
+#: model_terms:ir.ui.view,arch_db:website_directory.directory_search_results
+#: model_terms:ir.ui.view,arch_db:website_directory.directory_sidebar
+msgid "Quitar filtro de zona"
+msgstr ""
 
 #. module: website_directory
 #: model_terms:ir.ui.view,arch_db:website_directory.directory_index
@@ -320,6 +390,17 @@ msgstr "Buscar comercios..."
 #: model:ir.model.fields,field_description:website_directory.field_website_directory_entry__sequence
 msgid "Sequence"
 msgstr "Secuencia"
+
+#. module: website_directory
+#: model:ir.model.fields,help:website_directory.field_res_company__directory_sync_pending
+msgid ""
+"Set when the company changed and its directory entry still has to be "
+"refreshed. A scheduled action syncs pending companies in the background, so "
+"the sync never blocks saving the company."
+msgstr ""
+"Se marca cuando la compañía cambió y su entrada del directorio aún debe "
+"actualizarse. Una acción planificada sincroniza las compañías pendientes en "
+"segundo plano, de modo que la sincronización nunca bloquea el guardado."
 
 #. module: website_directory
 #: model:ir.model.fields,field_description:website_directory.field_website_directory_entry__short_description
@@ -337,14 +418,14 @@ msgid "Show:"
 msgstr "Mostrar:"
 
 #. module: website_directory
+#: model_terms:ir.ui.view,arch_db:website_directory.my_business
+msgid "Sin categoría"
+msgstr ""
+
+#. module: website_directory
 #: model:ir.model.fields,field_description:website_directory.field_website_directory_entry__street
 msgid "Street"
 msgstr "Dirección"
-
-#. module: website_directory
-#: model_terms:ir.ui.view,arch_db:website_directory.view_company_form_inherit_directory
-msgid "Synchronize with Directory"
-msgstr "Sincronizar con el directorio"
 
 #. module: website_directory
 #: model:ir.model.fields.selection,name:website_directory.selection__website_directory_entry__zone__tamaraceite
@@ -354,13 +435,22 @@ msgstr "Tamaraceite"
 #. module: website_directory
 #. odoo-python
 #: code:addons/website_directory/models/res_company.py:0
-msgid "The company has been synchronized with its website directory entry."
-msgstr "La compañía se ha sincronizado con su entrada del directorio web."
+msgid "That category does not exist."
+msgstr "Esa categoría no existe."
+
+#. module: website_directory
+#. odoo-python
+#: code:addons/website_directory/models/res_company.py:0
+msgid ""
+"That category only groups other categories. Choose one of its subcategories."
+msgstr ""
+"Esa categoría solo agrupa otras categorías. Elige una de sus subcategorías."
 
 #. module: website_directory
 #: model:ir.model.fields,help:website_directory.field_website_directory_entry__website_absolute_url
 msgid "The full absolute URL to access the document through the website."
-msgstr "La URL absoluta completa para acceder al documento a través del sitio web."
+msgstr ""
+"La URL absoluta completa para acceder al documento a través del sitio web."
 
 #. module: website_directory
 #: model:ir.model.constraint,message:website_directory.constraint_website_directory_entry_company_id_active_uniq
@@ -373,9 +463,22 @@ msgid "Try another search term"
 msgstr "Prueba con otro término de búsqueda"
 
 #. module: website_directory
+#: model_terms:ir.ui.view,arch_db:website_directory.my_business
+msgid ""
+"Tu usuario no está vinculado a ningún comercio, así que\n"
+"                        no hay categoría que asignar. Si crees que es un error,\n"
+"                        escríbenos."
+msgstr ""
+
+#. module: website_directory
 #: model:ir.model.fields,field_description:website_directory.field_website_directory_entry__vat
 msgid "VAT"
 msgstr "NIF/CIF"
+
+#. module: website_directory
+#: model_terms:ir.ui.view,arch_db:website_directory.my_business
+msgid "Ver el directorio"
+msgstr ""
 
 #. module: website_directory
 #: model_terms:ir.ui.view,arch_db:website_directory.directory_index
@@ -398,9 +501,22 @@ msgid "Website Directory Entry"
 msgstr "Entrada del directorio web"
 
 #. module: website_directory
+#: model:ir.actions.server,name:website_directory.cron_sync_directory_entries_ir_actions_server
+msgid "Website Directory: sync pending company entries"
+msgstr "Directorio web: sincronizar entradas de compañías pendientes"
+
+#. module: website_directory
 #: model:ir.model.fields,field_description:website_directory.field_website_directory_entry__website_url
 msgid "Website URL"
 msgstr "URL del sitio web"
+
+#. module: website_directory
+#. odoo-python
+#: code:addons/website_directory/models/res_company.py:0
+msgid "Your user is not linked to a business, so there is no category to set."
+msgstr ""
+"Tu usuario no está vinculado a ningún comercio, así que no hay categoría que"
+" asignar."
 
 #. module: website_directory
 #: model:ir.model.fields,field_description:website_directory.field_website_directory_entry__zone
@@ -411,11 +527,6 @@ msgstr "Zona"
 #: model_terms:ir.ui.view,arch_db:website_directory.directory_index
 msgid "businesses"
 msgstr "comercios"
-
-#. module: website_directory
-#: model_terms:ir.ui.view,arch_db:website_directory.directory_search_results
-msgid "Clear all filters"
-msgstr "Borrar todos los filtros"
 
 #. module: website_directory
 #: model_terms:ir.ui.view,arch_db:website_directory.directory_search_results

@@ -33,6 +33,9 @@ DOMAIN_ZONE_HINTS = (
     ("frailes", "lomolosfrailes"),
 )
 VIEW_TYPES = ("grid", "list")
+# The zone travels in the path, never in the query string: bookmarks and
+# shared links stay on the same host, and the pager keeps a single base.
+ZONE_PATH_PREFIX = "/comercio/zona/"
 SHUFFLE_COOKIE = "directory_seed"
 SHUFFLE_COOKIE_MAX_AGE = 86400  # 24h: everyone gets a fresh order every day
 
@@ -339,17 +342,58 @@ class WebsiteDirectory(http.Controller):
         active filter along with the one the visitor actually clicked to
         remove -- reported 2026-08-21 as part of the same "combining
         filters" complaint.
+
+        ``page`` and ``zone`` are never carried: the former because the new
+        answer has a different size, the latter because the zone travels in
+        the PATH (``/comercio/zona/<key>``), never in the query string.
         """
         args = {
             key: value
             for key, value in kw.items()
-            if key not in drop and key != "page" and value
+            if key not in drop and key not in ("page", "zone") and value
         }
         query = url_encode(args)
         return "%s?%s" % (url, query) if query else url
 
+    def _pop_query_zone(self, kw):
+        """Take ``zone`` out of the query string, normalised (or ``None``).
+
+        Single chokepoint: every route passes ``zone=<computed>`` AND
+        ``**kw`` to ``_prepare_directory_values``, so a stray ``?zone=x``
+        left in ``kw`` was a ``TypeError`` ("multiple values for keyword
+        argument 'zone'"), i.e. a 500 on ``/comercio?zone=x``.
+        """
+        return _normalise_zone(kw.pop("zone", None))
+
+    def _get_zone_base_url(self, zone):
+        """The directory path for ``zone``: ``/comercio`` for the global
+        listing, ``/comercio/zona/<key>`` for an explicit zone."""
+        if not zone or zone == DEFAULT_ZONE:
+            return "/comercio"
+        return f"{ZONE_PATH_PREFIX}{zone}"
+
+    def _get_zone_urls(self, kw):
+        """One address per zone option, every active filter carried over.
+
+        The zone select's option values used to be bare ``/comercio`` /
+        ``/comercio/zona/<key>``: picking a zone threw away the search, the
+        category and every bridge filter (certification, facility) the
+        visitor had already combined.
+        """
+        return {
+            key: self._clear_filter_url(self._get_zone_base_url(key), kw)
+            for key, _label in self._get_zone_options()
+        }
+
     def _prepare_directory_values(self, page=1, zone=None, url="/comercio", **kw):
-        """Single implementation of domain + shuffle + pager + categories."""
+        """Single implementation of domain + shuffle + pager + categories.
+
+        ``url`` is the pager base (``/comercio``, ``/comercio/zona/<key>`` or
+        ``/comercio/categoria/<id>``). ``base_url`` is the address the
+        filters are built on: the zone path when the visitor is on one, the
+        bare directory otherwise -- a category "×" built on the CATEGORY
+        path would clear nothing.
+        """
         page = self._sanitize_int(kw.get("page", page), 1)
         ppg = self._sanitize_int(kw.get("ppg"), DEFAULT_PPG)
         if ppg not in PPG_OPTIONS:
@@ -381,6 +425,7 @@ class WebsiteDirectory(http.Controller):
         )
         category_tree = self._get_category_tree()
         selected_path = self._get_selected_category_path(category_id)
+        base_url = url if url.startswith(ZONE_PATH_PREFIX) else "/comercio"
         return {
             "entries": entries,
             "entries_count": entries_count,
@@ -389,7 +434,8 @@ class WebsiteDirectory(http.Controller):
             "page": page,
             "ppg": ppg,
             "view_type": view_type,
-            "base_url": url,
+            "base_url": base_url,
+            "zone_urls": self._get_zone_urls(kw),
             "category_tree": category_tree,
             "categories_json": json.dumps(
                 {
@@ -399,9 +445,10 @@ class WebsiteDirectory(http.Controller):
             ),
             "selected_category": category_id,
             "selected_category_path": selected_path,
+            "selected_category_json": json.dumps(selected_path),
             "zone_options": self._get_zone_options(),
             "category_clear_url": self._clear_filter_url(
-                "/comercio", kw, drop={"category"}
+                base_url, kw, drop={"category"}
             ),
             "zone_clear_url": self._clear_filter_url("/comercio", kw),
         }
@@ -426,6 +473,7 @@ class WebsiteDirectory(http.Controller):
     )
     def directory_index(self, page=1, **kw):
         """Main directory page, filtered by the zone of the website."""
+        self._pop_query_zone(kw)
         current_zone = self._get_zone_from_website(request.website)
         values = self._prepare_directory_values(
             page=page,
@@ -448,6 +496,7 @@ class WebsiteDirectory(http.Controller):
     )
     def directory_by_zone(self, zone, page=1, **kw):
         """Directory filtered by an explicit zone."""
+        self._pop_query_zone(kw)
         values = self._prepare_directory_values(
             page=page, zone=zone, url=f"/comercio/zona/{zone}", **kw
         )
@@ -469,6 +518,7 @@ class WebsiteDirectory(http.Controller):
         category = request.env["res.company.category"].sudo().browse(category_id)
         if not category.exists():
             return request.not_found()
+        self._pop_query_zone(kw)
         current_zone = self._get_zone_from_website(request.website)
         kw["category"] = category_id
         values = self._prepare_directory_values(
@@ -499,11 +549,26 @@ class WebsiteDirectory(http.Controller):
         the category cascade already updates itself client-side. Rendering
         it fresh server-side is simpler than teaching every bridge module's
         chip to track that state in JS.
+
+        ``zone``: optional explicit zone (the one in the page's
+        ``/comercio/zona/<key>`` path). Without it the zone came from
+        ``request.website`` alone, so on the portal host every AJAX
+        refresh of a ``/comercio/zona/guanarteme`` page silently widened
+        the listing to the whole archipelago. Unknown values are ignored.
+
+        A website pinned to a zone (``marketplace_zone`` / domain hint) is
+        never steerable: the override is honoured on the global portal
+        only, so a query string cannot widen or move a zone marketplace.
         """
+        requested = self._pop_query_zone(kw)
         current_zone = self._get_zone_from_website(request.website)
+        url = "/comercio"
+        if current_zone == DEFAULT_ZONE and requested and requested != DEFAULT_ZONE:
+            current_zone = requested
+            url = self._get_zone_base_url(requested)
         values = self._prepare_directory_values(
             zone=current_zone if current_zone != DEFAULT_ZONE else None,
-            url="/comercio",
+            url=url,
             **kw,
         )
         values["current_zone"] = current_zone

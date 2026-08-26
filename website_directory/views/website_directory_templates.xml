@@ -88,8 +88,8 @@
         </div>
         <div t-if="not entries" class="text-center py-5">
             <i class="fa fa-search fa-4x text-muted mb-3"/>
-            <h4 class="text-muted">No se encontraron resultados</h4>
-            <p class="text-muted" t-if="search">Intenta con otro término de búsqueda</p>
+            <h4 class="text-muted">No businesses found</h4>
+            <p class="text-muted" t-if="search">Try another search term</p>
         </div>
         <!-- No pager when there is nothing to page through: an empty result
              set used to leave the pager block (and, on a stale AJAX render, a
@@ -171,10 +171,14 @@
                 <h5 class="mb-0 fw-bold fs-6"><i class="fa fa-map-marker text-primary me-2"/>Commercial Zone</h5>
             </div>
             <div class="card-body">
+                <!-- Option values are full addresses built server-side
+                     (zone path + every active filter), so picking a zone
+                     keeps the search, the category and the bridge filters
+                     instead of landing on a bare /comercio/zona/<key>. -->
                 <select class="form-select" id="wd_zone_select" t-att-data-current="current_zone or 'canarias'">
-                    <option value="/comercio" t-att-selected="not current_zone or current_zone == 'canarias' or None">All zones</option>
+                    <option t-att-value="zone_urls.get('canarias', '/comercio')" t-att-selected="not current_zone or current_zone == 'canarias' or None">All zones</option>
                     <t t-foreach="zone_options" t-as="zone_option">
-                        <option t-if="zone_option[0] != 'canarias'" t-att-value="'/comercio/zona/%s' % zone_option[0]" t-att-selected="current_zone == zone_option[0] or None" t-esc="zone_option[1]"/>
+                        <option t-if="zone_option[0] != 'canarias'" t-att-value="zone_urls.get(zone_option[0])" t-att-selected="current_zone == zone_option[0] or None" t-esc="zone_option[1]"/>
                     </t>
                 </select>
                 <div t-if="current_zone and current_zone != 'canarias'" class="mt-3">
@@ -196,7 +200,12 @@
                 </div>
             </div>
             <div class="card-body">
-                <form action="/comercio" method="get" id="wd_category_form" autocomplete="off">
+                <!-- data-selected: the cascade's current path, re-read by
+                     the script after every AJAX swap of this block. The
+                     script's own copy (read once at page load) went stale
+                     the moment a chip cleared the category: the fresh
+                     sidebar then re-selected the old subcategory. -->
+                <form t-att-action="base_url" method="get" id="wd_category_form" autocomplete="off" t-att-data-selected="selected_category_json">
                     <input type="hidden" name="search" t-att-value="search or ''"/>
                     <div class="mb-3">
                         <label class="form-label small text-muted mb-1" for="wd_cat_l1">
@@ -281,7 +290,7 @@
                         <div class="col-lg-8 text-center">
                             <h1 class="display-5 mb-3 fw-bold">Business Directory</h1>
                             <p class="lead mb-4 text-muted">Find the best businesses and services in your area</p>
-                            <form action="/comercio" method="get" class="input-group input-group-lg" id="wd_search_form">
+                            <form t-att-action="base_url" method="get" class="input-group input-group-lg" id="wd_search_form">
                                 <input type="hidden" name="category" t-att-value="selected_category or ''"/>
                                 <input type="text" name="search" id="wd_search_input" class="form-control border-end-0" placeholder="Search businesses..." t-att-value="search or ''" autocomplete="off"/>
                                 <button type="submit" class="btn btn-primary px-4">
@@ -301,7 +310,11 @@
             <div id="wrap" class="wd-directory-page">
                 <div class="container-lg container py-4 mb-5">
                     <!-- Data for the frontend script. -->
-                    <div id="wd_data" class="d-none" t-att-data-directory="categories_json" t-att-data-view="view_type" t-att-data-ppg="ppg" t-att-data-base-url="base_url" t-att-data-search="search or ''"/>
+                    <!-- data-base-url / data-zone: the page's own path and
+                         zone, so the AJAX refreshes stay on
+                         /comercio/zona/<key> (pushState) and ask the server
+                         for THAT zone instead of the website's. -->
+                    <div id="wd_data" class="d-none" t-att-data-directory="categories_json" t-att-data-view="view_type" t-att-data-ppg="ppg" t-att-data-base-url="base_url" t-att-data-zone="current_zone or 'canarias'" t-att-data-search="search or ''"/>
 
                     <div class="row mb-4">
                         <div class="col-12">

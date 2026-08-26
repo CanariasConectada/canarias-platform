@@ -17,7 +17,17 @@
         category: null,
         search: "",
         loading: false,
+        // The page's own path (/comercio or /comercio/zona/<key>) and zone:
+        // every AJAX refresh stays on that path and asks the server for
+        // that zone, so a visitor on /comercio/zona/guanarteme does not get
+        // widened to the whole archipelago by the first filter they touch.
+        baseUrl: "/comercio",
+        zone: "canarias",
     };
+
+    var DEFAULT_BASE_URL = "/comercio";
+    var DEFAULT_ZONE = "canarias";
+    var AJAX_URL = "/comercio/ajax/search";
 
     var MIN_SEARCH_LENGTH = 3;
     var SEARCH_DELAY_MS = 400;
@@ -74,10 +84,29 @@
         return changes;
     }
 
+    // Only the query string is read: the pathname of a filter link is the
+    // page's own base URL (the server builds every filter URL on
+    // `base_url`), which fetchResults() already keeps through pushState.
     function followFilterUrl(url) {
         var queryIndex = url.indexOf("?");
         var query = queryIndex === -1 ? "" : url.slice(queryIndex + 1);
         fetchResults(changesFromQuery(query));
+    }
+
+    // The page address for the current filter state: the page's own
+    // pathname (never a bare /comercio when the visitor is on a zone path)
+    // plus the query string.
+    function pageUrl(query) {
+        return state.baseUrl + (query ? "?" + query : "");
+    }
+
+    function ajaxUrl(query) {
+        var params = new URLSearchParams(query);
+        if (state.zone && state.zone !== DEFAULT_ZONE) {
+            params.set("zone", state.zone);
+        }
+        var serialized = params.toString();
+        return AJAX_URL + (serialized ? "?" + serialized : "");
     }
 
     function init() {
@@ -96,6 +125,8 @@
         state.view = dataNode.dataset.view || "grid";
         state.ppg = parseInt(dataNode.dataset.ppg, 10) || 21;
         state.search = dataNode.dataset.search || "";
+        state.baseUrl = dataNode.dataset.baseUrl || DEFAULT_BASE_URL;
+        state.zone = dataNode.dataset.zone || DEFAULT_ZONE;
         state.category =
             state.selected[2] || state.selected[1] || state.selected[0] || null;
         // Every query string param this base module does not itself manage
@@ -313,7 +344,9 @@
     }
 
     // ------------------------------------------------------------------
-    // Zone filter: each option value is the target URL.
+    // Zone filter: each option value is the target URL, built server-side
+    // with every active filter already in its query string. A real
+    // navigation, not an AJAX call: the zone is the page's path.
     // ------------------------------------------------------------------
     function initZoneSelect() {
         var select = byId("wd_zone_select");
@@ -368,6 +401,19 @@
         form.addEventListener("submit", function (event) {
             event.preventDefault();
         });
+
+        // The server-rendered selection wins over the copy read at page
+        // load: after an AJAX swap the old copy is stale (a chip that just
+        // cleared the category would otherwise re-select its subcategory).
+        if (form.dataset.selected) {
+            try {
+                state.selected = JSON.parse(form.dataset.selected);
+            } catch (error) {
+                // Keep the previous selection.
+            }
+        }
+        state.category =
+            state.selected[2] || state.selected[1] || state.selected[0] || null;
 
         // Restore the cascade for the currently selected category.
         var root = findNode(state.categories, state.selected[0]);
@@ -547,7 +593,7 @@
         Object.assign(state, changes);
         var query = buildQuery(state);
         setLoading(true);
-        fetch("/comercio/ajax/search" + (query ? "?" + query : ""), {
+        fetch(ajaxUrl(query), {
             headers: {"X-Requested-With": "XMLHttpRequest"},
         })
             .then(function (response) {
@@ -579,18 +625,14 @@
                     initSidebar();
                 }
                 if (window.history && window.history.pushState) {
-                    window.history.pushState(
-                        {},
-                        document.title,
-                        "/comercio" + (query ? "?" + query : "")
-                    );
+                    window.history.pushState({}, document.title, pageUrl(query));
                 }
                 setLoading(false);
             })
             .catch(function () {
                 // Network/server issue: fall back to a full page load.
                 setLoading(false);
-                window.location.href = "/comercio" + (query ? "?" + query : "");
+                window.location.href = pageUrl(query);
             });
     }
 
