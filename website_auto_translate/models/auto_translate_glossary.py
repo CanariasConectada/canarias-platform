@@ -287,7 +287,13 @@ class AutoTranslateGlossary(models.Model):
             wording = rules.get(target_lang) or rules.get("")
             if not wording:
                 return original
-            return _follow_case(original, wording)
+            # ``held`` is shared by every sentence of a request and keyed
+            # case-insensitively, so the last "comercios" fenced in the prose
+            # overwrites the "Comercios" of the button that went out earlier.
+            # For the *case* of a replacement, what came back is the better
+            # witness: the engine returns a guarded term byte for byte.
+            shape = returned if returned.casefold() == original.casefold() else original
+            return _follow_case(shape, wording)
 
         text = RESTORE.sub(put_back, text)
         if not is_html:

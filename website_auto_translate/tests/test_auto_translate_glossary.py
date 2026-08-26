@@ -167,6 +167,20 @@ class TestAutoTranslateGlossary(TransactionCase):
                 self.Glossary._restore(guarded, "en_US", is_html=False), expected
             )
 
+    def test_case_survives_a_batch_that_fences_the_same_term_twice(self):
+        # One ``held`` per request: the lowercase prose fenced last must not
+        # drag the capitalised button down with it (portal homepage, 2026-08-26).
+        self.Glossary.create(
+            {"name": "comercios", "replacement": "shops", "lang": "en_US"}
+        )
+        held = {}
+        button = self.Glossary._protect("Comercios", True, held, "en_US")
+        prose = self.Glossary._protect("variedad de comercios", True, held, "en_US")
+        self.assertEqual(self.Glossary._restore(button, "en_US", True, held), "Shops")
+        self.assertEqual(
+            self.Glossary._restore(prose, "en_US", True, held), "variedad de shops"
+        )
+
     def test_a_fixed_wording_is_applied_for_its_own_language_only(self):
         guarded = 'Die <span translate="no">Silver Economy</span> hier'
         self.assertEqual(
