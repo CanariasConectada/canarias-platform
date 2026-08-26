@@ -502,12 +502,13 @@ class TestShopDesign(HttpCase):
         self.assertEqual(len(holding), 1, "one merged group, one tile")
 
     def test_no_curated_categories_hides_the_tile_row_entirely(self):
-        response = self.url_open("/shop")
+        microsite = {"Host": "wsc-panaderia.example"}
+        response = self.url_open("/shop", headers=microsite)
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("o_wsc_category_tiles_row", response.text)
 
         self.category.cover_image = TINY_PNG
-        response = self.url_open("/shop")
+        response = self.url_open("/shop", headers=microsite)
         self.assertEqual(response.status_code, 200)
         self.assertIn("o_wsc_category_tiles_row", response.text)
         self.assertIn("o_wsc_category_tile", response.text)
@@ -523,12 +524,19 @@ class TestShopDesign(HttpCase):
         self.assertIn(self.category.name, response.text)
         self.assertIn("wd-filter-chip-x", response.text)
 
-    def test_tiles_and_chip_absent_on_a_microsite(self):
-        """The is_marketplace guard, not the curation, decides: a merchant
-        with a curated cover_image still gets no tiles or chip on their own
-        microsite — the feature is scoped to portal + zone shops only."""
+    def test_tiles_absent_on_the_aggregated_shops_but_chip_stays(self):
+        """The tile row is the merchant's own showcase: a curated
+        cover_image shows tiles on the microsite, never on the portal or a
+        zone shop. The chip is a way out of a filter and stays everywhere."""
         self.category.cover_image = TINY_PNG
-        response = self.url_open("/shop", headers={"Host": "wsc-panaderia.example"})
+        response = self.url_open("/shop")
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("o_wsc_category_tiles_row", response.text)
-        self.assertNotIn("wsc_category_chip", response.text)
+
+        response = self.url_open("/shop/category/%s" % self.category.id)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('id="wsc_category_chip"', response.text)
+
+        response = self.url_open("/shop", headers={"Host": "wsc-panaderia.example"})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("o_wsc_category_tiles_row", response.text)
