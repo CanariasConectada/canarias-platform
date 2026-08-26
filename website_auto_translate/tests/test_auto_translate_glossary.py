@@ -152,6 +152,21 @@ class TestAutoTranslateGlossary(TransactionCase):
         )
         self.assertEqual(restored, "Große Tüte Cheetos")
 
+    def test_a_fixed_wording_follows_the_case_of_the_term_it_replaces(self):
+        self.Glossary.create(
+            {"name": "comercios", "replacement": "shops", "lang": "en_US"}
+        )
+        cases = {
+            "variedad de comercios": "variedad de shops",
+            "Comercios": "Shops",
+            "CIENTOS DE COMERCIOS": "CIENTOS DE SHOPS",
+        }
+        for text, expected in cases.items():
+            guarded = self.Glossary._protect(text, is_html=False)
+            self.assertEqual(
+                self.Glossary._restore(guarded, "en_US", is_html=False), expected
+            )
+
     def test_a_fixed_wording_is_applied_for_its_own_language_only(self):
         guarded = 'Die <span translate="no">Silver Economy</span> hier'
         self.assertEqual(

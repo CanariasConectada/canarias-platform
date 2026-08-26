@@ -284,7 +284,10 @@ class AutoTranslateGlossary(models.Model):
             rules = replacements.get(original.casefold()) or {}
             # An exact-language rule wins over the catch-all; with neither, the
             # term stays exactly as it was written, which is the whole point.
-            return rules.get(target_lang) or rules.get("") or original
+            wording = rules.get(target_lang) or rules.get("")
+            if not wording:
+                return original
+            return _follow_case(original, wording)
 
         text = RESTORE.sub(put_back, text)
         if not is_html:
@@ -294,6 +297,22 @@ class AutoTranslateGlossary(models.Model):
             text = MARKUP.sub("", text)
             text = _unescape(text)
         return text
+
+
+def _follow_case(original, wording):
+    """Shape a glossary replacement like the term it replaces.
+
+    A rule is written once, in the form that suits running prose
+    ("comercios" -> "shops"). The same word opens a button or a heading with
+    a capital, and came back as "shops" there on 2026-08-26: the rule was
+    pasted verbatim. Title case in, title case out; capitals in, capitals
+    out; anything else is left as the rule was written.
+    """
+    if original.isupper() and len(original) > 1:
+        return wording.upper()
+    if original[:1].isupper() and wording[:1].islower():
+        return wording[:1].upper() + wording[1:]
+    return wording
 
 
 def _unescape(text):
