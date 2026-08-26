@@ -1,7 +1,7 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from urllib.parse import quote_plus, urlsplit
+from urllib.parse import urlsplit
 
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError, ValidationError
@@ -197,16 +197,9 @@ class ResCompany(models.Model):
         custom_url = self._normalize_map_url(self.microsite_map_url)
         if custom_url:
             return custom_url
-        partner = self.partner_id
-        address = " ".join(
-            part for part in (partner.street, partner.city, partner.zip) if part
-        )
-        if not address.strip():
-            return ""
-        return (
-            "https://maps.google.com/maps?q="
-            f"{quote_plus(address)}&z=13&ie=UTF8&output=embed"
-        )
+        # Same builder as the event pages (website_map_embed), so both maps
+        # stay identical.
+        return self.partner_id._canarias_map_embed_url() or ""
 
     # ------------------------------------------------------------------
     # Homepage publication (explicit action, one-time per website)

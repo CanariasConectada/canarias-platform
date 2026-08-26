@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- Reusable embedded map.
+
+         Parameters (set with t-set inside the t-call):
+           map_url     embeddable URL, typically partner._canarias_map_embed_url()
+           map_title   accessible title of the iframe (defaults to "Map")
+           map_height  fixed pixel height: a full-width iframe of that height
+                       (the historical microsite look); when unset the map
+                       is a responsive 16:9 box
+           map_classes extra classes for the wrapper / iframe
+
+         Renders nothing when map_url is empty, so callers do not need
+         their own guard. -->
+    <template id="map_iframe" name="Embedded map">
+        <t t-if="not map_title"><t t-set="map_title">Map</t></t>
+        <t t-if="map_url">
+            <iframe t-if="map_height"
+                    t-attf-class="o_map_embed {{map_classes or ''}}"
+                    t-att-src="map_url"
+                    t-att-title="map_title"
+                    width="100%"
+                    t-att-height="map_height"
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                    style="border: 0; border-radius: 8px;"/>
+            <div t-else=""
+                 t-attf-class="o_map_embed ratio ratio-16x9 rounded overflow-hidden {{map_classes or ''}}">
+                <iframe t-att-src="map_url"
+                        t-att-title="map_title"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        style="border: 0;"/>
+            </div>
+        </t>
+    </template>
+
+</odoo>

@@ -19,4 +19,23 @@
         </xpath>
     </template>
 
+    <!-- Embedded venue map on the event page, the same one the merchant
+         microsites show (website_map_embed). The "Get directions" link
+         stays; the map is skipped when the venue has no street or city so
+         a name-only venue never shows a map centred on nothing.
+         "website_event.opt_event_location_block" is only the on/off switch
+         of the block; the markup lives in event_description_full. -->
+    <template id="event_description_full_map"
+              inherit_id="website_event.event_description_full"
+              name="Events: embedded venue map">
+        <xpath expr="//div[@itemprop='location']//a[@t-att-href='event._google_map_link()']"
+               position="before">
+            <t t-call="website_map_embed.map_iframe">
+                <t t-set="map_url" t-value="event.address_id._canarias_map_embed_url()"/>
+                <t t-set="map_title" t-value="event.address_id.display_name"/>
+                <t t-set="map_classes" t-value="'o_wec_event_map mb-3'"/>
+            </t>
+        </xpath>
+    </template>
+
 </odoo>
