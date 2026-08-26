@@ -115,3 +115,56 @@ class TestDirectoryCategorySelfService(TransactionCase):
             with self.env.cr.savepoint():
                 editor.action_save()
         self.assertNotEqual(self.shop.microsite_about_title, "No debería guardarse")
+
+
+@tagged("post_install", "-at_install")
+class TestDirectoryCategoryMultiShop(TransactionCase):
+    """The category follows the PICKED shop, never the session's.
+
+    `partner_microsite_manager` may now open this screen on a shop that is
+    NOT the session's own (an owner of several real shops picks one); the
+    category write must land on that same picked shop, exactly like the
+    page content it is saved alongside.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.startClassPatcher(
+            patch.object(
+                type(cls.env["delivery.carrier"]),
+                "_check_warehouses_have_same_company",
+                lambda self: None,
+            )
+        )
+        Company = cls.env["res.company"]
+        cls.shop_a = Company.create({"name": "Comercio Multi A"})
+        cls.shop_a.website_id = cls.env["website"].create(
+            {"name": "Comercio Multi A", "company_id": cls.shop_a.id}
+        )
+        cls.shop_b = Company.create({"name": "Comercio Multi B"})
+        cls.shop_b.website_id = cls.env["website"].create(
+            {"name": "Comercio Multi B", "company_id": cls.shop_b.id}
+        )
+        cls.category = cls.env["res.company.category"].create(
+            {"name": "Categoría Multi Test", "type": "normal"}
+        )
+        cls.owner = new_test_user(
+            cls.env,
+            login="directory_multi_owner",
+            groups="base.group_user,website.group_website_restricted_editor",
+            company_id=cls.shop_a.id,
+            company_ids=[(6, 0, (cls.shop_a | cls.shop_b).ids)],
+            context={"no_reset_password": True, "tracking_disable": True},
+        )
+
+    def test_the_category_lands_on_the_picked_shop_not_the_session_shop(self):
+        editor = (
+            self.env["microsite.content.editor"]
+            .with_user(self.owner)
+            .with_context(microsite_company_id=self.shop_b.id)
+            .create({"directory_category_id": self.category.id})
+        )
+        editor.action_save()
+        self.assertEqual(self.shop_b.category_id, self.category)
+        self.assertFalse(self.shop_a.category_id)
