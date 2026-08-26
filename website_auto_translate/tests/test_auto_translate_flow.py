@@ -592,6 +592,67 @@ class TestAutoTranslateFlow(TransactionCase):
             "the correction must still be there after the queue ran again",
         )
 
+    def test_a_machine_retranslation_does_not_lock_the_page(self):
+        """Our own second answer is not somebody's correction.
+
+        Found on 2026-08-26: the refresh after a run compared the page's new
+        text against the row's *previous* text, so every sentence the cron had
+        itself just re-translated came back "written by hand". A later
+        "translate again" -- the whole point of adding a glossary rule -- then
+        skipped them for ever, and the list claimed human work nobody did.
+        """
+        view = (
+            self.env["ir.ui.view"]
+            .with_context(lang=SOURCE)
+            .create(
+                {
+                    "name": "Auto Translate Retranslated Page",
+                    "type": "qweb",
+                    "key": "website_auto_translate.retranslated_page",
+                    "website_id": 1,
+                    "arch": "<div><p>Cientos de comercios en tu zona</p></div>",
+                }
+            )
+        )
+        self._run_queue()
+        job = self._jobs_for(view, lang=TARGET)
+        row = job.term_ids.filtered(
+            lambda term: term.source_term == "Cientos de comercios en tu zona"
+        )
+        self.assertEqual(row.state, "auto")
+        self.assertEqual(row.translated_term, "[en_US] Cientos de comercios en tu zona")
+
+        # A glossary changed, so the same source is sent again and the engine
+        # answers differently this time.
+        def second_opinion(engine, texts, source_lang, target_lang, is_html=False):
+            return ["(v2 %s) %s" % (target_lang, text) for text in texts]
+
+        self.assertEqual(job.action_translate_again(), 1)
+        with patch.object(type(self.engine), "translate", second_opinion):
+            job._run()
+
+        self.assertEqual(job.state, "done")
+        self.assertEqual(
+            row.translated_term, "(v2 en_US) Cientos de comercios en tu zona"
+        )
+        self.assertEqual(
+            row.state,
+            "auto",
+            "a re-translation the machine made itself must not read as a "
+            "correction made by a person",
+        )
+        self.assertIn(
+            "(v2 en_US) Cientos de comercios en tu zona",
+            view.with_context(lang=TARGET).arch_db,
+        )
+
+        # And a third pass is still allowed to improve it.
+        self.assertEqual(job.action_translate_again(), 1)
+        with patch.object(type(self.engine), "translate", fake_translate):
+            job._run()
+        self.assertEqual(row.state, "auto")
+        self.assertEqual(row.translated_term, "[en_US] Cientos de comercios en tu zona")
+
     def test_a_translation_can_be_corrected_from_the_queue(self):
         """One screen where the original and the machine's answer sit together.
 

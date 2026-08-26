@@ -355,12 +355,20 @@ class AutoTranslateJob(models.Model):
                 url = page.url or ""
         return website, label, url
 
-    def _sync_terms(self, record=None, source_value=None):
+    def _sync_terms(self, record=None, source_value=None, written=None):
         """Materialise this page's sentences so a person can read and fix them.
 
         Also the moment a correction made on the website itself is noticed: a
         sentence whose stored translation is no longer the one we wrote was
         retyped by somebody, and from here on it is theirs.
+
+        ``written`` is the ``{source_term: translation}`` mapping the run has
+        just handed to ``update_field_translations``. Those sentences are ours
+        by definition, however much they differ from the row: comparing the
+        page against the row's *previous* text is exactly how a re-translation
+        used to read as a person retyping the page. Measured on 2026-08-26:
+        one cron pass locked every sentence it had itself just produced, and
+        "translate again" then skipped them for good.
         """
         self.ensure_one()
         record = record if record is not None else self._record()
@@ -384,6 +392,7 @@ class AutoTranslateJob(models.Model):
         # every sentence on it has to inherit that or the next run would undo
         # work somebody did by hand.
         born_locked = self.state == "locked"
+        written = written or {}
         cursor = 0
         keep = Term.browse()
         for position, term in enumerate(self._extract_terms(field, source_value), 1):
@@ -403,7 +412,13 @@ class AutoTranslateJob(models.Model):
             }
             row = existing.get(fingerprint)
             if row:
-                if row.state == "auto" and raw and raw != row.translated_term:
+                retyped = (
+                    row.state == "auto"
+                    and raw
+                    and raw != row.translated_term
+                    and term not in written
+                )
+                if retyped:
                     # Retyped on the website. Nobody has to tell us.
                     values["state"] = "locked"
                 values.update(translated_term=raw, translated_text=mask(raw))
@@ -550,8 +565,9 @@ class AutoTranslateJob(models.Model):
         if per_term:
             # Refresh the rows with what the engine actually produced, so the
             # next run compares against our own output rather than the text
-            # that was there before it.
-            self._sync_terms(record, source_value)
+            # that was there before it. The payload is handed over so this
+            # refresh cannot mistake our own fresh output for a correction.
+            self._sync_terms(record, source_value, written=payload)
         stored_now = self._stored_translation(record)
         self.write(
             {
