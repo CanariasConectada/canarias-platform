@@ -45,7 +45,9 @@ class MicrositeContentEditor(models.TransientModel):
         # sudo: a merchant can read res.company today, but this screen must
         # not stop working the day that ACL is tightened (same reasoning as
         # the base screen's own default_get).
-        company = self.env["res.company"].sudo().browse(company_id) if company_id else None
+        company = (
+            self.env["res.company"].sudo().browse(company_id) if company_id else None
+        )
         values["directory_category_id"] = company.category_id.id if company else False
         return values
 

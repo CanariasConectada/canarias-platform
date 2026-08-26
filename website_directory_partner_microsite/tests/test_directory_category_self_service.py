@@ -3,7 +3,7 @@
 
 from unittest.mock import patch
 
-from odoo.exceptions import UserError
+from odoo.exceptions import AccessError, UserError
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase, new_test_user
 
@@ -146,6 +146,12 @@ class TestDirectoryCategoryMultiShop(TransactionCase):
         cls.shop_b.website_id = cls.env["website"].create(
             {"name": "Comercio Multi B", "company_id": cls.shop_b.id}
         )
+        # A real shop the owner does NOT own: never in `company_ids`. Plays
+        # the "attacker's target" for the forged-context test below.
+        cls.stranger = Company.create({"name": "Comercio Multi Ajeno"})
+        cls.stranger.website_id = cls.env["website"].create(
+            {"name": "Comercio Multi Ajeno", "company_id": cls.stranger.id}
+        )
         cls.category = cls.env["res.company.category"].create(
             {"name": "Categoría Multi Test", "type": "normal"}
         )
@@ -168,3 +174,26 @@ class TestDirectoryCategoryMultiShop(TransactionCase):
         editor.action_save()
         self.assertEqual(self.shop_b.category_id, self.category)
         self.assertFalse(self.shop_a.category_id)
+
+    def test_a_foreign_company_id_is_rejected_by_the_bridge_save_too(self):
+        """The bridge's own `action_save` override re-resolves the target
+        company before writing the category (see its docstring): a company
+        id the owner does not own must be refused here exactly as it is on
+        the base screen, not just on the page content.
+
+        Assigned directly on the created record rather than through context,
+        the same way `test_a_forged_company_id_on_the_form_is_rejected`
+        (base editor tests) bypasses the read-only view field: opening the
+        screen with a context that already names the stranger would fail
+        inside `default_get`, during `create()`, before `action_save` is
+        even reached -- this reproduces the "tampered after opening" case.
+        """
+        editor = (
+            self.env["microsite.content.editor"]
+            .with_user(self.owner)
+            .create({"directory_category_id": self.category.id})
+        )
+        editor.company_id = self.stranger
+        with self.assertRaises(AccessError):
+            editor.action_save()
+        self.assertFalse(self.stranger.category_id)
