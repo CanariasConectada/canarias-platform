@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website Directory",
-    "version": "19.0.7.10.0",
+    "version": "19.0.7.11.0",
     "category": "Website",
     "summary": "Public business directory with category filter, search and shuffle",
     "author": "MikeColangelo",
