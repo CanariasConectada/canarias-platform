@@ -112,11 +112,16 @@ class MicrositeContentEditor(models.TransientModel):
         id that used to be valid and no longer is -- is refused with
         ``AccessError``, never a silent fallback to a different company.
 
-        When ``company_id`` is falsy, falls back to the SESSION company
-        (``_get_own_microsite_company()``), exactly as every caller of this
-        screen worked before a picker existed. That path raises
-        ``UserError`` on failure, unchanged, since it is not a tampering
-        attempt: it is simply "this account has no shop".
+        When ``company_id`` is falsy -- ``None``, ``False``, or ``0`` -- it is
+        treated as "no id was given at all" and falls back to the SESSION
+        company (``_get_own_microsite_company()``), exactly as every caller
+        of this screen worked before a picker existed. This is deliberate:
+        ``0`` is never a real ``res.company`` id (Odoo ids start at 1), so
+        there is no legitimate shop it could be mistaken for, and treating it
+        as "absent" rather than "invalid" keeps the contract simple -- one
+        falsy value, one behaviour. That path raises ``UserError`` on
+        failure, unchanged, since it is not a tampering attempt: it is simply
+        "this account has no shop".
         """
         Company = self.env["res.company"]
         if not company_id:
@@ -132,9 +137,7 @@ class MicrositeContentEditor(models.TransientModel):
         try:
             company_id = int(company_id)
         except (TypeError, ValueError) as exc:
-            raise AccessError(
-                _("Your account is not linked to that shop.")
-            ) from exc
+            raise AccessError(_("Your account is not linked to that shop.")) from exc
         company = Company._get_editable_microsite_companies().filtered(
             lambda c: c.id == company_id
         )

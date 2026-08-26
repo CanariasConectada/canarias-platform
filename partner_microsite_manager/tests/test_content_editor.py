@@ -102,6 +102,37 @@ class TestMicrositeContentEditor(TransactionCase):
         self.assertFalse(self.shop.microsite_about_title)
         self.assertFalse(self.stranger.microsite_about_title)
 
+    def test_default_get_with_a_foreign_company_id_in_context_is_rejected(self):
+        """The context transport is not trusted any more than the form field.
+
+        `self.stranger` is never in `self.merchant`'s `company_ids`; a
+        tampered context (e.g. a stale or forged picker action) must be
+        refused exactly like the tampered form field is.
+        """
+        editor = self._editor().with_context(microsite_company_id=self.stranger.id)
+        with self.assertRaises(AccessError):
+            editor.default_get(["company_id"])
+
+    def test_garbage_company_ids_are_rejected(self):
+        """Neither a non-numeric id nor an out-of-range one is a shop."""
+        for garbage in ("abc", 999999, -1):
+            with self.subTest(garbage=garbage):
+                with self.assertRaises(AccessError):
+                    self._editor()._resolve_target_company(garbage)
+
+    def test_a_falsy_company_id_falls_back_to_the_session_shop_like_no_id_at_all(
+        self,
+    ):
+        """``0`` is never a real ``res.company`` id -- ids start at 1.
+
+        `_resolve_target_company` treats it as "no id was given", not as an
+        invalid candidate, and resolves the session company exactly like
+        ``None`` would. This is documented behaviour, not an oversight: see
+        the docstring on `_resolve_target_company`.
+        """
+        company = self._editor()._resolve_target_company(0)
+        self.assertEqual(company, self.shop)
+
     def test_an_owned_shop_can_be_targeted_through_the_action_context(self):
         """The whole point of the picker: a request MAY name a different,
         but still OWNED, shop -- and it is honoured, not just tolerated.

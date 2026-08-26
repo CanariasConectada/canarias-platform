@@ -1,2 +1,1 @@
-from . import microsite_content_editor
-from . import microsite_company_picker
+from . import microsite_company_picker, microsite_content_editor

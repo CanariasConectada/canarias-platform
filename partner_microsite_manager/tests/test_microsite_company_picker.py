@@ -6,7 +6,7 @@
 it excludes here is what a merchant never sees as an option there.
 """
 
-from odoo.exceptions import UserError
+from odoo.exceptions import AccessError, UserError
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase, new_test_user
 
@@ -27,8 +27,21 @@ class TestMicrositeCompanyPicker(TransactionCase):
         cls.shop_b.website_id = Website.create(
             {"name": "Comercio Picker B", "company_id": cls.shop_b.id}
         )
-        # No website: must never be a pickable candidate.
-        cls.shop_without_site = Company.create({"name": "Comercio Sin Web"})
+        # No website: must never be a pickable candidate. `auto_microsite_generator`
+        # provisions a website for every new company by default (see
+        # `auto_microsite_generator/models/res_company.py`), so a website-less
+        # fixture must opt out explicitly via `no_microsite_auto`, or it would
+        # never actually be website-less.
+        cls.shop_without_site = Company.with_context(no_microsite_auto=True).create(
+            {"name": "Comercio Sin Web"}
+        )
+
+        # A real shop the owner does NOT own: never in `company_ids`. Plays
+        # the "attacker's target" for the forged-picker-selection test below.
+        cls.stranger = Company.create({"name": "Comercio de Otro Dueno"})
+        cls.stranger.website_id = Website.create(
+            {"name": "Comercio de Otro Dueno", "company_id": cls.stranger.id}
+        )
 
         cls.main = cls.env.ref("base.main_company")
 
@@ -49,6 +62,9 @@ class TestMicrositeCompanyPicker(TransactionCase):
 
     def _as_owner(self):
         return self.env(user=self.owner.id)["res.company"]
+
+    def _env_as_owner(self):
+        return self.env(user=self.owner.id)
 
     def test_the_platform_company_never_appears(self):
         candidates = self._as_owner()._get_own_microsite_companies()
@@ -85,7 +101,7 @@ class TestMicrositeCompanyPicker(TransactionCase):
         """Owns 2+ real shops, none with a `website_id`: a sentence, not an
         empty or broken picker step.
         """
-        Company = self.env["res.company"]
+        Company = self.env["res.company"].with_context(no_microsite_auto=True)
         homeless_a = Company.create({"name": "Sin Web A"})
         homeless_b = Company.create({"name": "Sin Web B"})
         homeless_owner = new_test_user(
@@ -99,3 +115,33 @@ class TestMicrositeCompanyPicker(TransactionCase):
         editor = self.env["microsite.content.editor"].with_user(homeless_owner)
         with self.assertRaises(UserError):
             editor.action_open_page_content()
+
+    # ------------------------------------------------------------------
+    # The wizard itself, end to end -- not just the set it is built on
+    # ------------------------------------------------------------------
+
+    def test_the_picker_lists_the_owned_set_and_opens_the_chosen_shop(self):
+        """`company_ids` on the picker IS the owned set, not a copy of it,
+        and choosing a shop opens the editor pre-loaded with THAT company.
+        """
+        Picker = self._env_as_owner()["microsite.company.picker"]
+        picker = Picker.create({})
+        self.assertEqual(picker.company_ids, self.shop_a | self.shop_b)
+
+        picker.selected_company_id = self.shop_b
+        action = picker.action_open_editor()
+        self.assertEqual(action["res_model"], "microsite.content.editor")
+        self.assertEqual(action["target"], "new")
+        self.assertEqual(action["context"]["microsite_company_id"], self.shop_b.id)
+
+    def test_action_open_editor_with_a_foreign_company_id_is_rejected(self):
+        """Assigning `selected_company_id` directly bypasses the view's own
+        domain, exactly as writing straight onto a form field would: the
+        wizard delegates to `_resolve_target_company`, so a shop the owner
+        does not own is refused with `AccessError`, not silently opened.
+        """
+        Picker = self._env_as_owner()["microsite.company.picker"]
+        picker = Picker.create({})
+        picker.selected_company_id = self.stranger
+        with self.assertRaises(AccessError):
+            picker.action_open_editor()
