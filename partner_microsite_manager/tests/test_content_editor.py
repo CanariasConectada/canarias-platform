@@ -1,7 +1,7 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo.exceptions import UserError
+from odoo.exceptions import AccessError, UserError
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase, new_test_user
 
@@ -30,12 +30,28 @@ class TestMicrositeContentEditor(TransactionCase):
         cls.neighbour.website_id = cls.env["website"].create(
             {"name": "El de al lado", "company_id": cls.neighbour.id}
         )
+        # A real shop the merchant does NOT own: never in `company_ids`.
+        # Plays the "attacker's target" in the tampered-id tests below.
+        cls.stranger = cls.env["res.company"].create({"name": "Comercio Ajeno"})
+        cls.stranger.website_id = cls.env["website"].create(
+            {"name": "Comercio Ajeno", "company_id": cls.stranger.id}
+        )
         cls.merchant = new_test_user(
             cls.env,
             login="microsite_merchant",
             groups="base.group_user,website.group_website_restricted_editor",
             company_id=cls.shop.id,
             company_ids=[(6, 0, (cls.shop | cls.neighbour).ids)],
+            context={"no_reset_password": True, "tracking_disable": True},
+        )
+        # Owner of exactly ONE real shop: the "sole owner" fixture for the
+        # single-shop / no-picker requirement.
+        cls.solo_merchant = new_test_user(
+            cls.env,
+            login="microsite_solo_merchant",
+            groups="base.group_user,website.group_website_restricted_editor",
+            company_id=cls.shop.id,
+            company_ids=[(6, 0, cls.shop.ids)],
             context={"no_reset_password": True, "tracking_disable": True},
         )
 
@@ -69,21 +85,66 @@ class TestMicrositeContentEditor(TransactionCase):
         self.assertEqual(self.shop.microsite_about_title, "Quiénes somos")
         self.assertEqual(self.shop.microsite_opening_hours, "L-V 10:00-14:00")
 
-    def test_the_shop_being_written_never_comes_off_the_form(self):
+    def test_a_forged_company_id_on_the_form_is_rejected(self):
         """A company id that came back from a browser is a request, not a fact.
 
-        The neighbour is in this merchant's allowed companies -- that is what
-        `zone_company_ownership` does with the zone company -- so pointing the
-        form at it is not even far-fetched.
+        `self.stranger` is a real shop but NEVER in this merchant's
+        `company_ids`: it stands for an attacker's target, reachable only by
+        writing the id straight onto the (readonly, in the view) form field,
+        bypassing the UI entirely. `_resolve_target_company` must catch this
+        exactly as it would catch a forged context, and neither shop's
+        content may change.
         """
         editor = self._editor().create({"microsite_about_title": "Mío"})
-        editor.company_id = self.neighbour
-        editor.action_save()
-        self.assertEqual(self.shop.microsite_about_title, "Mío")
-        self.assertFalse(
-            self.neighbour.microsite_about_title,
-            "writing had to land on the account's own shop, not on the form's",
+        editor.company_id = self.stranger
+        with self.assertRaises(AccessError):
+            editor.action_save()
+        self.assertFalse(self.shop.microsite_about_title)
+        self.assertFalse(self.stranger.microsite_about_title)
+
+    def test_default_get_with_a_foreign_company_id_in_context_is_rejected(self):
+        """The context transport is not trusted any more than the form field.
+
+        `self.stranger` is never in `self.merchant`'s `company_ids`; a
+        tampered context (e.g. a stale or forged picker action) must be
+        refused exactly like the tampered form field is.
+        """
+        editor = self._editor().with_context(microsite_company_id=self.stranger.id)
+        with self.assertRaises(AccessError):
+            editor.default_get(["company_id"])
+
+    def test_garbage_company_ids_are_rejected(self):
+        """Neither a non-numeric id nor an out-of-range one is a shop."""
+        for garbage in ("abc", 999999, -1):
+            with self.subTest(garbage=garbage):
+                with self.assertRaises(AccessError):
+                    self._editor()._resolve_target_company(garbage)
+
+    def test_a_falsy_company_id_falls_back_to_the_session_shop_like_no_id_at_all(
+        self,
+    ):
+        """``0`` is never a real ``res.company`` id -- ids start at 1.
+
+        `_resolve_target_company` treats it as "no id was given", not as an
+        invalid candidate, and resolves the session company exactly like
+        ``None`` would. This is documented behaviour, not an oversight: see
+        the docstring on `_resolve_target_company`.
+        """
+        company = self._editor()._resolve_target_company(0)
+        self.assertEqual(company, self.shop)
+
+    def test_an_owned_shop_can_be_targeted_through_the_action_context(self):
+        """The whole point of the picker: a request MAY name a different,
+        but still OWNED, shop -- and it is honoured, not just tolerated.
+        """
+        editor = (
+            self._editor()
+            .with_context(microsite_company_id=self.neighbour.id)
+            .create({"microsite_about_title": "De al lado"})
         )
+        editor.action_save()
+        self.assertEqual(self.neighbour.microsite_about_title, "De al lado")
+        self.assertFalse(self.shop.microsite_about_title)
 
     def test_it_writes_the_page_and_nothing_else(self):
         """The VAT number is not part of the page."""
@@ -117,9 +178,24 @@ class TestMicrositeContentEditor(TransactionCase):
     # What the menu opens, which is not the same screen for everybody
     # ------------------------------------------------------------------
 
-    def test_a_merchant_gets_their_own_editor(self):
-        action = self._editor().action_open_page_content()
+    def test_the_sole_owner_of_a_shop_gets_their_own_editor_with_zero_extra_clicks(
+        self,
+    ):
+        """The single-shop path is unchanged: straight to the editor."""
+        action = self._editor(self.solo_merchant).action_open_page_content()
         self.assertEqual(action["res_model"], "microsite.content.editor")
+        self.assertEqual(action["target"], "new")
+        self.assertEqual(
+            action["context"]["microsite_company_id"],
+            self.shop.id,
+        )
+
+    def test_the_owner_of_two_shops_gets_a_picker_instead(self):
+        """`self.merchant` owns two real shops (see setUpClass): the picker
+        step must appear instead of an editor opened on a guess.
+        """
+        action = self._editor().action_open_page_content()
+        self.assertEqual(action["res_model"], "microsite.company.picker")
         self.assertEqual(action["target"], "new")
 
     def test_an_administrator_gets_the_shops_instead_of_an_error(self):
