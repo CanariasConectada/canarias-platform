@@ -90,6 +90,39 @@
         </field>
     </record>
 
+    <!-- Shown only to an owner of TWO OR MORE real shops, before the editor
+         opens (see `action_open_page_content`). A sole owner never sees
+         this screen: zero extra clicks for the common case. -->
+    <record id="view_microsite_company_picker_form" model="ir.ui.view">
+        <field name="name">microsite.company.picker.form</field>
+        <field name="model">microsite.company.picker</field>
+        <field name="arch" type="xml">
+            <form string="Choose your shop">
+                <sheet>
+                    <p class="text-muted">
+                        You manage more than one shop. Choose which one's
+                        page content you want to edit.
+                    </p>
+                    <field name="company_ids" invisible="1"/>
+                    <field name="selected_company_id" widget="radio"/>
+                    <div class="text-muted"
+                         invisible="not selected_company_website_url">
+                        <i class="fa fa-globe me-1" title="Address" role="img"
+                           aria-label="Address"/>
+                        <field name="selected_company_website_url"
+                               readonly="1" nolabel="1"/>
+                    </div>
+                </sheet>
+                <footer>
+                    <button name="action_open_editor" type="object"
+                            string="Continue" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
     <!-- A server action rather than a window action, because the right screen
          depends on who clicked. The group on the menu is the one the 218
          merchants hold, and every administrator holds it too; an

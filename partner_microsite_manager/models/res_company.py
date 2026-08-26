@@ -258,6 +258,57 @@ class ResCompany(models.Model):
             return self.browse()
         return company
 
+    @api.model
+    def _get_own_microsite_companies(self):
+        """Every REAL shop the caller may pick the page content of.
+
+        Unlike :meth:`_get_own_microsite_company` (the caller's SESSION
+        company, singular, and unchanged), this is the caller's full set of
+        real shops: every company in ``user.company_ids`` that is active, has
+        its own website, is not the platform's own company, and is not one of
+        the bookkeeping zone companies ``zone_company_ownership`` also puts in
+        that list -- the allowed-companies list is not a statement of
+        ownership on this platform, exactly as the docstring of
+        :meth:`_get_own_microsite_company` already explains.
+
+        ``_zone_companies`` is a soft dependency, reached through
+        ``hasattr`` rather than a hard ``depends`` on
+        ``zone_company_ownership``, mirroring
+        ``website_sale_comparison_canarias`` (``models/website.py``).
+
+        Returns an empty recordset instead of raising: an empty picker set is
+        a normal, expected outcome (single-shop or zero-shop accounts), never
+        an error condition.
+        """
+        user = self.env.user
+        if not user or user._is_public():
+            return self.browse()
+        companies = user.company_ids.filtered(lambda c: c.active and c.website_id)
+        main = self.env.ref("base.main_company", raise_if_not_found=False)
+        if main:
+            companies -= main
+        if hasattr(self, "_zone_companies"):
+            companies -= self.sudo()._zone_companies()
+        return companies
+
+    def _get_editable_microsite_companies(self):
+        """Every company the caller may write page content to, right now.
+
+        The UNION of the picker set (:meth:`_get_own_microsite_companies`)
+        and the legacy singular (:meth:`_get_own_microsite_company`) --
+        never a replacement of one by the other. Zone staff whose OWN
+        session company IS the zone company keep write access today
+        (the singular helper never subtracts zones); subtracting zones from
+        THIS authorisation set too would silently revoke that. The picker
+        only stops ADVERTISING the zone company as something to pick; it
+        must never narrow who may already write.
+
+        This is the single authority
+        ``microsite.content.editor._resolve_target_company()`` checks
+        membership against.
+        """
+        return self._get_own_microsite_companies() | self._get_own_microsite_company()
+
     def action_publish_microsite_homepage(self):
         """Create or replace the homepage of the company website with the
         dynamic microsite template.
