@@ -114,33 +114,72 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
         self.assertIn(SUPPORT_CALL, response.text)
         self.assertIn(SUPPORT_URL, response.text)
 
-    def test_an_anonymous_visitor_is_given_a_conversation_of_their_own(self):
+    def test_loading_the_page_opens_no_conversation(self):
+        """A page view is not participation.
+
+        Every crawler and every curious click used to leave an empty
+        conversation behind -- about ninety a day in production. The page
+        now renders with its composer and no channel, and the first message
+        is what opens one.
+        """
         self._forget_guest_cookie()
         before = self._support_channels()
 
         response = self.url_open(SUPPORT_URL)
 
         self.assertEqual(response.status_code, 200)
+        self.assertIn("o_cc_chat_composer", response.text)
+        self.assertIn('data-support="1"', response.text)
+        self.assertNotIn("data-channel-id", response.text)
+        self.assertEqual(
+            self._support_channels(),
+            before,
+            "rendering the support page must not open a conversation",
+        )
+
+    def test_the_first_message_opens_exactly_one_conversation(self):
+        self._forget_guest_cookie()
+        before = self._support_channels()
+
+        channel = self._open_support()
+        # The persona the open route just seated; `_post_over_http` with no
+        # guest would forget the cookie and post as nobody.
+        guest = channel._support_guest()
+        self._post_over_http(channel, guest=guest, body="hola, tengo una duda")
+
         opened = self._support_channels() - before
         self.assertEqual(len(opened), 1, "one visitor, one conversation")
+        self.assertEqual(opened, channel)
         self.assertTrue(opened.support_key.startswith("guest-"))
+        self.assertTrue(
+            opened._support_has_messages() or self._held_rows(opened, guest),
+            "the first message lands in the conversation it opened",
+        )
 
     def test_coming_back_reopens_the_same_conversation(self):
         self._forget_guest_cookie()
-        self.url_open(SUPPORT_URL)
+        first = self._open_support()
         after_first = self._support_channels()
 
         self.url_open(SUPPORT_URL)
+        again = self.make_jsonrpc_request("/website_pwa_chat/support/open", {})
 
+        self.assertEqual(again["channel_id"], first.id)
         self.assertEqual(
             self._support_channels(),
             after_first,
             "the same visitor must not accumulate conversations",
         )
+        page = self.url_open(SUPPORT_URL)
+        self.assertIn(
+            'data-channel-id="%s"' % first.id,
+            page.text,
+            "coming back, the page finds the conversation without opening another",
+        )
 
     def test_a_signed_in_visitor_is_keyed_on_their_account(self):
         self.authenticate(self.resident.login, self.resident.login)
-        self.url_open(SUPPORT_URL)
+        self._open_support()
 
         self.assertTrue(
             self._support_channels().filtered(
@@ -163,8 +202,7 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
         """
         self._skip_if_community_redirect()
         self._forget_guest_cookie()
-        self.url_open(SUPPORT_URL)
-        channel = self._support_channels()[0]
+        channel = self._open_support()
 
         self._forget_guest_cookie()
         listed = self.url_open("/chat", allow_redirects=False)
@@ -184,8 +222,7 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
         """
         self._skip_if_community_redirect()
         self._forget_guest_cookie()
-        self.url_open(SUPPORT_URL)
-        channel = self._support_channels()[0]
+        channel = self._open_support()
 
         # A second visitor, with their own identity and their own conversation.
         self._forget_guest_cookie()
@@ -200,8 +237,7 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
 
     def test_an_anonymous_caller_cannot_read_its_messages(self):
         self._forget_guest_cookie()
-        self.url_open(SUPPORT_URL)
-        channel = self._support_channels()[0]
+        channel = self._open_support()
 
         self._forget_guest_cookie()
         result = self.make_jsonrpc_request(
@@ -222,9 +258,9 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
         and a private-looking channel with no group is readable by everyone.
         """
         self._forget_guest_cookie()
-        self.url_open(SUPPORT_URL)
+        channel = self._open_support()
 
-        self.assertEqual(self._support_channels()[0].channel_type, "group")
+        self.assertEqual(channel.channel_type, "group")
 
     # ------------------------------------------------------------------
     # The floating window
@@ -426,8 +462,7 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
         from odoo.addons.mail.tools.discuss import Store
 
         self._forget_guest_cookie()
-        self.url_open(SUPPORT_URL)
-        support = self._support_channels()[0]
+        support = self._open_support()
         ordinary = self.channel_general
 
         rows = Store().add(support + ordinary).get_result().get("discuss.channel", [])
@@ -475,8 +510,7 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
 
     def test_an_agent_appointed_later_joins_the_conversations_already_waiting(self):
         self._forget_guest_cookie()
-        self.url_open(SUPPORT_URL)
-        channel = self._support_channels()[0]
+        channel = self._open_support()
 
         latecomer = self._make_agent("wpc_late", "WPC Late Agent")
         self.assertNotIn(latecomer.partner_id, channel.channel_member_ids.partner_id)

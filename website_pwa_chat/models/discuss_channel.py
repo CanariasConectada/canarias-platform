@@ -44,6 +44,16 @@ DEFAULT_CLOSE_DAYS = 3
 DEFAULT_PURGE_DAYS = 7
 DEFAULT_PURGE_IDENTIFIED_DAYS = 30
 
+# A conversation nobody ever wrote in is not a conversation. It used to be
+# opened by the page itself, so every crawler and every curious click left
+# one behind -- about ninety a day in production, all empty -- and the
+# retention windows above, keyed on the last message, kept each of them for
+# ten days. The channel is now opened by the FIRST message instead, and this
+# window is the safety net for whatever still ends up empty (a post that
+# failed after the open, an identify form never followed by a message).
+PARAM_EMPTY_PURGE_HOURS = "website_pwa_chat.support_empty_purge_hours"
+DEFAULT_EMPTY_PURGE_HOURS = 1
+
 SUPPORT_WAITING = "waiting"
 SUPPORT_ANSWERED = "answered"
 SUPPORT_CLOSED = "closed"
@@ -272,9 +282,7 @@ class DiscussChannel(models.Model):
         drowning.
         """
         return super()._to_store_defaults(target) + [
-            Store.Attr(
-                "is_support_channel", lambda channel: bool(channel.support_key)
-            ),
+            Store.Attr("is_support_channel", lambda channel: bool(channel.support_key)),
         ]
 
     @api.model
@@ -327,8 +335,29 @@ class DiscussChannel(models.Model):
         return agents.filtered(lambda user: user.active and not user._is_public())
 
     @api.model
+    def _support_channel_existing(self):
+        """The caller's own support conversation if one exists, else empty.
+
+        This is what the page reads. It never creates anything: a page view
+        is not participation, and opening a conversation for every visit
+        left about ninety empty rows a day behind in production. The
+        conversation is opened by ``_support_channel`` on the first message.
+        """
+        key = self._support_key()
+        if not key:
+            return self.browse()
+        existing = self.sudo().search([("support_key", "=", key)], limit=1)
+        if existing:
+            # Agents appointed since the conversation opened still belong in it.
+            existing._support_seat_agents()
+        return existing
+
+    @api.model
     def _support_channel(self):
         """The caller's own support conversation, opening it if this is the first time.
+
+        Called when the visitor actually participates -- their first message,
+        or the identify form -- never on a page view.
 
         ``channel_type`` is ``group`` and that single value is the privacy of
         this feature. ``ir_rule_discuss_channel_all`` has two branches: for
@@ -349,10 +378,8 @@ class DiscussChannel(models.Model):
         if not key:
             return self.browse()
 
-        existing = self.sudo().search([("support_key", "=", key)], limit=1)
+        existing = self._support_channel_existing()
         if existing:
-            # Agents appointed since the conversation opened still belong in it.
-            existing._support_seat_agents()
             return existing
 
         partner, guest = self.env["res.partner"]._get_current_persona()
@@ -509,34 +536,97 @@ class DiscussChannel(models.Model):
         return True
 
     @api.model
+    def _support_read_param(self, key, default):
+        """A positive integer parameter, or its default.
+
+        A zero or negative window would delete conversations as fast as
+        they are opened; nonsense is treated as "leave the default alone".
+        """
+        params = self.env["ir.config_parameter"].sudo()
+        try:
+            value = int(params.get_param(key) or default)
+        except (TypeError, ValueError):
+            return default
+        return value if value > 0 else default
+
+    @api.model
     def _support_retention_days(self):
         """The three windows, as an administrator has them configured."""
-        params = self.env["ir.config_parameter"].sudo()
-
-        def read(key, default):
-            try:
-                value = int(params.get_param(key) or default)
-            except (TypeError, ValueError):
-                return default
-            # A zero or negative window would delete conversations as fast as
-            # they are opened; treat nonsense as "leave the default alone".
-            return value if value > 0 else default
-
         return (
-            read(PARAM_CLOSE_DAYS, DEFAULT_CLOSE_DAYS),
-            read(PARAM_PURGE_DAYS, DEFAULT_PURGE_DAYS),
-            read(PARAM_PURGE_IDENTIFIED_DAYS, DEFAULT_PURGE_IDENTIFIED_DAYS),
+            self._support_read_param(PARAM_CLOSE_DAYS, DEFAULT_CLOSE_DAYS),
+            self._support_read_param(PARAM_PURGE_DAYS, DEFAULT_PURGE_DAYS),
+            self._support_read_param(
+                PARAM_PURGE_IDENTIFIED_DAYS, DEFAULT_PURGE_IDENTIFIED_DAYS
+            ),
         )
 
     @api.model
+    def _support_empty_purge_hours(self):
+        """How long an empty conversation is allowed to stay empty."""
+        return self._support_read_param(
+            PARAM_EMPTY_PURGE_HOURS, DEFAULT_EMPTY_PURGE_HOURS
+        )
+
+    def _support_has_messages(self):
+        """Whether anybody -- visitor or agent -- ever wrote in here.
+
+        Notifications do not count: "X joined" rows are the platform talking
+        to itself, and a conversation made only of those is still empty.
+        """
+        self.ensure_one()
+        return bool(
+            self.env["mail.message"]
+            .sudo()
+            .search_count(
+                [
+                    ("model", "=", "discuss.channel"),
+                    ("res_id", "=", self.id),
+                    ("message_type", "!=", "notification"),
+                ],
+                limit=1,
+            )
+        )
+
+    def _support_delete(self):
+        """Delete these conversations one by one, and report how many went.
+
+        One savepoint each: a single undeletable conversation must not roll
+        back the whole sweep.
+        """
+        deleted = 0
+        for channel in self.sudo():
+            try:
+                with self.env.cr.savepoint():
+                    guest = channel._support_guest()
+                    channel.unlink()
+                    # The visitor's throwaway persona goes with the last
+                    # thing it was used for -- but ONLY if that was the
+                    # last thing. The same guest may have posted in a
+                    # community channel, and deleting them there would
+                    # orphan messages other people are reading.
+                    if guest and not guest.channel_ids:
+                        guest.unlink()
+                    deleted += 1
+            except Exception:  # noqa: BLE001 - skip it, keep sweeping
+                _logger.exception(
+                    "website_pwa_chat: could not delete support channel %s",
+                    channel.id,
+                )
+        return deleted
+
+    @api.model
     def _support_gc(self):
-        """Cron: close what has gone quiet, delete what has been closed a while.
+        """Cron: close what has gone quiet, delete what has been closed a while,
+        and drop what was never written in.
 
         Support conversations are meant to be temporary. Left alone they would
         become a permanent archive of strangers' messages, and an unreadable
         queue for the people who answer.
 
-        Returns ``(closed, deleted)`` so the log says what it did.
+        Runs hourly: the two day-sized windows are idempotent, and the empty
+        sweep is what wants the shorter cadence.
+
+        Returns ``(closed, deleted, emptied)`` so the log says what it did.
         """
         now = fields.Datetime.now()
         close_days, purge_days, identified_days = self._support_retention_days()
@@ -566,32 +656,30 @@ class DiscussChannel(models.Model):
                     ),
                 ]
             )
-            for channel in stale:
-                # One savepoint each: a single undeletable conversation must
-                # not roll back the whole sweep.
-                try:
-                    with self.env.cr.savepoint():
-                        guest = channel._support_guest()
-                        channel.unlink()
-                        # The visitor's throwaway persona goes with the last
-                        # thing it was used for -- but ONLY if that was the
-                        # last thing. The same guest may have posted in a
-                        # community channel, and deleting them there would
-                        # orphan messages other people are reading.
-                        if guest and not guest.channel_ids:
-                            guest.unlink()
-                        deleted += 1
-                except Exception:  # noqa: BLE001 - skip it, keep sweeping
-                    _logger.exception(
-                        "website_pwa_chat: could not delete support channel %s",
-                        channel.id,
-                    )
+            deleted += stale._support_delete()
+
+        # The empty sweep. Keyed on `create_date` rather than on the last
+        # message date, which for a conversation with no messages IS the
+        # create date, and it does not wait for the conversation to be closed:
+        # there is nothing in it to keep.
+        empty_hours = self._support_empty_purge_hours()
+        candidates = self.sudo().search(
+            [
+                ("support_key", "!=", False),
+                ("create_date", "<", now - timedelta(hours=empty_hours)),
+            ]
+        )
+        empty = candidates.filtered(lambda channel: not channel._support_has_messages())
+        emptied = empty._support_delete()
+
         _logger.info(
-            "website_pwa_chat: support GC closed %s and deleted %s conversations",
+            "website_pwa_chat: support GC closed %s, deleted %s and dropped %s "
+            "empty conversations",
             len(quiet),
             deleted,
+            emptied,
         )
-        return len(quiet), deleted
+        return len(quiet), deleted, emptied
 
     def _support_guest(self):
         """The anonymous persona this conversation belongs to, if it is one.

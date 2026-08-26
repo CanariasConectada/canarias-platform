@@ -140,6 +140,26 @@ class WebsiteChatMixin(ZoneChannelMixin):
             allow_redirects=allow_redirects,
         )
 
+    def _open_support(self, guest=None):
+        """Open a support conversation the way the composer does.
+
+        The page itself opens nothing any more -- a page view is not
+        participation -- so the suite goes through the same two steps the
+        browser takes: load the page (which hands out the guest cookie) and
+        call the open route the composer calls before its first message.
+        Returns the conversation, as sudo.
+
+        With no ``guest`` the cookie the page just set is deliberately kept:
+        ``_cookies_for(None)`` would forget it and the open route would then
+        answer for a persona that has none.
+        """
+        cookies = self._cookies_for(guest) if guest else None
+        self.url_open("/chat/soporte", cookies=cookies)
+        result = self.make_jsonrpc_request(
+            "/website_pwa_chat/support/open", {}, cookies=cookies
+        )
+        return self.env["discuss.channel"].sudo().browse(result["channel_id"]).exists()
+
     def _channel_link(self, channel):
         """A regex for the href the index renders for a channel.
 

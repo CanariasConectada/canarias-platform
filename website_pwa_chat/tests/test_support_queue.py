@@ -55,15 +55,6 @@ class TestSupportQueue(WebsiteChatMixin, HttpCase):
         )
         cls.visitor_partner = cls.env["res.partner"].create({"name": "WPQ Visitante"})
 
-    def _open_support(self):
-        """Open a conversation the way a visitor does, and return it."""
-        self.url_open(SUPPORT_URL)
-        return (
-            self.env["discuss.channel"]
-            .sudo()
-            .search([("support_key", "!=", False)], order="id desc", limit=1)
-        )
-
     def _post_as_agent(self, channel):
         return channel.sudo().message_post(
             body="hola", message_type="comment", author_id=self.agent.partner_id.id
@@ -88,7 +79,7 @@ class TestSupportQueue(WebsiteChatMixin, HttpCase):
     # ------------------------------------------------------------------
     def test_a_conversation_nobody_answered_reads_as_waiting(self):
         channel = self._open_support()
-        self.assertTrue(channel, "opening the page has to open a conversation")
+        self.assertTrue(channel, "the first message has to open a conversation")
         self.assertEqual(channel.support_state, "waiting")
 
     def test_an_answer_from_an_agent_moves_it_out_of_the_queue(self):
@@ -226,6 +217,56 @@ class TestSupportQueue(WebsiteChatMixin, HttpCase):
         self.env["discuss.channel"]._support_gc()
         self.assertTrue(channel.exists())
         self.assertFalse(channel.support_closed)
+
+    # ------------------------------------------------------------------
+    # Empty on arrival
+    # ------------------------------------------------------------------
+    def _born(self, channel, hours):
+        """Pretend the conversation was opened this many hours ago.
+
+        ``create_date`` is not writable through the ORM, so straight SQL,
+        with the cache invalidated so the sweep reads what the database has.
+        """
+        self.env.cr.execute(
+            "UPDATE discuss_channel SET create_date = %s WHERE id = %s",
+            (fields.Datetime.now() - timedelta(hours=hours), channel.id),
+        )
+        channel.invalidate_recordset(["create_date"])
+
+    def test_an_empty_conversation_older_than_the_window_is_dropped(self):
+        channel = self._open_support()
+        self.assertFalse(channel._support_has_messages())
+        self._born(channel, 2)
+
+        closed, deleted, emptied = self.env["discuss.channel"]._support_gc()
+
+        self.assertFalse(channel.exists(), "nothing in it, nothing to keep")
+        self.assertEqual(emptied, 1)
+
+    def test_an_empty_conversation_inside_the_window_is_kept(self):
+        """The visitor may still be typing their first message."""
+        channel = self._open_support()
+
+        self.env["discuss.channel"]._support_gc()
+
+        self.assertTrue(channel.exists())
+
+    def test_a_conversation_somebody_wrote_in_is_not_swept_as_empty(self):
+        channel = self._open_support()
+        self._post_as_visitor(channel)
+        self._born(channel, 48)
+
+        _closed, _deleted, emptied = self.env["discuss.channel"]._support_gc()
+
+        self.assertTrue(channel.exists(), "a message is a reason to keep it")
+        self.assertEqual(emptied, 0)
+
+    def test_the_empty_window_is_a_parameter(self):
+        params = self.env["ir.config_parameter"].sudo()
+        params.set_param("website_pwa_chat.support_empty_purge_hours", "6")
+        self.assertEqual(self.env["discuss.channel"]._support_empty_purge_hours(), 6)
+        params.set_param("website_pwa_chat.support_empty_purge_hours", "-3")
+        self.assertEqual(self.env["discuss.channel"]._support_empty_purge_hours(), 1)
 
     def test_nonsense_in_the_parameters_leaves_the_defaults_alone(self):
         """A window of zero would delete conversations as fast as they open."""

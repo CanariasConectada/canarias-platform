@@ -86,7 +86,15 @@ class WebsiteChat(http.Controller):
         participation and it needs somewhere private to be answered. Without
         an identity the conversation would be keyed on ``base.public_partner``
         -- one room shared by every anonymous visitor on the platform -- which
-        is why ``_support_key`` refuses to key on it at all.
+        is why ``_support_key`` refuses to key on it at all. The guest also
+        has to exist before the page's websocket connects, because that is
+        when the cookie is read for the bus subscription.
+
+        The CONVERSATION, on the other hand, is not created here. A page view
+        is not participation: with the window's frame on every page of 218
+        sites, opening one per visit left about ninety empty conversations a
+        day behind. The page renders with no channel and the composer's first
+        message opens it through ``/website_pwa_chat/support/open``.
 
         The page rendered is the ordinary conversation page. Support is a
         conversation; it deserves the composer, the held-message notice and
@@ -105,22 +113,26 @@ class WebsiteChat(http.Controller):
         if not website:
             return request.not_found()
         self._chat_ensure_guest()
-        channel = request.env["discuss.channel"]._support_channel()
-        if not channel:
+        Channel = request.env["discuss.channel"]
+        if not Channel._support_key():
             # Only reachable if the guest could not be created at all; the
             # login page is where an identity comes from, guest door included.
             return request.redirect("%s?redirect=/chat/soporte" % LOGIN_URL)
+        # Empty until the visitor writes: the template renders the composer
+        # either way and the interaction opens the conversation on the first
+        # message.
+        channel = Channel._support_channel_existing()
         # The literal "1" and nothing else: bool() on a query string is True
         # for "0", "false" and "no" alike, and a visitor who edits the URL to
         # frame=0 means the full page, not the stripped one.
         framed = frame == "1"
-        messages = channel._website_chat_messages()
+        messages = channel._website_chat_messages() if channel else []
         return request.render(
             "website_pwa_chat.chat_channel",
             {
                 "channel": channel,
                 "messages": channel._website_chat_message_values(messages),
-                "pending": channel._website_chat_pending(),
+                "pending": channel._website_chat_pending() if channel else [],
                 "is_support": True,
                 "chat_in_frame": framed,
                 "no_header": framed,
@@ -166,6 +178,31 @@ class WebsiteChat(http.Controller):
         return request.redirect(
             "/chat/soporte?frame=1" if frame == "1" else "/chat/soporte"
         )
+
+    @http.route(
+        "/website_pwa_chat/support/open",
+        type="jsonrpc",
+        auth="public",
+        website=True,
+    )
+    @add_guest_to_context
+    def chat_support_open(self):
+        """Open the caller's support conversation, and say which one it is.
+
+        Called by the composer right before the FIRST message, and only then:
+        once the page knows the channel id it posts straight to
+        ``/mail/message/post`` like any other conversation. Idempotent -- a
+        second call answers the same id -- so a retry costs nothing.
+
+        Nothing here is taken from the caller: the conversation is resolved
+        from the session by ``_support_channel``, exactly as the page does.
+        Not ``readonly``: this is the one route on the page that writes.
+        """
+        if not request.env["website"]._chat_current():
+            return {"channel_id": False}
+        self._chat_ensure_guest()
+        channel = request.env["discuss.channel"]._support_channel()
+        return {"channel_id": channel.id or False}
 
     def _chat_identify_values(self, channel):
         """What the "who are you" card needs to render, or not render.

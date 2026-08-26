@@ -176,6 +176,7 @@
                 <div
                     t-attf-class="container py-4 o_cc_chat #{'o_cc_chat_framed' if chat_in_frame else ''}"
                     t-att-data-channel-id="channel.id"
+                    t-att-data-support="'1' if is_support else None"
                 >
                     <!-- Inside the floating window there is nowhere sensible
                          for this link to go: the channel list is a full page
@@ -187,7 +188,12 @@
                     >
                         ← Todos los canales
                     </a>
-                    <h1 class="h4 mb-1" t-out="channel.name" />
+                    <!-- The support page renders BEFORE its conversation
+                         exists: the first message opens it (no `channel`,
+                         no `data-channel-id`), so the heading needs a name
+                         of its own. -->
+                    <h1 class="h4 mb-1" t-if="channel" t-out="channel.name" />
+                    <h1 class="h4 mb-1" t-else="">Soporte</h1>
                     <p class="text-muted small" t-out="channel.description" />
 
                     <div class="o_cc_chat_messages mt-3">
