@@ -1,9 +1,18 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import base64
 import json
 
 from odoo.tests import HttpCase, tagged
+
+# 1x1 red PNG. Small enough to inline, real enough for image_process.
+TINY_PNG = base64.b64encode(
+    base64.b64decode(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8"
+        "BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+    )
+)
 
 
 @tagged("post_install", "-at_install")
@@ -441,3 +450,85 @@ class TestShopDesign(HttpCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("Tienda Canarias Conectada", response.text)
         self.assertNotIn("o_wsc_pill_badge", response.text)
+
+    # ------------------------------------------------------------------
+    # Category tiles + active filter chip
+    # ------------------------------------------------------------------
+
+    def test_tiles_only_top_level_curated_categories(self):
+        """Curation lives on cover_image; only TOP-LEVEL categories tile — a
+        subcategory with its own cover_image must never appear as a tile,
+        even when its parent has none."""
+        child, _product = self._add_child_category_product()
+        child.cover_image = TINY_PNG
+        tiles = self.portal._wsc_shop_category_tiles()
+        tile_ids = {tile["category"].id for tile in tiles}
+        self.assertNotIn(child.id, tile_ids)
+        self.assertNotIn(
+            self.category.id, tile_ids, "parent has no cover_image either"
+        )
+
+        self.category.cover_image = TINY_PNG
+        tiles = self.portal._wsc_shop_category_tiles()
+        tile_ids = {tile["category"].id for tile in tiles}
+        self.assertIn(self.category.id, tile_ids)
+        self.assertNotIn(child.id, tile_ids)
+
+    def test_tile_image_falls_back_to_a_merged_members_cover(self):
+        """The representative (lowest id) may have no photo; the tile must
+        still show whichever merged member DOES, picked in ascending id
+        order, while the URL keeps pointing at the representative."""
+        twin_a, twin_b, _products = self._add_same_named_categories()
+        representative = min(twin_a, twin_b, key=lambda category: category.id)
+        other = twin_b if representative == twin_a else twin_a
+        other.cover_image = TINY_PNG
+
+        tiles = self.portal._wsc_shop_category_tiles()
+        holding = [t for t in tiles if t["category"].id == representative.id]
+        self.assertTrue(holding, "the representative id is what the URL carries")
+        self.assertIn(
+            "/web/image/product.public.category/%s/cover_image" % other.id,
+            holding[0]["image_url"],
+        )
+
+    def test_tile_renders_exactly_one_image_when_several_members_have_covers(self):
+        twin_a, twin_b, _products = self._add_same_named_categories()
+        twin_a.cover_image = TINY_PNG
+        twin_b.cover_image = TINY_PNG
+        tiles = self.portal._wsc_shop_category_tiles()
+        holding = [
+            t for t in tiles if t["category"].id in (twin_a.id, twin_b.id)
+        ]
+        self.assertEqual(len(holding), 1, "one merged group, one tile")
+
+    def test_no_curated_categories_hides_the_tile_row_entirely(self):
+        response = self.url_open("/shop")
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("o_wsc_category_tiles_row", response.text)
+
+        self.category.cover_image = TINY_PNG
+        response = self.url_open("/shop")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("o_wsc_category_tiles_row", response.text)
+        self.assertIn("o_wsc_category_tile", response.text)
+
+    def test_active_category_chip_appears_and_clears(self):
+        response = self.url_open("/shop")
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("wsc_category_chip", response.text)
+
+        response = self.url_open("/shop/category/%s" % self.category.id)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('id="wsc_category_chip"', response.text)
+        self.assertIn(self.category.name, response.text)
+        self.assertIn("wd-filter-chip-x", response.text)
+
+    def test_tiles_and_chip_absent_on_a_microsite(self):
+        """The is_marketplace guard, not the curation, decides: a merchant
+        with a curated cover_image still gets no tiles or chip on their own
+        microsite — the feature is scoped to portal + zone shops only."""
+        self.category.cover_image = TINY_PNG
+        response = self.url_open("/shop", headers={"Host": "wsc-panaderia.example"})
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("o_wsc_category_tiles_row", response.text)
+        self.assertNotIn("wsc_category_chip", response.text)

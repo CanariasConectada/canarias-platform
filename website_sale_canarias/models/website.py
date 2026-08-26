@@ -167,6 +167,61 @@ class Website(models.Model):
             ]
         )
 
+    def _wsc_category_cover(self, categories):
+        """The first merged member that actually carries a cover photo.
+
+        A curated top-level category can be a MERGED group: the tile's
+        image must not depend on which merchant's record happens to be the
+        representative (lowest id) — it must be the first one, in a
+        deterministic order, that was actually given a photo.
+
+        ``cover_image`` is a ``fields.Image`` (``attachment=True``), so its
+        storage column is NEVER queryable in a search domain — presence has
+        to be tested in Python, over records already in memory.
+        ``with_context(bin_size=True)`` keeps that test from loading a
+        single blob: it swaps the field's value for a size string, and
+        ``filtered("cover_image")`` only needs truthiness.
+
+        Returns a single-record recordset (the chosen cover) or an empty
+        one when no member of ``categories`` has a cover.
+        """
+        sized = categories.sorted("id").with_context(bin_size=True)
+        covered = sized.filtered("cover_image")
+        return covered[:1] if covered else sized.browse()
+
+    def _wsc_shop_category_tiles(self, tree=None):
+        """Curated, photo-driven tiles for the top of the shop grid.
+
+        Only TOP-LEVEL nodes of ``_wsc_shop_category_tree()`` are eligible —
+        subcategories never tile, no matter their own ``cover_image``. A
+        node tiles only when some member of its merged group carries a
+        cover photo; nodes without one are silently skipped, so an empty
+        curation set yields an empty list and the template renders nothing.
+
+        ``tree`` lets a caller that already built the tree this render pass
+        (the sidebar needs it too) reuse it instead of paying for a second
+        product search.
+        """
+        self.ensure_one()
+        if tree is None:
+            tree = self._wsc_shop_category_tree()
+        tiles = []
+        for node in tree:
+            cover = self._wsc_category_cover(node["categories"])
+            if not cover:
+                continue
+            tiles.append(
+                {
+                    "id": node["id"],
+                    "name": node["name"],
+                    # The URL id stays the group's stable representative
+                    # even when the cover photo came from another member.
+                    "category": node["categories"].sorted("id")[0],
+                    "image_url": self.image_url(cover, "cover_image", "400x400"),
+                }
+            )
+        return tiles
+
     def _wsc_selected_category_path(self, category, tree=None):
         """Where ``category`` sits in the two-level tree: ``(top_id, sub_id)``.
 

@@ -113,6 +113,54 @@
     </template>
 
     <!-- ================================================================
+         Category tiles + active filter chip
+         ================================================================
+         Curated, photo driven shortcuts above the grid (only top level
+         categories that were given a cover_image tile; an uncurated shop
+         renders nothing here) plus a removable chip naming the active
+         category filter, so a visitor filtered into an empty grid has a
+         one click way out. Anchored on the wrapper core renders around the
+         grid itself, untouched by shop_hide_stock_header above: that
+         template replaces the header ABOVE this wrapper, so the two never
+         fight over the same node. -->
+    <template
+        id="shop_category_tiles"
+        inherit_id="website_sale.products"
+        name="Canarias Shop: category tiles and active filter chip"
+        priority="30"
+    >
+        <xpath expr="//div[hasclass('o_wsale_products_grid_table_wrapper')]" position="before">
+            <t t-if="website.is_marketplace">
+                <div t-if="category" class="wd-active-filters mb-3 d-flex flex-wrap gap-2 align-items-center">
+                    <span id="wsc_category_chip" class="badge bg-primary wd-filter-chip d-inline-flex align-items-center">
+                        <i class="fa fa-folder me-1"/>
+                        <span class="o_wsc_category_chip_label" t-esc="category.name"/>
+                        <a
+                            t-att-href="keep(shop_path, category=0)"
+                            class="wd-filter-link wd-filter-chip-x"
+                            aria-label="Quitar filtro de categoría"
+                        >×</a>
+                    </span>
+                </div>
+                <t t-set="wsc_tiles" t-value="website._wsc_shop_category_tiles()"/>
+                <div t-if="wsc_tiles" class="o_wsc_category_tiles_row mb-4">
+                    <a
+                        t-foreach="wsc_tiles"
+                        t-as="wsc_tile"
+                        t-att-href="'/shop/category/%s' % slug(wsc_tile['category'])"
+                        class="o_wsc_category_tile text-decoration-none"
+                    >
+                        <div class="o_wsc_category_tile_img">
+                            <img t-att-src="wsc_tile['image_url']" t-att-alt="wsc_tile['name']" loading="lazy"/>
+                        </div>
+                        <span class="o_wsc_category_tile_label" t-esc="wsc_tile['name']"/>
+                    </a>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- ================================================================
          Sidebar: searchable category select + price range
          ================================================================
          One card per concern, the same visual language as /comercio (the

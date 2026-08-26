@@ -251,7 +251,48 @@
                 });
         },
 
+        // The tile row and its "×" clear the filter with a full navigation
+        // (see the QWeb view), so THEY never go stale. The chip is the one
+        // piece of chrome the grid-swapping AJAX loader leaves behind: it
+        // was server-rendered for whatever category the page loaded on, and
+        // a category picked afterwards in the sidebar select never touches
+        // it. Called on every AJAX response so the chip always names the
+        // CURRENT filter, or disappears when there is none.
+        syncCategoryChip: function (result) {
+            var chip = document.getElementById("wsc_category_chip");
+            if (!chip) {
+                return;
+            }
+            if (!result.category_id) {
+                chip.remove();
+                return;
+            }
+            var label = chip.querySelector(".o_wsc_category_chip_label");
+            if (label) {
+                label.textContent = result.category_name || "";
+            }
+            var clearLink = chip.querySelector(".wd-filter-chip-x");
+            if (clearLink) {
+                // Preserve the OTHER active filters, mirroring the
+                // server-rendered chip's keep(shop_path, category=0): the
+                // category is gone, search and price survive.
+                var params = new URLSearchParams();
+                if (result.search) {
+                    params.set("search", result.search);
+                }
+                if (result.price && result.price.min) {
+                    params.set("min_price", result.price.min);
+                }
+                if (result.price && result.price.max) {
+                    params.set("max_price", result.price.max);
+                }
+                var qs = params.toString();
+                clearLink.setAttribute("href", "/shop" + (qs ? "?" + qs : ""));
+            }
+        },
+
         updateChrome: function (result) {
+            this.syncCategoryChip(result);
             var banner = document.getElementById("wsc-active-filters");
             if (banner) {
                 banner.remove();
