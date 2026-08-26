@@ -315,6 +315,29 @@ class TestAutoTranslateFlow(TransactionCase):
             "that landed in the base first",
         )
 
+    def test_a_hand_correction_into_english_keeps_the_spanish(self):
+        """The same trap, through the other door.
+
+        A correction typed on the job goes through the inverse rather than
+        through ``_run_one``, and until 19.0.3.4.0 only the latter guarded the
+        base key. Found on 2026-08-26 repairing "Productos" -> "Outputs" on a
+        sandbox category whose Spanish lived in ``en_US`` alone: the English
+        correction took the only copy with it.
+        """
+        product = (
+            self.env["product.template"]
+            .with_context(lang=TARGET)
+            .create({"name": "Bocadillo de tortilla casero"})
+        )
+        self.assertNotIn(SOURCE, self._raw_translations(product, "name"))
+        job = self.Job._enqueue_many(product, ["name"], [TARGET])
+        job.translated_text = "Homemade omelette sandwich"
+
+        stored = self._raw_translations(product, "name")
+        self.assertEqual(stored[SOURCE], "Bocadillo de tortilla casero")
+        self.assertEqual(stored[TARGET], "Homemade omelette sandwich")
+        self.assertEqual(job.state, "locked")
+
     def test_the_navigation_bar_is_in_the_rollout(self):
         """Reported on 2026-08-15: the menu was never queued at all.
 

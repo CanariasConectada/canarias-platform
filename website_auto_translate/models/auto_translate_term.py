@@ -118,6 +118,9 @@ class AutoTranslateTerm(models.Model):
         if record is None or not record:
             return
         source_lang = job._source_lang()
+        # See ``AutoTranslateJob._inverse_translated_text``: writing the base
+        # language must never be the first write the source gets.
+        job._ensure_source_key(record, source_lang)
         record.with_context(auto_translate_skip=True).update_field_translations(
             job.field_name,
             {job.lang: {self.source_term: self.translated_term or ""}},

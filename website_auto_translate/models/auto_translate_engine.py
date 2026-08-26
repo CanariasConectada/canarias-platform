@@ -9,6 +9,8 @@ import requests
 from odoo import api, fields, models
 from odoo.exceptions import UserError, ValidationError
 
+from .text_tools import is_shouting, shout, whisper
+
 _logger = logging.getLogger(__name__)
 
 # Odoo speaks locales ("es_ES"); every engine below wants a bare ISO-639-1 code.
@@ -299,6 +301,13 @@ class AutoTranslateEngine(models.Model):
         """
         params = self.env["ir.config_parameter"].sudo()
         Glossary = self.env["auto.translate.glossary"]
+        # A heading typed in capitals is sent in sentence case and put back in
+        # capitals afterwards: the engine cannot read shouting (see
+        # :func:`~.text_tools.is_shouting`). Folded *before* the glossary
+        # fences anything, which is safe because the glossary matches
+        # case-insensitively and restores the bytes it was given.
+        shouting = [is_shouting(text) for text in texts]
+        texts = [whisper(text) if loud else text for text, loud in zip(texts, shouting)]
         # What went out, so what comes back can be put right rather than
         # trusted: an engine is free to change the case of a guarded term, and
         # "&Nbsp;" is not the entity "&nbsp;", it is five visible characters.
@@ -313,15 +322,27 @@ class AutoTranslateEngine(models.Model):
                 translated, engine = self._run_jury(
                     jury, guarded, source_lang, target_lang, True
                 )
-                return self._release(translated, target_lang, is_html, held), engine
+                return (
+                    self._release(translated, target_lang, is_html, held, shouting),
+                    engine,
+                )
         engine = self._default_engine()
         translated = engine.translate(guarded, source_lang, target_lang, True)
-        return self._release(translated, target_lang, is_html, held), engine
+        return (
+            self._release(translated, target_lang, is_html, held, shouting),
+            engine,
+        )
 
     @api.model
-    def _release(self, texts, target_lang, is_html, held=None):
+    def _release(self, texts, target_lang, is_html, held=None, shouting=None):
         Glossary = self.env["auto.translate.glossary"]
-        return [Glossary._restore(text, target_lang, is_html, held) for text in texts]
+        shouting = shouting or [False] * len(texts)
+        restored = [
+            Glossary._restore(text, target_lang, is_html, held) for text in texts
+        ]
+        # Capitals go back on *after* the glossary has had its say, so a rule
+        # that spells "Comercio" as "Directory" reads DIRECTORY in a heading.
+        return [shout(text) if loud else text for text, loud in zip(restored, shouting)]
 
     @api.model
     def _default_engine(self):

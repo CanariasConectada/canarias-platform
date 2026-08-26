@@ -7,6 +7,8 @@ from markupsafe import escape
 
 from odoo import api, fields, models, tools
 
+from .text_tools import ENTITY as _ENTITY
+
 # The only thing this engine reliably leaves alone. Measured against our own
 # LibreTranslate on 2026-08-15 with "Camiseta X de algodon" (es -> de):
 #
@@ -42,9 +44,9 @@ RESTORE = re.compile(
 # leave a bare "nbsp;" outside the guard as ordinary translatable words. Which
 # is exactly what the Italian model then capitalised into "&Nbsp;": not an
 # entity at all, five characters the visitor reads. Eight views on production,
-# 2026-08-16.
-_NAME = r"(?:#\d+|#x[0-9a-fA-F]+|[A-Za-z][A-Za-z0-9]{1,31});"
-ENTITY = re.compile(r"&amp;" + _NAME + r"|&" + _NAME)
+# 2026-08-16. The expression itself lives in :mod:`text_tools`, which needs it
+# for the same reason when it changes the case of a heading.
+ENTITY = _ENTITY
 
 # Splits markup from content while keeping both, so a term is never matched
 # inside an attribute: translating the "Milka" in `alt="Milka"` would rewrite

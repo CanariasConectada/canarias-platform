@@ -7,6 +7,8 @@ from odoo.exceptions import UserError
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
+from ..models.text_tools import SHOUT_MIN_LETTERS, is_shouting, shout, whisper
+
 PATH = "odoo.addons.website_auto_translate.models.auto_translate_engine"
 
 
@@ -127,6 +129,155 @@ class TestAutoTranslateEngine(TransactionCase):
         with patch.object(type(self.libre), "_post") as post:
             self.assertEqual(self.libre.translate([], "es_ES", "en_US"), [])
         post.assert_not_called()
+
+    # ------------------------------------------------------------------
+    # Headings written in capitals
+    # ------------------------------------------------------------------
+    def test_shouting_is_only_a_whole_term_in_capitals(self):
+        """The rule: all letters upper, and 2+ words or 6+ letters."""
+        self.assertTrue(is_shouting("CIENTOS DE COMERCIOS EN TU ZONA"))
+        self.assertTrue(is_shouting("EN TU ZONA"))
+        self.assertTrue(is_shouting("DESCUBRE"))
+        self.assertTrue(is_shouting("**7.DURANTE CUANTO TIEMPO**"))
+        self.assertTrue(is_shouting('<h2 class="h3-fs"><strong>ENVÍOS</strong></h2>'))
+        # Acronyms on their own, and inside prose, stay as they are.
+        self.assertFalse(is_shouting("NIF"))
+        self.assertFalse(is_shouting("TV"))
+        self.assertFalse(is_shouting("Introduce tu NIF"))
+        self.assertFalse(is_shouting("Cientos de comercios"))
+        # Nothing to read: markup, entities, digits.
+        self.assertFalse(is_shouting("&nbsp;"))
+        self.assertFalse(is_shouting('<i class="fa fa-play"/>'))
+        self.assertFalse(is_shouting("2026"))
+        self.assertFalse(is_shouting(""))
+
+    def test_the_acronym_boundary_is_six_letters(self):
+        """Five letters alone is an acronym; six is a word. Exactly there."""
+        self.assertFalse(is_shouting("TARTA"))
+        self.assertTrue(is_shouting("TARTAS"))
+        self.assertEqual(SHOUT_MIN_LETTERS, 6)
+
+    def test_a_builder_hard_space_between_shouted_words_is_no_word(self):
+        """The builder's "&amp;nbsp;" must not read as the word "nbsp".
+
+        Found in review: a plain ``&\\w+;`` entity pattern matched only the
+        leading ``&amp;`` and left ``nbsp;`` behind as lower-case letters, so
+        the heading was never seen as shouting and the fix silently did not
+        trigger.
+        """
+        term = "CIENTOS&amp;nbsp;DE ZONA"
+        self.assertTrue(is_shouting(term))
+        self.assertEqual(whisper(term), "Cientos&amp;nbsp;de zona")
+        self.assertEqual(shout(whisper(term)), term)
+        self.assertTrue(is_shouting("ENV&Iacute;OS&nbsp;GRATIS"))
+
+    def test_whisper_and_shout_leave_markup_and_entities_alone(self):
+        term = "<strong>CIENTOS &amp; <b>MÁS</b></strong> EN TU ZONA&nbsp;"
+        self.assertEqual(
+            whisper(term),
+            "<strong>Cientos &amp; <b>más</b></strong> en tu zona&nbsp;",
+        )
+        self.assertEqual(shout(whisper(term)), term)
+        self.assertEqual(shout("<b>hundreds</b> of shops"), "<b>HUNDREDS</b> OF SHOPS")
+
+    def test_a_shouted_heading_goes_out_whispered_and_comes_back_shouted(self):
+        """The bug of 2026-08-26: LibreTranslate returned "_" for capitals."""
+        self.env["ir.config_parameter"].sudo().set_param(
+            "website_auto_translate.engine_id", self.libre.id
+        )
+        with patch.object(
+            type(self.libre),
+            "_post",
+            return_value={
+                "translatedText": [
+                    "<strong>Hundreds of shops</strong> in your area",
+                    "Introduce your NIF",
+                ]
+            },
+        ) as post:
+            translated, _engine = self.env["auto.translate.engine"]._run(
+                [
+                    "<strong>CIENTOS DE COMERCIOS</strong> EN TU ZONA",
+                    "Introduce tu NIF",
+                ],
+                "es_ES",
+                "en_US",
+                is_html=True,
+            )
+        sent = post.call_args.kwargs["json"]["q"]
+        self.assertEqual(sent[0], "<strong>Cientos de comercios</strong> en tu zona")
+        # Mixed case is not ours to change.
+        self.assertEqual(sent[1], "Introduce tu NIF")
+        self.assertEqual(
+            translated,
+            ["<strong>HUNDREDS OF SHOPS</strong> IN YOUR AREA", "Introduce your NIF"],
+        )
+
+    def test_a_shouted_plain_text_survives_the_html_round_trip(self):
+        self.env["ir.config_parameter"].sudo().set_param(
+            "website_auto_translate.engine_id", self.libre.id
+        )
+        with patch.object(
+            type(self.libre),
+            "_post",
+            return_value={
+                "translatedText": ["Shipping to the whole island &amp; more"]
+            },
+        ) as post:
+            translated, _engine = self.env["auto.translate.engine"]._run(
+                ["ENVÍOS A TODA LA ISLA & MÁS"], "es_ES", "en_US", is_html=False
+            )
+        sent = post.call_args.kwargs["json"]["q"][0]
+        # Escaped, sentence-cased, and the entity fenced by the glossary.
+        self.assertTrue(sent.startswith("Envíos a toda la isla "), sent)
+        self.assertIn('<span translate="no">&amp;</span> más', sent)
+        self.assertEqual(translated, ["SHIPPING TO THE WHOLE ISLAND & MORE"])
+
+    def test_a_guarded_term_inside_a_shouted_heading_is_still_guarded(self):
+        """Case folding must not slip a brand past the glossary."""
+        self.env["auto.translate.glossary"].create({"name": "Cheetos"})
+        self.env["ir.config_parameter"].sudo().set_param(
+            "website_auto_translate.engine_id", self.libre.id
+        )
+
+        def echo(url, **kwargs):
+            return {"translatedText": kwargs["json"]["q"]}
+
+        with patch.object(type(self.libre), "_post", side_effect=echo) as post:
+            translated, _engine = self.env["auto.translate.engine"]._run(
+                ["OFERTA EN CHEETOS PICANTES"], "es_ES", "en_US", is_html=False
+            )
+        sent = post.call_args.kwargs["json"]["q"][0]
+        # Fenced in the case it went out in; the glossary matches
+        # case-insensitively and puts its own bytes back afterwards.
+        self.assertIn('<span translate="no">cheetos</span>', sent)
+        self.assertEqual(translated, ["OFERTA EN CHEETOS PICANTES"])
+
+    def test_the_jury_hears_a_whisper_and_the_page_gets_the_shout(self):
+        """Jury mode goes through the same funnel; every juror must be spared
+        the capitals, and the winner's answer still comes back in them."""
+        # The shipped data already seats one juror; the jury here is ours.
+        self.env["auto.translate.engine"].search([]).write({"in_jury": False})
+        self.libre.in_jury = True
+        self.google.in_jury = True
+        self.env["ir.config_parameter"].sudo().set_param(
+            "website_auto_translate.mode", "jury"
+        )
+        heard = []
+
+        def fake_translate(engine, texts, source, target, is_html=False):
+            heard.append((engine.name, list(texts)))
+            return ["Hundreds of shops in your area"]
+
+        # No arbiter configured: the first juror's answer ships.
+        with patch.object(type(self.libre), "translate", fake_translate):
+            translated, _engine = self.env["auto.translate.engine"]._run(
+                ["CIENTOS DE COMERCIOS EN TU ZONA"], "es_ES", "en_US", is_html=True
+            )
+        self.assertEqual(len(heard), 2)
+        for _name, texts in heard:
+            self.assertEqual(texts, ["Cientos de comercios en tu zona"])
+        self.assertEqual(translated, ["HUNDREDS OF SHOPS IN YOUR AREA"])
 
     # ------------------------------------------------------------------
     # Jury

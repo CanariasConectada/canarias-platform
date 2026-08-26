@@ -221,6 +221,10 @@ class AutoTranslateJob(models.Model):
                         "sentences and fix the one that reads wrong."
                     )
                 )
+            # A correction into English is a write on the jsonb base; the
+            # source has to own its key first or the Spanish is gone. Same
+            # guard as :meth:`_run_one`, for the same reason.
+            job._ensure_source_key(record, source_lang)
             record.with_context(auto_translate_skip=True).update_field_translations(
                 job.field_name,
                 {job.lang: job.translated_text or False},
