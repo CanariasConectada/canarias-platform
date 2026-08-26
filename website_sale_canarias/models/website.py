@@ -167,7 +167,37 @@ class Website(models.Model):
             ]
         )
 
-    def _wsc_category_cover(self, categories):
+    def _wsc_categories_with_cover(self, category_ids):
+        """Ids among ``category_ids`` that have a ``cover_image`` attachment.
+
+        ``cover_image`` is a ``fields.Image`` (``attachment=True``): Odoo
+        stores its binary as an ``ir.attachment`` row (``res_model``/
+        ``res_field``/``res_id``), never in a searchable column on
+        ``product.public.category`` itself. Querying that attachment table
+        directly is a blob-free "has a cover" check — no image bytes are
+        read — AND it sidesteps the ORM's per-context binary field cache
+        entirely: unlike ``with_context(bin_size=True).filtered("cover_
+        image")`` (the previous approach), a fresh ``search`` here always
+        sees the current DB state, including a write made earlier in the
+        very same transaction/environment. ``sudo()`` because curation is a
+        platform-level signal, independent of the visitor's own read rules
+        on ``product.public.category``.
+
+        One query for the whole candidate set via ``_read_group``.
+        """
+        if not category_ids:
+            return set()
+        rows = self.env["ir.attachment"].sudo()._read_group(
+            [
+                ("res_model", "=", "product.public.category"),
+                ("res_field", "=", "cover_image"),
+                ("res_id", "in", category_ids),
+            ],
+            groupby=["res_id"],
+        )
+        return {res_id for (res_id,) in rows}
+
+    def _wsc_category_cover(self, categories, covered_ids=None):
         """The first merged member that actually carries a cover photo.
 
         A curated top-level category can be a MERGED group: the tile's
@@ -175,19 +205,22 @@ class Website(models.Model):
         representative (lowest id) — it must be the first one, in a
         deterministic order, that was actually given a photo.
 
-        ``cover_image`` is a ``fields.Image`` (``attachment=True``), so its
-        storage column is NEVER queryable in a search domain — presence has
-        to be tested in Python, over records already in memory.
-        ``with_context(bin_size=True)`` keeps that test from loading a
-        single blob: it swaps the field's value for a size string, and
-        ``filtered("cover_image")`` only needs truthiness.
+        ``covered_ids`` lets a caller iterating many groups in one render
+        pass (see ``_wsc_shop_category_tiles``) supply a single, already
+        queried set of category ids that have a cover attachment, instead
+        of paying one ``ir.attachment`` query per group. When omitted, this
+        method queries for just ``categories`` on its own.
 
         Returns a single-record recordset (the chosen cover) or an empty
         one when no member of ``categories`` has a cover.
         """
-        sized = categories.sorted("id").with_context(bin_size=True)
-        covered = sized.filtered("cover_image")
-        return covered[:1] if covered else sized.browse()
+        sized = categories.sorted("id")
+        if covered_ids is None:
+            covered_ids = self._wsc_categories_with_cover(sized.ids)
+        for record in sized:
+            if record.id in covered_ids:
+                return record
+        return sized.browse()
 
     def _wsc_shop_category_tiles(self, tree=None):
         """Curated, photo-driven tiles for the top of the shop grid.
@@ -205,9 +238,15 @@ class Website(models.Model):
         self.ensure_one()
         if tree is None:
             tree = self._wsc_shop_category_tree()
+        all_ids = []
+        for node in tree:
+            all_ids.extend(node["categories"].ids)
+        covered_ids = self._wsc_categories_with_cover(all_ids)
         tiles = []
         for node in tree:
-            cover = self._wsc_category_cover(node["categories"])
+            cover = self._wsc_category_cover(
+                node["categories"], covered_ids=covered_ids
+            )
             if not cover:
                 continue
             tiles.append(

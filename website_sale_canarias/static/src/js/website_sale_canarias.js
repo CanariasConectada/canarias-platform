@@ -251,21 +251,81 @@
                 });
         },
 
+        // Preserve the OTHER active filters, mirroring the server-rendered
+        // chip's keep(shop_path, category=0): the category is gone, search
+        // and price survive.
+        buildClearHref: function (result) {
+            var params = new URLSearchParams();
+            if (result.search) {
+                params.set("search", result.search);
+            }
+            if (result.price && result.price.min) {
+                params.set("min_price", result.price.min);
+            }
+            if (result.price && result.price.max) {
+                params.set("max_price", result.price.max);
+            }
+            var qs = params.toString();
+            return "/shop" + (qs ? "?" + qs : "");
+        },
+
+        // Where a freshly created chip belongs: the same spot the QWeb view
+        // puts it — right before the tile row when there is one, otherwise
+        // right before the grid's own wrapper (or the grid itself, on the
+        // rare page that has no wrapper at all, e.g. zero products).
+        findChipAnchor: function () {
+            return (
+                document.querySelector(".o_wsc_category_tiles_row") ||
+                document.querySelector(".o_wsale_products_grid_table_wrapper") ||
+                this.grid()
+            );
+        },
+
+        // Builds the exact markup the server renders for the chip (same
+        // wrapper/classes/ids as templates.xml's shop_category_tiles view)
+        // and inserts it at findChipAnchor(). Returns the new #wsc_category
+        // _chip element, or null when there is nowhere sane to put it.
+        createCategoryChip: function () {
+            var anchor = this.findChipAnchor();
+            if (!anchor) {
+                return null;
+            }
+            var wrapper = document.createElement("div");
+            wrapper.className =
+                "wd-active-filters mb-3 d-flex flex-wrap gap-2 align-items-center";
+            wrapper.innerHTML =
+                '<span id="wsc_category_chip" class="badge bg-primary wd-filter-chip d-inline-flex align-items-center">' +
+                '<i class="fa fa-folder me-1"></i>' +
+                '<span class="o_wsc_category_chip_label"></span>' +
+                '<a class="wd-filter-link wd-filter-chip-x" aria-label="Quitar filtro de categoría">×</a>' +
+                "</span>";
+            anchor.insertAdjacentElement("beforebegin", wrapper);
+            return wrapper.querySelector("#wsc_category_chip");
+        },
+
         // The tile row and its "×" clear the filter with a full navigation
         // (see the QWeb view), so THEY never go stale. The chip is the one
-        // piece of chrome the grid-swapping AJAX loader leaves behind: it
-        // was server-rendered for whatever category the page loaded on, and
-        // a category picked afterwards in the sidebar select never touches
-        // it. Called on every AJAX response so the chip always names the
-        // CURRENT filter, or disappears when there is none.
+        // piece of chrome the grid-swapping AJAX loader would otherwise
+        // leave behind: it is only server-rendered for whatever category
+        // the page loaded on, so an unfiltered /shop that gets a category
+        // picked afterwards in the sidebar select starts with no chip at
+        // all. Called on every AJAX response so the chip always names the
+        // CURRENT filter — created when missing, updated in place, or
+        // removed (wrapper included) when there is none.
         syncCategoryChip: function (result) {
             var chip = document.getElementById("wsc_category_chip");
-            if (!chip) {
+            if (!result.category_id) {
+                if (chip) {
+                    var oldWrapper = chip.closest(".wd-active-filters");
+                    (oldWrapper || chip).remove();
+                }
                 return;
             }
-            if (!result.category_id) {
-                chip.remove();
-                return;
+            if (!chip) {
+                chip = this.createCategoryChip();
+                if (!chip) {
+                    return;
+                }
             }
             var label = chip.querySelector(".o_wsc_category_chip_label");
             if (label) {
@@ -273,21 +333,7 @@
             }
             var clearLink = chip.querySelector(".wd-filter-chip-x");
             if (clearLink) {
-                // Preserve the OTHER active filters, mirroring the
-                // server-rendered chip's keep(shop_path, category=0): the
-                // category is gone, search and price survive.
-                var params = new URLSearchParams();
-                if (result.search) {
-                    params.set("search", result.search);
-                }
-                if (result.price && result.price.min) {
-                    params.set("min_price", result.price.min);
-                }
-                if (result.price && result.price.max) {
-                    params.set("max_price", result.price.max);
-                }
-                var qs = params.toString();
-                clearLink.setAttribute("href", "/shop" + (qs ? "?" + qs : ""));
+                clearLink.setAttribute("href", this.buildClearHref(result));
             }
         },
 
