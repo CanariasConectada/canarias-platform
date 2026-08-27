@@ -723,11 +723,13 @@ msgid "Follow us"
 msgstr "Síguenos"
 
 #. module: partner_microsite_manager
+#. odoo-python
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 msgid "Open now"
 msgstr "Abierto ahora"
 
 #. module: partner_microsite_manager
+#. odoo-python
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 msgid "Closed"
 msgstr "Cerrado"
