@@ -63,6 +63,36 @@ PROTECTED_NAME_PATTERNS = (
     "my company",
 )
 
+# Opening copy seeded into a brand-new microsite. The corporate homepage
+# template gates every section on the field that feeds it (``t-if``), so a
+# company born with all of them empty publishes a page holding nothing but
+# the hero and the contact block -- the merchant sees an empty shell and has
+# no clue which fields bring the rest back. These are the defaults the origin
+# platform wrote on company creation, mapped to the reformed field names:
+# real copy, never Lorem Ipsum, and only ever written into a field that is
+# still empty (see _seed_microsite_content_defaults).
+MICROSITE_CONTENT_DEFAULTS = {
+    "microsite_button_text": "Tienda",
+    # Compact notation validated by _check_microsite_opening_hours.
+    "microsite_opening_hours": "L-V 09:00-17:00 / S 10:00-12:00",
+    "microsite_delivery_info": "Entrega disponible",
+    "microsite_parking_info": "Parking cercano",
+    "microsite_about_title": "Sobre nosotros",
+    "microsite_about_text": (
+        "En nuestro espacio encontrarás productos y servicios seleccionados "
+        "con dedicación. Visítanos y forma parte de la experiencia Canarias "
+        "Conectada."
+    ),
+    "microsite_services_title": "Nuestros servicios",
+    # Deliberately NOT the same copy as the About block: the two sit side by
+    # side on the homepage, and repeating one paragraph twice reads as a bug.
+    "microsite_services_text": (
+        "Atención cercana y asesoramiento honesto sobre lo que ofrecemos. "
+        "Cuéntanos qué necesitas y te ayudamos a encontrarlo."
+    ),
+    "microsite_banner_title": "Consume Productos Canarios",
+}
+
 
 def _normalize_subdomain(name):
     """Return a DNS-safe subdomain built from a company name.
@@ -139,9 +169,36 @@ class ResCompany(models.Model):
         if not website:
             return
         migrated = self._microsite_has_migrated_content(website)
+        self._seed_microsite_content_defaults()
         self._ensure_microsite_menu(website, skip=migrated, prune_defaults=fresh)
         self._ensure_microsite_homepage(website)
         self._ensure_microsite_rich_homepage(website)
+
+    # ------------------------------------------------------------------
+    # Content defaults
+    # ------------------------------------------------------------------
+    def _seed_microsite_content_defaults(self):
+        """Fill the still-empty microsite content fields with the opening copy.
+
+        Non-destructive by construction: a field the merchant already filled
+        is never touched, which also makes a re-run a no-op. The fields belong
+        to ``partner_microsite_manager``, so each one is probed against
+        ``_fields`` -- this module only depends on ``website`` and must stay
+        usable when the corporate homepage is not installed at all.
+
+        Migrated microsites are seeded too: their homepage is the static HTML
+        the migration brought, which reads none of these fields, so the write
+        cannot alter what they render. It only means that publishing the
+        corporate homepage on them later starts from real copy.
+        """
+        self.ensure_one()
+        vals = {
+            field: value
+            for field, value in MICROSITE_CONTENT_DEFAULTS.items()
+            if field in self._fields and not self[field]
+        }
+        if vals:
+            self.write(vals)
 
     # ------------------------------------------------------------------
     # Guards

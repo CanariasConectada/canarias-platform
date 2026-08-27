@@ -7,7 +7,10 @@ from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 from ..hooks import uninstall_hook
-from ..models.res_company import _normalize_subdomain
+from ..models.res_company import (
+    MICROSITE_CONTENT_DEFAULTS,
+    _normalize_subdomain,
+)
 
 
 @tagged("post_install", "-at_install")
@@ -393,3 +396,51 @@ class TestAutoMicrosite(TransactionCase):
         self.assertEqual(_normalize_subdomain("Panadería Ñandú"), "panaderianandu")
         self.assertEqual(_normalize_subdomain("Über Grün"), "ubergrun")
         self.assertEqual(_normalize_subdomain("   "), "empresa")
+
+    # ------------------------------------------------------------------
+    # Content defaults: a new microsite must not be born as an empty shell.
+    # ------------------------------------------------------------------
+    def test_new_microsite_is_born_with_content_defaults(self):
+        company = self.env["res.company"].create({"name": "Seeded Shop"})
+        if "microsite_about_text" not in company._fields:
+            self.skipTest("partner_microsite_manager is not installed.")
+        for field, value in MICROSITE_CONTENT_DEFAULTS.items():
+            self.assertEqual(
+                company[field],
+                value,
+                f"{field} must be seeded so its homepage section renders.",
+            )
+
+    def test_content_defaults_never_overwrite_existing_copy(self):
+        if "microsite_about_text" not in self.env["res.company"]._fields:
+            self.skipTest("partner_microsite_manager is not installed.")
+        company = self.env["res.company"].create(
+            {
+                "name": "Opinionated Shop",
+                "microsite_about_text": "Our own words.",
+                "microsite_button_text": "Catálogo",
+            }
+        )
+        self.assertEqual(company.microsite_about_text, "Our own words.")
+        self.assertEqual(company.microsite_button_text, "Catálogo")
+        # The fields left empty still get the opening copy.
+        self.assertEqual(
+            company.microsite_services_title,
+            MICROSITE_CONTENT_DEFAULTS["microsite_services_title"],
+        )
+
+    def test_seeding_is_idempotent(self):
+        company = self.env["res.company"].create({"name": "Rerun Shop"})
+        if "microsite_about_text" not in company._fields:
+            self.skipTest("partner_microsite_manager is not installed.")
+        company.microsite_about_text = "Edited by the merchant."
+        company._seed_microsite_content_defaults()
+        self.assertEqual(company.microsite_about_text, "Edited by the merchant.")
+
+    def test_seeded_opening_hours_pass_the_format_constraint(self):
+        """The default notation must survive _check_microsite_opening_hours."""
+        company = self.env["res.company"].create({"name": "Hours Shop"})
+        if "microsite_opening_hours" not in company._fields:
+            self.skipTest("partner_microsite_manager is not installed.")
+        parsed = company._get_microsite_opening_hours_lines()
+        self.assertTrue(parsed, "The seeded opening hours must render as lines.")
