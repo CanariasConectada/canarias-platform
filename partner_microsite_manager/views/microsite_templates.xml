@@ -77,7 +77,7 @@
                                                 t-foreach="hours_pill['rows']"
                                                 t-as="row"
                                                 class="o_microsite_hours_row"
-                                                t-att-data-hours-row="row[0]"
+                                                t-att-data-hours-row="str(row[0])"
                                             >
                                                 <span t-esc="row[1]"/>
                                                 <span t-esc="row[2]"/>

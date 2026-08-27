@@ -247,3 +247,38 @@ class TestMicrositeRender(TransactionCase):
     def test_no_shop_website_renders_no_link(self):
         self.company.partner_id.website = False
         self.assertEqual(self.company._get_microsite_website_url(), "")
+
+    def test_pill_timezone_ignores_the_contact_tz(self):
+        """partner.tz is the creating user's timezone, not the shop's clock.
+
+        The whole cutover batch carries America/Caracas there; judging "open
+        now" against it would be four hours off for every merchant.
+        """
+        self.company.partner_id.tz = "America/Caracas"
+        payload = json.loads(
+            self.company._get_microsite_opening_hours_pill()["payload"]
+        )
+        self.assertEqual(payload["timezone"], "Atlantic/Canary")
+
+    def test_pill_timezone_follows_the_system_parameter(self):
+        self.env["ir.config_parameter"].sudo().set_param(
+            "partner_microsite_manager.microsite_timezone", "Europe/Madrid"
+        )
+        payload = json.loads(
+            self.company._get_microsite_opening_hours_pill()["payload"]
+        )
+        self.assertEqual(payload["timezone"], "Europe/Madrid")
+
+    def test_pill_survives_a_broken_timezone_parameter(self):
+        self.env["ir.config_parameter"].sudo().set_param(
+            "partner_microsite_manager.microsite_timezone", "Not/AZone"
+        )
+        payload = json.loads(
+            self.company._get_microsite_opening_hours_pill()["payload"]
+        )
+        self.assertEqual(payload["timezone"], "Atlantic/Canary")
+
+    def test_monday_keeps_its_row_index(self):
+        """QWeb drops a t-att whose value is the integer 0."""
+        self.company.microsite_opening_hours = "L-V 09:00-14:00"
+        self.assertIn('data-hours-row="0"', self._render_homepage_content())

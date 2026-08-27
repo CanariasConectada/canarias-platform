@@ -20,10 +20,21 @@ _lt = LazyTranslate(__name__)
 # (stored XSS), so any explicit non-https scheme is refused at write time.
 _ALLOWED_MAP_URL_SCHEMES = ("https",)
 
-# Fallback timezone for the "open now" badge. Every merchant of the platform
-# trades in the Canary Islands, and a company whose contact has no tz set
-# would otherwise be judged against the visitor's own clock.
-_MICROSITE_TIMEZONE = "Atlantic/Canary"
+# Timezone the "open now" badge is judged against. NOT partner_id.tz: that
+# field holds whatever timezone the user who created the company happened to
+# have (the whole cutover batch carries America/Caracas), and a contact's
+# personal timezone is nobody's opening hours. Every merchant of the platform
+# trades in the Canary Islands; the parameter exists for the day that stops
+# being true.
+MICROSITE_TIMEZONE_PARAM = "partner_microsite_manager.microsite_timezone"
+_DEFAULT_MICROSITE_TIMEZONE = "Atlantic/Canary"
+
+# Badge labels. Bound to this module with _lt like WEEKDAY_LABELS above: the
+# bare _() has to infer the module from the call stack and came back with the
+# English source at render time, so the badge said "Open now" on a Spanish
+# page while the weekday beside it read "Jueves".
+_OPEN_NOW_LABEL = _lt("Open now")
+_CLOSED_LABEL = _lt("Closed")
 
 # Weekday names shown on the public microsite, indexed like date.weekday().
 # Wrapped in _lt (lazy translation): these are module-level constants
@@ -229,14 +240,18 @@ class ResCompany(models.Model):
         parsed = parse_opening_hours(self.microsite_opening_hours)
         if not parsed:
             return {}
-        timezone = self.partner_id.tz or _MICROSITE_TIMEZONE
+        timezone = (
+            self.env["ir.config_parameter"]
+            .sudo()
+            .get_param(MICROSITE_TIMEZONE_PARAM, _DEFAULT_MICROSITE_TIMEZONE)
+        )
         try:
             today = datetime.now(pytz.timezone(timezone)).weekday()
         except pytz.UnknownTimeZoneError:
-            # A contact with a typo in its tz must not take the pill down.
-            timezone = _MICROSITE_TIMEZONE
+            # A typo in the parameter must not take the pill down.
+            timezone = _DEFAULT_MICROSITE_TIMEZONE
             today = datetime.now(pytz.timezone(timezone)).weekday()
-        closed = _("Closed")
+        closed = str(_CLOSED_LABEL)
         as_text = lambda ranges: " / ".join(  # noqa: E731
             f"{start} - {end}" for start, end in ranges
         )
@@ -247,7 +262,7 @@ class ResCompany(models.Model):
             "payload": json.dumps(
                 {
                     "timezone": timezone,
-                    "openLabel": _("Open now"),
+                    "openLabel": str(_OPEN_NOW_LABEL),
                     "closedLabel": closed,
                     "days": [
                         {
