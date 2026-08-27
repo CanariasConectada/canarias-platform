@@ -206,7 +206,8 @@ class ResCompany(models.Model):
         """
         self.ensure_one()
         return [
-            (label, hours) for _index, label, hours in self._get_microsite_opening_hours_rows()
+            (label, hours)
+            for _index, label, hours in self._get_microsite_opening_hours_rows()
         ]
 
     def _get_microsite_opening_hours_pill(self):

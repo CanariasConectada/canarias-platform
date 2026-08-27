@@ -141,9 +141,7 @@ class ResCompany(models.Model):
                 with self.env.cr.savepoint():
                     company._auto_generate_microsite()
             except Exception:  # noqa: BLE001 - defensive: log and keep going
-                _logger.exception(
-                    "auto-microsite failed for %s", company.display_name
-                )
+                _logger.exception("auto-microsite failed for %s", company.display_name)
         return companies
 
     # ------------------------------------------------------------------

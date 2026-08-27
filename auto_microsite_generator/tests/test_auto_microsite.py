@@ -7,10 +7,7 @@ from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 from ..hooks import uninstall_hook
-from ..models.res_company import (
-    MICROSITE_CONTENT_DEFAULTS,
-    _normalize_subdomain,
-)
+from ..models.res_company import MICROSITE_CONTENT_DEFAULTS, _normalize_subdomain
 
 
 @tagged("post_install", "-at_install")
@@ -109,8 +106,7 @@ class TestAutoMicrosite(TransactionCase):
                     ("url", "in", ["/event", "/slides"]),
                 ]
             ),
-            "The stock Events/Courses entries must not survive on a new "
-            "microsite.",
+            "The stock Events/Courses entries must not survive on a new " "microsite.",
         )
 
     def test_prune_never_touches_an_existing_website(self):
@@ -382,12 +378,8 @@ class TestAutoMicrosite(TransactionCase):
 
         uninstall_hook(self.env)
 
-        self.assertFalse(
-            view.exists(), "The generated homepage view must be removed."
-        )
-        self.assertFalse(
-            page.exists(), "The generated homepage page must be removed."
-        )
+        self.assertFalse(view.exists(), "The generated homepage view must be removed.")
+        self.assertFalse(page.exists(), "The generated homepage page must be removed.")
 
     # ------------------------------------------------------------------
     # Fix 5: accented company names produce ASCII subdomains.
