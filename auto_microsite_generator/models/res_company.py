@@ -54,6 +54,11 @@ ZONE_MENU_PROBE_URL = ZONE_MENU_CHILDREN[1][1]
 STOCK_MENUS_TO_PRUNE = (
     ("/event", ("Eventos", "Events")),
     ("/slides", ("Cursos", "Courses")),
+    # Measured on the 206 live merchant microsites: not one links /contactus.
+    # The microsite answers contact on its own homepage (the message form and
+    # the reachable data of the contact block), so the stock entry core copies
+    # over is a second, poorer door to the same thing.
+    ("/contactus", ("Contacta con nosotros", "Contact us", "Contáctenos")),
 )
 
 # Structural / umbrella company names that must not receive a microsite.

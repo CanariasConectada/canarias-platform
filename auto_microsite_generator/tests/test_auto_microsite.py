@@ -436,3 +436,39 @@ class TestAutoMicrosite(TransactionCase):
             self.skipTest("partner_microsite_manager is not installed.")
         parsed = company._get_microsite_opening_hours_lines()
         self.assertTrue(parsed, "The seeded opening hours must render as lines.")
+
+    def test_stock_contactus_menu_is_pruned(self):
+        """Not one of the 206 live merchant microsites links /contactus.
+
+        The microsite answers contact on its own homepage, so the stock entry
+        core copies onto every new website is a second, poorer door.
+        """
+        company = self.env["res.company"].create({"name": "Contactless Shop"})
+        self.assertFalse(
+            self.env["website.menu"].search(
+                [
+                    ("website_id", "=", company.website_id.id),
+                    ("url", "=", "/contactus"),
+                ]
+            ),
+            "The stock Contact us entry must not survive on a new microsite.",
+        )
+
+    def test_a_renamed_contact_menu_is_kept(self):
+        """Pruning only ever removes the stock label; a rename is a decision."""
+        company = self.env["res.company"].create({"name": "Renamed Contact Shop"})
+        Menu = self.env["website.menu"]
+        root = Menu.search(
+            [("website_id", "=", company.website_id.id), ("parent_id", "=", False)],
+            limit=1,
+        )
+        kept = Menu.create(
+            {
+                "name": "Habla con nosotros",
+                "url": "/contactus",
+                "parent_id": root.id,
+                "website_id": company.website_id.id,
+            }
+        )
+        company._auto_generate_microsite()
+        self.assertTrue(kept.exists(), "A renamed contact entry must survive.")

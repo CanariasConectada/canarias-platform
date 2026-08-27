@@ -43,7 +43,7 @@
             <div class="container">
                 <div class="row justify-content-center">
                     <div t-if="hours_pill" class="col-lg-4 pt16 pb16 text-center">
-                        <span class="fa fa-clock-o fa-2x mb-3 d-block"/>
+                        <span class="fa fa-clock-o fa-2x mb-3 o_microsite_feature_icon"/>
                         <h5 class="fw-bold">Opening Hours</h5>
                         <!-- Collapsed by default: today's line is the answer
                              a visitor actually wants; the full week is one
@@ -61,7 +61,7 @@
                                             data-bs-toggle="collapse"
                                             t-attf-data-bs-target="#micrositeHoursBody#{company.id}"
                                         >
-                                            <span class="fw-semibold">
+                                            <span class="o_microsite_hours_summary">
                                                 <span data-hours-day="" t-esc="hours_pill['today_label']"/><span>: </span><span data-hours-today="" t-esc="hours_pill['today_text']"/>
                                             </span>
                                             <span class="o_microsite_hours_status" data-hours-status=""/>
@@ -89,12 +89,12 @@
                         </div>
                     </div>
                     <div t-if="company.microsite_parking_info" class="col-lg-4 pt16 pb16 text-center">
-                        <span class="fa fa-map-marker fa-2x mb-3 d-block"/>
+                        <span class="fa fa-map-marker fa-2x mb-3 o_microsite_feature_icon"/>
                         <h5 class="fw-bold">Parking</h5>
                         <p class="text-muted" t-esc="company.microsite_parking_info"/>
                     </div>
                     <div t-if="company.microsite_delivery_info" class="col-lg-4 pt16 pb16 text-center">
-                        <span class="fa fa-truck fa-2x mb-3 d-block"/>
+                        <span class="fa fa-truck fa-2x mb-3 o_microsite_feature_icon"/>
                         <h5 class="fw-bold">Delivery / Shipping</h5>
                         <p class="text-muted" t-esc="company.microsite_delivery_info"/>
                     </div>
