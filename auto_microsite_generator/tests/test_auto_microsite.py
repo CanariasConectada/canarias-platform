@@ -472,3 +472,17 @@ class TestAutoMicrosite(TransactionCase):
         )
         company._auto_generate_microsite()
         self.assertTrue(kept.exists(), "A renamed contact entry must survive.")
+
+    def test_new_microsite_is_born_with_the_cookies_bar(self):
+        """Consent, not cosmetics: the platform sets utm cookies.
+
+        Odoo only withholds optional cookies until consent while the bar is
+        enabled; a microsite born without it sets them unasked.
+        """
+        company = self.env["res.company"].create({"name": "Consenting Shop"})
+        if not hasattr(self.env["website.page"], "_pmm_enforce_cookie_consent"):
+            self.skipTest("partner_microsite_manager is not installed.")
+        self.assertTrue(
+            company.website_id.cookies_bar,
+            "A new microsite must ask before setting optional cookies.",
+        )

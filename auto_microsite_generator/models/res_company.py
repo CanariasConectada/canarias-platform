@@ -173,6 +173,7 @@ class ResCompany(models.Model):
             return
         migrated = self._microsite_has_migrated_content(website)
         self._seed_microsite_content_defaults()
+        self._ensure_microsite_cookie_consent()
         self._ensure_microsite_menu(website, skip=migrated, prune_defaults=fresh)
         self._ensure_microsite_homepage(website)
         self._ensure_microsite_rich_homepage(website)
@@ -202,6 +203,36 @@ class ResCompany(models.Model):
         }
         if vals:
             self.write(vals)
+
+    def _ensure_microsite_cookie_consent(self):
+        """Give the new microsite the same cookie consent as every other one.
+
+        The platform sets first-party campaign attribution cookies, which
+        Odoo only withholds until consent WHEN the cookies bar is enabled;
+        with the bar off they are set without asking. The migration turned
+        the bar on across the estate, but a microsite created afterwards was
+        born without it -- website 221 was, and that is a consent gap, not a
+        cosmetic one.
+
+        Delegates to ``partner_microsite_manager``, which owns the whole
+        story (it also deletes the stock /cookie-policy page core creates
+        alongside the bar and redirects the URL to the real policy). Probed
+        with ``hasattr`` so this module keeps depending only on ``website``,
+        and cheap on every later run: the sweep searches for websites whose
+        bar is still off, which is normally none.
+        """
+        self.ensure_one()
+        Page = self.env["website.page"].sudo()
+        if not hasattr(Page, "_pmm_enforce_cookie_consent"):
+            return
+        try:
+            with self.env.cr.savepoint():
+                Page._pmm_enforce_cookie_consent()
+        except Exception:  # noqa: BLE001 - defensive: log and keep going
+            _logger.exception(
+                "Cookie consent setup failed for %s; the microsite stays.",
+                self.display_name,
+            )
 
     # ------------------------------------------------------------------
     # Guards
