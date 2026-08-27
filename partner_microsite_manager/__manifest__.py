@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Partner Microsite Manager",
-    "version": "19.0.2.2.0",
+    "version": "19.0.2.3.0",
     "category": "Website",
     "summary": "Merchant microsite content managed from the company form",
     "author": "MikeColangelo",
@@ -33,6 +33,8 @@
             "partner_microsite_manager/static/src/scss/microsite_footer.scss",
             "partner_microsite_manager/static/src/scss/microsite_corrections.scss",
             "partner_microsite_manager/static/src/scss/microsite_banner.scss",
+            "partner_microsite_manager/static/src/scss/microsite_opening_hours.scss",
+            "partner_microsite_manager/static/src/js/microsite_opening_hours.js",
         ],
     },
     "demo": [

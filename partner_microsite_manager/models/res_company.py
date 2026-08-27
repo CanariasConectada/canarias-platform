@@ -1,7 +1,11 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import json
+from datetime import datetime
 from urllib.parse import urlsplit
+
+import pytz
 
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError, ValidationError
@@ -15,6 +19,11 @@ _lt = LazyTranslate(__name__)
 # 'javascript:' or 'data:' src would run in the visitor's page context
 # (stored XSS), so any explicit non-https scheme is refused at write time.
 _ALLOWED_MAP_URL_SCHEMES = ("https",)
+
+# Fallback timezone for the "open now" badge. Every merchant of the platform
+# trades in the Canary Islands, and a company whose contact has no tz set
+# would otherwise be judged against the visitor's own clock.
+_MICROSITE_TIMEZONE = "Atlantic/Canary"
 
 # Weekday names shown on the public microsite, indexed like date.weekday().
 # Wrapped in _lt (lazy translation): these are module-level constants
@@ -168,12 +177,12 @@ class ResCompany(models.Model):
             return "https://" + url
         return url
 
-    def _get_microsite_opening_hours_lines(self):
-        """Weekly schedule as ``[(day_label, 'HH:MM - HH:MM / ...'), ...]``.
+    def _get_microsite_opening_hours_rows(self):
+        """Weekly schedule as ``[(day_index, day_label, 'HH:MM - HH:MM'), ...]``.
 
-        Only the days with opening hours are returned, in week order.
-        Returns an empty list when the field is empty or unparsable, so the
-        template simply hides the section.
+        Only the days with opening hours are returned, in week order. The
+        index is ``date.weekday()`` (Monday = 0) and is what lets the pill
+        highlight today's row from the browser.
         """
         self.ensure_one()
         parsed = parse_opening_hours(self.microsite_opening_hours)
@@ -181,11 +190,91 @@ class ResCompany(models.Model):
             return []
         return [
             (
+                day,
                 WEEKDAY_LABELS[day],
                 " / ".join(f"{start} - {end}" for start, end in parsed[day]),
             )
             for day in sorted(parsed)
         ]
+
+    def _get_microsite_opening_hours_lines(self):
+        """Weekly schedule as ``[(day_label, 'HH:MM - HH:MM / ...'), ...]``.
+
+        Kept as the label/hours pair the rest of the codebase already
+        consumes; :meth:`_get_microsite_opening_hours_rows` is the same data
+        with the weekday index in front.
+        """
+        self.ensure_one()
+        return [
+            (label, hours) for _index, label, hours in self._get_microsite_opening_hours_rows()
+        ]
+
+    def _get_microsite_opening_hours_pill(self):
+        """Everything the opening-hours pill needs, or ``{}`` when there is
+        nothing to show.
+
+        ``today_label`` / ``today_text`` are rendered server-side so the pill
+        is never blank for a visitor with JavaScript off. ``payload`` carries
+        the whole week to the browser, which re-decides "today" and the
+        open/closed badge from the visitor's clock: the homepage can sit in a
+        worker cache for a long while, and a shop still claiming "open now"
+        at midnight is worse than a pill that says nothing.
+
+        ``days`` inside the payload is indexed like ``date.weekday()``
+        (Monday = 0); a day the merchant left out keeps an empty ``ranges``
+        so the browser renders it as closed.
+        """
+        self.ensure_one()
+        parsed = parse_opening_hours(self.microsite_opening_hours)
+        if not parsed:
+            return {}
+        timezone = self.partner_id.tz or _MICROSITE_TIMEZONE
+        try:
+            today = datetime.now(pytz.timezone(timezone)).weekday()
+        except pytz.UnknownTimeZoneError:
+            # A contact with a typo in its tz must not take the pill down.
+            timezone = _MICROSITE_TIMEZONE
+            today = datetime.now(pytz.timezone(timezone)).weekday()
+        closed = _("Closed")
+        as_text = lambda ranges: " / ".join(  # noqa: E731
+            f"{start} - {end}" for start, end in ranges
+        )
+        return {
+            "rows": self._get_microsite_opening_hours_rows(),
+            "today_label": str(WEEKDAY_LABELS[today]),
+            "today_text": as_text(parsed[today]) if parsed.get(today) else closed,
+            "payload": json.dumps(
+                {
+                    "timezone": timezone,
+                    "openLabel": _("Open now"),
+                    "closedLabel": closed,
+                    "days": [
+                        {
+                            # str() resolves the lazy translation in the
+                            # language of the request being rendered.
+                            "label": str(WEEKDAY_LABELS[day]),
+                            "ranges": [list(hours) for hours in parsed.get(day, [])],
+                        }
+                        for day in range(7)
+                    ],
+                }
+            ),
+        }
+
+    def _get_microsite_website_url(self):
+        """The shop's own site as a clickable absolute URL, or ``""``.
+
+        Merchants type ``myshop.com`` as often as they type the full URL,
+        and a bare host in an href is read as a relative path -- the link
+        would point back into the microsite.
+        """
+        self.ensure_one()
+        url = (self.partner_id.website or "").strip()
+        if not url:
+            return ""
+        if "://" not in url:
+            return "https://" + url
+        return url
 
     def _get_microsite_map_url(self):
         """Embeddable map URL: the custom one, or one built from the address.

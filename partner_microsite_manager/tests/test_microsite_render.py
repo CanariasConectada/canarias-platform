@@ -1,6 +1,8 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import json
+
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
@@ -152,3 +154,96 @@ class TestMicrositeRender(TransactionCase):
     def test_footer_socials_render_nothing_when_both_empty(self):
         self._clear_socials()
         self.assertEqual(self.website._pmm_footer_social_links(), [])
+
+    # ------------------------------------------------------------------
+    # Opening-hours pill
+    # ------------------------------------------------------------------
+    def test_opening_hours_render_as_a_collapsible_pill(self):
+        html = self._render_homepage_content()
+        self.assertIn("o_microsite_hours", html)
+        self.assertIn("accordion-button", html)
+        self.assertIn("data-microsite-hours", html)
+        # The week lives in the collapsed body, one row per open day, each
+        # tagged with its weekday index so the browser can bold today.
+        self.assertIn('data-hours-row="0"', html)
+        self.assertIn('data-hours-row="4"', html)
+        self.assertNotIn('data-hours-row="6"', html, "Sunday is closed here.")
+
+    def test_opening_hours_pill_payload_carries_the_whole_week(self):
+        pill = self.company._get_microsite_opening_hours_pill()
+        payload = json.loads(pill["payload"])
+        self.assertEqual(len(payload["days"]), 7, "The browser needs every day.")
+        self.assertEqual(payload["days"][0]["ranges"], [["09:00", "14:00"]])
+        self.assertEqual(payload["days"][6]["ranges"], [], "Sunday is closed.")
+        self.assertTrue(payload["timezone"])
+        self.assertTrue(payload["openLabel"] and payload["closedLabel"])
+
+    def test_opening_hours_pill_summary_is_rendered_server_side(self):
+        """With JavaScript off the pill must still say something."""
+        pill = self.company._get_microsite_opening_hours_pill()
+        self.assertTrue(pill["today_label"])
+        self.assertTrue(pill["today_text"])
+        self.assertIn(pill["today_label"], self._render_homepage_content())
+
+    def test_opening_hours_rows_carry_the_weekday_index(self):
+        rows = self.company._get_microsite_opening_hours_rows()
+        self.assertEqual([row[0] for row in rows], [0, 1, 2, 3, 4])
+        # The legacy pair-shaped helper stays compatible.
+        self.assertEqual(
+            self.company._get_microsite_opening_hours_lines(),
+            [(row[1], row[2]) for row in rows],
+        )
+
+    def test_no_opening_hours_renders_no_pill(self):
+        self.company.microsite_opening_hours = False
+        self.assertEqual(self.company._get_microsite_opening_hours_pill(), {})
+        self.assertNotIn("o_microsite_hours", self._render_homepage_content())
+
+    # ------------------------------------------------------------------
+    # Contact block: message form + reachable data
+    # ------------------------------------------------------------------
+    def test_contact_block_renders_the_message_form(self):
+        html = self._render_homepage_content()
+        self.assertIn('data-model_name="crm.lead"', html)
+        self.assertIn('action="/website/form/"', html)
+        for field in ("contact_name", "email_from", "phone", "description"):
+            self.assertIn(f'name="{field}"', html)
+        self.assertIn("s_website_form_send", html)
+
+    def test_form_carries_the_shop_name_as_the_lead_subject(self):
+        """crm.lead.name is model-required and is not the visitor's to write."""
+        html = self._render_homepage_content()
+        self.assertIn('name="name"', html)
+        self.assertIn('value="Render Trade Name"', html)
+
+    def test_contact_block_renders_the_map_and_the_address(self):
+        html = self._render_homepage_content()
+        self.assertIn("maps.google.com", html)
+        self.assertIn("Calle Render 5", html)
+
+    def test_contact_block_renders_the_social_links(self):
+        # website.social_* defaults from the main company, so both sides are
+        # cleared first or the inherited value would win over the shop's.
+        self._clear_socials()
+        self.company.social_instagram = "https://instagram.com/rendershop"
+        html = self._render_homepage_content()
+        self.assertIn("https://instagram.com/rendershop", html)
+        self.assertIn("fa-instagram", html)
+
+    def test_shop_website_link_is_absolute(self):
+        """A bare host in an href would point back into the microsite."""
+        self.company.partner_id.website = "rendershop.com"
+        self.assertEqual(
+            self.company._get_microsite_website_url(), "https://rendershop.com"
+        )
+        self.assertIn('href="https://rendershop.com"', self._render_homepage_content())
+
+    def test_shop_website_link_keeps_an_explicit_scheme(self):
+        self.company.partner_id.website = "http://rendershop.com"
+        self.assertEqual(
+            self.company._get_microsite_website_url(), "http://rendershop.com"
+        )
+
+    def test_no_shop_website_renders_no_link(self):
+        self.company.partner_id.website = False
+        self.assertEqual(self.company._get_microsite_website_url(), "")

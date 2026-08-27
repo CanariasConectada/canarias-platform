@@ -24,20 +24,18 @@ msgstr ""
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
-msgid ""
-"<span class=\"fa fa-map-marker me-2\"/>\n"
-"                            <strong>Find Us</strong>"
-msgstr ""
+msgid "Find Us"
+msgstr "Dónde estamos"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
 msgid "<span class=\"mx-2\">·</span>"
-msgstr ""
+msgstr "<span class=\"mx-2\">·</span>"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_partner_form_microsite
 msgid "<span class=\"o_stat_text\">Microsite</span>"
-msgstr ""
+msgstr "<span class=\"o_stat_text\">Microsite</span>"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
@@ -72,7 +70,7 @@ msgstr "Dirección"
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
 msgid "All rights reserved"
-msgstr ""
+msgstr "Todos los derechos reservados"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
@@ -105,7 +103,7 @@ msgstr "Imagen del banner de cierre"
 msgid ""
 "Compact notation, e.g. L-V 10:00-13:30 / L-V 16:30-20:00 / S 10:00-14:00 (L "
 "M X J V S D = Monday..Sunday, at most two ranges per day)."
-msgstr ""
+msgstr "Notación compacta, p. ej. L-V 10:00-13:30 / L-V 16:30-20:00 / S 10:00-14:00 (L M X J V S D = lunes..domingo, como máximo dos franjas por día)."
 
 #. module: partner_microsite_manager
 #: model:ir.model,name:partner_microsite_manager.model_res_company
@@ -124,12 +122,12 @@ msgstr "La compañía %(name)s aún no tiene website. Cree primero su website (A
 #: model:ir.model.fields,help:partner_microsite_manager.field_res_partner__microsite_company_id
 #: model:ir.model.fields,help:partner_microsite_manager.field_res_users__microsite_company_id
 msgid "Company of this contact that owns a website (microsite)."
-msgstr ""
+msgstr "Compañía de este contacto que posee un sitio web (microsite)."
 
 #. module: partner_microsite_manager
 #: model:ir.model,name:partner_microsite_manager.model_res_config_settings
 msgid "Config Settings"
-msgstr ""
+msgstr "Ajustes de configuración"
 
 #. module: partner_microsite_manager
 #: model:ir.model,name:partner_microsite_manager.model_res_partner
@@ -147,14 +145,14 @@ msgstr "Contáctanos"
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions
 msgid "Cookie policy"
-msgstr ""
+msgstr "Política de cookies"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_config_settings__is_microsite_themed
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_website__is_microsite_themed
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.res_config_settings_view_form_microsite
 msgid "Corporate Microsite Look"
-msgstr ""
+msgstr "Aspecto corporativo del microsite"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
@@ -174,17 +172,17 @@ msgstr "Imagen de portada"
 #. module: partner_microsite_manager
 #: model:ir.model,website_form_label:partner_microsite_manager.model_res_partner
 msgid "Create a Customer"
-msgstr ""
+msgstr "Crear un cliente"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__create_uid
 msgid "Created by"
-msgstr ""
+msgstr "Creado por"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__create_date
 msgid "Created on"
-msgstr ""
+msgstr "Creado el"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_map_url
@@ -214,25 +212,25 @@ msgstr "Descartar"
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_partner__display_name
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_website__display_name
 msgid "Display Name"
-msgstr ""
+msgstr "Nombre mostrado"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_map_url
 msgid ""
 "Embeddable map URL. When empty, a Google Maps embed is built from the "
 "company address."
-msgstr ""
+msgstr "URL de mapa incrustable. Si se deja vacía, se genera un mapa de Google Maps a partir de la dirección de la compañía."
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
 msgid "Facebook"
-msgstr ""
+msgstr "Facebook"
 
 #. module: partner_microsite_manager
 #. odoo-python
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 msgid "Friday"
-msgstr ""
+msgstr "Viernes"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__has_microsite
@@ -244,7 +242,7 @@ msgstr "Tiene microsite"
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "Header"
-msgstr ""
+msgstr "Cabecera"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
@@ -264,7 +262,7 @@ msgstr "Imagen de cabecera"
 #. module: partner_microsite_manager
 #: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_homepage_page_id
 msgid "Homepage published by the 'Publish Homepage' action."
-msgstr ""
+msgstr "Página de inicio publicada por la acción «Publicar página de inicio»."
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
@@ -278,7 +276,7 @@ msgstr "Cómo se llama tu comercio en su página"
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_partner__id
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_website__id
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
@@ -288,7 +286,7 @@ msgstr "Identidad"
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
 msgid "Instagram"
-msgstr ""
+msgstr "Instagram"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_intro_image
@@ -323,22 +321,22 @@ msgstr "Formato de horario no válido. Ejemplo esperado: 'L-V 10:00-13:30 / L-V 
 msgid ""
 "Label of the call-to-action button of the hero section. Falls back to "
 "'Shop'."
-msgstr ""
+msgstr "Etiqueta del botón de llamada a la acción de la sección hero. Si se deja vacía, se usa «Tienda»."
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__write_uid
 msgid "Last Updated by"
-msgstr ""
+msgstr "Última actualización por"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__write_date
 msgid "Last Updated on"
-msgstr ""
+msgstr "Última actualización el"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
 msgid "LinkedIn"
-msgstr ""
+msgstr "LinkedIn"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_map_url
@@ -368,13 +366,13 @@ msgstr "Portada del microsite"
 #. odoo-python
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 msgid "Monday"
-msgstr ""
+msgstr "Lunes"
 
 #. module: partner_microsite_manager
 #. odoo-python
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 msgid "Only website designers can publish a microsite homepage."
-msgstr ""
+msgstr "Solo los diseñadores de sitios web pueden publicar la página de inicio de un microsite."
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_opening_hours
@@ -433,14 +431,14 @@ msgstr "Aparcamiento y cómo llegar"
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_phone
 msgid "Phone"
-msgstr ""
+msgstr "Teléfono"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_phone
 msgid ""
 "Phone shown on the microsite. Falls back to the company contact's phone when"
 " empty."
-msgstr ""
+msgstr "Teléfono mostrado en el microsite. Si se deja vacío, se usa el teléfono del contacto de la compañía."
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
@@ -455,22 +453,22 @@ msgstr "Información práctica"
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
 msgid "Privacy policy"
-msgstr ""
+msgstr "Política de privacidad"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_phone
 msgid "Public Phone"
-msgstr ""
+msgstr "Teléfono público"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_phone2
 msgid "Public Phone 2"
-msgstr ""
+msgstr "Teléfono público 2"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_name
 msgid "Public name shown on the microsite. Falls back to the company name."
-msgstr ""
+msgstr "Nombre público mostrado en el microsite. Si se deja vacío, se usa el nombre de la compañía."
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
@@ -488,7 +486,7 @@ msgid ""
 "Render the corporate microsite footer (black footer with social links, legal"
 " pages and certification badges) on the selected website. Leave off for the "
 "directory and the main website."
-msgstr ""
+msgstr "Muestra el pie corporativo del microsite (pie negro con enlaces a redes sociales, páginas legales y distintivos de certificación) en el sitio web seleccionado. Déjalo desactivado para el directorio y el sitio web principal."
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,help:partner_microsite_manager.field_website__is_microsite_themed
@@ -496,21 +494,21 @@ msgid ""
 "Render the corporate microsite footer (black footer with social links, legal"
 " pages and certification badges) on this website. Leave off for the "
 "directory and the main website."
-msgstr ""
+msgstr "Muestra el pie corporativo del microsite (pie negro con enlaces a redes sociales, páginas legales y distintivos de certificación) en este sitio web. Déjalo desactivado para el directorio y el sitio web principal."
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.res_config_settings_view_form_microsite
 msgid ""
 "Render the corporate microsite footer (social links, legal pages and "
 "certification badges) on this website."
-msgstr ""
+msgstr "Muestra el pie corporativo del microsite (enlaces a redes sociales, páginas legales y distintivos de certificación) en este sitio web."
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 msgid ""
 "Replace the homepage of the company website with the dynamic microsite "
 "template."
-msgstr ""
+msgstr "Sustituye la página de inicio del sitio web de la compañía por la plantilla dinámica del microsite."
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,help:partner_microsite_manager.field_microsite_content_editor__company_id
@@ -521,7 +519,7 @@ msgstr "Se deduce de tu cuenta. No es una elección."
 #. odoo-python
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 msgid "Saturday"
-msgstr ""
+msgstr "Sábado"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
@@ -536,7 +534,7 @@ msgstr "Segundo teléfono"
 #. module: partner_microsite_manager
 #: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_phone2
 msgid "Second phone shown on the microsite, below the first one."
-msgstr ""
+msgstr "Segundo teléfono mostrado en el microsite, debajo del primero."
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
@@ -563,7 +561,7 @@ msgstr "Tienda"
 #. odoo-python
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 msgid "Sunday"
-msgstr ""
+msgstr "Domingo"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
@@ -578,7 +576,7 @@ msgstr "Cuenta a tu clientela quién eres"
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
 msgid "Terms and conditions"
-msgstr ""
+msgstr "Términos y condiciones"
 
 #. module: partner_microsite_manager
 #. odoo-python
@@ -586,7 +584,7 @@ msgstr ""
 msgid ""
 "The map URL must be an https:// address; '%(scheme)s:' links are not "
 "allowed."
-msgstr ""
+msgstr "La URL del mapa debe ser una dirección https://; no se permiten enlaces «%(scheme)s:»."
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
@@ -599,7 +597,7 @@ msgstr "Esto sustituye la portada actual del website de la compañía por la pla
 #. odoo-python
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 msgid "Thursday"
-msgstr ""
+msgstr "Jueves"
 
 #. module: partner_microsite_manager
 #. odoo-python
@@ -623,24 +621,24 @@ msgstr "Nombre comercial"
 #. module: partner_microsite_manager
 #: model:ir.model.fields,help:partner_microsite_manager.field_res_company__has_microsite
 msgid "True when the company has its own website, i.e. a microsite."
-msgstr ""
+msgstr "Verdadero cuando la compañía tiene su propio sitio web, es decir, un microsite."
 
 #. module: partner_microsite_manager
 #. odoo-python
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 msgid "Tuesday"
-msgstr ""
+msgstr "Martes"
 
 #. module: partner_microsite_manager
 #: model:ir.model,name:partner_microsite_manager.model_website
 msgid "Website"
-msgstr ""
+msgstr "Sitio web"
 
 #. module: partner_microsite_manager
 #. odoo-python
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 msgid "Wednesday"
-msgstr ""
+msgstr "Miércoles"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_services_text
@@ -661,12 +659,12 @@ msgstr "Dónde se ve la página que edita esta pantalla."
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
 msgid "X/Twitter"
-msgstr ""
+msgstr "X/Twitter"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
 msgid "YouTube"
-msgstr ""
+msgstr "YouTube"
 
 #. module: partner_microsite_manager
 #. odoo-python
@@ -686,10 +684,50 @@ msgstr "Tu cuenta no está vinculada a un comercio con sitio propio, así que no
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "e.g. L-V 10:00-13:30 / L-V 16:30-20:00 / S 10:00-14:00"
-msgstr ""
+msgstr "p. ej. L-V 10:00-13:30 / L-V 16:30-20:00 / S 10:00-14:00"
 
 #. module: partner_microsite_manager
 #. odoo-python
 #: code:addons/partner_microsite_manager/wizards/microsite_content_editor.py:0
 msgid "Page content of the shops"
 msgstr "Contenido de página de los comercios"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid "Write to us"
+msgstr "Escríbenos"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid "Name"
+msgstr "Nombre"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid "Email"
+msgstr "Email"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid "Message"
+msgstr "Mensaje"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid "Send"
+msgstr "Enviar"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid "Follow us"
+msgstr "Síguenos"
+
+#. module: partner_microsite_manager
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid "Open now"
+msgstr "Abierto ahora"
+
+#. module: partner_microsite_manager
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid "Closed"
+msgstr "Cerrado"

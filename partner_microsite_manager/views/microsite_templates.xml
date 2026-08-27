@@ -34,21 +34,57 @@
         </section>
 
         <!-- Practical info: opening hours / delivery / parking -->
-        <t t-set="opening_lines" t-value="company._get_microsite_opening_hours_lines()"/>
+        <t t-set="hours_pill" t-value="company._get_microsite_opening_hours_pill()"/>
         <section
-            t-if="opening_lines or company.microsite_delivery_info or company.microsite_parking_info"
+            t-if="hours_pill or company.microsite_delivery_info or company.microsite_parking_info"
             class="pt48 pb48"
             data-name="Practical Information"
         >
             <div class="container">
                 <div class="row justify-content-center">
-                    <div t-if="opening_lines" class="col-lg-4 pt16 pb16 text-center">
+                    <div t-if="hours_pill" class="col-lg-4 pt16 pb16 text-center">
                         <span class="fa fa-clock-o fa-2x mb-3 d-block"/>
                         <h5 class="fw-bold">Opening Hours</h5>
-                        <div class="text-start d-inline-block">
-                            <div t-foreach="opening_lines" t-as="line" class="d-flex justify-content-between gap-3">
-                                <span t-esc="line[0]"/>
-                                <span t-esc="line[1]"/>
+                        <!-- Collapsed by default: today's line is the answer
+                             a visitor actually wants; the full week is one
+                             click away. The day, the hours and the badge are
+                             rendered server-side and refreshed by
+                             microsite_opening_hours.js from the visitor's
+                             clock, so a cached page cannot lie about it. -->
+                        <div class="o_microsite_hours" t-att-data-microsite-hours="hours_pill['payload']">
+                            <div class="accordion accordion-flush" t-attf-id="micrositeHours#{company.id}">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button
+                                            class="accordion-button collapsed"
+                                            type="button"
+                                            data-bs-toggle="collapse"
+                                            t-attf-data-bs-target="#micrositeHoursBody#{company.id}"
+                                        >
+                                            <span class="fw-semibold">
+                                                <span data-hours-day="" t-esc="hours_pill['today_label']"/><span>: </span><span data-hours-today="" t-esc="hours_pill['today_text']"/>
+                                            </span>
+                                            <span class="o_microsite_hours_status" data-hours-status=""/>
+                                        </button>
+                                    </h2>
+                                    <div
+                                        t-attf-id="micrositeHoursBody#{company.id}"
+                                        class="accordion-collapse collapse"
+                                        t-attf-data-bs-parent="#micrositeHours#{company.id}"
+                                    >
+                                        <div class="accordion-body p-2">
+                                            <div
+                                                t-foreach="hours_pill['rows']"
+                                                t-as="row"
+                                                class="o_microsite_hours_row"
+                                                t-att-data-hours-row="row[0]"
+                                            >
+                                                <span t-esc="row[1]"/>
+                                                <span t-esc="row[2]"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -112,16 +148,122 @@
             <t t-set="banner_has_image" t-value="bool(company.microsite_banner_image)"/>
         </t>
 
-        <!-- Contact: address / phones / email + embedded map -->
+        <!-- Contact: message form on the left, map + reachable data and
+             social links on the right. Same two-column shape the migrated
+             microsites carry, so a merchant moving from one to the other
+             finds the block where they expect it. -->
         <t t-set="map_url" t-value="company._get_microsite_map_url()"/>
-        <section class="pt48 pb48" data-name="Contact">
+        <t t-set="microsite_social" t-value="website._pmm_footer_social_links()"/>
+        <t t-set="microsite_phone" t-value="company.microsite_phone or company.partner_id.phone"/>
+        <section class="s_website_form pt48 pb48" data-snippet="s_website_form" data-name="Contact">
             <div class="container">
                 <div class="row">
+                    <div class="col-lg-6 pb16">
+                        <h4 class="mb-3 o_microsite_heading o_microsite_heading_mail">Write to us</h4>
+                        <!-- Lands in CRM as a lead of THIS shop's company:
+                             the website the form was submitted from decides
+                             the company, so a merchant only ever sees their
+                             own enquiries. -->
+                        <form
+                            action="/website/form/"
+                            method="post"
+                            enctype="multipart/form-data"
+                            class="o_mark_required"
+                            data-mark="*"
+                            data-pre-fill="true"
+                            data-model_name="crm.lead"
+                            data-success-mode="redirect"
+                            data-success-page="/contactus-thank-you"
+                        >
+                            <div class="s_website_form_rows row s_col_no_bgcolor">
+                                <!-- crm.lead.name is required by the model and
+                                     is the lead title in CRM; the visitor has
+                                     no business writing it, so it carries the
+                                     shop name. -->
+                                <div data-name="Field" class="s_website_form_field s_website_form_dnone col-12">
+                                    <div class="row s_col_no_resize s_col_no_bgcolor">
+                                        <label class="col-form-label s_website_form_label">
+                                            <span class="s_website_form_label_content"/>
+                                        </label>
+                                        <div class="col-sm">
+                                            <input
+                                                type="hidden"
+                                                class="form-control s_website_form_input"
+                                                name="name"
+                                                t-att-value="company.microsite_name or company.name"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div data-name="Field" class="s_website_form_field mb-3 col-12 s_website_form_required" data-type="char">
+                                    <label class="s_website_form_label" t-attf-for="micrositeName#{company.id}">
+                                        <span class="s_website_form_label_content">Name</span>
+                                        <span class="s_website_form_mark"> *</span>
+                                    </label>
+                                    <input
+                                        class="form-control s_website_form_input"
+                                        type="text"
+                                        name="contact_name"
+                                        required="1"
+                                        data-fill-with="name"
+                                        t-attf-id="micrositeName#{company.id}"
+                                    />
+                                </div>
+                                <div data-name="Field" class="s_website_form_field mb-3 col-12 s_website_form_model_required" data-type="email">
+                                    <label class="s_website_form_label" t-attf-for="micrositeEmail#{company.id}">
+                                        <span class="s_website_form_label_content">Email</span>
+                                        <span class="s_website_form_mark"> *</span>
+                                    </label>
+                                    <input
+                                        class="form-control s_website_form_input"
+                                        type="email"
+                                        name="email_from"
+                                        required="1"
+                                        data-fill-with="email"
+                                        t-attf-id="micrositeEmail#{company.id}"
+                                    />
+                                </div>
+                                <div data-name="Field" class="s_website_form_field mb-3 col-12" data-type="tel">
+                                    <label class="s_website_form_label" t-attf-for="micrositePhone#{company.id}">
+                                        <span class="s_website_form_label_content">Phone</span>
+                                    </label>
+                                    <input
+                                        class="form-control s_website_form_input"
+                                        type="tel"
+                                        name="phone"
+                                        data-fill-with="phone"
+                                        t-attf-id="micrositePhone#{company.id}"
+                                    />
+                                </div>
+                                <div data-name="Field" class="s_website_form_field mb-3 col-12 s_website_form_required" data-type="text">
+                                    <label class="s_website_form_label" t-attf-for="micrositeMessage#{company.id}">
+                                        <span class="s_website_form_label_content">Message</span>
+                                        <span class="s_website_form_mark"> *</span>
+                                    </label>
+                                    <textarea
+                                        class="form-control s_website_form_input"
+                                        name="description"
+                                        rows="4"
+                                        required="1"
+                                        t-attf-id="micrositeMessage#{company.id}"
+                                    />
+                                </div>
+                                <div class="mb-0 py-2 col-12 s_website_form_submit" data-name="Submit Button">
+                                    <span id="s_website_form_result"/>
+                                    <a href="#" role="button" class="btn btn-primary s_website_form_send">Send</a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                     <div class="col-lg-6">
-                        <h4 class="mb-3">
-                            <span class="fa fa-map-marker me-2"/>
-                            <strong>Find Us</strong>
-                        </h4>
+                        <!-- Fixed 240px height: the look the 218 microsites
+                             have always had. -->
+                        <t t-call="website_map_embed.map_iframe">
+                            <t t-set="map_url" t-value="map_url"/>
+                            <t t-set="map_title" t-value="company.partner_id.display_name"/>
+                            <t t-set="map_height" t-value="240"/>
+                        </t>
+                        <h4 class="mt-4 mb-3 o_microsite_heading o_microsite_heading_pin">Find Us</h4>
                         <p t-if="company.partner_id.contact_address" class="mb-2">
                             <i class="fa fa-map-marker fa-fw me-2"/>
                             <span t-esc="company.partner_id.contact_address"/>
@@ -130,10 +272,6 @@
                              a shop publishes its counter line, not the one
                              it uses for paperwork. Same rule as the origin
                              platform (``microsite_phone or phone``). -->
-                        <t
-                            t-set="microsite_phone"
-                            t-value="company.microsite_phone or company.partner_id.phone"
-                        />
                         <p t-if="microsite_phone" class="mb-2">
                             <i class="fa fa-phone fa-fw me-2"/>
                             <span t-esc="microsite_phone"/>
@@ -144,20 +282,34 @@
                         </p>
                         <p t-if="company.partner_id.email" class="mb-2">
                             <i class="fa fa-envelope fa-fw me-2"/>
-                            <span t-esc="company.partner_id.email"/>
+                            <a t-attf-href="mailto:#{company.partner_id.email}" t-esc="company.partner_id.email"/>
                         </p>
-                        <p class="mt-3">
-                            <a class="btn btn-secondary" href="/contactus">Contact Us</a>
+                        <p t-if="company.partner_id.website" class="mb-2">
+                            <i class="fa fa-globe fa-fw me-2"/>
+                            <a
+                                t-att-href="company._get_microsite_website_url()"
+                                target="_blank"
+                                rel="noopener"
+                                t-esc="company.partner_id.website"
+                            />
                         </p>
-                    </div>
-                    <div class="col-lg-6">
-                        <!-- Fixed 240px height: the look the 218 microsites
-                             have always had. -->
-                        <t t-call="website_map_embed.map_iframe">
-                            <t t-set="map_url" t-value="map_url"/>
-                            <t t-set="map_title" t-value="company.partner_id.display_name"/>
-                            <t t-set="map_height" t-value="240"/>
-                        </t>
+                        <div t-if="microsite_social" class="mt-4">
+                            <h6 class="fw-bold mb-2">Follow us</h6>
+                            <div class="d-flex gap-3 align-items-center">
+                                <a
+                                    t-foreach="microsite_social"
+                                    t-as="microsite_link"
+                                    t-att-href="microsite_link['href']"
+                                    t-att-title="microsite_link['title']"
+                                    t-att-aria-label="microsite_link['title']"
+                                    target="_blank"
+                                    rel="noopener"
+                                    class="fs-4"
+                                >
+                                    <i t-attf-class="fa #{microsite_link['icon']}"/>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

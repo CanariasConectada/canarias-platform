@@ -1,0 +1,66 @@
+// Copyright 2026 Canarias Conectada
+// License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+// Opening-hours pill of the microsite homepage. Bootstrap's flush accordion
+// draws no border of its own, so the rounded card is drawn here; the rest is
+// kept to sizing, because colours must keep coming from the site's theme.
+.o_microsite_hours {
+    max-width: 22rem;
+    margin-inline: auto;
+    text-align: start;
+
+    .accordion-item {
+        border: 1px solid var(--o-color-4, #dee2e6);
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+
+    .accordion-button {
+        font-size: 0.9rem;
+        font-weight: 500;
+        padding: 0.5rem 0.75rem;
+
+        // The chevron sits after the status badge, not after the day.
+        &::after {
+            margin-inline-start: 0.5rem;
+        }
+    }
+
+    .o_microsite_hours_status {
+        font-size: 0.8rem;
+        font-family: var(--bs-font-monospace, monospace);
+        margin-inline-start: auto;
+
+        // Filled in by the browser (see microsite_opening_hours.js): with JS
+        // off the badge stays empty instead of claiming the shop is open.
+        &:empty {
+            display: none;
+        }
+    }
+
+    .o_microsite_hours_row {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.125rem 0;
+    }
+}
+
+// Section headings of the contact block. The FontAwesome glyph is drawn from
+// CSS on purpose: an inline <span class="fa"/> next to the text turns the
+// whole heading into one composite translation term ("<span .../>\n<strong>
+// Find Us</strong>"), which is how the heading ended up untranslated in the
+// first place. Text-only markup keeps the msgid a plain "Find Us".
+.o_microsite_heading::before {
+    font-family: FontAwesome, sans-serif;
+    font-weight: normal;
+    margin-inline-end: 0.5rem;
+}
+
+.o_microsite_heading_pin::before {
+    content: "\f041"; // map-marker
+}
+
+.o_microsite_heading_mail::before {
+    content: "\f0e0"; // envelope
+}
