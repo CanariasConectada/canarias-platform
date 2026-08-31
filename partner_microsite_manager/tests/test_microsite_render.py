@@ -282,3 +282,50 @@ class TestMicrositeRender(TransactionCase):
         """QWeb drops a t-att whose value is the integer 0."""
         self.company.microsite_opening_hours = "L-V 09:00-14:00"
         self.assertIn('data-hours-row="0"', self._render_homepage_content())
+
+    # -- estate-wide blocks ---------------------------------------------------
+
+    def test_homepage_links_back_to_the_directory(self):
+        """The cross-link every migrated microsite carries.
+
+        Website 221 was born from this template without it and had no way in
+        to the directory at all.
+        """
+        html = self._render_homepage_content()
+        self.assertIn("https://canariasconectada.es/comercio", html)
+        self.assertIn('data-name="Zona Comercial"', html)
+
+    def test_homepage_carries_the_funding_disclosure(self):
+        """Not decoration: the grant requires the emblem on public pages."""
+        html = self._render_homepage_content()
+        self.assertIn(
+            "/partner_microsite_manager/static/src/img/subvenciones.png", html
+        )
+        self.assertIn("NextGenerationEU", html)
+
+    def test_the_estate_blocks_survive_an_empty_company(self):
+        """They belong to the platform, not to what a merchant filled in."""
+        self.company.write(
+            {
+                "microsite_opening_hours": False,
+                "microsite_delivery_info": False,
+                "microsite_parking_info": False,
+                "microsite_about_text": False,
+                "microsite_services_text": False,
+                "microsite_banner_title": False,
+            }
+        )
+        html = self._render_homepage_content()
+        self.assertIn('data-name="Zona Comercial"', html)
+        self.assertIn('data-name="Subvenciones"', html)
+
+    def test_the_directory_heading_is_not_shouted(self):
+        """ALL CAPS is what LibreTranslate returns "_" for.
+
+        The migrated pages carry "CIENTOS DE COMERCIOS EN TU ZONA" and their
+        English came back empty. Sentence case here, styled by CSS if a
+        design ever wants capitals back.
+        """
+        html = self._render_homepage_content()
+        self.assertNotIn("CIENTOS DE COMERCIOS EN TU ZONA", html)
+        self.assertIn("Cientos de comercios en tu zona", html)
