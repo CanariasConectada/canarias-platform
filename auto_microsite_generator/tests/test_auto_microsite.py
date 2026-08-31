@@ -3,6 +3,7 @@
 
 from unittest.mock import patch
 
+from odoo.exceptions import UserError, ValidationError
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
@@ -12,6 +13,16 @@ from ..models.res_company import MICROSITE_CONTENT_DEFAULTS, _normalize_subdomai
 
 @tagged("post_install", "-at_install")
 class TestAutoMicrosite(TransactionCase):
+    def setUp(self):
+        super().setUp()
+        # These cases are about what a microsite is born WITH, not about who
+        # names its subdomain, so they run in "auto" mode -- the historical
+        # behaviour. The "ask" default is exercised on its own below, in
+        # TestMicrositeSubdomain.
+        self.env["ir.config_parameter"].sudo().set_param(
+            "auto_microsite_generator.subdomain_mode", "auto"
+        )
+
     def _homepage_page(self, website):
         return self.env["website.page"].search(
             [("website_id", "=", website.id), ("url", "=", "/")], limit=1
@@ -486,3 +497,187 @@ class TestAutoMicrosite(TransactionCase):
             company.website_id.cookies_bar,
             "A new microsite must ask before setting optional cookies.",
         )
+
+    def test_menu_labels_are_seeded_in_every_installed_language(self):
+        """ "Comercio" is the directory, not the noun.
+
+        Left to a machine translator it comes back as Trade/Handel/Commerce,
+        which is exactly what website 221 shipped with. The estate wording is
+        written on creation instead.
+        """
+        english = self.env["res.lang"]._activate_lang("en_US")
+        if not english:
+            self.skipTest("en_US is not available in this database.")
+        company = self.env["res.company"].create({"name": "Labelled Shop"})
+        directory = self.env["website.menu"].search(
+            [("website_id", "=", company.website_id.id), ("url", "=", "/comercio")],
+            limit=1,
+        )
+        self.assertEqual(
+            directory.with_context(lang="en_US").name,
+            "Directory",
+            "The directory entry must read Directory in English, never Trade.",
+        )
+
+    def test_seeding_writes_only_languages_that_are_installed(self):
+        """Writing a language Odoo does not know raises; it must be skipped."""
+        company = self.env["res.company"].create({"name": "Partial Lang Shop"})
+        directory = self.env["website.menu"].search(
+            [("website_id", "=", company.website_id.id), ("url", "=", "/comercio")],
+            limit=1,
+        )
+        self.env.flush_all()
+        self.env.cr.execute(
+            "SELECT name FROM website_menu WHERE id = %s", (directory.id,)
+        )
+        stored = self.env.cr.fetchone()[0]
+        installed = {lang[0] for lang in self.env["res.lang"].get_installed()}
+        self.assertTrue(
+            set(stored) <= installed,
+            f"Only installed languages may be written; got {sorted(stored)}.",
+        )
+
+
+@tagged("post_install", "-at_install")
+class TestMicrositeSubdomain(TransactionCase):
+    """The subdomain is named by a person, before the site exists.
+
+    DNS here is manual: no registrar API, and a wildcard certificate renewed
+    by hand. A website born on a hostname nobody registered is a dead link
+    with a merchant attached, so "ask" is the default and this is what it
+    means.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.Company = self.env["res.company"]
+        self.env["ir.config_parameter"].sudo().set_param(
+            "auto_microsite_generator.subdomain_mode", "ask"
+        )
+        self.env["ir.config_parameter"].sudo().set_param(
+            "auto_microsite_generator.domain_suffix", ".canariasconectada.es"
+        )
+
+    def test_a_company_without_a_subdomain_gets_no_website(self):
+        company = self.Company.create({"name": "Unnamed Shop"})
+        self.assertFalse(
+            company.website_id,
+            "In ask mode nothing may be published until a subdomain is named.",
+        )
+
+    def test_a_subdomain_given_on_create_provisions_the_site(self):
+        company = self.Company.create(
+            {"name": "Named Shop", "microsite_subdomain": "namedshop"}
+        )
+        self.assertEqual(
+            company.website_id.domain,
+            "https://namedshop.canariasconectada.es",
+            "A caller who answered the question must not be asked again.",
+        )
+
+    def test_a_mixed_batch_provisions_only_the_named_ones(self):
+        companies = self.Company.create(
+            [
+                {"name": "Batch Named", "microsite_subdomain": "batchnamed"},
+                {"name": "Batch Unnamed"},
+            ]
+        )
+        self.assertEqual(
+            len(companies), 2, "create must return every company it was given."
+        )
+        self.assertTrue(companies[0].website_id)
+        self.assertFalse(companies[1].website_id)
+
+    def test_the_wizard_names_the_subdomain_and_builds_the_site(self):
+        company = self.Company.create({"name": "Wizard Shop"})
+        wizard = (
+            self.env["microsite.creation.wizard"]
+            .with_context(active_id=company.id)
+            .create({"company_id": company.id, "subdomain": "wizardshop"})
+        )
+        wizard.action_create_microsite()
+        self.assertEqual(
+            company.website_id.domain, "https://wizardshop.canariasconectada.es"
+        )
+
+    def test_the_wizard_suggests_a_subdomain_without_deciding_it(self):
+        company = self.Company.create({"name": "Suggested Shop"})
+        defaults = (
+            self.env["microsite.creation.wizard"]
+            .with_context(active_id=company.id)
+            .default_get(["company_id", "subdomain", "domain_suffix"])
+        )
+        self.assertEqual(defaults["subdomain"], "suggestedshop")
+        self.assertEqual(defaults["company_id"], company.id)
+
+    def test_the_wizard_shows_the_address_to_point_dns_at(self):
+        company = self.Company.create({"name": "Preview Shop"})
+        wizard = (
+            self.env["microsite.creation.wizard"]
+            .with_context(active_id=company.id)
+            .create({"company_id": company.id, "subdomain": "previewshop"})
+        )
+        self.assertEqual(
+            wizard.address,
+            "https://previewshop.canariasconectada.es",
+            "The operator must read the exact hostname before publishing.",
+        )
+
+    def test_the_wizard_refuses_a_company_that_already_has_a_site(self):
+        company = self.Company.create(
+            {"name": "Twice Shop", "microsite_subdomain": "twiceshop"}
+        )
+        wizard = (
+            self.env["microsite.creation.wizard"]
+            .with_context(active_id=company.id)
+            .create({"company_id": company.id, "subdomain": "twiceshop2"})
+        )
+        with self.assertRaises(UserError):
+            wizard.action_create_microsite()
+
+    def test_a_malformed_subdomain_is_rejected(self):
+        for bad in ("Neveri", "neveri.canariasconectada.es", "ne veri", "-neveri"):
+            with self.subTest(subdomain=bad), self.assertRaises(ValidationError):
+                self.Company.create({"name": f"Bad {bad}", "microsite_subdomain": bad})
+
+    def test_two_companies_cannot_share_a_subdomain(self):
+        self.Company.create({"name": "First Shop", "microsite_subdomain": "shared"})
+        with self.assertRaises(ValidationError):
+            self.Company.create(
+                {"name": "Second Shop", "microsite_subdomain": "shared"}
+            )
+
+    def test_auto_mode_writes_the_derived_subdomain_back(self):
+        """The record must say where the site answers, not just the regex."""
+        self.env["ir.config_parameter"].sudo().set_param(
+            "auto_microsite_generator.subdomain_mode", "auto"
+        )
+        company = self.Company.create({"name": "Derived Shop"})
+        self.assertEqual(company.microsite_subdomain, "derivedshop")
+        self.assertEqual(
+            company.microsite_address, "https://derivedshop.canariasconectada.es"
+        )
+
+    def test_auto_mode_does_not_lose_the_second_shop_of_a_clashing_name(self):
+        """Company names are unique; the subdomains derived from them are not.
+
+        Accents and punctuation are stripped on the way to a DNS label, so
+        two genuinely different shops collide -- and the second one must not
+        be the one left without a website.
+        """
+        self.env["ir.config_parameter"].sudo().set_param(
+            "auto_microsite_generator.subdomain_mode", "auto"
+        )
+        first = self.Company.create({"name": "Panadería Luz"})
+        second = self.Company.create({"name": "Panaderia Luz!"})
+        self.assertEqual(first.microsite_subdomain, "panaderialuz")
+        self.assertEqual(second.microsite_subdomain, "panaderialuz-2")
+        self.assertTrue(second.website_id, "The clash must not cost it its site.")
+
+    def test_an_unknown_mode_reads_as_ask(self):
+        """A typo must fail towards being asked, never towards publishing."""
+        self.env["ir.config_parameter"].sudo().set_param(
+            "auto_microsite_generator.subdomain_mode", "atuo"
+        )
+        company = self.Company.create({"name": "Typo Shop"})
+        self.assertFalse(company.website_id)

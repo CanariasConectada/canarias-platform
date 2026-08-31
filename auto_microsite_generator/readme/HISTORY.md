@@ -1,3 +1,30 @@
+## 19.0.2.0.0 (2026-08-31)
+
+Measured against website 221, the first microsite created after the cutover.
+It went live missing three things every migrated site has, and all three were
+generation bugs rather than data ones.
+
+* **The subdomain is now asked for, not guessed.** Creating a company no
+  longer publishes a website: it waits on the company form until somebody
+  names the subdomain through the new **Create Microsite** wizard, which also
+  shows the exact hostname to point DNS at. Website 221 was born on
+  `neveriobradorartesanalsociedad.canariasconectada.es` because a regular
+  expression chose it. New system parameter
+  `auto_microsite_generator.subdomain_mode` (`ask` by default, `auto` for
+  bulk imports).
+* **New field** `res.company.microsite_subdomain`, validated as a DNS label
+  and unique across companies, plus a computed `microsite_address`. In `auto`
+  mode the derived subdomain is written back to it, so the record says where
+  the site answers instead of that truth living only inside a regex; clashes
+  are suffixed (`panaderia-2`) rather than raised, so a second shop of the
+  same name still gets a site.
+* **Menu wording is seeded in every installed language.** "Comercio" out of
+  context is the noun, not the directory, and the machine translator returned
+  Trade / Handel / Commerce / Commercio on website 221. The estate wording of
+  Home, Shop and Directory is written on creation; `website_auto_translate`
+  then refuses to overwrite it on its own (`_may_overwrite`), so no coupling
+  between the two modules is needed.
+
 ## 19.0.1.1.0 (2026-07-10)
 
 Robustness fixes from the OCA audit:

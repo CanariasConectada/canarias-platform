@@ -5,7 +5,8 @@ import logging
 import re
 import unicodedata
 
-from odoo import _, api, models
+from odoo import _, api, fields, models
+from odoo.exceptions import ValidationError
 
 _logger = logging.getLogger(__name__)
 
@@ -26,6 +27,71 @@ ENABLE_PARAM = "auto_microsite_generator.enabled"
 # parameter is emptied on purpose the website is created without a domain
 # and a warning is logged (see _microsite_default_domain).
 DOMAIN_SUFFIX_PARAM = "auto_microsite_generator.domain_suffix"
+
+# How a brand-new company gets the subdomain its microsite lives on.
+#
+#   "ask"  -- nobody guesses it. The website is NOT provisioned when the
+#             company is created; the company form shows "Create microsite",
+#             which asks for the subdomain and hands back the exact hostname
+#             to point at the server. This is the default because DNS here is
+#             manual (there is no registrar API, and the wildcard is renewed
+#             by hand), so a site born on a hostname nobody registered is a
+#             dead link with a merchant attached to it.
+#   "auto" -- the historical behaviour: the subdomain is derived from the
+#             company name. Kept for bulk imports and for fixtures, where
+#             answering a question 200 times is not an option.
+#
+# A subdomain passed explicitly to ``create`` always provisions the site,
+# whatever the mode says: the caller has already answered the question.
+SUBDOMAIN_MODE_PARAM = "auto_microsite_generator.subdomain_mode"
+SUBDOMAIN_MODE_ASK = "ask"
+SUBDOMAIN_MODE_AUTO = "auto"
+
+# One DNS label: letters, digits and inner hyphens, 63 characters at most.
+# Deliberately stricter than DNS itself (no uppercase, no leading digit rule
+# bending) so what the operator types is exactly what ends up in the zone
+# file and in the certificate.
+SUBDOMAIN_RE = re.compile(r"^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$")
+
+# Wording of the three standard menu entries in every language the estate
+# publishes, taken verbatim from the live microsites (website 217).
+#
+# They are seeded on creation instead of being left to the machine
+# translator for one blunt reason: "Comercio" out of context is not the
+# directory, it is the noun, and every engine we tried returns
+# Trade/Handel/Commerce -- which is what website 221 shipped with. Seeding
+# also protects them for good: website_auto_translate refuses to overwrite a
+# language that already holds something other than the source string
+# (``_may_overwrite``), so no coupling between the two modules is needed.
+MENU_LABELS = {
+    "/": {
+        "es_ES": "Inicio",
+        "en_US": "Home",
+        "de_DE": "Home",
+        "fr_FR": "Accueil",
+        "it_IT": "Home",
+        "pl_PL": "Strona główna",
+        "pt_PT": "Início",
+    },
+    "/shop": {
+        "es_ES": "Tienda",
+        "en_US": "Shop",
+        "de_DE": "Shop",
+        "fr_FR": "Boutique",
+        "it_IT": "Negozio",
+        "pl_PL": "Sklep",
+        "pt_PT": "Loja",
+    },
+    "/comercio": {
+        "es_ES": "Comercio",
+        "en_US": "Directory",
+        "de_DE": "Verzeichnis",
+        "fr_FR": "Annuaire",
+        "it_IT": "Elenco",
+        "pl_PL": "Katalog",
+        "pt_PT": "Diretório",
+    },
+}
 
 # "Zonas Comerciales" dropdown created on every new microsite: the
 # navigation that ties the network together (from any merchant's website a
@@ -119,6 +185,73 @@ def _normalize_subdomain(name):
 class ResCompany(models.Model):
     _inherit = "res.company"
 
+    microsite_subdomain = fields.Char(
+        string="Microsite Subdomain",
+        copy=False,
+        index=True,
+        help=(
+            "The DNS label the microsite is published under, without the "
+            "domain: type 'neveri' and the site answers at "
+            "https://neveri.canariasconectada.es. Set it before the microsite "
+            "is created so the DNS record can be prepared first."
+        ),
+    )
+    microsite_address = fields.Char(
+        string="Microsite Address",
+        compute="_compute_microsite_address",
+        help="Full address the microsite answers at, built from the subdomain.",
+    )
+
+    @api.depends("microsite_subdomain")
+    def _compute_microsite_address(self):
+        suffix = self._microsite_domain_suffix()
+        for company in self:
+            subdomain = company.microsite_subdomain
+            company.microsite_address = (
+                f"https://{subdomain}{suffix}" if subdomain and suffix else ""
+            )
+
+    @api.constrains("microsite_subdomain")
+    def _check_microsite_subdomain(self):
+        """Reject anything that is not a usable DNS label, and duplicates.
+
+        Validated on the model rather than only in the wizard because the
+        field is editable on the company form and reachable from a shell: a
+        subdomain that DNS cannot express is a website nobody can visit, and
+        two companies sharing one is a website serving the wrong shop.
+        """
+        for company in self:
+            subdomain = company.microsite_subdomain
+            if not subdomain:
+                continue
+            if not SUBDOMAIN_RE.match(subdomain):
+                raise ValidationError(
+                    _(
+                        "'%(subdomain)s' is not a valid subdomain. Use lowercase "
+                        "letters, digits and hyphens only (no dots, no spaces, "
+                        "no accents), starting and ending with a letter or a "
+                        "digit — for example 'neveri' or 'panaderia-luz'.",
+                        subdomain=subdomain,
+                    )
+                )
+            clash = self.search(
+                [
+                    ("microsite_subdomain", "=", subdomain),
+                    ("id", "!=", company.id),
+                ],
+                limit=1,
+            )
+            if clash:
+                raise ValidationError(
+                    _(
+                        "The subdomain '%(subdomain)s' is already used by "
+                        "%(company)s. Two microsites cannot answer at the same "
+                        "address.",
+                        subdomain=subdomain,
+                        company=clash.display_name,
+                    )
+                )
+
     # ------------------------------------------------------------------
     # Company creation hook
     # ------------------------------------------------------------------
@@ -127,16 +260,33 @@ class ResCompany(models.Model):
         companies = super().create(vals_list)
         if not self._auto_microsite_is_enabled():
             return companies
+        # In "ask" mode a company whose subdomain nobody named is created
+        # WITHOUT a website: the operator names it from the company form,
+        # after the DNS record exists. Decided per record, not per batch, so a
+        # mixed import still works -- rows carrying a subdomain are
+        # provisioned, the rest wait. ``companies`` itself is never narrowed:
+        # every company created must come back to the caller.
+        to_build = companies
+        if self._microsite_subdomain_mode() == SUBDOMAIN_MODE_ASK:
+            to_build = companies.filtered("microsite_subdomain")
+            for company in companies - to_build:
+                _logger.info(
+                    "No subdomain for %s: the microsite waits until one is "
+                    "named on the company form (subdomain_mode=ask).",
+                    company.display_name,
+                )
+        if not to_build:
+            return companies
         # Record rules would hide the brand-new companies (they are not in
         # allowed_company_ids yet) while we build their websites, so widen the
         # context for the generation pass only.
         allowed = list(
             self.env.context.get("allowed_company_ids") or self.env.companies.ids
         )
-        new_ids = [company.id for company in companies if company.id not in allowed]
-        generation = companies
+        new_ids = [company.id for company in to_build if company.id not in allowed]
+        generation = to_build
         if new_ids:
-            generation = companies.with_context(allowed_company_ids=allowed + new_ids)
+            generation = to_build.with_context(allowed_company_ids=allowed + new_ids)
         for company in generation:
             # A microsite failure must NEVER abort the company creation. Each
             # generation runs in its own savepoint so a partial write is rolled
@@ -244,6 +394,30 @@ class ResCompany(models.Model):
         value = self.env["ir.config_parameter"].sudo().get_param(ENABLE_PARAM, "True")
         return str(value).strip().lower() not in ("false", "0", "")
 
+    @api.model
+    def _microsite_subdomain_mode(self):
+        """``ask`` (default) or ``auto`` -- see :data:`SUBDOMAIN_MODE_PARAM`.
+
+        Anything the parameter holds other than ``auto`` reads as ``ask``:
+        the failure mode of a typo should be "you were asked", never "a
+        website appeared on a hostname nobody registered".
+        """
+        value = (
+            self.env["ir.config_parameter"]
+            .sudo()
+            .get_param(SUBDOMAIN_MODE_PARAM, SUBDOMAIN_MODE_ASK)
+        )
+        value = str(value).strip().lower()
+        return (
+            SUBDOMAIN_MODE_AUTO
+            if value == SUBDOMAIN_MODE_AUTO
+            else (SUBDOMAIN_MODE_ASK)
+        )
+
+    @api.model
+    def _microsite_domain_suffix(self):
+        return self.env["ir.config_parameter"].sudo().get_param(DOMAIN_SUFFIX_PARAM, "")
+
     def _microsite_is_protected(self):
         self.ensure_one()
         name = (self.name or "").lower()
@@ -321,10 +495,17 @@ class ResCompany(models.Model):
         return website
 
     def _microsite_default_domain(self):
+        """The address the new website is born on.
+
+        The subdomain comes from the field when it is set -- somebody named
+        it, and that name is what DNS was pointed at. Only in ``auto`` mode is
+        one derived from the company name, and it is written back to the field
+        straight away: from then on the record itself tells the truth about
+        where the site answers, instead of that truth living only inside a
+        regular expression.
+        """
         self.ensure_one()
-        suffix = (
-            self.env["ir.config_parameter"].sudo().get_param(DOMAIN_SUFFIX_PARAM, "")
-        )
+        suffix = self._microsite_domain_suffix()
         if not suffix:
             _logger.warning(
                 "Config parameter %s is empty: the website of %s is created "
@@ -334,7 +515,30 @@ class ResCompany(models.Model):
                 self.display_name,
             )
             return ""
-        return f"https://{_normalize_subdomain(self.name)}{suffix}"
+        subdomain = self.microsite_subdomain
+        if not subdomain:
+            subdomain = self._microsite_free_subdomain(_normalize_subdomain(self.name))
+            self.microsite_subdomain = subdomain
+        return f"https://{subdomain}{suffix}"
+
+    def _microsite_free_subdomain(self, base):
+        """``base``, or ``base-2``, ``base-3``... until no company holds it.
+
+        Only ever reached in ``auto`` mode. Two merchants whose names
+        normalise to the same label is not exotic -- there are several
+        "Panaderia" in the estate -- and letting the uniqueness constraint
+        fire there would leave the second one with no site at all. In ``ask``
+        mode the operator gets a plain error instead, because a silently
+        renamed hostname is not something to discover from DNS.
+        """
+        self.ensure_one()
+        candidate, suffix_number = base, 1
+        while self.search_count(
+            [("microsite_subdomain", "=", candidate), ("id", "!=", self.id)]
+        ):
+            suffix_number += 1
+            candidate = f"{base[:58]}-{suffix_number}"
+        return candidate
 
     # ------------------------------------------------------------------
     # Menu (create-only, never destructive)
@@ -381,7 +585,7 @@ class ResCompany(models.Model):
                 limit=1,
             )
             if not exists:
-                Menu.create(
+                menu = Menu.create(
                     {
                         "name": label,
                         "url": url,
@@ -390,9 +594,33 @@ class ResCompany(models.Model):
                         "sequence": sequence,
                     }
                 )
+                self._seed_menu_translations(menu, url)
         self._ensure_zone_menu_dropdown(Menu, website, root)
         if prune_defaults:
             self._prune_stock_menus(Menu, website)
+
+    def _seed_menu_translations(self, menu, url):
+        """Write the estate wording of ``menu`` in every installed language.
+
+        Machine translation has no way to know that "Comercio" is the name of
+        the directory and not the noun: it returns Trade, Handel, Commerce,
+        and website 221 went live saying exactly that. The wording of these
+        three entries is settled across 206 live microsites, so it is written
+        here rather than guessed there.
+
+        Only languages actually installed are written -- writing a language
+        Odoo does not know raises -- and the base language is left to the
+        ``name`` the menu was created with, which core already resolved
+        through the module translations.
+        """
+        self.ensure_one()
+        labels = MENU_LABELS.get(url)
+        if not labels:
+            return
+        installed = {lang[0] for lang in self.env["res.lang"].get_installed()}
+        for lang, label in labels.items():
+            if lang in installed:
+                menu.with_context(lang=lang).name = label
 
     def _ensure_zone_menu_dropdown(self, Menu, website, root):
         """Create the "Zonas Comerciales" dropdown when it is missing.
