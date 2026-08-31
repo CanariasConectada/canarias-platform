@@ -1,3 +1,18 @@
+## 19.0.2.5.0 (2026-08-31)
+
+Two blocks that all 206 migrated microsites carry hardcoded in their own
+homepage were missing from the shared template, so a microsite created from
+it was born without them (website 221 was):
+
+* **Zona Comercial** — the cross-link back to the directory. Without it a new
+  microsite had no way in to `/comercio` from its homepage at all. The
+  heading is sentence case, not the migrated ALL CAPS: LibreTranslate returns
+  `_` for shouted input.
+* **Subvenciones** — the funding disclosure strip. Not decoration: the grant
+  requires the emblem next to the mention of the fund on public pages, and
+  209 of the 211 live sites carry it. Shipped as a module asset instead of
+  pointing at the migration attachment id, which only exists in production.
+
 ## 19.0.1.3.0 (2026-07-23)
 
 * Rescued the last visual corrections that only existed in the legacy

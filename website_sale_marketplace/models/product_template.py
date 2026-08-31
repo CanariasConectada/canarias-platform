@@ -105,6 +105,44 @@ class ProductTemplate(models.Model):
             return Domain("is_published", "=", True)
         return super()._search_website_published(operator, value)
 
+    def can_access_from_current_website(self, website_id=False):
+        """You can open what the shop lists. Nothing more, nothing less.
+
+        THE BUG THIS FIXES. Everything above widens the LISTING: the compute
+        and the search counterpart drop the per-website pin so the aggregated
+        shop can show a product a merchant pinned to their own site. The
+        PRODUCT PAGE was never widened, and it is not the controller that
+        decides it -- ``website/models/ir_http.py::_pre_dispatch`` calls this
+        method on every record the URL converter resolved, and raises 404 when
+        it says no. Core's answer is a bare
+        ``record.website_id in (False, current)``, which is exactly the pin.
+
+        So the portal and the three zone shops listed 1576 products, linked to
+        every one of them, and 759 of the 1122 published ones answered 404 --
+        two thirds of the aggregated catalogue, dead on click. Measured in
+        production on 2026-08-16.
+
+        The answer is not a second rule about who may see what. It is the
+        SAME domain the shop itself uses: if ``sale_product_domain()`` lists
+        it here, its page opens here. The two can no longer drift, because
+        there is only one of them.
+
+        ``website_id`` given explicitly is left to core: that argument is used
+        by callers asking about a website other than the current one (the
+        sitemap, mostly), and answering those with "the current shop's domain"
+        would be answering a different question.
+        """
+        if website_id or not self:
+            return super().can_access_from_current_website(website_id)
+        website = self.env["website"].get_current_website()
+        if not website.is_marketplace:
+            return super().can_access_from_current_website(website_id)
+        # Built as the visitor, not as sudo: `sale_product_domain` drops the
+        # published check for internal users, and this must keep refusing an
+        # unpublished product to the public.
+        domain = Domain(website.sale_product_domain()) & Domain("id", "in", self.ids)
+        return len(self.with_context(website_id=website.id).search(domain)) == len(self)
+
     @api.model
     def _wsm_sweep_orphaned_marketplace_links(self):
         """Remove portal/zone marketplace links from products whose every
@@ -149,8 +187,8 @@ class ProductTemplate(models.Model):
         if self.env.cr.rowcount:
             self.invalidate_model(["company_ids"])
             _logger.info(
-                "Marketplace links swept from %s product(s) of retired "
-                "merchants", self.env.cr.rowcount,
+                "Marketplace links swept from %s product(s) of retired " "merchants",
+                self.env.cr.rowcount,
             )
 
     @api.model_create_multi

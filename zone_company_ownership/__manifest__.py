@@ -3,8 +3,8 @@
 
 {
     "name": "Zone Company Ownership",
-    "summary": "A merchant's products and users also belong to their zone company",
-    "version": "19.0.1.1.0",
+    "summary": "A merchant's products also belong to their zone company",
+    "version": "19.0.2.0.0",
     "author": "Canarias Conectada",
     "website": "https://github.com/CanariasConectada/canarias-platform",
     "category": "Multi Company",

@@ -51,10 +51,18 @@
                 t-set="chat_menu_url"
                 t-value="website and website._chat_menu_url()"
             />
-            <li t-if="chat_menu_url" class="nav-item o_cc_chat_menu_item">
+            <!-- In the mobile offcanvas the <ul> carries mx-n3 and every core
+                 item pushes back with p-3 on its link (`is_vertical_nav`,
+                 website_templates.xml:424-431); without the same classes this
+                 entry hangs out of the panel's left edge, which is exactly
+                 how it shipped the first time. -->
+            <li
+                t-if="chat_menu_url"
+                t-attf-class="nav-item o_cc_chat_menu_item #{is_vertical_nav and 'border-top' or ''}"
+            >
                 <a
                     t-att-href="chat_menu_url"
-                    class="nav-link o_cc_chat_menu_link"
+                    t-attf-class="nav-link o_cc_chat_menu_link #{is_vertical_nav and 'p-3 text-wrap' or ''}"
                 >Comunidad</a>
             </li>
         </xpath>
@@ -166,13 +174,26 @@
                     in the DOM subscribes to nothing.
                 -->
                 <div
-                    class="container py-4 o_cc_chat"
+                    t-attf-class="container py-4 o_cc_chat #{'o_cc_chat_framed' if chat_in_frame else ''}"
                     t-att-data-channel-id="channel.id"
+                    t-att-data-support="'1' if is_support else None"
                 >
-                    <a href="/chat" class="small text-muted d-inline-block mb-2">
+                    <!-- Inside the floating window there is nowhere sensible
+                         for this link to go: the channel list is a full page
+                         and would render, chrome and all, in a 380px box. -->
+                    <a
+                        t-if="not chat_in_frame"
+                        href="/chat"
+                        class="small text-muted d-inline-block mb-2"
+                    >
                         ← Todos los canales
                     </a>
-                    <h1 class="h4 mb-1" t-out="channel.name" />
+                    <!-- The support page renders BEFORE its conversation
+                         exists: the first message opens it (no `channel`,
+                         no `data-channel-id`), so the heading needs a name
+                         of its own. -->
+                    <h1 class="h4 mb-1" t-if="channel" t-out="channel.name" />
+                    <h1 class="h4 mb-1" t-else="">Soporte</h1>
                     <p class="text-muted small" t-out="channel.description" />
 
                     <div class="o_cc_chat_messages mt-3">
@@ -209,6 +230,116 @@
                     <div class="o_cc_chat_pending_zone">
                         <t t-call="website_pwa_chat.chat_pending" />
                     </div>
+
+                    <!-- Who are you? Asked only on the support line, only of a
+                         visitor who has not answered yet, and never as a wall
+                         in front of the conversation: the composer below is
+                         usable whether or not this is filled in.
+
+                         It buys something concrete and the copy says what:
+                         an anonymous conversation is deleted a week after it
+                         goes quiet, an identified one a month. Asking for a
+                         name without saying why is how forms get ignored. -->
+                    <t t-if="is_support and show_identify">
+                        <form
+                            class="o_cc_chat_identify card border-0 shadow-sm mt-3"
+                            action="/chat/soporte/identificarme"
+                            method="post"
+                        >
+                            <input
+                                type="hidden"
+                                name="csrf_token"
+                                t-att-value="request.csrf_token()"
+                            />
+                            <!-- So the redirect after saving lands back
+                                 inside the floating window, not on the full
+                                 page nested in it. -->
+                            <input
+                                t-if="chat_in_frame"
+                                type="hidden"
+                                name="frame"
+                                value="1"
+                            />
+                            <div class="card-body">
+                                <!-- One sentence, built on the server. Written
+                                     inline it exported as four fragments
+                                     ("…guardamos esta conversación", "días en
+                                     vez de", ".") because QWeb cuts a text
+                                     node at every element boundary, and a
+                                     translator cannot do anything useful with
+                                     "días en vez de" on its own. -->
+                                <p class="mb-2 small">
+                                    <i class="fa fa-user-o me-1" title="Identificarse" role="img" aria-label="Identificarse"/>
+                                    <t t-out="identify_pitch"/>
+                                </p>
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-12 col-sm-5">
+                                        <label
+                                            class="form-label small mb-1"
+                                            for="o_cc_identify_name"
+                                        >Tu nombre</label>
+                                        <input
+                                            id="o_cc_identify_name"
+                                            class="form-control form-control-sm"
+                                            type="text"
+                                            name="name"
+                                            maxlength="120"
+                                            required="required"
+                                            autocomplete="name"
+                                        />
+                                    </div>
+                                    <div class="col-12 col-sm-5">
+                                        <label
+                                            class="form-label small mb-1"
+                                            for="o_cc_identify_email"
+                                        >Correo (opcional)</label>
+                                        <input
+                                            id="o_cc_identify_email"
+                                            class="form-control form-control-sm"
+                                            type="email"
+                                            name="email"
+                                            maxlength="120"
+                                            autocomplete="email"
+                                        />
+                                    </div>
+                                    <div class="col-12 col-sm-2">
+                                        <button
+                                            type="submit"
+                                            class="btn btn-primary btn-sm w-100"
+                                        >Guardar</button>
+                                    </div>
+                                </div>
+                                <!-- The step up from a name: an account. One
+                                     standalone sentence plus two links whose
+                                     labels already exist verbatim on /chat,
+                                     so translators meet nothing new but the
+                                     sentence. target="_top" because inside
+                                     the floating window the signup page must
+                                     take over the whole tab, not render
+                                     nested in a 380px box; on the full page
+                                     _top is simply the page itself. -->
+                                <p class="small text-muted mt-2 mb-0 o_cc_chat_identify_signup">
+                                    Y con una cuenta, ni eso: tus mensajes se
+                                    publican al instante, sin esperar revisión.
+                                    <a
+                                        t-att-href="register_url"
+                                        target="_top"
+                                    >Crear mi cuenta</a>
+                                    <a
+                                        class="ms-2"
+                                        t-att-href="login_url"
+                                        target="_top"
+                                    >Ya tengo cuenta</a>
+                                </p>
+                            </div>
+                        </form>
+                    </t>
+                    <t t-if="is_support and not show_identify and channel.support_visitor_name">
+                        <p class="small text-muted mt-3 o_cc_chat_identified">
+                            <i class="fa fa-check me-1" title="Identificado" role="img" aria-label="Identificado"/>
+                            <t t-out="identify_greeting"/>
+                        </p>
+                    </t>
 
                     <!-- No `action` and no `method`: the interaction cancels
                          the submit, and if the bundle ever fails to load the
@@ -293,18 +424,148 @@
                             el canal de tu barrio. Es gratis y se hace en un
                             minuto.
                         </p>
+                        <!-- target="_top": this fragment also renders inside
+                             the floating window's iframe, and signing up is a
+                             whole-tab affair. On the full page _top is the
+                             page itself, so nothing changes there. -->
                         <a
                             class="btn btn-primary btn-sm"
                             t-att-href="register_url"
+                            target="_top"
                         >Crear mi cuenta</a>
                         <a
                             class="btn btn-link btn-sm"
                             t-att-href="login_url"
+                            target="_top"
                         >Ya tengo cuenta</a>
                     </t>
                 </div>
             </div>
         </t>
+    </template>
+
+    <!-- ================================================================
+         The floating button, and the window it opens
+         ================================================================
+
+         The one control a visitor looks for when they want to ask something.
+         What used to be there was Odoo's live chat, and with nobody connected
+         it answered "no operator is available, try again later": a bubble
+         whose only job was to say no. Its six agents are real, but a platform
+         of 218 shops has nobody sitting in a console, so "no operator" is the
+         normal state, not the exception.
+
+         This one needs nobody connected, and since 19.0.5.0.0 it does not
+         navigate away either: it opens the support conversation in a floating
+         window over the page the visitor was reading. The window is an
+         <iframe> onto /chat/soporte?frame=1 — the SAME page, chrome
+         stripped — so the composer, the identify card, the moderation notice
+         and the live catch-up exist exactly once.
+
+         THE IFRAME LOADS NOTHING UNTIL THE BUTTON IS PRESSED. Its URL sits
+         in data-src and the interaction promotes it to src on first open.
+         This is not an optimisation: /chat/soporte creates a guest and a
+         conversation for whoever knocks, so an eager iframe would open one
+         empty support conversation PER PAGE VIEW across all 218 sites —
+         the smoke-test flood of 2026-08-17, industrialised.
+
+         The button carries the URL in data-href, not href: the interaction
+         arrives in the lazy frontend bundle, and a real href on an unbound
+         fab means a tap navigates away (and opens a guest conversation
+         server-side). A <noscript> twin keeps the real link for the
+         no-JavaScript visitor.
+
+         `_chat_support_url()` gates it on the same opt-in as the menu entry
+         and builds an absolute URL on the sites that only link to the chat,
+         so the three neighbourhood portals reach it on its own subdomain.
+         The iframe inherits that: loading the portal's page cross-subdomain
+         is fine because both live under the same registrable domain, and the
+         chat page sends no frame-blocking header (verified: no
+         X-Frame-Options, no frame-ancestors on /chat/soporte).
+
+         `not chat_in_frame`: the page inside the window inherits this very
+         layout, and a support button inside the support window would recurse.
+    -->
+    <template
+        id="chat_support_bubble"
+        inherit_id="website.layout"
+        name="Soporte: botón flotante"
+    >
+        <xpath expr="//div[@id='wrapwrap']" position="inside">
+            <t
+                t-set="chat_support_url"
+                t-value="website and website._chat_support_url()"
+            />
+            <div
+                t-if="chat_support_url and not chat_in_frame"
+                class="o_cc_chat_fab_zone d-print-none"
+            >
+                <section
+                    class="o_cc_chat_window d-none"
+                    aria-label="Chat de soporte"
+                >
+                    <header class="o_cc_chat_window_head">
+                        <span class="fw-bold">
+                            <i class="fa fa-comments me-2" aria-hidden="true"/>Soporte
+                        </span>
+                        <button
+                            type="button"
+                            class="btn-close btn-close-white o_cc_chat_window_close"
+                            aria-label="Cerrar el chat"
+                        ></button>
+                    </header>
+                    <!-- Explicitly closed for the same reason as the
+                         composer's <textarea>: self-closed is legal XML and
+                         illegal HTML, and the browser would swallow the rest
+                         of the document into the frame. -->
+                    <iframe
+                        class="o_cc_chat_window_frame"
+                        title="Chat de soporte"
+                        t-att-data-src="chat_support_url + '?frame=1'"
+                    >&#160;</iframe>
+                </section>
+                <!-- data-href, not href: the interaction lives in the LAZY
+                     frontend bundle, and until it binds a real href makes the
+                     fab a plain link: a tap navigates away and /chat/soporte
+                     creates a guest server-side for every such tap. With the
+                     URL parked in data-href an unbound fab does nothing, and
+                     the <noscript> twin below keeps the no-JavaScript path.
+                     role="button" + tabindex="0" keep it focusable and honest
+                     now that it is no longer a link. -->
+                <a
+                    t-att-data-href="chat_support_url"
+                    class="o_cc_chat_fab"
+                    role="button"
+                    tabindex="0"
+                    aria-label="Hablar con soporte"
+                    aria-haspopup="dialog"
+                    title="Hablar con soporte"
+                >
+                    <i class="fa fa-comments" aria-hidden="true"/>
+                    <span class="o_cc_chat_fab_text">Soporte</span>
+                </a>
+                <!-- With JavaScript off the interaction never hides the dead
+                     fab above, so this <style> does, and the real link takes
+                     its place. <noscript> in <body> may carry <style> and
+                     <a> alike. -->
+                <noscript>
+                    <style>
+                        .o_cc_chat_fab[data-href] {
+                            display: none;
+                        }
+                    </style>
+                    <a
+                        t-att-href="chat_support_url"
+                        class="o_cc_chat_fab"
+                        aria-label="Hablar con soporte"
+                        title="Hablar con soporte"
+                    >
+                        <i class="fa fa-comments" aria-hidden="true"/>
+                        <span class="o_cc_chat_fab_text">Soporte</span>
+                    </a>
+                </noscript>
+            </div>
+        </xpath>
     </template>
 
 </odoo>

@@ -174,6 +174,17 @@ class TestDirectoryEntrySync(TransactionCase):
         entry = self._get_entry(self.company)
         self.assertEqual(entry.website_url, "https://wd-site.example.com")
 
+    def test_own_microsite_outranks_partner_website(self):
+        # The merchant typed their external site on the contact card, but
+        # the directory must send visitors to the platform microsite.
+        website = self.env["website"].create(
+            {"name": "WD Own Site", "domain": "https://wd-own.example.com"}
+        )
+        self.company.website_id = website
+        self.company.write({"website": "https://wd-external.example.com"})
+        entry = self._get_entry(self.company)
+        self.assertEqual(entry.website_url, "https://wd-own.example.com")
+
     # ------------------------------------------------------------------
     # Async behaviour: create/write flag pending, the cron drains it
     # ------------------------------------------------------------------

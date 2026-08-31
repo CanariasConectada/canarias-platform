@@ -78,6 +78,42 @@ class TestLoginLoader(HttpCase):
         self.assertIn(".o_cc_skel { display: none; }", self.page)
         self.assertIn("html.o_cc_skel_on .o_cc_skel { display: block; }", self.page)
 
+    def test_load_alone_does_not_take_the_skeleton_down(self):
+        """The gap the user photographed on 2026-08-17.
+
+        `load` means every resource arrived, not that the page has anything to
+        show: Odoo boots its module system after it, so the account picker
+        mounts later and core leaves the form `d-none` until then. Removing
+        the skeleton on `load` regardless left a blank card between the logo
+        and "o continúa como invitado" -- precisely the wait this module
+        exists to cover.
+
+        Asserted on the source because the behaviour is a race no HTTP test
+        can observe: what has to be true is that the `load` handler asks
+        `ready()` first instead of calling `done()` outright.
+
+        Anchored on `setTimeout(done, MAX_WAIT)` rather than on the listener
+        itself: the page carries TWO `load` listeners -- the top progress bar
+        registers one as well -- and splitting on that string picks whichever
+        comes first, which is not this one.
+        """
+        handler = self.page.split("setTimeout(done, MAX_WAIT)")[1][:1400]
+        self.assertIn("ready()", handler)
+        self.assertNotIn(
+            "requestAnimationFrame(done)",
+            handler,
+            "load may finish the wait early, it may not declare it over",
+        )
+
+    def test_the_wait_still_has_a_backstop(self):
+        """A loader that never stops is worse than one that stops too soon.
+
+        With `load` no longer sufficient, the timeout is the only thing left
+        guaranteeing the skeleton comes down if the boot never completes.
+        """
+        self.assertIn("MAX_WAIT", self.page)
+        self.assertIn("setTimeout(done, MAX_WAIT)", self.page)
+
     def test_the_skeleton_never_hides_the_real_form(self):
         """The one rule that keeps this from locking anybody out.
 

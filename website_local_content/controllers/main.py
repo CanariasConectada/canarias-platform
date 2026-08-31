@@ -2,14 +2,21 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 import uuid
-from urllib.parse import urlsplit
+from urllib.parse import urlencode, urlsplit
 
 from odoo import http
 from odoo.fields import Domain
 from odoo.http import request
 
 PPG = 12
+# Page sizes the visitor may pick in the sidebar (legacy 12/24/48 selector).
+# Anything else in ?limit= silently falls back to the default.
+PPG_OPTIONS = (12, 24, 48)
+# SQL order of each public sort option. "rating" has no SQL order because
+# the rating average is a non-stored compute: it is sorted in Python (see
+# content_index), which is fine at the catalog sizes of these verticals.
 SORT_OPTIONS = {
+    "rating": None,
     "newest": "create_date desc, id desc",
     "oldest": "create_date asc, id asc",
     "likes": "like_count desc, id desc",
@@ -17,6 +24,12 @@ SORT_OPTIONS = {
     "year_desc": "photo_year desc, id desc",
 }
 DEFAULT_SORT = "newest"
+# Public image variants (image.mixin pre-computed fields): the grid cards
+# request 512, the detail page 1024, everything else gets the full 1920.
+IMAGE_SIZE_FIELDS = {
+    "512": "image_512",
+    "1024": "image_1024",
+}
 LIKE_COOKIE = "wlc_session"
 LIKE_COOKIE_MAX_AGE = 365 * 24 * 60 * 60  # One year, as the legacy default.
 
@@ -122,6 +135,11 @@ class WebsiteLocalContent(http.Controller):
         except (TypeError, ValueError):
             return None
 
+    def _sanitize_ppg(self, value):
+        """Page size from ?limit=, whitelisted to the legacy 12/24/48."""
+        ppg = self._sanitize_int(value)
+        return ppg if ppg in PPG_OPTIONS else PPG
+
     def _get_visitor_session_key(self):
         return request.httprequest.cookies.get(LIKE_COOKIE)
 
@@ -166,6 +184,7 @@ class WebsiteLocalContent(http.Controller):
         decade = self._sanitize_int(kw.get("decade"))
         search = (kw.get("search") or "").strip()
         sort = kw.get("sort") if kw.get("sort") in SORT_OPTIONS else DEFAULT_SORT
+        ppg = self._sanitize_ppg(kw.get("limit"))
 
         item_model = request.env["website.local.content.item"].sudo()
         domain = self._get_search_domain(
@@ -175,21 +194,40 @@ class WebsiteLocalContent(http.Controller):
         base_url = f"/explora/{content_type.url_slug}"
         if category_id:
             base_url += f"/categoria/{category_id}"
+        # Query args every pagination link must carry over (the category
+        # travels in the path, the page number in the pager itself).
+        query_args = {
+            "search": search or None,
+            "subcategory": subcategory_id,
+            "decade": decade,
+            "sort": sort if sort != DEFAULT_SORT else None,
+            "limit": ppg if ppg != PPG else None,
+        }
         pager = request.website.pager(
             url=base_url,
             total=items_count,
             page=page,
-            step=PPG,
-            url_args={
-                "search": search or None,
-                "subcategory": subcategory_id,
-                "decade": decade,
-                "sort": sort if sort != DEFAULT_SORT else None,
-            },
+            step=ppg,
+            url_args=query_args,
         )
-        items = item_model.search(
-            domain, order=SORT_OPTIONS[sort], limit=PPG, offset=pager["offset"]
-        )
+        order = SORT_OPTIONS[sort]
+        if order:
+            items = item_model.search(
+                domain, order=order, limit=ppg, offset=pager["offset"]
+            )
+        else:
+            # Best rated: the rating average is a non-stored compute, so it
+            # cannot feed a SQL ORDER BY. Sorting the full match in Python
+            # is fine at the catalog sizes of these verticals (hundreds).
+            items = item_model.search(domain).sorted(
+                key=lambda item: (
+                    item.rating_avg,
+                    item.rating_count,
+                    item.like_count,
+                    -item.id,
+                ),
+                reverse=True,
+            )[pager["offset"] : pager["offset"] + ppg]
         session_key = self._get_visitor_session_key()
         liked_item_ids = []
         if session_key:
@@ -220,6 +258,23 @@ class WebsiteLocalContent(http.Controller):
                 "liked_item_ids": liked_item_ids,
                 "base_url": base_url,
                 "index_url": f"/explora/{content_type.url_slug}",
+                "ppg": ppg,
+                "ppg_options": PPG_OPTIONS,
+                # The pager clamps out-of-range page numbers from the URL.
+                "page": pager["page"]["num"],
+                "total_pages": pager["page_count"],
+                # Query string (no leading "?") every page link preserves.
+                "page_qs": urlencode(
+                    {key: value for key, value in query_args.items() if value}
+                ),
+                "has_active_filters": bool(
+                    search
+                    or category_id
+                    or subcategory_id
+                    or decade
+                    or sort != DEFAULT_SORT
+                    or ppg != PPG
+                ),
             },
         )
 
@@ -291,7 +346,32 @@ class WebsiteLocalContent(http.Controller):
             if not gallery_image:
                 return request.not_found()
             record = gallery_image
-        stream = request.env["ir.binary"]._get_image_stream_from(record, "image_1920")
+        field_name = IMAGE_SIZE_FIELDS.get(kw.get("size"), "image_1920")
+        stream = request.env["ir.binary"]._get_image_stream_from(record, field_name)
+        return stream.get_response()
+
+    @http.route(
+        "/explora/<string:type_slug>/type-img/<string:field_name>",
+        type="http",
+        auth="public",
+        website=True,
+        sitemap=False,
+    )
+    def content_type_image(self, type_slug, field_name, **kw):
+        """Hero image or sponsor logo of a content type.
+
+        Streamed here (like the item images) instead of ``/web/image`` so
+        public visitors never depend on model-level binary access rules.
+        Only the two public image fields are reachable.
+        """
+        if field_name not in ("hero_image", "sponsor_logo"):
+            return request.not_found()
+        content_type = self._get_content_type(type_slug)
+        if not content_type[field_name]:
+            return request.not_found()
+        stream = request.env["ir.binary"]._get_image_stream_from(
+            content_type, field_name
+        )
         return stream.get_response()
 
     # ------------------------------------------------------------------

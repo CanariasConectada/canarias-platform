@@ -34,23 +34,51 @@
     <!-- Sidebar filter card in the extension hook. -->
     <template id="directory_sidebar_certification" inherit_id="website_directory.directory_sidebar_extra">
         <xpath expr="//div[@id='o_wd_sidebar_extra']" position="inside">
-            <div t-if="certification_types" class="card border-0 shadow-sm mb-3">
+            <div t-if="certification_types" class="card border-0 shadow-sm mb-3 o_wdcc_filter">
                 <div class="card-body">
                     <h6 class="card-title fw-bold mb-3">
                         <i class="fa fa-certificate me-2"/>Certifications
                     </h6>
                     <div class="d-flex flex-column gap-2">
                         <t t-foreach="certification_types" t-as="cert_type">
-                            <a t-attf-href="{{ base_url }}?certification={{ '' if selected_certification == cert_type.code else cert_type.code }}"
-                               t-attf-class="btn btn-sm text-start {{
+                            <a t-att-href="certification_urls.get(cert_type.code)"
+                               t-attf-class="wd-filter-link btn btn-sm text-start d-flex align-items-center justify-content-between {{
                                    'btn-primary' if selected_certification == cert_type.code else 'btn-outline-secondary'
-                               }}">
+                               }}"
+                               t-att-aria-pressed="'true' if selected_certification == cert_type.code else 'false'"
+                               t-att-aria-label="('Quitar filtro %s' % cert_type.name) if selected_certification == cert_type.code else None">
                                 <t t-esc="cert_type.name"/>
+                                <!-- The selected chip toggles OFF on click; the
+                                     cross is what tells the visitor so. Flex
+                                     alignment, not `float-end` + a margin
+                                     guess: the float used to sit the cross
+                                     low and off-centre against the label
+                                     (reported 2026-08-21). -->
+                                <i t-if="selected_certification == cert_type.code"
+                                   class="fa fa-times ms-2"
+                                   role="presentation"/>
                             </a>
                         </t>
                     </div>
                 </div>
             </div>
+        </xpath>
+    </template>
+
+    <!-- Top active-filters summary chip. -->
+    <template id="directory_active_filters_certification" inherit_id="website_directory.directory_active_filters_extra">
+        <xpath expr="//span[@id='o_wd_active_filters_extra']" position="inside">
+            <t t-if="selected_certification">
+                <t t-set="selected_certification_type"
+                   t-value="request.env['certification.type'].sudo().search([('code', '=', selected_certification)], limit=1)"/>
+                <span t-if="selected_certification_type" class="badge bg-primary wd-filter-chip d-inline-flex align-items-center">
+                    <i class="fa fa-certificate me-1"/>
+                    <t t-esc="selected_certification_type.name"/>
+                    <a t-att-href="certification_urls.get(selected_certification)"
+                       class="wd-filter-link wd-filter-chip-x"
+                       t-attf-aria-label="Quitar filtro {{ selected_certification_type.name }}">×</a>
+                </span>
+            </t>
         </xpath>
     </template>
 </odoo>

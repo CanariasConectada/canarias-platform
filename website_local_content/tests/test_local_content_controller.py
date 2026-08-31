@@ -204,3 +204,106 @@ class TestLocalContentController(HttpCase):
             response = self.url_open(legacy, allow_redirects=False)
             self.assertEqual(response.status_code, 301)
             self.assertTrue(response.headers["Location"].endswith(target))
+
+    # ------------------------------------------------------------------
+    # Legacy design port: page size, sorts, hero, sponsor band
+    # ------------------------------------------------------------------
+    def _create_bulk_items(self, count):
+        Item = self.env["website.local.content.item"]
+        return Item.create(
+            [
+                {
+                    "name": f"WLC Bulk Item {index:02d}",
+                    "type_id": self.type_a.id,
+                    "category_id": self.category_a.id,
+                    "state": "approved",
+                    "is_published": True,
+                }
+                for index in range(1, count + 1)
+            ]
+        )
+
+    def test_limit_whitelist(self):
+        """?limit= only honours 12/24/48; anything else falls back to 12."""
+        self._create_bulk_items(13)
+        # 14 visible items, default sort is id-descending: the oldest bulk
+        # item overflows to page 2 with the default page size of 12.
+        response = self.url_open(self.index_url)
+        self.assertNotIn("WLC Bulk Item 01", response.text)
+        self.assertIn('class="pagination', response.text)
+        # An allowed larger page size shows everything on page 1.
+        response = self.url_open(f"{self.index_url}?limit=24")
+        self.assertIn("WLC Bulk Item 01", response.text)
+        self.assertIn("WLC Public Cinema", response.text)
+        # A value outside the whitelist behaves exactly like the default.
+        for bad_limit in ("7", "0", "-5", "1000", "abc"):
+            response = self.url_open(f"{self.index_url}?limit={bad_limit}")
+            self.assertEqual(response.status_code, 200)
+            self.assertNotIn("WLC Bulk Item 01", response.text)
+
+    def test_pager_preserves_query_string(self):
+        self._create_bulk_items(13)
+        response = self.url_open(f"{self.index_url}?search=WLC")
+        self.assertIn("/page/2?search=WLC#entries_grid", response.text)
+
+    def test_sort_options_ok(self):
+        for sort in ("rating", "likes", "newest", "oldest"):
+            response = self.url_open(f"{self.index_url}?sort={sort}")
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("WLC Public Cinema", response.text)
+
+    def test_image_size_variants(self):
+        for query in ("", "?size=512", "?size=1024", "?size=evil"):
+            response = self.url_open(
+                f"{self.index_url}/img/{self.item_public.id}{query}"
+            )
+            self.assertEqual(response.status_code, 200)
+            self.assertTrue(response.headers["Content-Type"].startswith("image/"))
+
+    def test_hero_image_rendered(self):
+        hero_url = f"{self.index_url}/type-img/hero_image"
+        # Without a hero image: gradient fallback, streaming route 404s.
+        response = self.url_open(self.index_url)
+        self.assertNotIn(hero_url, response.text)
+        self.assertEqual(self.url_open(hero_url).status_code, 404)
+        self.type_a.hero_image = make_test_image()
+        self.type_a.hero_subtitle = "WLC Hero Subtitle"
+        response = self.url_open(self.index_url)
+        self.assertIn(hero_url, response.text)
+        self.assertIn("WLC Hero Subtitle", response.text)
+        image_response = self.url_open(hero_url)
+        self.assertEqual(image_response.status_code, 200)
+        self.assertTrue(
+            image_response.headers["Content-Type"].startswith("image/")
+        )
+
+    def test_type_image_field_whitelist(self):
+        response = self.url_open(f"{self.index_url}/type-img/create_uid")
+        self.assertEqual(response.status_code, 404)
+
+    def test_sponsor_band_gated_on_type(self):
+        sponsor_url = f"{self.index_url}/type-img/sponsor_logo"
+        response = self.url_open(self.index_url)
+        self.assertNotIn(sponsor_url, response.text)
+        self.type_a.sponsor_logo = make_test_image()
+        self.type_a.sponsor_name = "WLC Sponsor"
+        for page in (
+            self.index_url,
+            f"{self.index_url}/{self.item_public.slug}",
+        ):
+            response = self.url_open(page)
+            self.assertIn(sponsor_url, response.text)
+            self.assertIn('alt="WLC Sponsor"', response.text)
+
+    def test_seeded_sponsor_only_on_living_memory(self):
+        """The Gobierno de Canarias band is seeded on Living Memory only."""
+        response = self.url_open("/explora/memoria-viva")
+        self.assertIn("/explora/memoria-viva/type-img/sponsor_logo", response.text)
+        self.assertIn("Gobierno de Canarias", response.text)
+        response = self.url_open("/explora/lugares-de-interes")
+        self.assertNotIn("type-img/sponsor_logo", response.text)
+
+    def test_seeded_hero_images(self):
+        for slug in ("memoria-viva", "lugares-de-interes"):
+            response = self.url_open(f"/explora/{slug}")
+            self.assertIn(f"/explora/{slug}/type-img/hero_image", response.text)

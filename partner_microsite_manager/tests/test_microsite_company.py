@@ -50,8 +50,18 @@ class TestMicrositeCompany(TransactionCase):
             "L-V 10:00-13:30 / L-V 16:30-20:00 / S 10:00-14:00"
         )
         lines = self.company._get_microsite_opening_hours_lines()
-        self.assertEqual(lines[0], ("Monday", "10:00 - 13:30 / 16:30 - 20:00"))
-        self.assertEqual(lines[-1], ("Saturday", "10:00 - 14:00"))
+        # The day label is a lazy translation, and comparing one raises rather
+        # than answering: it only becomes a string when it is rendered, which
+        # is the whole point of ``_lt``. Comparing the tuple whole made this
+        # test error out instead of failing, and it had been doing so unnoticed.
+        self.assertEqual(
+            [(str(label), hours) for label, hours in lines[:1]],
+            [("Monday", "10:00 - 13:30 / 16:30 - 20:00")],
+        )
+        self.assertEqual(
+            [(str(label), hours) for label, hours in lines[-1:]],
+            [("Saturday", "10:00 - 14:00")],
+        )
 
     def test_opening_hours_constraint_rejects_garbage(self):
         with self.assertRaises(ValidationError):
@@ -80,9 +90,7 @@ class TestMicrositeCompany(TransactionCase):
 
     def test_map_url_rejects_data_scheme(self):
         with self.assertRaises(ValidationError):
-            self.company.microsite_map_url = (
-                "data:text/html,<script>alert(1)</script>"
-            )
+            self.company.microsite_map_url = "data:text/html,<script>alert(1)</script>"
 
     def test_map_url_rejects_http_scheme(self):
         with self.assertRaises(ValidationError):
@@ -141,10 +149,6 @@ class TestMicrositeCompany(TransactionCase):
                 "group_ids": [(6, 0, [self.env.ref("base.group_user").id])],
             }
         )
-        self.assertFalse(
-            plain_user.has_group("website.group_website_designer")
-        )
+        self.assertFalse(plain_user.has_group("website.group_website_designer"))
         with self.assertRaises(AccessError):
-            self.company.with_user(
-                plain_user
-            ).action_publish_microsite_homepage()
+            self.company.with_user(plain_user).action_publish_microsite_homepage()

@@ -38,6 +38,28 @@ class LocalContentType(models.Model):
         translate=True,
         help="Short introduction shown in the hero of the public index page.",
     )
+    hero_image = fields.Image(
+        max_width=1920,
+        max_height=1080,
+        help="Full-width photograph behind the hero of the public index "
+        "page. A plain gradient is used when empty.",
+    )
+    hero_subtitle = fields.Char(
+        translate=True,
+        help="Short tagline shown under the title inside the hero. Falls "
+        "back to the description when empty.",
+    )
+    sponsor_logo = fields.Image(
+        max_width=1024,
+        max_height=256,
+        help="Institutional logo shown in a band at the bottom of every "
+        "public page of this type (e.g. the Gobierno de Canarias mark "
+        "on Living Memory). Nothing is rendered when empty.",
+    )
+    sponsor_name = fields.Char(
+        translate=True,
+        help="Accessible name of the sponsor logo (image alt text).",
+    )
     use_photo_year = fields.Boolean(
         string="Use Photo Year",
         help="Items of this type carry the year of the photograph and the "
@@ -85,3 +107,18 @@ class LocalContentType(models.Model):
         """Whether this type is published on the given website."""
         self.ensure_one()
         return not self.website_ids or website in self.website_ids
+
+    # --- Public rendering helpers -----------------------------------------
+    def get_hero_image_url(self):
+        """URL of the streamed hero image, or an empty string when unset."""
+        self.ensure_one()
+        if not self.hero_image:
+            return ""
+        return f"/explora/{self.url_slug}/type-img/hero_image"
+
+    def get_sponsor_logo_url(self):
+        """URL of the streamed sponsor logo, or an empty string when unset."""
+        self.ensure_one()
+        if not self.sponsor_logo:
+            return ""
+        return f"/explora/{self.url_slug}/type-img/sponsor_logo"

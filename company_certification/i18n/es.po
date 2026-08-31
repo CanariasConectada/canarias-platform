@@ -2,68 +2,26 @@
 # This file contains the translation of the following modules:
 # 	* company_certification
 #
+# Generated from the module's own .pot so every `#:` reference line survives.
+# See scratchpad/refresh_po.py for why that matters.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
 "Last-Translator: Canarias Conectada\n"
 "Language-Team: \n"
-"Language: es\n"
+"Language: es_ES\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#. module: company_certification
-#: model:ir.model.fields.selection,name:company_certification.selection__certification_type__level__none
-#: model:ir.model.fields.selection,name:company_certification.selection__res_company_certification__level__none
-msgid "No seal"
-msgstr "Sin sello"
 
 #. module: company_certification
-#: model:ir.model.fields.selection,name:company_certification.selection__certification_type__level__bronze
-#: model:ir.model.fields.selection,name:company_certification.selection__res_company_certification__level__bronze
-msgid "Bronze"
-msgstr "Bronce"
-
-#. module: company_certification
-#: model:ir.model.fields.selection,name:company_certification.selection__certification_type__level__silver
-#: model:ir.model.fields.selection,name:company_certification.selection__res_company_certification__level__silver
-msgid "Silver"
-msgstr "Plata"
-
-#. module: company_certification
-#: model:ir.model.fields.selection,name:company_certification.selection__certification_type__level__gold
-#: model:ir.model.fields.selection,name:company_certification.selection__res_company_certification__level__gold
-msgid "Gold"
-msgstr "Oro"
-
-#. module: company_certification
-#: model:ir.model,name:company_certification.model_certification_type
-msgid "Company Certification Type"
-msgstr "Tipo de certificación de empresa"
-
-#. module: company_certification
-#: model:ir.model,name:company_certification.model_certification_positive_item
-msgid "Certification Positive Item"
-msgstr "Item positivo de certificación"
-
-#. module: company_certification
-#: model:ir.model,name:company_certification.model_res_company_certification
-msgid "Company Certification Status"
-msgstr "Estado de certificación de empresa"
-
-#. module: company_certification
-#. odoo-python
-#: code:addons/company_certification/models/certification_type.py:0
-msgid "My Evaluations"
-msgstr "Mis evaluaciones"
-
-#. module: company_certification
-#. odoo-python
-#: code:addons/company_certification/models/certification_type.py:0
-msgid "New Evaluation"
-msgstr "Nueva evaluación"
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_landing
+msgid "% de cumplimiento"
+msgstr ""
 
 #. module: company_certification
 #. odoo-python
@@ -73,9 +31,1873 @@ msgstr "Evaluaciones %s"
 
 #. module: company_certification
 #. odoo-python
+#: code:addons/company_certification/wizards/certification_evaluation_start.py:0
+msgid ""
+"%s has no questionnaire configured yet. Please contact the administrator."
+msgstr "%s todavía no tiene cuestionario configurado. Ponte en contacto con la administración."
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q1
+msgid "1. Control del consumo energético"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q10
+msgid "10. Selección de proveedores responsables"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q11
+msgid "11. Medición del impacto ambiental"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q12
+msgid "12. Política ambiental"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q13
+msgid "13. Implicación del equipo"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q14
+msgid "14. Integración en decisiones"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q15
+msgid "15. Condiciones laborales justas"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q16
+msgid "16. Estabilidad del empleo"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q17
+msgid "17. Igualdad de oportunidades"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q18
+msgid "18. Formación del equipo"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q19
+msgid "19. Bienestar del equipo"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q2
+msgid "2. Medidas de eficiencia energética"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q20
+msgid "20. Comunicación interna"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q21
+msgid "21. Participación del equipo"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q22
+msgid "22. Relación con clientes"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q23
+msgid "23. Satisfacción del cliente"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q24
+msgid "24. Impacto en la comunidad"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q25
+msgid "25. Prácticas responsables con clientes"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q26
+msgid "26. Inclusión y diversidad"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q27
+msgid "27. Relación con proveedores"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q28
+msgid "28. Cumplimiento normativo"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q29
+msgid "29. Transparencia en la gestión"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q3
+msgid "3. Uso de energías renovables"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q30
+msgid "30. Toma de decisiones responsable"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q31
+msgid "31. Código ético o valores definidos"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q32
+msgid "32. Coherencia en la gestión"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q33
+msgid "33. Gestión de riesgos"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q34
+msgid "34. Toma de decisiones basada en datos"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q35
+msgid "35. Planificación a medio/largo plazo"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q36
+msgid "36. Responsabilidad en la cadena de valor"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q37
+msgid "37. Gestión ética de conflictos"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q38
+msgid "38. Protección de datos y privacidad"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q39
+msgid "39. Revisión y mejora continua"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q4
+msgid "4. Consumo responsable de materiales"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q40
+msgid "40. Integración de la sostenibilidad en la estrategia"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q5
+msgid "5. Gestión de residuos"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q6
+msgid "6. Separación de residuos"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q7
+msgid "7. Consumo de agua"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q8
+msgid "8. Medidas de ahorro de agua"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_q9
+msgid "9. Control del desperdicio"
+msgstr ""
+
+#. module: company_certification
+#: model:mail.template,body_html:company_certification.mail_template_certification_expiry_alert
+msgid ""
+"<div style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                    <p>\n"
+"                        El sello <strong t-out=\"object.certification_type_id.name\"/>\n"
+"                        de la empresa <strong t-out=\"object.company_id.name\"/>\n"
+"                        expiró el <strong t-out=\"object.expiry_date\"/> y ha sido\n"
+"                        retirado de su microsite.\n"
+"                    </p>\n"
+"                </div>\n"
+"            "
+msgstr ""
+
+#. module: company_certification
+#: model:mail.template,body_html:company_certification.mail_template_certification_retry_available
+msgid ""
+"<div style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                    <p>Hola <t t-out=\"object.partner_id.name\"/>,</p>\n"
+"                    <p>\n"
+"                        Ha terminado el plazo de espera desde tu última evaluación\n"
+"                        <strong t-out=\"object.certification_type_id.name\"/>.\n"
+"                        Ya puedes realizar un nuevo intento para obtener tu sello.\n"
+"                    </p>\n"
+"                    <p>¡Mucho éxito!<br/>El equipo de Canarias Conectada</p>\n"
+"                </div>\n"
+"            "
+msgstr ""
+
+#. module: company_certification
+#: model:mail.template,body_html:company_certification.mail_template_certification_renewal_due
+msgid ""
+"<div style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                    <p>Hola <t t-out=\"object.partner_id.name\"/>,</p>\n"
+"                    <p>\n"
+"                        Tu sello <strong t-out=\"object.certification_type_id.name\"/>\n"
+"                        vence el <strong t-out=\"object.expiry_date\"/>.\n"
+"                        Para mantener la certificación activa, realiza una nueva\n"
+"                        evaluación antes de esa fecha.\n"
+"                    </p>\n"
+"                    <p>Saludos,<br/>El equipo de Canarias Conectada</p>\n"
+"                </div>\n"
+"            "
+msgstr ""
+
+#. module: company_certification
+#: model:mail.template,body_html:company_certification.mail_template_certification_new_badge
+msgid ""
+"<div style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                    <p>Hola <t t-out=\"object.partner_id.name\"/>,</p>\n"
+"                    <p>\n"
+"                        ¡Enhorabuena! Tu empresa <strong t-out=\"object.company_id.name\"/>\n"
+"                        ha obtenido el sello <strong t-out=\"object.certification_type_id.name\"/>\n"
+"                        con nivel <strong t-out=\"dict(object._fields['certification_level']._description_selection(object.env)).get(object.certification_level)\"/>.\n"
+"                    </p>\n"
+"                    <p>\n"
+"                        El sello es válido hasta el\n"
+"                        <strong t-out=\"object.expiry_date\"/>.\n"
+"                    </p>\n"
+"                    <p>Saludos,<br/>El equipo de Canarias Conectada</p>\n"
+"                </div>\n"
+"            "
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.question_multiple_choice_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.question_simple_choice_certification
+msgid ""
+"<i class=\"fa fa-lightbulb-o text-warning me-2\"/>\n"
+"                        <strong>Recommendation:</strong>"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.survey_fill_form_done_certification
+msgid ""
+"<i class=\"fa fa-lightbulb-o text-warning me-2\"/>Recomendaciones para "
+"mejorar"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.survey_fill_form_done_certification
+msgid "<i class=\"fa fa-times\"/> Cerrar"
+msgstr ""
+
+#. module: company_certification
+#. odoo-python
+#: code:addons/company_certification/models/certification_type.py:0
+msgid ""
+"<p class='o_view_nocontent_smiling_face'>Welcome to %s</p><p>Use the <b>New "
+"Evaluation</b> menu to start your first evaluation and find out whether your"
+" business qualifies for the seal.</p>"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_landing
+msgid "<span>Todos</span>"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.constraint,message:company_certification.constraint_res_company_certification_company_type_uniq
+msgid "A company can only have one status per certification type."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q35
+msgid ""
+"A veces la discriminación no es intencionada. Puede estar en pequeños "
+"detalles: procesos pensados solo para perfiles digitales, lenguaje poco "
+"inclusivo o suposiciones sobre capacidades."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,label:company_certification.highlight_silver_access
+msgid "Acceso sin barreras"
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,label:company_certification.highlight_silver_support
+msgid "Acompañamiento en la compra"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__action_id
+msgid "Action"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_material__active
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__active
+msgid "Active"
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,label:company_certification.highlight_sustainability_water
+msgid "Ahorro de agua"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__amenities_title
+msgid "Amenities Title"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q16
+msgid ""
+"Analiza la duración media de los contratos y las causas de salida del "
+"equipo. La estabilidad no siempre depende del tipo de contrato, sino de cómo"
+" se gestiona el entorno laboral."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q30
+msgid ""
+"Antes de decidir, añade la siguiente reflexión: ¿Esto qué implica dentro de "
+"6 meses o 1 año?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q14
+msgid "Antes de decidir, pregúntate: ¿Hay una alternativa más sostenible?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q3
+msgid ""
+"Antes de pensar en instalaciones complejas, revisa tu contrato energético. "
+"Muchas comercializadoras ofrecen opciones de energía renovable sin cambios "
+"estructurales."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
+msgid "Archived"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q16
+msgid ""
+"Asegúrate de que el teléfono esté bien visible y que realmente se atienda."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,label:company_certification.highlight_silver_pace
+msgid "Atención sin prisas"
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,label:company_certification.highlight_silver_phone
+msgid "Atención telefónica cercana"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q16
+msgid ""
+"Aunque existan canales digitales, muchas personas mayores siguen prefiriendo"
+" el teléfono o el contacto directo."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_res_company_certification__user_input_id
+msgid "Awarding Evaluation"
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,description:company_certification.highlight_silver_support
+msgid "Ayuda cuando el proceso se complica."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_cooldown
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_error
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_no_company
+msgid "Back"
+msgstr "Volver"
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__badge_image
+msgid "Badge Image"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_type__landing_description
+msgid ""
+"Body of the public landing page. Plain content, editable without touching "
+"code."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields.selection,name:company_certification.selection__survey_user_input__certification_level__bronze
+msgid "Bronce"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields.selection,name:company_certification.selection__res_company_certification__level__bronze
+#: model:ir.model.fields.selection,name:company_certification.selection__survey_user_input__manual_certification_level__bronze
+msgid "Bronze"
+msgstr "Bronce"
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__bronze_min
+msgid "Bronze Minimum"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q12
+msgid ""
+"Cada persona es diferente. En el caso de clientes mayores, esta diferencia "
+"suele ser más evidente: algunos necesitan más tiempo, otros más explicación,"
+" otros simplemente sentirse acompañados."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q36
+msgid ""
+"Cada vez más procesos pasan por lo digital. Si este entorno no es accesible,"
+" estás dejando fuera a parte de tus clientes."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_evaluation_start_view_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: company_certification
+#: model:ir.ui.menu,name:company_certification.menu_certification_root
+msgid "Certificaciones"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_material__type_id
+#: model_terms:ir.ui.view,arch_db:company_certification.survey_user_input_view_form_certification
+msgid "Certification"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_res_company_certification__certification_date
+msgid "Certification Date"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_res_company__certification_evaluation_count
+msgid "Certification Evaluation Count"
+msgstr ""
+
+#. module: company_certification
+#. odoo-python
+#: code:addons/company_certification/models/res_company.py:0
+msgid "Certification Evaluations - %s"
+msgstr "Evaluaciones de certificación - %s"
+
+#. module: company_certification
+#: model:ir.model,name:company_certification.model_certification_highlight
+msgid "Certification Highlight"
+msgstr ""
+
+#. module: company_certification
+#: model:res.groups,name:company_certification.group_certification_manager
+msgid "Certification Manager"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model,name:company_certification.model_certification_positive_item
+msgid "Certification Positive Item"
+msgstr "Item positivo de certificación"
+
+#. module: company_certification
+#: model:ir.model,name:company_certification.model_certification_material
+msgid "Certification Training Material"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_survey_survey__certification_type_id
+#: model:ir.model.fields,field_description:company_certification.field_survey_user_input__certification_type_id
+msgid "Certification Type"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.actions.act_window,name:company_certification.action_certification_type
+#: model:ir.ui.menu,name:company_certification.menu_certification_type
+msgid "Certification Types"
+msgstr "Tipos de certificación"
+
+#. module: company_certification
+#: model:res.groups,name:company_certification.group_certification_user
+msgid "Certification User (base)"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.actions.server,name:company_certification.ir_cron_certification_expiry_ir_actions_server
+msgid "Certification: Expire Stale Seals"
+msgstr ""
+
+#. module: company_certification
+#: model:mail.template,name:company_certification.mail_template_certification_expiry_alert
+msgid "Certification: Expiry Alert (admin)"
+msgstr ""
+
+#. module: company_certification
+#: model:mail.template,name:company_certification.mail_template_certification_new_badge
+msgid "Certification: New Badge"
+msgstr ""
+
+#. module: company_certification
+#: model:mail.template,name:company_certification.mail_template_certification_renewal_due
+msgid "Certification: Renewal Due"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.actions.server,name:company_certification.ir_cron_certification_renewal_reminder_ir_actions_server
+msgid "Certification: Renewal Reminders"
+msgstr ""
+
+#. module: company_certification
+#: model:mail.template,name:company_certification.mail_template_certification_retry_available
+msgid "Certification: Retry Available"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.actions.server,name:company_certification.ir_cron_certification_retry_reminder_ir_actions_server
+msgid "Certification: Retry Reminders"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_res_company__certification_ids
+#: model_terms:ir.ui.view,arch_db:company_certification.view_company_form_inherit_certification
+msgid "Certifications"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__code
+msgid "Code"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.survey_user_input_view_search_certification
+msgid "Comercio"
+msgstr ""
+
+#. module: company_certification
+#: model:certification.type,website_title:company_certification.certification_type_sustainability
+msgid "Comercio Sostenible"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_landing
+msgid "Comercios certificados"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model,name:company_certification.model_res_company
+msgid "Companies"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_res_company_certification__company_id
+msgid "Company"
+msgstr ""
+
+#. module: company_certification
+#: model:res.groups.privilege,name:company_certification.res_groups_privilege_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.survey_survey_view_form_certification
+msgid "Company Certification"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model,name:company_certification.model_res_company_certification
+msgid "Company Certification Status"
+msgstr "Estado de certificación de empresa"
+
+#. module: company_certification
+#: model:ir.model,name:company_certification.model_certification_type
+msgid "Company Certification Type"
+msgstr "Tipo de certificación de empresa"
+
+#. module: company_certification
+#: model:ir.actions.act_window,name:company_certification.action_company_certification
+#: model:ir.ui.menu,name:company_certification.menu_company_certification
+msgid "Company Certifications"
+msgstr "Certificaciones de empresa"
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q13
+msgid "Comunica, explica y da ejemplo. La cultura no se impone, se construye."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q3
+msgid ""
+"Con la edad, la capacidad visual cambia. Zonas oscuras, sombras o "
+"deslumbramientos pueden dificultar la experiencia e incluso generar "
+"inseguridad."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q7
+msgid ""
+"Con la edad, la visión cambia. Textos pequeños, tipografías complejas o "
+"demasiado contenido junto pueden dificultar la lectura y generar "
+"frustración."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,label:company_certification.highlight_sustainability_labour
+msgid "Condiciones laborales justas"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
+msgid "Configuration"
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,description:company_certification.highlight_sustainability_waste_food
+msgid "Consumo responsable de materiales."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.survey_user_input_view_list_certification
+msgid "Continue evaluation"
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,description:company_certification.highlight_sustainability_water
+msgid "Controla el consumo y aplica medidas de ahorro."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__cooldown_months
+msgid "Cooldown Months"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_error
+msgid "Could not start the evaluation"
+msgstr "No se pudo iniciar la evaluación"
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_evaluation_start__create_uid
+#: model:ir.model.fields,field_description:company_certification.field_certification_highlight__create_uid
+#: model:ir.model.fields,field_description:company_certification.field_certification_material__create_uid
+#: model:ir.model.fields,field_description:company_certification.field_certification_positive_item__create_uid
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__create_uid
+#: model:ir.model.fields,field_description:company_certification.field_res_company_certification__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_evaluation_start__create_date
+#: model:ir.model.fields,field_description:company_certification.field_certification_highlight__create_date
+#: model:ir.model.fields,field_description:company_certification.field_certification_material__create_date
+#: model:ir.model.fields,field_description:company_certification.field_certification_positive_item__create_date
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__create_date
+#: model:ir.model.fields,field_description:company_certification.field_res_company_certification__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q21
+msgid "Cuando las personas participan, el compromiso aumenta."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q2
+msgid ""
+"Cuando una persona no encuentra lo que busca rápidamente, puede sentirse "
+"incómoda o dependiente. Esto es especialmente relevante en personas mayores,"
+" que valoran mucho la autonomía."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q35
+msgid ""
+"Cuestiona las suposiciones. No todas las personas mayores son iguales, ni "
+"tienen las mismas limitaciones."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.survey,title:company_certification.survey_silver_economy
+msgid "Cuestionario de Evaluación Silver Economy"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.survey,title:company_certification.survey_sustainability
+msgid "Cuestionario de Evaluación Sostenibilidad"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q28
+msgid ""
+"Cumplir la normativa no es solo una obligación, es la base mínima sobre la "
+"que se construye cualquier empresa responsable."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_survey_user_input__next_attempt_date
+msgid "Date from which the company may run a new evaluation."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_survey_user_input__expiry_date
+msgid "Date the awarded seal expires."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_type__renewal_reminder_days
+msgid "Days before expiry to send the renewal reminder."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q34
+msgid "Decidir sin datos suele llevar a intuiciones poco fiables."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q35
+msgid "Define dónde quieres estar, qué necesitas cambiar y en qué plazos."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_highlight__description
+#: model:ir.model.fields,field_description:company_certification.field_certification_material__description
+msgid "Description"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_evaluation_start__display_name
+#: model:ir.model.fields,field_description:company_certification.field_certification_highlight__display_name
+#: model:ir.model.fields,field_description:company_certification.field_certification_material__display_name
+#: model:ir.model.fields,field_description:company_certification.field_certification_positive_item__display_name
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__display_name
+#: model:ir.model.fields,field_description:company_certification.field_res_company__display_name
+#: model:ir.model.fields,field_description:company_certification.field_res_company_certification__display_name
+#: model:ir.model.fields,field_description:company_certification.field_survey_survey__display_name
+#: model:ir.model.fields,field_description:company_certification.field_survey_user_input__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_material__download_url
+msgid "Download Url"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_survey_user_input__override_user_id
+msgid "Editado por"
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,label:company_certification.highlight_sustainability_energy
+msgid "Eficiencia energética"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q19
+msgid ""
+"El bienestar no es solo evitar problemas, es crear un entorno donde las "
+"personas puedan trabajar de forma sostenible."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q7
+msgid ""
+"El consumo de agua suele pasar desapercibido hasta que aparece un problema o"
+" un coste elevado."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q8
+msgid ""
+"El contraste alto (oscuro sobre claro) suele ser la mejor opción en la "
+"mayoría de casos."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q9
+msgid ""
+"El desperdicio no es solo un problema ambiental, también es una pérdida "
+"económica."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q26
+msgid ""
+"El momento del pago es crítico: cualquier dificultad puede hacer perder la "
+"venta."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,description:company_certification.highlight_sustainability_training
+msgid "El personal se forma de manera continua."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,description:company_certification.highlight_silver_pace
+msgid "El ritmo lo marca el cliente."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.survey_fill_form_done_certification
+msgid "El sello es válido hasta:"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q4
+msgid ""
+"El uso de materiales suele estar lleno de inercias: se hacen cosas porque "
+"\"siempre se han hecho así\"."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,description:company_certification.highlight_sustainability_suppliers
+msgid "Elige a quién compra con criterios sostenibles."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q28
+msgid "Ellos mismos son la mejor fuente de mejora."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q11
+msgid "Empieza con 3 indicadores, como energía, agua y residuos."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q23
+msgid ""
+"Empieza con algo simple como preguntar, recoger opiniones y observar "
+"patrones de conducta de tus clientes."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q34
+msgid ""
+"Empieza con indicadores simples como ventas, costes y consumo. No necesitas "
+"muchos datos, necesitas los adecuados."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q40
+msgid ""
+"Empieza con pequeños objetivos realistas. Mejorar poco a poco es mucho más "
+"efectivo que intentar hacerlo todo de golpe."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q10
+msgid ""
+"Empieza con una pregunta simple a tus proveedores: ¿Tenéis políticas "
+"ambientales?. No necesitas cambiar todo. Necesitas empezar a incorporar "
+"criterio."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q1
+msgid ""
+"Empieza por algo muy sencillo: revisa tus facturas de los últimos meses. "
+"Detectarás patrones, picos o consumos que quizá no esperabas."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q32
+msgid ""
+"Empieza por algo sencillo: observa, pregunta y escucha. Incluso unas pocas "
+"conversaciones reales pueden darte más información que muchos datos "
+"teóricos."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q31
+msgid "Empieza por analizar quiénes son tus clientes actuales."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q29
+msgid ""
+"Empieza por compartir información clave como objetivos, decisiones "
+"relevantes y situación general. No se trata de contar todo, sino de no "
+"ocultar lo importante."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q5
+msgid ""
+"Empieza por identificar tipos de residuos, volumen y destino. No puedes "
+"mejorar lo que no conoces."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q2
+msgid ""
+"Empieza por lo más evidente, como cambiar a iluminación LED, apagar equipos "
+"fuera de uso, optimizar horarios, etc. Muchas mejoras no requieren "
+"inversión, solo atención."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q36
+msgid ""
+"Empieza por observar prácticas, condiciones y coherencia. No se trata de "
+"controlar todo, sino de no ignorarlo."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q26
+msgid "Empieza por observar, evitar sesgos y abrir oportunidades."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q8
+msgid ""
+"Empieza por revisar fugas, instalar dispositivos de ahorro y ajustar "
+"hábitos."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q17
+msgid ""
+"Empieza por revisar los procesos de selección, la promoción interna y "
+"posibles sesgos. Lo importante no es la perfección, es la intención "
+"aplicada."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,description:company_certification.highlight_sustainability_labour
+msgid "Empleo estable y bienestar del equipo."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_survey_user_input__company_id
+msgid "Empresa a la que corresponde esta evaluación"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_survey_user_input__company_id
+msgid "Empresa evaluada"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.survey_fill_form_done_certification
+msgid "En esta ocasión no has alcanzado el nivel mínimo para el sello"
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,label:company_certification.highlight_sustainability_renewable
+msgid "Energías renovables"
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,description:company_certification.highlight_silver_access
+msgid "Entrada y recorrido cómodos, sin escalones ni estrecheces."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q12
+msgid ""
+"Escuchar antes de actuar es la clave. Una simple pregunta puede ayudarte a "
+"entender qué necesita realmente el cliente."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,label:company_certification.highlight_silver_seating
+msgid "Espacio para descansar"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q38
+msgid ""
+"Establece pequeños momentos de revisión. No hace falta un gran proyecto, "
+"sino constancia."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.survey,description:company_certification.survey_silver_economy
+msgid ""
+"Este cuestionario te ayudará a entender hasta qué punto tu empresa está "
+"preparada para atender bien a las personas mayores."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.survey,description:company_certification.survey_sustainability
+msgid ""
+"Este cuestionario te ayudará a evaluar el nivel de sostenibilidad de tu "
+"empresa en tres dimensiones: medio ambiente, impacto social y gobernanza."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q14
+msgid "Este es el nivel de madurez real."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q40
+msgid ""
+"Este es el nivel más alto: cuando deja de ser algo puntual y pasa a ser "
+"parte del sistema."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.type,website_description:company_certification.certification_type_silver
+msgid ""
+"Este negocio ha sido evaluado y reconocido con el sello Silver Economy por "
+"su compromiso con la accesibilidad, la atención personalizada y la "
+"adaptación a las personas mayores."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.type,website_description:company_certification.certification_type_sustainability
+msgid ""
+"Este negocio ha sido evaluado y reconocido con el sello de Sostenibilidad "
+"por sus prácticas responsables con el medio ambiente, el impacto social y la"
+" buena gobernanza."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.actions.act_window,name:company_certification.action_all_certification_evaluations
+#: model:ir.ui.menu,name:company_certification.menu_certification_evaluations
+msgid "Evaluaciones"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_cooldown
+msgid "Evaluation not available yet"
+msgstr "Evaluación no disponible todavía"
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.view_company_form_inherit_certification
+msgid "Evaluations"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q20
+msgid "Evita sistemas automáticos complejos. Prioriza el trato humano."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q25
+msgid "Evita sorpresas. Explica siempre el precio final."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q22
+msgid "Evita textos largos y complejos. Usa ejemplos o pasos simples."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_res_company_certification__expiry_date
+msgid "Expiry Date"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_survey_user_input__override_date
+msgid "Fecha de edición"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_survey_user_input__expiry_date
+msgid "Fecha de expiración del sello"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_material__attachment_id
+msgid "File"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
+msgid ""
+"Files listed here are published automatically so\n"
+"                                visitors can download them from the landing page."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_positive_item__icon
+msgid "Font Awesome class shown next to the item, e.g. fa-wheelchair."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_highlight__icon
+msgid "Font Awesome class shown next to the label, e.g. fa-wheelchair."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,label:company_certification.highlight_sustainability_training
+msgid "Formación del equipo"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q5
+msgid "Generar residuos es inevitable. Gestionarlos mal, no."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,label:company_certification.highlight_sustainability_waste
+msgid "Gestión de residuos"
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,label:company_certification.highlight_sustainability_governance
+msgid "Gobernanza y ética"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields.selection,name:company_certification.selection__res_company_certification__level__gold
+#: model:ir.model.fields.selection,name:company_certification.selection__survey_user_input__manual_certification_level__gold
+msgid "Gold"
+msgstr "Oro"
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__gold_min
+msgid "Gold Minimum"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q11
+msgid ""
+"Habla con tu equipo sobre situaciones reales. No hace falta una gran "
+"formación: a veces basta con tomar conciencia y compartir buenas prácticas."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q33
+msgid ""
+"Haz un ejercicio básico y pregúntate qué puede salir mal, qué impacto "
+"tendría y cómo podrías evitarlo."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q6
+msgid ""
+"Haz una prueba: alguien sin experiencia digital debería poder navegar sin "
+"ayuda."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q14
+msgid ""
+"Haz una prueba: si tuvieras que explicárselo a alguien sin experiencia, ¿lo "
+"entendería fácilmente?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q4
+msgid ""
+"Haz una revisión interna sencilla, como qué utilizas, cuánto utilizas, si "
+"realmente es necesario, etc. Reducir no es eliminar, es optimizar."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q27
+msgid "Haz visible este soporte."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q6
+msgid ""
+"Hazlo fácil, utiliza contenedores visibles, señalización clara y reglas "
+"simples. Si es complicado, no se hará."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_type__amenities_title
+msgid ""
+"Heading above the highlight icons on the microsite. Falls back to a generic "
+"wording when empty."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_type__website_title
+msgid "Heading of the microsite certification section."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__highlight_ids
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
+msgid "Highlights"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_evaluation_start__id
+#: model:ir.model.fields,field_description:company_certification.field_certification_highlight__id
+#: model:ir.model.fields,field_description:company_certification.field_certification_material__id
+#: model:ir.model.fields,field_description:company_certification.field_certification_positive_item__id
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__id
+#: model:ir.model.fields,field_description:company_certification.field_res_company__id
+#: model:ir.model.fields,field_description:company_certification.field_res_company_certification__id
+#: model:ir.model.fields,field_description:company_certification.field_survey_survey__id
+#: model:ir.model.fields,field_description:company_certification.field_survey_user_input__id
+msgid "ID"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_highlight__icon
+#: model:ir.model.fields,field_description:company_certification.field_certification_positive_item__icon
+msgid "Icon"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q8
+msgid ""
+"Igual que con la energía, pequeñas acciones pueden tener un impacto "
+"acumulado importante."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,label:company_certification.highlight_sustainability_equality
+msgid "Igualdad de oportunidades"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q37
+msgid ""
+"Incluye una pregunta sencilla en tus encuestas o recoge sus comentarios "
+"directos. No tiene que ser complejo."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_survey_user_input__is_manually_overridden
+msgid "Indica si un administrador modificó la puntuación"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_type__group_user_id
+msgid ""
+"Internal users in this group can see the vertical's menu and run evaluations"
+" for their companies. Nothing is visible to internal users outside this "
+"group."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q37
+msgid "Introduce escucha activa, criterios claros y soluciones justas."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q20
+msgid ""
+"Introduce espacios simples, como reuniones breves, realimentación regular y "
+"canales claros."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q39
+msgid ""
+"Introduce revisiones simples: qué funciona bien, qué no está funcionando y "
+"qué cambiar para mejorar."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q13
+msgid ""
+"Introduce una idea sencilla en tu equipo: “no tenemos prisa por vender, "
+"tenemos interés en que el cliente se sienta cómodo”."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_survey_survey__positive_item_ids
+msgid ""
+"Items displayed on the company microsite when the related question was "
+"answered above its minimum score."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q31
+msgid ""
+"La Silver Economy no es un nicho pequeño: es un segmento creciente con gran "
+"capacidad de consumo. No tenerlo en cuenta puede suponer perder "
+"oportunidades importantes."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q40
+msgid ""
+"La adaptación a la Silver Economy no es una acción puntual, sino un proceso."
+" Lo importante no es estar perfecto, sino avanzar de forma constante."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q30
+msgid "La complejidad digital es una de las mayores barreras actuales."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q21
+msgid "La complejidad innecesaria genera frustración y abandono."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q25
+msgid ""
+"La confianza es uno de los activos más importantes de cualquier negocio."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q38
+msgid "La confianza también se basa en cómo gestionas la información."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q26
+msgid ""
+"La diversidad no es solo un valor social, también mejora la resiliencia del "
+"negocio."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q39
+msgid ""
+"La experiencia del cliente depende en gran parte de las personas que lo "
+"atienden. Sin formación, es difícil que haya un cambio real."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q25
+msgid ""
+"La falta de claridad genera desconfianza, especialmente en clientes más "
+"prudentes."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q20
+msgid "La falta de comunicación genera errores, frustración y desconexión."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q39
+msgid ""
+"La formación no tiene que ser compleja. Compartir experiencias y buenas "
+"prácticas ya es un gran paso."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q3
+msgid ""
+"La fuente de energía que utilizas tiene un impacto directo en tu huella "
+"ambiental."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q17
+msgid ""
+"La igualdad no es solo una cuestión ética, también mejora la calidad de las "
+"decisiones y la diversidad de perspectivas."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q32
+msgid "La incoherencia es uno de los mayores riesgos reputacionales."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q36
+msgid "La responsabilidad no termina en tu empresa."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q16
+msgid ""
+"La rotación constante genera costes ocultos: pérdida de conocimiento, menor "
+"compromiso y menor calidad en el servicio."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q6
+msgid "La separación es la base para que el reciclaje funcione realmente."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q13
+msgid ""
+"La sostenibilidad no depende solo de dirección, sino del comportamiento "
+"diario."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q22
+msgid ""
+"La sostenibilidad también es cómo tratas a quienes confían en tu negocio."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q27
+msgid ""
+"La sostenibilidad también se construye en cómo tratas a quienes hacen "
+"posible tu actividad."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q29
+msgid ""
+"La transparencia genera confianza, tanto dentro como fuera de la empresa."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_highlight__label
+#: model:ir.model.fields,field_description:company_certification.field_certification_positive_item__label
+msgid "Label"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__landing_description
+msgid "Landing Description"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
+msgid "Landing Page"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q15
+msgid ""
+"Las condiciones laborales no solo afectan al bienestar de las personas, "
+"también impactan directamente en la estabilidad, motivación y rendimiento "
+"del negocio."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q30
+msgid ""
+"Las decisiones rápidas pueden resolver problemas inmediatos, pero generar "
+"consecuencias futuras."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_evaluation_start__write_uid
+#: model:ir.model.fields,field_description:company_certification.field_certification_highlight__write_uid
+#: model:ir.model.fields,field_description:company_certification.field_certification_material__write_uid
+#: model:ir.model.fields,field_description:company_certification.field_certification_positive_item__write_uid
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__write_uid
+#: model:ir.model.fields,field_description:company_certification.field_res_company_certification__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_evaluation_start__write_date
+#: model:ir.model.fields,field_description:company_certification.field_certification_highlight__write_date
+#: model:ir.model.fields,field_description:company_certification.field_certification_material__write_date
+#: model:ir.model.fields,field_description:company_certification.field_certification_positive_item__write_date
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__write_date
+#: model:ir.model.fields,field_description:company_certification.field_res_company_certification__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,label:company_certification.highlight_silver_language
+msgid "Lenguaje claro y sencillo"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_res_company_certification__level
+msgid "Level"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q38
+msgid ""
+"Lo que hoy funciona, puede no funcionar mañana. Las necesidades cambian, y "
+"tu negocio debe adaptarse con ellas."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q11
+msgid "Lo que no se mide, no se gestiona."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q37
+msgid ""
+"Lo que no se mide, normalmente no se mejora. Y si no diferencias por tipo de"
+" cliente, puedes estar perdiendo información clave."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q23
+msgid "Lo que no se mide, se interpreta… y muchas veces se interpreta mal."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q39
+msgid "Lo que no se revisa, se estanca."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
+msgid "Lo que ofrece este comercio"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q14
+msgid ""
+"Lo que para ti es habitual, para el cliente puede ser confuso. Un lenguaje "
+"complicado genera inseguridad y hace que muchas personas no pregunten por "
+"vergüenza."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q37
+msgid ""
+"Los conflictos son inevitables. La forma de gestionarlos define la cultura "
+"de la empresa."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q18
+msgid ""
+"Los procesos largos o poco intuitivos pueden hacer que el cliente abandone "
+"si no se siente acompañado."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__group_manager_id
+msgid "Manager Group"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.survey_user_input_view_form_certification
+msgid "Manual Override"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_landing
+msgid "Material formativo"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__max_score
+msgid "Max Score"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_type__max_score
+msgid "Maximum reachable score of the questionnaire."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,label:company_certification.highlight_sustainability_waste_food
+msgid "Menos desperdicio"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__menu_id
+msgid "Menu"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.survey_survey_view_form_certification
+msgid "Microsite Positive Items"
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,description:company_certification.highlight_sustainability_energy
+msgid "Mide y reduce su consumo de energía."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_positive_item__min_score
+msgid "Min Score"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_type__bronze_min
+msgid "Minimum score for Bronze."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_type__gold_min
+msgid "Minimum score for Gold."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_type__silver_min
+msgid "Minimum score for Silver."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_positive_item__min_score
+msgid ""
+"Minimum score on the question for the item to show up as a positive "
+"highlight on the microsite."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,description:company_certification.highlight_sustainability_equality
+msgid "Mismas condiciones para todo el equipo."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_type__cooldown_months
+msgid "Months to wait before retrying after a failed attempt."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_survey_user_input__override_reason
+msgid "Motivo de edición"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q34
+msgid ""
+"Muchas comunicaciones están orientadas, sin darse cuenta, a un público más "
+"joven. Esto puede hacer que otros perfiles no se sientan identificados o "
+"directamente se desconecten."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q1
+msgid ""
+"Muchas empresas consumen más energía de la que realmente necesitan, "
+"simplemente porque nunca han mirado sus datos con detalle. Sin esa "
+"información, es muy difícil tomar decisiones o detectar mejoras."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q32
+msgid ""
+"Muchas empresas creen conocer a sus clientes, pero en realidad trabajan con "
+"suposiciones. En el caso de las personas mayores, esto es aún más frecuente."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q5
+msgid ""
+"Muchas personas mayores necesitan hacer pausas. No ofrecer esa posibilidad "
+"puede hacer que la visita sea más corta o incómoda."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q13
+msgid ""
+"Muchas personas mayores necesitan más tiempo para comprender información o "
+"tomar decisiones. Sentirse presionado puede generar inseguridad o hacer que "
+"abandonen la compra."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q6
+msgid ""
+"Muchas personas mayores no tienen dificultades por falta de capacidad, sino "
+"por interfaces complejas o poco intuitivas."
+msgstr ""
+
+#. module: company_certification
+#. odoo-python
+#: code:addons/company_certification/models/certification_type.py:0
+msgid "My Evaluations"
+msgstr "Mis evaluaciones"
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_material__name
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__name
+msgid "Name"
+msgstr ""
+
+#. module: company_certification
+#: model:certification.type,website_title:company_certification.certification_type_silver
+msgid "Negocio Comprometido"
+msgstr ""
+
+#. module: company_certification
+#. odoo-python
 #: code:addons/company_certification/models/certification_type.py:0
 msgid "New %s Evaluation"
 msgstr "Nueva evaluación %s"
+
+#. module: company_certification
+#. odoo-python
+#: code:addons/company_certification/models/certification_type.py:0
+#: model:ir.actions.act_window,name:company_certification.action_certification_evaluation_start
+#: model:ir.ui.menu,name:company_certification.menu_certification_evaluation_start
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_evaluation_start_view_form
+#: model_terms:ir.ui.view,arch_db:company_certification.survey_user_input_view_list_certification
+msgid "New Evaluation"
+msgstr "Nueva evaluación"
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_survey_user_input__certification_level
+msgid "Nivel de certificación"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_landing
+msgid "Nivel del sello"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q15
+msgid ""
+"No basta con explicar. Es importante comprobar que la otra persona ha "
+"entendido. Muchas veces los clientes dicen 'sí' aunque tengan dudas."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_no_company
+msgid "No company assigned"
+msgstr "No tienes empresa asignada"
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q17
+msgid ""
+"No des por hecho que el cliente entiende. Asegúrate de cerrar cada "
+"conversación con claridad."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q33
+msgid ""
+"No hace falta empezar con grandes campañas. Pequeñas acciones bien pensadas "
+"pueden tener mucho impacto."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q36
+msgid ""
+"No hace falta hacerlo perfecto desde el principio. Empieza por mejorar lo "
+"más básico: claridad, simplicidad y ayuda."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q31
+msgid ""
+"No hace falta un documento complejo. Define qué es importante y qué no es "
+"aceptable. Esto da coherencia a todo lo demás."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q40
+msgid ""
+"No intentes hacerlo todo. Empieza por integrar criterios, decisiones y "
+"seguimiento. La sostenibilidad no es un proyecto, es una forma de gestionar."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q18
+msgid ""
+"No necesitas grandes programas. Empieza por formación práctica, aprendizaje "
+"interno y compartir conocimiento."
+msgstr ""
+
+#. module: company_certification
+#. odoo-python
+#: code:addons/company_certification/models/survey_user_input.py:0
+msgid ""
+"No questionnaire is configured for %s. Please contact the administrator."
+msgstr "No hay un cuestionario configurado para %s. Contacta con el administrador."
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q29
+msgid "No se trata de crear algo nuevo, sino de ajustar lo que ya tienes."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q11
+msgid ""
+"No se trata solo de ser amable. Atender bien a una persona mayor implica "
+"entender su ritmo, sus dudas y, en muchos casos, su necesidad de sentirse "
+"escuchada y acompañada."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields.selection,name:company_certification.selection__res_company_certification__level__none
+#: model:ir.model.fields.selection,name:company_certification.selection__survey_user_input__manual_certification_level__none
+msgid "No seal"
+msgstr "Sin sello"
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q19
+msgid ""
+"No tiene que ser complejo, ya que una simple una llamada o mensaje pueden "
+"marcar la diferencia."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q12
+msgid ""
+"No tiene que ser complejo. Define algo sencillo pero claro, por ejemplo, "
+"cómo queremos hacer las cosas."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q24
+msgid ""
+"No todos los clientes buscan lo mismo. Ofrecer opciones simples facilita la "
+"decisión."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q29
+msgid "Observa cómo usan tus productos."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q19
+msgid ""
+"Observa la carga de trabajo, el estrés y el ambiente laboral. Muchas señales"
+" aparecen antes de que surjan los problemas."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q9
+msgid ""
+"Observa qué se tira, por qué y con qué frecuencia. Ahí están muchas "
+"oportunidades de mejora."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q1
+msgid ""
+"Observa tu entrada como si fueras un cliente mayor. ¿Hay algo que te haría "
+"dudar en entrar? Pequeñas mejoras como una rampa, una barandilla o una "
+"puerta más accesible pueden tener un impacto enorme."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q26
+msgid "Ofrece varias opciones y acompaña si es necesario."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_material__description
+msgid "One line shown under the title on the landing page."
+msgstr ""
 
 #. module: company_certification
 #. odoo-python
@@ -84,25 +1906,586 @@ msgid "Only certification managers can override levels."
 msgstr "Solo los gestores de certificación pueden modificar niveles."
 
 #. module: company_certification
-#. odoo-python
-#: code:addons/company_certification/models/survey_user_input.py:0
-msgid "You need a company on your user profile to run an evaluation."
+#: model:ir.model.fields,help:company_certification.field_certification_highlight__description
+msgid "Optional second line, shown smaller under the label."
 msgstr ""
-"Necesitas una empresa asignada en tu perfil de usuario para realizar una "
-"evaluación."
 
 #. module: company_certification
-#. odoo-python
-#: code:addons/company_certification/models/survey_user_input.py:0
-msgid "No questionnaire is configured for %s. Please contact the administrator."
+#: model:ir.model.fields.selection,name:company_certification.selection__survey_user_input__certification_level__gold
+msgid "Oro"
 msgstr ""
-"No hay un cuestionario configurado para %s. Contacta con el administrador."
 
 #. module: company_certification
-#. odoo-python
-#: code:addons/company_certification/models/survey_user_input.py:0
-msgid "You cannot run a new evaluation until %s."
-msgstr "No puedes realizar una nueva evaluación hasta el %s."
+#: model:ir.model.fields,field_description:company_certification.field_survey_user_input__manual_certification_level
+msgid "Overridden Level"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q20
+msgid ""
+"Para muchas personas mayores, el teléfono sigue siendo el canal más cómodo y"
+" confiable."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,description:company_certification.highlight_sustainability_renewable
+msgid "Parte de su energía es de origen renovable."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q4
+msgid ""
+"Pasillos estrechos, objetos mal colocados o exceso de mobiliario pueden "
+"dificultar el movimiento, especialmente si hay bastones, carros o movilidad "
+"reducida."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q1
+msgid ""
+"Piensa en alguien con movilidad reducida, que camina despacio o que evita "
+"escaleras. Un pequeño escalón, una puerta pesada o una entrada estrecha "
+"pueden convertirse en un obstáculo importante, aunque no lo parezcan a "
+"simple vista."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q24
+msgid ""
+"Piensa en proveedores locales, colaboración con entorno o impacto en el "
+"barrio o comunidad."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q18
+msgid ""
+"Piensa en qué momentos el cliente puede perderse… y ahí es donde debes "
+"intervenir."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q24
+msgid "Piensa en una versión “básica” de tu oferta."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields.selection,name:company_certification.selection__survey_user_input__certification_level__silver
+msgid "Plata"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.survey_fill_form_done_certification
+msgid "Podrás volver a intentarlo a partir del:"
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,description:company_certification.highlight_sustainability_governance
+msgid "Política ambiental integrada en sus decisiones."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_survey_survey__positive_item_ids
+msgid "Positive Items"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q28
+msgid "Pregunta directamente y escucha sin justificarte."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q21
+msgid ""
+"Pregunta y escucha más. Muchas mejoras vienen de quienes están en el día a "
+"día."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q23
+msgid ""
+"Procesos largos o complejos pueden ser una barrera importante, especialmente"
+" en entornos digitales. Cada paso adicional aumenta el riesgo de abandono."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,label:company_certification.highlight_sustainability_suppliers
+msgid "Proveedores responsables"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_survey_user_input__next_attempt_date
+msgid "Próximo intento disponible"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__landing_published
+msgid "Publish Landing Page"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q15
+msgid ""
+"Puedes preguntar algo tan simple como: “¿te ha quedado claro?” o “¿quieres "
+"que lo veamos de otra forma?”."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_survey_user_input__is_manually_overridden
+msgid "Puntuación editada manualmente"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.survey_fill_form_done_certification
+msgid "Puntuación:"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_positive_item__question_id
+msgid "Question"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__question_full_score
+msgid "Question Full Score"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__survey_id
+msgid "Questionnaire"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q4
+msgid ""
+"Recorre tu local con una mirada crítica. A veces basta con reorganizar para "
+"mejorar mucho la experiencia."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q23
+msgid ""
+"Reduce pasos innecesarios, simplifica formularios y ofrece ayuda en puntos "
+"clave."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__renewal_reminder_days
+msgid "Renewal Reminder Days"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.survey_user_input_view_form_certification
+msgid "Result"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.survey_fill_form_done_certification
+msgid "Resultado de la evaluación"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q15
+msgid ""
+"Revisa aspectos básicos, como salarios, horarios y carga de trabajo. Muchas "
+"veces no se trata de grandes cambios, sino de corregir desequilibrios "
+"evidentes."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q38
+msgid ""
+"Revisa cómo almacenas y tratas los datos de tus clientes y proveedores y el "
+"acceso a los mismos. No es solo legal, es reputacional."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q22
+msgid ""
+"Revisa la claridad en la información, las expectativas generadas y la "
+"gestión de incidencias."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q27
+msgid ""
+"Revisa las condiciones, plazos de pago y trato. La relación importa tanto "
+"como el precio."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q28
+msgid ""
+"Revisa licencias, obligaciones fiscales y normativa laboral. No cumplir no "
+"solo implica riesgo legal, también afecta a la reputación."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q25
+msgid ""
+"Revisa los mensajes comerciales, las condiciones y las promesas. Lo "
+"sostenible también es ser coherente."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q3
+msgid ""
+"Revisa tu local en diferentes momentos del día. Ajustar la iluminación es "
+"una de las mejoras más sencillas y efectivas."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q7
+msgid ""
+"Revisa tus facturas y detecta patrones. Muchas mejoras empiezan simplemente "
+"observando."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q34
+msgid ""
+"Revisa tus mensajes con una mirada crítica: ¿quién aparece?, ¿a quién te "
+"diriges?, ¿quién queda fuera?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.sust_economy_q32
+msgid ""
+"Revisa tus mensajes frente a tus acciones y tus promesas frente a la "
+"realidad. La sostenibilidad empieza por la coherencia."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_page_A
+msgid "SECCIÓN A — ACCESIBILIDAD"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_page_1
+msgid "SECCIÓN A — ENERGÍA Y RECURSOS"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_page_B
+msgid "SECCIÓN B — ATENCIÓN"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_page_1000
+msgid "SECCIÓN B — IMPACTO SOCIAL"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.sust_economy_page_2000
+msgid "SECCIÓN C — GOBERNANZA Y ÉTICA"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_page_C
+msgid "SECCIÓN C — PRODUCTO / SERVICIO"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_page_D
+msgid "SECCIÓN D — ESTRATEGIA"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q2
+msgid ""
+"Saber cuánto consumes es el primer paso, pero el cambio real ocurre cuando "
+"se traduce en decisiones concretas."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q27
+msgid "Saber que hay apoyo genera tranquilidad incluso antes de comprar."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q10
+msgid ""
+"Saber que hay ayuda disponible genera seguridad, incluso aunque no se "
+"utilice."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_res_company_certification__score
+msgid "Score"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
+msgid "Score Thresholds"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_type__question_full_score
+msgid ""
+"Score of a fully positive answer. Answers below this value trigger the "
+"improvement recommendations on the result page."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_res_company_certification__score
+msgid "Score of the awarding evaluation."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,description:company_certification.highlight_silver_phone
+msgid "Se puede resolver todo por teléfono."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,description:company_certification.highlight_silver_signage
+msgid "Se ve bien y se encuentra todo sin preguntar."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_evaluation_start__certification_type_id
+msgid "Seal"
+msgstr "Sello"
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_type__badge_image
+msgid "Seal image shown on the company microsite."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_evaluation_start__available_type_ids
+msgid "Seals available to you"
+msgstr "Sellos disponibles para ti"
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.survey_user_input_view_search_certification
+msgid "Sello"
+msgstr ""
+
+#. module: company_certification
+#: model:mail.template,subject:company_certification.mail_template_certification_expiry_alert
+msgid ""
+"Sello {{ object.certification_type_id.name }} expirado: {{ "
+"object.company_id.name }}"
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,description:company_certification.highlight_sustainability_waste
+msgid "Separa y trata correctamente lo que desecha."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_highlight__sequence
+#: model:ir.model.fields,field_description:company_certification.field_certification_material__sequence
+#: model:ir.model.fields,field_description:company_certification.field_certification_positive_item__sequence
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__sequence
+msgid "Sequence"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_type__landing_published
+msgid ""
+"Serve the public page at /certification/<code> where merchants read what the"
+" certification is about and download its training material. Off by default: "
+"an empty page helps nobody."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,label:company_certification.highlight_silver_signage
+msgid "Señalización e iluminación claras"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_evaluation_start__company_id
+msgid "Shop"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
+msgid ""
+"Shown as an icon list on every certified company's\n"
+"                                microsite. A company whose own evaluation produced\n"
+"                                highlights shows those instead."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q33
+msgid ""
+"Si no haces nada específico, lo más probable es que este colectivo no se "
+"sienta especialmente tenido en cuenta, aunque tu intención sea buena."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q30
+msgid "Si puedes simplificar, hazlo."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q9
+msgid ""
+"Si un usuario se pierde, es muy probable que abandone. Esto ocurre aún más "
+"en usuarios menos habituados a entornos digitales."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields.selection,name:company_certification.selection__res_company_certification__level__silver
+#: model:ir.model.fields.selection,name:company_certification.selection__survey_user_input__manual_certification_level__silver
+msgid "Silver"
+msgstr "Plata"
+
+#. module: company_certification
+#: model:certification.type,name:company_certification.certification_type_silver
+msgid "Silver Economy"
+msgstr ""
+
+#. module: company_certification
+#: model:res.groups,name:company_certification.group_silver_manager
+msgid "Silver Economy Manager"
+msgstr ""
+
+#. module: company_certification
+#: model:res.groups,name:company_certification.group_silver_user
+msgid "Silver Economy User"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__silver_min
+msgid "Silver Minimum"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q9
+msgid "Simplifica menús y estructura. Menos opciones, pero más claras."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q2
+msgid ""
+"Simplifica y prioriza. Es mejor pocos mensajes claros que muchos confusos. "
+"Usa letras grandes y ubicaciones visibles."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q21
+msgid "Simplificar no es empeorar, es mejorar la experiencia."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q12
+msgid "Sin criterios, las decisiones dependen del momento."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields.selection,name:company_certification.selection__survey_user_input__certification_level__none
+msgid "Sin sello"
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,description:company_certification.highlight_silver_language
+msgid "Sin tecnicismos innecesarios."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q31
+msgid ""
+"Sin valores claros, las decisiones dependen del contexto y pueden volverse "
+"incoherentes."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q35
+msgid "Sin visión, la empresa reacciona en lugar de avanzar."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.type,name:company_certification.certification_type_sustainability
+msgid "Sostenibilidad"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_evaluation_start_view_form
+msgid "Start"
+msgstr "Empezar"
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__start_action_id
+msgid "Start Action"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model,name:company_certification.model_certification_evaluation_start
+msgid "Start a certification evaluation"
+msgstr "Iniciar una evaluación de certificación"
+
+#. module: company_certification
+#: model:ir.model,name:company_certification.model_survey_survey
+#: model:ir.model.fields,field_description:company_certification.field_certification_positive_item__survey_id
+msgid "Survey"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model,name:company_certification.model_survey_user_input
+msgid "Survey User Input"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_type__survey_id
+msgid "Survey used to evaluate companies for this certification."
+msgstr ""
+
+#. module: company_certification
+#: model:res.groups,name:company_certification.group_sustainability_manager
+msgid "Sustainability Manager"
+msgstr ""
+
+#. module: company_certification
+#: model:res.groups,name:company_certification.group_sustainability_user
+msgid "Sustainability User"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_type__code
+msgid ""
+"Technical identifier used in website URLs and filters, e.g. 'silver' or "
+"'sustainability'."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_evaluation_start__available_type_ids
+msgid "Technical: the domain of the seal field."
+msgstr "Técnico: el dominio del campo de sello."
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_type__website_description
+msgid "Text of the microsite certification section."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q8
+msgid ""
+"Texto claro sobre fondo claro, o combinaciones poco contrastadas, pueden "
+"dificultar mucho la lectura."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,description:company_certification.highlight_silver_web
+msgid "Texto grande y buen contraste."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.constraint,message:company_certification.constraint_certification_type_code_uniq
+msgid "The certification type code must be unique."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_material__attachment_id
+msgid "The document merchants download."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_evaluation_start__company_id
+msgid ""
+"The shop the seal would belong to. It is the active company of your own "
+"account and cannot be chosen here."
+msgstr "El comercio al que pertenecería el sello. Es la compañía activa de tu propia cuenta y no se elige aquí."
 
 #. module: company_certification
 #. odoo-python
@@ -112,60 +2495,525 @@ msgstr "Esta evaluación ya ha sido completada."
 
 #. module: company_certification
 #. odoo-python
-#: code:addons/company_certification/controllers/main.py:0
+#: code:addons/company_certification/wizards/certification_evaluation_start.py:0
+msgid ""
+"This shop already sat the %(seal)s evaluation. The next attempt may be made "
+"from %(date)s."
+msgstr "Este comercio ya hizo la evaluación de %(seal)s. El siguiente intento se puede hacer a partir del %(date)s."
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
+msgid "Timing"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q24
+msgid ""
+"Toda empresa forma parte de un ecosistema social, aunque no siempre sea "
+"consciente de ello."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q33
+msgid ""
+"Toda empresa tiene riesgos, la diferencia está en si se anticipan o se "
+"sufren."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_landing
+msgid "Todavía no hay comercios con este nivel."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__material_ids
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
+msgid "Training Material"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q10
+msgid ""
+"Tu impacto no termina en tu negocio, también está en tu cadena de "
+"suministro."
+msgstr ""
+
+#. module: company_certification
+#: model:mail.template,subject:company_certification.mail_template_certification_renewal_due
+msgid "Tu sello {{ object.certification_type_id.name }} vence pronto"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_highlight__type_id
+#: model:ir.model.fields,field_description:company_certification.field_res_company_certification__type_id
+msgid "Type"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q22
+msgid "Un buen producto puede fallar si no se explica bien."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.sust_economy_q18
+msgid ""
+"Un equipo que no crece acaba estancándose, y eso impacta directamente en el "
+"negocio."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q19
+msgid ""
+"Un pequeño gesto posterior transmite interés y genera confianza a largo "
+"plazo."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,description:company_certification.highlight_silver_seating
+msgid "Un sitio donde sentarse durante la visita."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q10
+msgid ""
+"Un teléfono visible o una persona accesible puede marcar la diferencia."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:survey.question,description:company_certification.silver_economy_q17
+msgid ""
+"Una duda mal resuelta genera desconfianza. Y en muchos casos, el cliente no "
+"vuelve a preguntar."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q5
+msgid ""
+"Una simple silla bien ubicada puede cambiar completamente la experiencia del"
+" cliente."
+msgstr ""
+
+#. module: company_certification
 #. odoo-python
+#: code:addons/company_certification/controllers/main.py:0
 #: code:addons/company_certification/models/survey_user_input.py:0
 msgid "Unknown certification type."
 msgstr "Tipo de certificación desconocido."
 
 #. module: company_certification
-#. odoo-python
-#: code:addons/company_certification/models/res_company.py:0
-msgid "Certification Evaluations - %s"
-msgstr "Evaluaciones de certificación - %s"
-
-#. module: company_certification
-#: model_terms:ir.ui.view,arch_db:company_certification.certification_no_company
-msgid "No company assigned"
-msgstr "No tienes empresa asignada"
-
-#. module: company_certification
-#: model_terms:ir.ui.view,arch_db:company_certification.certification_no_company
-msgid "You need a company on your user profile to run a\n"
-"                       certification evaluation."
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__group_user_id
+msgid "User Group"
 msgstr ""
-"Necesitas una empresa asignada en tu perfil de usuario para realizar una "
-"evaluación de certificación."
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_type__group_manager_id
+msgid ""
+"Users in this group manage every evaluation of this vertical and can "
+"override certification levels."
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,comments_message:company_certification.silver_economy_q7
+msgid ""
+"Utiliza tamaños de letra más grandes, tipografías sencillas y deja espacio "
+"entre líneas. Haz una prueba rápida: ¿puedes leerlo cómodamente desde cierta"
+" distancia?"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__validity_years
+msgid "Validity Years"
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,label:company_certification.highlight_silver_web
+msgid "Web fácil de leer"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
+msgid "Website"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__website_description
+msgid "Website Description"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__website_title
+msgid "Website Title"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_type__highlight_ids
+msgid ""
+"What holding this seal means. Shown as an icon list on every certified "
+"company's microsite when that company's own evaluation highlights are not "
+"available."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_evaluation_start__blocker
+msgid ""
+"What stands between this shop and this evaluation right now, in the "
+"merchant's own words."
+msgstr "Qué impide ahora mismo que este comercio haga esta evaluación, dicho en sus propias palabras."
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
+msgid "What this certification is about, shown at /certification/<code>"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_survey_survey__certification_type_id
+#: model:ir.model.fields,help:company_certification.field_survey_user_input__certification_type_id
+msgid ""
+"When set, this survey is the questionnaire of a company certification "
+"vertical."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_evaluation_start__certification_type_id
+msgid "Which seal you want to work towards."
+msgstr "El sello al que quieres optar."
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_evaluation_start__blocker
+msgid "Why not"
+msgstr "Por qué no"
+
+#. module: company_certification
+#: model:mail.template,subject:company_certification.mail_template_certification_retry_available
+msgid ""
+"Ya puedes repetir tu evaluación {{ object.certification_type_id.name }}"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_type__validity_years
+msgid "Years the seal stays valid after being awarded."
+msgstr ""
+
+#. module: company_certification
+#. odoo-python
+#: code:addons/company_certification/models/survey_user_input.py:0
+msgid "You are not allowed to run the %s evaluation."
+msgstr ""
 
 #. module: company_certification
 #: model_terms:ir.ui.view,arch_db:company_certification.certification_cooldown
-msgid "Evaluation not available yet"
-msgstr "Evaluación no disponible todavía"
+msgid "You can run a new one from:"
+msgstr ""
 
 #. module: company_certification
-#: model_terms:ir.ui.view,arch_db:company_certification.certification_error
-msgid "Could not start the evaluation"
-msgstr "No se pudo iniciar la evaluación"
-
-#. module: company_certification
-#: model_terms:ir.ui.view,arch_db:company_certification.survey_fill_form_done_certification
-msgid "Evaluation result"
-msgstr "Resultado de la evaluación"
-
-#. module: company_certification
-#: model_terms:ir.ui.view,arch_db:company_certification.survey_fill_form_done_certification
-msgid "Recommendations to improve"
-msgstr "Recomendaciones para mejorar"
-
-#. module: company_certification
-#: model_terms:ir.ui.view,arch_db:company_certification.question_simple_choice_certification
-#: model_terms:ir.ui.view,arch_db:company_certification.question_multiple_choice_certification
-msgid "Recommendation:"
-msgstr "Recomendación:"
+#. odoo-python
+#: code:addons/company_certification/models/survey_user_input.py:0
+msgid "You cannot run a new evaluation until %s."
+msgstr "No puedes realizar una nueva evaluación hasta el %s."
 
 #. module: company_certification
 #: model_terms:ir.ui.view,arch_db:company_certification.certification_no_company
+msgid ""
+"You need a company on your user profile to run a\n"
+"                       certification evaluation."
+msgstr "Necesitas una empresa asignada en tu perfil de usuario para realizar una evaluación de certificación."
+
+#. module: company_certification
+#. odoo-python
+#: code:addons/company_certification/models/survey_user_input.py:0
+msgid "You need a company on your user profile to run an evaluation."
+msgstr "Necesitas una empresa asignada en tu perfil de usuario para realizar una evaluación."
+
+#. module: company_certification
 #: model_terms:ir.ui.view,arch_db:company_certification.certification_cooldown
-#: model_terms:ir.ui.view,arch_db:company_certification.certification_error
-msgid "Back"
-msgstr "Volver"
+msgid "Your company already ran a recent"
+msgstr ""
+
+#. module: company_certification
+#. odoo-python
+#: code:addons/company_certification/wizards/certification_evaluation_start.py:0
+msgid "Your user profile has no shop, so there is nothing to certify."
+msgstr "Tu perfil de usuario no tiene comercio, así que no hay nada que certificar."
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
+msgid "e.g. Silver Economy"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_cooldown
+msgid "evaluation."
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
+msgid "fa-wheelchair"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.survey_fill_form_done_certification
+msgid ""
+"puntos\n"
+"                            ("
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_landing
+msgid "resultados"
+msgstr ""
+
+#. module: company_certification
+#: model:mail.template,subject:company_certification.mail_template_certification_new_badge
+msgid ""
+"¡Felicidades! Has obtenido el sello {{ object.certification_type_id.name }}"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q18
+msgid ""
+"¿Acompañas al cliente cuando el proceso es complejo (compra, registro, "
+"etc.)?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q12
+msgid ""
+"¿Adaptas la atención a cada cliente en lugar de aplicar un trato estándar?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q29
+msgid ""
+"¿Adaptas tus productos o servicios a las necesidades reales de este "
+"colectivo?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q32
+msgid ""
+"¿Conoces realmente cómo son, qué necesitan y cómo se comportan tus clientes "
+"mayores?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q31
+msgid ""
+"¿Consideras a las personas mayores como un público importante dentro de tu "
+"negocio?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q1
+msgid ""
+"¿El acceso a tu local resulta cómodo y sin barreras para una persona mayor?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q25
+msgid "¿El cliente entiende claramente cuánto va a pagar y por qué?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q10
+msgid ""
+"¿El cliente puede pedir ayuda fácilmente si lo necesita (en tienda o en la "
+"web)?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q27
+msgid "¿El cliente puede recibir ayuda después de la compra si la necesita?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q8
+msgid "¿El contraste de colores facilita la lectura de la información?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q4
+msgid ""
+"¿El espacio permite moverse con comodidad, sin obstáculos ni estrecheces?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q23
+msgid ""
+"¿El proceso de compra (físico o digital) es sencillo y fácil de seguir?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q26
+msgid "¿El proceso de pago es sencillo y se adapta a diferentes preferencias?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q7
+msgid ""
+"¿El texto de tu web (o materiales digitales) es fácil de leer para personas "
+"mayores?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q16
+msgid ""
+"¿Es fácil contactar contigo a través de canales accesibles para personas "
+"mayores?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q9
+msgid "¿Es fácil encontrar lo que se busca en tu web sin perderse?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q30
+msgid "¿Evitas procesos digitales innecesariamente complejos?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q35
+msgid ""
+"¿Evitas, de forma consciente, prácticas o decisiones que puedan excluir a "
+"personas por su edad?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q39
+msgid ""
+"¿Formas a tu equipo en cómo atender y entender mejor a personas mayores?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q20
+msgid "¿La atención telefónica es clara, cercana y fácil de gestionar?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q3
+msgid "¿La iluminación del espacio permite ver con claridad sin esfuerzo?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q2
+msgid ""
+"¿La señalización dentro del local permite orientarse fácilmente sin "
+"necesidad de preguntar?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q17
+msgid "¿Las dudas de los clientes se resuelven de forma clara y completa?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q22
+msgid "¿Las instrucciones son fáciles de entender para cualquier persona?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q37
+msgid "¿Mides la satisfacción de tus clientes mayores de forma específica?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q5
+msgid "¿Ofreces algún espacio donde el cliente pueda sentarse o descansar?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q24
+msgid ""
+"¿Ofreces alternativas más simples para quien no necesita opciones avanzadas?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q33
+msgid ""
+"¿Realizas acciones concretas pensadas para atraer o mejorar la experiencia "
+"de clientes mayores?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q19
+msgid "¿Realizas algún tipo de seguimiento después de la compra o servicio?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q28
+msgid "¿Recoges la opinión de clientes mayores para mejorar tu servicio?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q38
+msgid ""
+"¿Revisas periódicamente tus procesos para detectar barreras o puntos de "
+"mejora?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q15
+msgid ""
+"¿Te aseguras de que el cliente entiende bien lo que está comprando o "
+"contratando?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q36
+msgid ""
+"¿Trabajas activamente para que tu entorno digital sea accesible para "
+"personas mayores?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q40
+msgid ""
+"¿Tu empresa trabaja activamente en mejorar su adaptación a este colectivo de"
+" forma continua?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q11
+msgid ""
+"¿Tu equipo está preparado para atender a personas mayores de forma adecuada "
+"y empática?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q13
+msgid ""
+"¿Tu equipo respeta el ritmo del cliente, especialmente cuando necesita más "
+"tiempo?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q34
+msgid ""
+"¿Tu forma de comunicar (web, publicidad, mensajes) incluye y representa a "
+"las personas mayores?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q6
+msgid ""
+"¿Tu web es sencilla de usar, incluso para alguien con poca experiencia "
+"digital?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q21
+msgid ""
+"¿Tus productos o servicios son fáciles de usar sin necesidad de ayuda "
+"constante?"
+msgstr ""
+
+#. module: company_certification
+#: model:survey.question,title:company_certification.silver_economy_q14
+msgid ""
+"¿Utilizas un lenguaje fácil de entender, evitando tecnicismos innecesarios?"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.survey_fill_form_done_certification
+msgid "🎉 ¡Felicidades! Tu empresa ha obtenido el sello"
+msgstr ""

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- The filter panel, in the sidebar hook the directory publishes for
+         bridges. Grouped by subdivision and in catalogue order, so a visitor
+         who read "Instalaciones y servicios" on a shop's page meets the same
+         headings and the same wording here.
+
+         Every chip is a plain link whose address the controller built: no
+         JavaScript, so the filter survives a shared URL, a bookmark and a
+         browser with scripting turned off, and every combination is a real
+         page the search engines can reach. -->
+    <template id="directory_sidebar_facilities"
+              inherit_id="website_directory.directory_sidebar_extra"
+              name="Directory filter: facilities and services">
+        <xpath expr="//div[@id='o_wd_sidebar_extra']" position="inside">
+            <div t-if="facility_filter_groups" class="card border-0 shadow-sm mb-3 o_wdcf_filter">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="card-title fw-bold mb-0">
+                            <i class="fa fa-list-ul me-2"/>Instalaciones y servicios
+                        </h6>
+                        <a t-if="selected_facility_ids"
+                           t-att-href="facility_filter_clear_url"
+                           class="wd-filter-link small text-decoration-none">Quitar</a>
+                    </div>
+                    <!-- One dropdown per subdivision, the selection shown as
+                         removable pills right below it: chips-per-option do
+                         not scale past a handful of facilities, a dropdown
+                         does. Picking an option navigates to the URL the
+                         controller built for it (wd-nav-select), so the
+                         filter still survives shared URLs and bookmarks and
+                         degrades to a no-op without JavaScript. -->
+                    <t t-foreach="facility_filter_groups" t-as="group">
+                        <div class="mb-3">
+                            <label class="text-muted small text-uppercase fw-semibold mb-2 d-block"
+                                   t-att-for="'o_wdcf_add_%s' % group['id']">
+                                <i t-if="group['icon']"
+                                   t-attf-class="fa #{group['icon']} me-1"/>
+                                <t t-out="group['name']"/>
+                            </label>
+                            <t t-set="wdcf_available"
+                               t-value="[item for item in group['facilities'] if not item['selected']]"/>
+                            <t t-set="wdcf_selected"
+                               t-value="[item for item in group['facilities'] if item['selected']]"/>
+                            <select t-if="wdcf_available"
+                                    t-att-id="'o_wdcf_add_%s' % group['id']"
+                                    class="form-select wd-nav-select o_wdcf_add">
+                                <option value="" selected="selected">Todos</option>
+                                <t t-foreach="wdcf_available" t-as="facility">
+                                    <option t-att-value="facility['url']"
+                                            t-esc="facility['name']"/>
+                                </t>
+                            </select>
+                            <div t-if="wdcf_selected" class="d-flex flex-wrap gap-2 mt-2">
+                                <t t-foreach="wdcf_selected" t-as="facility">
+                                    <a t-att-href="facility['url']"
+                                       class="wd-filter-link btn btn-sm btn-primary o_wdcf_pill"
+                                       aria-pressed="true"
+                                       t-att-aria-label="'Quitar filtro %s' % facility['name']">
+                                        <i t-attf-class="fa #{facility['icon']} me-1"/>
+                                        <t t-out="facility['name']"/>
+                                        <i class="fa fa-times ms-2" role="presentation"/>
+                                    </a>
+                                </t>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Top active-filters summary: one chip per ticked facility. -->
+    <template id="directory_active_filters_facilities" inherit_id="website_directory.directory_active_filters_extra">
+        <xpath expr="//span[@id='o_wd_active_filters_extra']" position="inside">
+            <t t-if="selected_facility_ids">
+                <t t-foreach="request.env['company.facility'].sudo().browse(selected_facility_ids)" t-as="wdcf_active_facility">
+                    <span class="badge bg-primary wd-filter-chip d-inline-flex align-items-center">
+                        <i t-attf-class="fa #{wdcf_active_facility.icon or 'fa-check'} me-1"/>
+                        <t t-esc="wdcf_active_facility.name"/>
+                        <a t-att-href="facility_remove_urls.get(wdcf_active_facility.id)"
+                           class="wd-filter-link wd-filter-chip-x"
+                           t-attf-aria-label="Quitar filtro {{ wdcf_active_facility.name }}">×</a>
+                    </span>
+                </t>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>

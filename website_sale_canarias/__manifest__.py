@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website Sale Canarias Design",
-    "version": "19.0.1.1.0",
+    "version": "19.0.2.3.2",
     "category": "Website",
     "summary": "The Canarias Conectada shop look: hero header, searchable "
     "category sidebar, merchant badge on every card and AJAX filtering",

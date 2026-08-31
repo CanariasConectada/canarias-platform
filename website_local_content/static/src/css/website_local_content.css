@@ -1,27 +1,56 @@
 /* Copyright 2026 Canarias Conectada
    License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). */
 
+/* Hero: full-bleed photograph (inline background-image when the content
+   type carries one) with a blue overlay; gradient fallback otherwise. */
 .wlc-hero {
+    padding: 120px 0;
     background: linear-gradient(135deg, #1a3a5c 0%, #2c6e91 100%);
 }
 
-.wlc-card-img-wrap {
-    position: relative;
-    aspect-ratio: 4 / 3;
+/* On a phone 120px of padding drowns the content: near half a screen of
+   photograph before the first word. */
+@media (max-width: 576px) {
+    .wlc-hero {
+        padding: 48px 0;
+    }
+}
+
+.wlc-hero-overlay {
+    background: rgba(13, 71, 161, 0.55);
+}
+
+.wlc-hero-content {
+    z-index: 1;
+}
+
+/* Cards: lift on hover, zoom the photograph (legacy card-hover/hover-zoom). */
+.wlc-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.wlc-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+.wlc-card-img-box {
+    height: 220px;
     overflow: hidden;
     background: #f4f4f4;
 }
 
 .wlc-card-img {
-    width: 100%;
-    height: 100%;
     object-fit: cover;
+    transition: transform 0.3s ease;
 }
 
-.wlc-year-badge {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
+.wlc-card:hover .wlc-card-img {
+    transform: scale(1.05);
+}
+
+.wlc-card-overlay {
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
 }
 
 .wlc-card-teaser {
@@ -31,19 +60,40 @@
     overflow: hidden;
 }
 
+/* Floating like button over the card image. 2.5rem: a 36px square is
+   under the ~44px touch-target floor. */
+.wlc-like-btn {
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    z-index: 10;
+}
+
+.wlc-like-noscript {
+    z-index: 10;
+}
+
+.wlc-search-badge {
+    font-size: 0.9rem;
+}
+
 .wlc-detail-img {
-    max-height: 32rem;
+    max-height: 500px;
     object-fit: cover;
 }
 
 .wlc-gallery-thumb {
-    aspect-ratio: 1 / 1;
+    height: 150px;
     object-fit: cover;
     width: 100%;
 }
 
 .wlc-pre-line {
     white-space: pre-line;
+}
+
+.wlc-sponsor-logo {
+    max-height: 60px;
 }
 
 /* Read-only rating stars (same look as the merchant reviews module). */
@@ -54,8 +104,4 @@
 
 .wlc-rating-stars .wlc-rating-star.filled {
     color: #f5b301;
-}
-
-.wlc-card-rating .wlc-rating-star {
-    font-size: 0.9rem;
 }

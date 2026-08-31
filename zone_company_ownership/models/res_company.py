@@ -3,9 +3,7 @@
 
 from odoo import api, fields, models
 
-from odoo.addons.website_directory.models.website_directory_entry import (
-    ZONE_SELECTION,
-)
+from odoo.addons.website_directory.models.website_directory_entry import ZONE_SELECTION
 
 # "canarias" is deliberately absent: it is the value a company carries when it
 # belongs to no neighbourhood, and there is no company representing it. Making
@@ -28,9 +26,11 @@ class ResCompany(models.Model):
         string="Represents commercial zone",
         index=True,
         help="Set on the three zone companies (Guanarteme, Tamaraceite, Lomo "
-        "Los Frailes). A merchant of that zone has its products and users "
-        "assigned to this company as well as to their own, which is what "
-        "puts them in the zone shop.",
+        "Los Frailes). The products of a merchant of that zone are assigned "
+        "to this company as well as to their own, which is what puts them in "
+        "the zone shop. Their user accounts are NOT: a zone company in "
+        "'Allowed Companies' would let every merchant of the neighbourhood "
+        "read and write each other's records.",
     )
 
     def _zone_companies(self):
@@ -79,11 +79,17 @@ class ResCompany(models.Model):
         return real_owners | real_owners._required_zone_companies()
 
     def _sync_zone_ownership(self):
-        """Re-apply the zone companies to everything ``self`` owns."""
+        """Re-apply the zone companies to everything ``self`` owns.
+
+        Catalogue and people are pulled in opposite directions on purpose: a
+        product GAINS the zone company (that is what lists it in the zone
+        shop), a user LOSES it (see
+        :meth:`res.users._drop_zone_companies`).
+        """
         if not self:
             return
         self.env["product.template"]._sync_zone_companies_for_owners(self)
-        self.env["res.users"]._sync_zone_companies_for_owners(self)
+        self.env["res.users"]._drop_zone_companies_for_owners(self)
 
     def write(self, vals):
         res = super().write(vals)

@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website Directory - Company Certification",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.4.0",
     "category": "Website",
     "summary": "Certification badges and filters in the business directory",
     "author": "MikeColangelo",
@@ -17,6 +17,11 @@
     "data": [
         "views/website_directory_templates.xml",
     ],
+    "assets": {
+        "web.assets_frontend": [
+            "website_directory_company_certification/static/src/css/directory_certification.css",
+        ],
+    },
     "installable": True,
     "auto_install": True,
 }

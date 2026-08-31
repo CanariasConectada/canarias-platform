@@ -17,13 +17,96 @@
         category: null,
         search: "",
         loading: false,
+        // The page's own path (/comercio or /comercio/zona/<key>) and zone:
+        // every AJAX refresh stays on that path and asks the server for
+        // that zone, so a visitor on /comercio/zona/guanarteme does not get
+        // widened to the whole archipelago by the first filter they touch.
+        baseUrl: "/comercio",
+        zone: "canarias",
     };
+
+    var DEFAULT_BASE_URL = "/comercio";
+    var DEFAULT_ZONE = "canarias";
+    var AJAX_URL = "/comercio/ajax/search";
 
     var MIN_SEARCH_LENGTH = 3;
     var SEARCH_DELAY_MS = 400;
 
     function byId(id) {
         return document.getElementById(id);
+    }
+
+    // Query string params outside this module's own known set (search,
+    // category, view, ppg, page): whatever a bridge module's filter put
+    // there (facility=1,2 / certification=sustainability / ...).
+    var KNOWN_PARAMS = ["search", "category", "view", "ppg", "page"];
+
+    function currentExtraParams() {
+        var extra = {};
+        new URLSearchParams(window.location.search).forEach(function (
+            value,
+            key
+        ) {
+            if (KNOWN_PARAMS.indexOf(key) === -1) {
+                extra[key] = value;
+            }
+        });
+        return extra;
+    }
+
+    // ------------------------------------------------------------------
+    // Turn a server-built filter URL (a select option's value, a chip's
+    // href, a pill's "remove" link) into a fetchResults() call instead of
+    // a full navigation. The URL already encodes the COMPLETE target state
+    // -- every bridge filter builds it that way precisely so a click never
+    // drops a sibling filter -- so re-deriving `changes` from its query
+    // string is enough: known params are read directly, and anything else
+    // (facility, certification, whatever a future bridge adds) replaces
+    // `state.extra` wholesale, which both adds a fresh one and drops one
+    // the visitor just turned off.
+    // ------------------------------------------------------------------
+    function changesFromQuery(query) {
+        var params = new URLSearchParams(query);
+        var changes = {extra: {}};
+        params.forEach(function (value, key) {
+            if (KNOWN_PARAMS.indexOf(key) === -1) {
+                changes.extra[key] = value;
+            }
+        });
+        changes.search = params.get("search") || "";
+        var category = params.get("category");
+        changes.category = category ? parseInt(category, 10) || null : null;
+        changes.view = params.get("view") || "grid";
+        changes.ppg = parseInt(params.get("ppg"), 10) || 21;
+        // A filter change always starts back at page 1: the answer's size
+        // changed, so the old page number rarely still means anything.
+        changes.page = 1;
+        return changes;
+    }
+
+    // Only the query string is read: the pathname of a filter link is the
+    // page's own base URL (the server builds every filter URL on
+    // `base_url`), which fetchResults() already keeps through pushState.
+    function followFilterUrl(url) {
+        var queryIndex = url.indexOf("?");
+        var query = queryIndex === -1 ? "" : url.slice(queryIndex + 1);
+        fetchResults(changesFromQuery(query));
+    }
+
+    // The page address for the current filter state: the page's own
+    // pathname (never a bare /comercio when the visitor is on a zone path)
+    // plus the query string.
+    function pageUrl(query) {
+        return state.baseUrl + (query ? "?" + query : "");
+    }
+
+    function ajaxUrl(query) {
+        var params = new URLSearchParams(query);
+        if (state.zone && state.zone !== DEFAULT_ZONE) {
+            params.set("zone", state.zone);
+        }
+        var serialized = params.toString();
+        return AJAX_URL + (serialized ? "?" + serialized : "");
     }
 
     function init() {
@@ -42,19 +125,90 @@
         state.view = dataNode.dataset.view || "grid";
         state.ppg = parseInt(dataNode.dataset.ppg, 10) || 21;
         state.search = dataNode.dataset.search || "";
+        state.baseUrl = dataNode.dataset.baseUrl || DEFAULT_BASE_URL;
+        state.zone = dataNode.dataset.zone || DEFAULT_ZONE;
         state.category =
             state.selected[2] || state.selected[1] || state.selected[0] || null;
+        // Every query string param this base module does not itself manage
+        // (bridge modules' "facility", "certification", and whatever comes
+        // next) is carried verbatim through every AJAX round trip below, so
+        // ticking a category or typing a search never silently drops a
+        // filter a bridge module added. Read once, at load, from the address
+        // bar that rendered this exact page: it already reflects every
+        // active filter, managed or not.
+        state.extra = currentExtraParams();
 
-        initZoneSelect();
-        initCategoryCascade();
+        initSidebar();
         initAsyncSearch();
         initToolbar();
         initPagination();
+        initFilterLinks();
+    }
+
+    // ------------------------------------------------------------------
+    // Everything living inside #wd_sidebar: the zone select, the category
+    // cascade, and whatever a bridge module (certification, facilities)
+    // added to the extension hook. Re-run after every AJAX round trip that
+    // swaps this whole block in fresh, not just at page load -- a select's
+    // 'change' listener and the enhanced-dropdown wrapper both attach to
+    // ONE specific DOM node, which the swap just replaced with a new one
+    // that has neither yet.
+    // ------------------------------------------------------------------
+    function initSidebar() {
+        initZoneSelect();
+        initNavSelects();
+        initCategoryCascade();
         ["wd_zone_select", "wd_cat_l1", "wd_cat_l2", "wd_cat_l3"].forEach(
             function (id) {
                 enhanceSelect(byId(id));
             }
         );
+    }
+
+    // ------------------------------------------------------------------
+    // Navigation selects: any select marked wd-nav-select follows the
+    // picked option's value through the same AJAX pipeline as the category
+    // cascade, instead of a full page navigation. The generic hook the
+    // sidebar bridges (the facilities filter, and whatever comes next)
+    // build on: the server renders the URLs, this only follows them --
+    // async now, so ticking "Rampa de acceso" no longer reloads the page
+    // out from under a category the visitor already picked (reported
+    // 2026-08-21).
+    // ------------------------------------------------------------------
+    function initNavSelects() {
+        document
+            .querySelectorAll("select.wd-nav-select")
+            .forEach(function (select) {
+                select.addEventListener("change", function () {
+                    if (select.value) {
+                        followFilterUrl(select.value);
+                    }
+                });
+                enhanceSelect(select);
+            });
+    }
+
+    // ------------------------------------------------------------------
+    // Filter chip / pill links: any anchor marked wd-filter-link (the
+    // certification chips, the facilities "Quitar"/pill remove buttons, the
+    // active-filters summary at the top) follows its href through the same
+    // AJAX pipeline. Delegated on #wrap so chips re-rendered by an AJAX
+    // response (a fresh sidebar, a fresh summary bar) are wired without
+    // re-scanning the DOM after every fetch.
+    // ------------------------------------------------------------------
+    function initFilterLinks() {
+        var wrap = byId("wrap");
+        if (!wrap) {
+            return;
+        }
+        wrap.addEventListener("click", function (event) {
+            var link = event.target.closest("a.wd-filter-link");
+            if (!link) {
+                return;
+            }
+            event.preventDefault();
+            followFilterUrl(link.getAttribute("href"));
+        });
     }
 
     // ------------------------------------------------------------------
@@ -190,7 +344,9 @@
     }
 
     // ------------------------------------------------------------------
-    // Zone filter: each option value is the target URL.
+    // Zone filter: each option value is the target URL, built server-side
+    // with every active filter already in its query string. A real
+    // navigation, not an AJAX call: the zone is the page's path.
     // ------------------------------------------------------------------
     function initZoneSelect() {
         var select = byId("wd_zone_select");
@@ -245,6 +401,19 @@
         form.addEventListener("submit", function (event) {
             event.preventDefault();
         });
+
+        // The server-rendered selection wins over the copy read at page
+        // load: after an AJAX swap the old copy is stale (a chip that just
+        // cleared the category would otherwise re-select its subcategory).
+        if (form.dataset.selected) {
+            try {
+                state.selected = JSON.parse(form.dataset.selected);
+            } catch (error) {
+                // Keep the previous selection.
+            }
+        }
+        state.category =
+            state.selected[2] || state.selected[1] || state.selected[0] || null;
 
         // Restore the cascade for the currently selected category.
         var root = findNode(state.categories, state.selected[0]);
@@ -397,6 +566,11 @@
         if (params.page > 1) {
             query.set("page", params.page);
         }
+        Object.keys(params.extra || {}).forEach(function (key) {
+            if (params.extra[key]) {
+                query.set(key, params.extra[key]);
+            }
+        });
         return query.toString();
     }
 
@@ -419,7 +593,7 @@
         Object.assign(state, changes);
         var query = buildQuery(state);
         setLoading(true);
-        fetch("/comercio/ajax/search" + (query ? "?" + query : ""), {
+        fetch(ajaxUrl(query), {
             headers: {"X-Requested-With": "XMLHttpRequest"},
         })
             .then(function (response) {
@@ -429,24 +603,36 @@
                 return response.text();
             })
             .then(function (html) {
+                // The AJAX response carries two named blocks (results AND a
+                // fresh sidebar) in one response body; pull each out by id
+                // and inject into its own live container. A bridge filter's
+                // chip has to show its own new active/inactive state after
+                // this round trip, same as the category cascade already
+                // does client-side -- re-rendering the whole sidebar is
+                // simpler than teaching every bridge chip to track that in
+                // JS, and this is the one place that pays for it.
+                var doc = new DOMParser().parseFromString(html, "text/html");
+                var resultsSource = doc.getElementById("wd_ajax_results");
+                var sidebarSource = doc.getElementById("wd_ajax_sidebar");
                 var results = byId("wd_results");
-                if (results) {
-                    results.innerHTML = html;
+                if (results && resultsSource) {
+                    results.innerHTML = resultsSource.innerHTML;
                     results.scrollIntoView({behavior: "smooth", block: "start"});
                 }
+                var sidebar = byId("wd_sidebar");
+                if (sidebar && sidebarSource) {
+                    sidebar.innerHTML = sidebarSource.innerHTML;
+                    initSidebar();
+                }
                 if (window.history && window.history.pushState) {
-                    window.history.pushState(
-                        {},
-                        document.title,
-                        "/comercio" + (query ? "?" + query : "")
-                    );
+                    window.history.pushState({}, document.title, pageUrl(query));
                 }
                 setLoading(false);
             })
             .catch(function () {
                 // Network/server issue: fall back to a full page load.
                 setLoading(false);
-                window.location.href = "/comercio" + (query ? "?" + query : "");
+                window.location.href = pageUrl(query);
             });
     }
 

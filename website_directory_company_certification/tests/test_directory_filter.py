@@ -3,7 +3,7 @@
 from dateutil.relativedelta import relativedelta
 
 from odoo import fields
-from odoo.tests import tagged
+from odoo.tests import HttpCase, tagged
 from odoo.tests.common import TransactionCase
 
 from odoo.addons.website_directory_company_certification.controllers.main import (
@@ -65,3 +65,42 @@ class TestDirectoryCertificationFilter(TransactionCase):
             self.cert_type,
         )
         self.assertFalse(self.plain_company._get_valid_certifications())
+
+    def test_toggling_the_certification_keeps_the_category_filter(self):
+        """Clicking "Sostenibilidad" must not throw away the category.
+
+        Reported 2026-08-21: the chip's address used to be built in the
+        template as ``{{ base_url }}?certification=...``, which drops every
+        other active filter. The address is now built on the server, the
+        same way ``website_directory_company_facilities`` already does it.
+        """
+        controller = WebsiteDirectoryCertification()
+        url = controller._certification_url(
+            "/comercio", {"search": "pan", "category": "12"}, "silver"
+        )
+        self.assertIn("search=pan", url)
+        self.assertIn("category=12", url)
+        self.assertIn("certification=silver", url)
+
+    def test_clicking_the_active_chip_clears_only_the_certification(self):
+        controller = WebsiteDirectoryCertification()
+        url = controller._certification_url(
+            "/comercio", {"category": "12", "certification": "silver"}, ""
+        )
+        self.assertIn("category=12", url)
+        self.assertNotIn("certification", url)
+
+
+@tagged("post_install", "-at_install")
+class TestDirectoryCertificationRendering(HttpCase):
+    """The sidebar card as the visitor meets it."""
+
+    def test_filter_card_carries_the_chip_styling_hook(self):
+        """The card class is what the stylesheet hangs the legible chip
+        treatment on; without it the chips fall back to the theme's amber
+        outline with near-white text."""
+        response = self.url_open("/comercio")
+        self.assertEqual(response.status_code, 200)
+        # The seed certification types ship with company_certification, so
+        # the card renders on a bare database.
+        self.assertIn("o_wdcc_filter", response.text)

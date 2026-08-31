@@ -4,6 +4,7 @@
 import base64
 import io
 import logging
+import re
 
 from PIL import WebPImagePlugin  # noqa: F401  (registers the WebP decoder)
 from PIL import Image
@@ -15,6 +16,11 @@ _logger = logging.getLogger(__name__)
 # Sizes a browser needs to accept a manifest as installable. 192 is the
 # minimum Chrome checks for; 512 is what it uses for the splash screen.
 ICON_SIZES = (192, 512)
+
+# Share of the square a maskable icon may actually rely on. The spec guarantees
+# a launcher keeps the inner circle of diameter 80% of the canvas; everything
+# outside it may be cropped to whatever shape the launcher uses.
+MASKABLE_SAFE_RATIO = 0.8
 
 # Fallback palette when the merchant has not chosen one. Deliberately the
 # platform's own colours rather than Odoo's purple, so an unconfigured
@@ -128,9 +134,18 @@ class Website(models.Model):
         website = self.get_current_website()
         return website if website.pwa_enabled else self.browse()
 
-    def _pwa_icon_png(self, size):
+    def _pwa_icon_png(self, size, maskable=False):
         """Square PNG of ``size`` pixels, or False when there is no usable
         source image.
+
+        ``maskable`` produces the variant Android asks for: the same mark
+        scaled into the SAFE ZONE and padded out to the full square with the
+        background colour. A launcher may crop a maskable icon to any shape it
+        likes -- circle, squircle, teardrop -- and it is only guaranteed to
+        keep the inner 80%. Serving one edge-to-edge image and declaring it
+        ``"any maskable"``, which is what this module did until 19.0.2.0.0,
+        promises a safe zone that is not there: on a circular launcher the
+        brand mark loses its corners on every icon on the platform.
 
         Deliberately not delegating to ``tools.image.image_process``: the
         merchant logos on this platform are mostly **WebP**, and inside an
@@ -167,11 +182,41 @@ class Website(models.Model):
         left = (image.width - short_side) // 2
         top = (image.height - short_side) // 2
         image = image.crop((left, top, left + short_side, top + short_side))
-        image = image.resize((size, size), Image.LANCZOS)
+
+        if maskable:
+            inner = max(1, int(round(size * MASKABLE_SAFE_RATIO)))
+            image = image.resize((inner, inner), Image.LANCZOS)
+            canvas = Image.new("RGBA", (size, size), self._pwa_maskable_bg())
+            offset = (size - inner) // 2
+            # Third argument is the mask: without it a transparent logo pastes
+            # its own zeroed alpha over the canvas and the padding disappears
+            # again, which is the whole point of the variant.
+            canvas.paste(image, (offset, offset), image)
+            image = canvas
+        else:
+            image = image.resize((size, size), Image.LANCZOS)
 
         buffer = io.BytesIO()
         image.save(buffer, format="PNG", optimize=True)
         return buffer.getvalue()
+
+    def _pwa_maskable_bg(self):
+        """Opaque RGBA fill behind a maskable icon.
+
+        Opaque on purpose: a maskable icon with transparent padding is drawn by
+        the launcher over whatever wallpaper the phone has, so the mark floats
+        on the user's photo instead of sitting on the brand colour.
+        """
+        self.ensure_one()
+        raw = (self.pwa_background_color or DEFAULT_BACKGROUND_COLOR).strip()
+        if raw.startswith("#") and len(raw) == 4:  # #abc -> #aabbcc
+            raw = "#" + "".join(character * 2 for character in raw[1:])
+        if not re.fullmatch(r"#[0-9a-fA-F]{6}", raw):
+            # The field is free text on a settings form, so it can hold
+            # anything. A bad value must not 500 the icon route and take the
+            # install prompt with it.
+            raw = DEFAULT_BACKGROUND_COLOR
+        return (int(raw[1:3], 16), int(raw[3:5], 16), int(raw[5:7], 16), 255)
 
     def _pwa_manifest_values(self):
         """The manifest, as a plain dict ready to be serialised."""
@@ -190,15 +235,23 @@ class Website(models.Model):
             "theme_color": self.pwa_theme_color or DEFAULT_THEME_COLOR,
             "background_color": self.pwa_background_color or DEFAULT_BACKGROUND_COLOR,
             "lang": (self.default_lang_id.code or "es_ES").replace("_", "-"),
+            # Two entries per size, never one declared "any maskable". The two
+            # purposes want opposite images: "any" wants the mark edge to edge,
+            # "maskable" wants it inside the 80% safe zone with the rest padded
+            # out, because the launcher is free to crop that. Declaring one
+            # edge-to-edge image as both is what clipped the corners off the
+            # brand mark on every circular launcher.
             "icons": [
                 {
-                    "src": f"{base}/website_pwa/icon/{size}.png",
+                    "src": f"{base}{path}",
                     "sizes": f"{size}x{size}",
                     "type": "image/png",
-                    # "any maskable" lets Android crop the icon into whatever
-                    # shape the launcher uses without adding its own frame.
-                    "purpose": "any maskable",
+                    "purpose": purpose,
                 }
                 for size in ICON_SIZES
+                for path, purpose in (
+                    (f"/website_pwa/icon/{size}.png", "any"),
+                    (f"/website_pwa/icon/maskable/{size}.png", "maskable"),
+                )
             ],
         }

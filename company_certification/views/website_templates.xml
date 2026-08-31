@@ -197,13 +197,6 @@
     <!-- Survey flow tweaks for certification questionnaires          -->
     <!-- ============================================================ -->
 
-    <!-- No retake button: retries are ruled by the cooldown, not the user. -->
-    <template id="survey_button_retake_certification" inherit_id="survey.survey_button_retake">
-        <xpath expr="//div[@class='d-print-none']" position="attributes">
-            <attribute name="t-if">not survey.certification_type_id and not answer.is_session_answer and not (survey.certification and answer.scoring_success)</attribute>
-        </xpath>
-    </template>
-
     <!-- Result panel on the survey completion page.
          SINGLE source of truth for every certification (Silver, Sostenibilidad
          and any future one). The vertical modules used to add their OWN seal
@@ -253,7 +246,7 @@
             </t>
             <!-- Improvement recommendations. -->
             <t t-if="cert_type">
-                <t t-set="weak_lines" t-value="answer.user_input_line_ids.filtered(lambda l: l.question_id.comments_allowed and l.answer_score &lt; cert_type.question_full_score and l.question_id.comments_message)"/>
+                <t t-set="weak_lines" t-value="answer.user_input_line_ids.filtered(lambda l: l.answer_score &lt; cert_type.question_full_score and l.question_id.comments_message)"/>
                 <div t-if="weak_lines" class="mt-4 mx-auto" style="max-width:34rem;">
                     <h5 class="fw-bold mb-3">
                         <i class="fa fa-lightbulb-o text-warning me-2"/>Recomendaciones para mejorar
@@ -276,12 +269,17 @@
                 </div>
             </t>
         </xpath>
+        <!-- Wrapped in a <p> like the core buttons in this flex row: a bare
+             <a> gets stretched to the row height by the default flex
+             align-items and renders as a misshapen oval next to the pills. -->
         <xpath expr="//div[contains(@class, 'o_survey_finished')]//div[contains(@class, 'd-flex') and contains(@class, 'gap-3')]" position="inside">
-            <a t-if="survey.certification_type_id" role="button"
-               class="btn btn-outline-secondary btn-lg"
-               href="javascript:window.close()">
-                <i class="fa fa-times"/> Cerrar
-            </a>
+            <p t-if="survey.certification_type_id" class="d-print-none mb-0">
+                <a role="button"
+                   class="btn btn-outline-secondary btn-lg"
+                   href="javascript:window.close()">
+                    <i class="fa fa-times"/> Cerrar
+                </a>
+            </p>
         </xpath>
         <!-- On a certification survey, hide the raw Odoo score ("You scored
              X%") and the "Review your answers" button: the seal card below
@@ -293,45 +291,15 @@
         <xpath expr="//a[hasclass('o_survey_review')]" position="attributes">
             <attribute name="t-att-class">'o_survey_review btn btn-secondary btn-lg' + (' d-none' if survey.certification_type_id else '')</attribute>
         </xpath>
-    </template>
-
-    <!-- Show the question's comment message as a fixed recommendation
-         instead of a free comment box on certification questionnaires. -->
-    <template id="question_simple_choice_certification" inherit_id="survey.question_simple_choice">
-        <xpath expr="//div[@t-if='question.comments_allowed and not question.comment_count_as_answer']" position="replace">
-            <div t-if="question.comments_allowed and not question.comment_count_as_answer"
-                 class="mb-2 o_survey_comment_container mt-3">
-                <t t-if="survey.certification_type_id and not answer.test_entry">
-                    <div class="alert alert-light border mt-2 p-2">
-                        <i class="fa fa-lightbulb-o text-warning me-2"/>
-                        <strong>Recommendation:</strong>
-                        <span t-out="question.comments_message"/>
-                    </div>
-                </t>
-                <t t-else="">
-                    <textarea type="text" class="col form-control o_survey_comment o_survey_question_text_box bg-transparent rounded-0 p-0"
-                        t-att-placeholder="question.comments_message or default_comments_message if not survey_form_readonly else ''"><t t-esc="comment_line.value_char_box if comment_line else ''"/></textarea>
-                </t>
-            </div>
-        </xpath>
-    </template>
-
-    <template id="question_multiple_choice_certification" inherit_id="survey.question_multiple_choice">
-        <xpath expr="//div[@t-if='question.comments_allowed and not question.comment_count_as_answer']" position="replace">
-            <div t-if="question.comments_allowed and not question.comment_count_as_answer"
-                 class="mb-2 o_survey_comment_container mt-3">
-                <t t-if="survey.certification_type_id and not answer.test_entry">
-                    <div class="alert alert-light border mt-2 p-2">
-                        <i class="fa fa-lightbulb-o text-warning me-2"/>
-                        <strong>Recommendation:</strong>
-                        <span t-out="question.comments_message"/>
-                    </div>
-                </t>
-                <t t-else="">
-                    <textarea type="text" class="col form-control o_survey_comment o_survey_question_text_box bg-transparent rounded-0 p-0"
-                        t-att-placeholder="question.comments_message or default_comments_message if not survey_form_readonly else ''"><t t-esc="comment_line.value_char_box if comment_line else ''"/></textarea>
-                </t>
-            </div>
+        <!-- No retake button on certification surveys: retries are ruled by
+             the cooldown, not the user, and the core /survey/retry route
+             would bypass both the cooldown check and the company binding.
+             Guarded at the call site: the vertical modules each overwrite
+             the t-if attribute inside survey.survey_button_retake (the
+             last-applied one wins, keeping only its own flag), so an
+             attribute override inside that template is not reliable. -->
+        <xpath expr="//t[@t-call='survey.survey_button_retake']" position="attributes">
+            <attribute name="t-if">not survey.certification_type_id</attribute>
         </xpath>
     </template>
 

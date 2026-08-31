@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website Local Content",
-    "version": "19.0.1.5.1",
+    "version": "19.0.1.9.0",
     "category": "Website",
     "summary": "Parameterizable local content galleries (places, memories, ...)",
     "author": "MikeColangelo",
@@ -24,6 +24,9 @@
         "views/local_content_tag_views.xml",
         "views/local_content_item_views.xml",
         "views/local_content_menus.xml",
+        # After the menus: the picker declares an entry under the root menu
+        # and a button on the Items list, so both have to exist first.
+        "wizards/local_content_item_start_views.xml",
         "views/website_local_content_templates.xml",
     ],
     "demo": [
@@ -32,6 +35,7 @@
     "assets": {
         "web.assets_frontend": [
             "website_local_content/static/src/css/website_local_content.css",
+            "website_local_content/static/src/js/website_local_content.js",
         ],
     },
     "installable": True,

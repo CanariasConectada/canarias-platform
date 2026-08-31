@@ -1,6 +1,8 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import json
+
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
@@ -109,3 +111,221 @@ class TestMicrositeRender(TransactionCase):
         self.company.microsite_phone2 = "603222222"
         html = self._render_homepage_content()
         self.assertIn("603222222", html)
+
+    # ------------------------------------------------------------------
+    # Footer social links: website value first, company value as fallback
+    # ------------------------------------------------------------------
+    _SOCIAL_FIELDS = (
+        "social_facebook",
+        "social_instagram",
+        "social_twitter",
+        "social_youtube",
+        "social_linkedin",
+    )
+
+    def _clear_socials(self):
+        # website.social_* defaults from the main company (core behaviour),
+        # so both sides are cleared explicitly for a deterministic start.
+        empty = dict.fromkeys(self._SOCIAL_FIELDS, False)
+        self.website.write(empty)
+        self.company.write(empty)
+
+    def test_footer_socials_fall_back_to_the_company(self):
+        self._clear_socials()
+        self.company.social_instagram = "https://instagram.com/rendershop"
+        links = self.website._pmm_footer_social_links()
+        self.assertEqual(
+            [link["href"] for link in links],
+            ["https://instagram.com/rendershop"],
+            "A link filled on the company form must reach the footer.",
+        )
+
+    def test_footer_socials_website_value_wins(self):
+        self._clear_socials()
+        self.company.social_facebook = "https://facebook.com/company-value"
+        self.website.social_facebook = "https://facebook.com/website-value"
+        links = self.website._pmm_footer_social_links()
+        self.assertEqual(
+            [link["href"] for link in links],
+            ["https://facebook.com/website-value"],
+            "A hand-typed website value must never be shadowed.",
+        )
+
+    def test_footer_socials_render_nothing_when_both_empty(self):
+        self._clear_socials()
+        self.assertEqual(self.website._pmm_footer_social_links(), [])
+
+    # ------------------------------------------------------------------
+    # Opening-hours pill
+    # ------------------------------------------------------------------
+    def test_opening_hours_render_as_a_collapsible_pill(self):
+        html = self._render_homepage_content()
+        self.assertIn("o_microsite_hours", html)
+        self.assertIn("accordion-button", html)
+        self.assertIn("data-microsite-hours", html)
+        # The week lives in the collapsed body, one row per open day, each
+        # tagged with its weekday index so the browser can bold today.
+        self.assertIn('data-hours-row="0"', html)
+        self.assertIn('data-hours-row="4"', html)
+        self.assertNotIn('data-hours-row="6"', html, "Sunday is closed here.")
+
+    def test_opening_hours_pill_payload_carries_the_whole_week(self):
+        pill = self.company._get_microsite_opening_hours_pill()
+        payload = json.loads(pill["payload"])
+        self.assertEqual(len(payload["days"]), 7, "The browser needs every day.")
+        self.assertEqual(payload["days"][0]["ranges"], [["09:00", "14:00"]])
+        self.assertEqual(payload["days"][6]["ranges"], [], "Sunday is closed.")
+        self.assertTrue(payload["timezone"])
+        self.assertTrue(payload["openLabel"] and payload["closedLabel"])
+
+    def test_opening_hours_pill_summary_is_rendered_server_side(self):
+        """With JavaScript off the pill must still say something."""
+        pill = self.company._get_microsite_opening_hours_pill()
+        self.assertTrue(pill["today_label"])
+        self.assertTrue(pill["today_text"])
+        self.assertIn(pill["today_label"], self._render_homepage_content())
+
+    def test_opening_hours_rows_carry_the_weekday_index(self):
+        rows = self.company._get_microsite_opening_hours_rows()
+        self.assertEqual([row[0] for row in rows], [0, 1, 2, 3, 4])
+        # The legacy pair-shaped helper stays compatible.
+        self.assertEqual(
+            self.company._get_microsite_opening_hours_lines(),
+            [(row[1], row[2]) for row in rows],
+        )
+
+    def test_no_opening_hours_renders_no_pill(self):
+        self.company.microsite_opening_hours = False
+        self.assertEqual(self.company._get_microsite_opening_hours_pill(), {})
+        self.assertNotIn("o_microsite_hours", self._render_homepage_content())
+
+    # ------------------------------------------------------------------
+    # Contact block: message form + reachable data
+    # ------------------------------------------------------------------
+    def test_contact_block_renders_the_message_form(self):
+        html = self._render_homepage_content()
+        self.assertIn('data-model_name="crm.lead"', html)
+        self.assertIn('action="/website/form/"', html)
+        for field in ("contact_name", "email_from", "phone", "description"):
+            self.assertIn(f'name="{field}"', html)
+        self.assertIn("s_website_form_send", html)
+
+    def test_form_carries_the_shop_name_as_the_lead_subject(self):
+        """crm.lead.name is model-required and is not the visitor's to write."""
+        html = self._render_homepage_content()
+        self.assertIn('name="name"', html)
+        self.assertIn('value="Render Trade Name"', html)
+
+    def test_contact_block_renders_the_map_and_the_address(self):
+        html = self._render_homepage_content()
+        self.assertIn("maps.google.com", html)
+        self.assertIn("Calle Render 5", html)
+
+    def test_contact_block_renders_the_social_links(self):
+        # website.social_* defaults from the main company, so both sides are
+        # cleared first or the inherited value would win over the shop's.
+        self._clear_socials()
+        self.company.social_instagram = "https://instagram.com/rendershop"
+        html = self._render_homepage_content()
+        self.assertIn("https://instagram.com/rendershop", html)
+        self.assertIn("fa-instagram", html)
+
+    def test_shop_website_link_is_absolute(self):
+        """A bare host in an href would point back into the microsite."""
+        self.company.partner_id.website = "rendershop.com"
+        self.assertEqual(
+            self.company._get_microsite_website_url(), "https://rendershop.com"
+        )
+        self.assertIn('href="https://rendershop.com"', self._render_homepage_content())
+
+    def test_shop_website_link_keeps_an_explicit_scheme(self):
+        self.company.partner_id.website = "http://rendershop.com"
+        self.assertEqual(
+            self.company._get_microsite_website_url(), "http://rendershop.com"
+        )
+
+    def test_no_shop_website_renders_no_link(self):
+        self.company.partner_id.website = False
+        self.assertEqual(self.company._get_microsite_website_url(), "")
+
+    def test_pill_timezone_ignores_the_contact_tz(self):
+        """partner.tz is the creating user's timezone, not the shop's clock.
+
+        The whole cutover batch carries America/Caracas there; judging "open
+        now" against it would be four hours off for every merchant.
+        """
+        self.company.partner_id.tz = "America/Caracas"
+        payload = json.loads(
+            self.company._get_microsite_opening_hours_pill()["payload"]
+        )
+        self.assertEqual(payload["timezone"], "Atlantic/Canary")
+
+    def test_pill_timezone_follows_the_system_parameter(self):
+        self.env["ir.config_parameter"].sudo().set_param(
+            "partner_microsite_manager.microsite_timezone", "Europe/Madrid"
+        )
+        payload = json.loads(
+            self.company._get_microsite_opening_hours_pill()["payload"]
+        )
+        self.assertEqual(payload["timezone"], "Europe/Madrid")
+
+    def test_pill_survives_a_broken_timezone_parameter(self):
+        self.env["ir.config_parameter"].sudo().set_param(
+            "partner_microsite_manager.microsite_timezone", "Not/AZone"
+        )
+        payload = json.loads(
+            self.company._get_microsite_opening_hours_pill()["payload"]
+        )
+        self.assertEqual(payload["timezone"], "Atlantic/Canary")
+
+    def test_monday_keeps_its_row_index(self):
+        """QWeb drops a t-att whose value is the integer 0."""
+        self.company.microsite_opening_hours = "L-V 09:00-14:00"
+        self.assertIn('data-hours-row="0"', self._render_homepage_content())
+
+    # -- estate-wide blocks ---------------------------------------------------
+
+    def test_homepage_links_back_to_the_directory(self):
+        """The cross-link every migrated microsite carries.
+
+        Website 221 was born from this template without it and had no way in
+        to the directory at all.
+        """
+        html = self._render_homepage_content()
+        self.assertIn("https://canariasconectada.es/comercio", html)
+        self.assertIn('data-name="Zona Comercial"', html)
+
+    def test_homepage_carries_the_funding_disclosure(self):
+        """Not decoration: the grant requires the emblem on public pages."""
+        html = self._render_homepage_content()
+        self.assertIn(
+            "/partner_microsite_manager/static/src/img/subvenciones.png", html
+        )
+        self.assertIn("NextGenerationEU", html)
+
+    def test_the_estate_blocks_survive_an_empty_company(self):
+        """They belong to the platform, not to what a merchant filled in."""
+        self.company.write(
+            {
+                "microsite_opening_hours": False,
+                "microsite_delivery_info": False,
+                "microsite_parking_info": False,
+                "microsite_about_text": False,
+                "microsite_services_text": False,
+                "microsite_banner_title": False,
+            }
+        )
+        html = self._render_homepage_content()
+        self.assertIn('data-name="Zona Comercial"', html)
+        self.assertIn('data-name="Subvenciones"', html)
+
+    def test_the_directory_heading_is_not_shouted(self):
+        """ALL CAPS is what LibreTranslate returns "_" for.
+
+        The migrated pages carry "CIENTOS DE COMERCIOS EN TU ZONA" and their
+        English came back empty. Sentence case here, styled by CSS if a
+        design ever wants capitals back.
+        """
+        html = self._render_homepage_content()
+        self.assertNotIn("CIENTOS DE COMERCIOS EN TU ZONA", html)
+        self.assertIn("Cientos de comercios en tu zona", html)

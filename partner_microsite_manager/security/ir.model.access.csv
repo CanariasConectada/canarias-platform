@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_microsite_content_editor_editor,microsite.content.editor.website.editor,model_microsite_content_editor,website.group_website_restricted_editor,1,1,1,1
+access_ir_ui_view_restricted_editor_write,ir.ui.view merchant write own site,base.model_ir_ui_view,website.group_website_restricted_editor,1,1,1,1
+access_microsite_company_picker_editor,microsite.company.picker.website.editor,model_microsite_company_picker,website.group_website_restricted_editor,1,1,1,1

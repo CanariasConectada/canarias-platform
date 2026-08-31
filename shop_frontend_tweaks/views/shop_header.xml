@@ -6,35 +6,9 @@ SHOP HEADER
 -->
 <odoo>
 
-    <!-- HEADER STYLES -->
-    <template id="shop_header_styles" inherit_id="website_sale.products"
-              name="Shop Header Styles" priority="95">
-        <xpath expr="." position="inside">
-            <style type="text/css">
-                .shop-directory-header {
-                    padding: 3rem 0 !important;
-                    background-color: #f8f9fa !important;
-                    border-bottom: 1px solid #dee2e6 !important;
-                    margin-bottom: 2rem !important;
-                }
-                .shop-directory-header h1 {
-                    font-size: 2.5rem !important;
-                    font-weight: 700 !important;
-                    margin-bottom: 1rem !important;
-                    color: #212529 !important;
-                }
-                .shop-directory-header .lead {
-                    font-size: 1.15rem !important;
-                    color: #6c757d !important;
-                    margin-bottom: 2rem !important;
-                }
-                .shop-directory-header .btn-primary {
-                    background-color: #714B67 !important;
-                    border-color: #714B67 !important;
-                }
-            </style>
-        </xpath>
-    </template>
+    <!-- The header styles live in static/src/css/shop_layout.css
+         (web.assets_frontend): injected at the template root they
+         rendered after the closing html tag. -->
 
     <!-- HEADER HTML -->
     <template id="shop_header" inherit_id="website_sale.products"

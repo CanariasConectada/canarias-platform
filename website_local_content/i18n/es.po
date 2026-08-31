@@ -2,158 +2,35 @@
 # This file contains the translation of the following modules:
 # 	* website_local_content
 #
+# Generated from the module's own .pot so every `#:` reference line survives.
+# See scratchpad/refresh_po.py for why that matters.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"Language: es\n"
+"Last-Translator: Canarias Conectada\n"
+"Language-Team: \n"
+"Language: es_ES\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#. module: website_local_content
-#: model:website.local.content.type,name:website_local_content.content_type_living_memory
-msgid "Living Memory"
-msgstr "Memoria Viva"
-
-#. module: website_local_content
-#: model:website.local.content.type,name:website_local_content.content_type_places_of_interest
-msgid "Places of Interest"
-msgstr "Lugares de Interés"
-
-#. module: website_local_content
-#: model:website.local.content.type,description:website_local_content.content_type_living_memory
-msgid "Historical photographs and stories of the neighbourhood, shared by its people."
-msgstr "Fotografías históricas e historias del barrio, compartidas por su gente."
-
-#. module: website_local_content
-#: model:website.local.content.type,description:website_local_content.content_type_places_of_interest
-msgid "Places worth visiting in the area: culture, leisure, nature and more."
-msgstr "Lugares que merece la pena visitar en la zona: cultura, ocio, naturaleza y más."
-
-#. module: website_local_content
-#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
-msgid "All categories"
-msgstr "Todas las categorías"
-
-#. module: website_local_content
-#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
-msgid "Decade"
-msgstr "Década"
-
-#. module: website_local_content
-#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
-msgid "Search..."
-msgstr "Buscar..."
-
-#. module: website_local_content
-#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
-msgid "results"
-msgstr "resultados"
-
-#. module: website_local_content
-#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
-msgid "Newest first"
-msgstr "Más recientes primero"
-
-#. module: website_local_content
-#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
-msgid "Oldest first"
-msgstr "Más antiguos primero"
-
-#. module: website_local_content
-#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
-msgid "Most liked"
-msgstr "Más gustados"
-
-#. module: website_local_content
-#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
-msgid "Photo year (oldest)"
-msgstr "Año de la foto (más antiguo)"
-
-#. module: website_local_content
-#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
-msgid "Photo year (newest)"
-msgstr "Año de la foto (más reciente)"
-
-#. module: website_local_content
-#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
-msgid "No content matches your filters."
-msgstr "Ningún contenido coincide con tus filtros."
-
-#. module: website_local_content
-#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
-msgid "All"
-msgstr "Todas"
-
-#. module: website_local_content
-#: model_terms:ir.ui.view,arch_db:website_local_content.content_item_card
-msgid "View"
-msgstr "Ver"
 
 #. module: website_local_content
 #: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
-msgid "Shared by"
-msgstr "Compartido por"
+msgid "<i class=\"fa fa-arrow-left me-1\"/>Back to"
+msgstr "<i class=\"fa fa-arrow-left me-1\"/>Volver a"
 
 #. module: website_local_content
-#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
-msgid "Back to"
-msgstr "Volver a"
-
-#. module: website_local_content
-#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__name
-msgid "Title"
-msgstr "Título"
-
-#. module: website_local_content
-#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__description
-msgid "Short Description"
-msgstr "Descripción corta"
-
-#. module: website_local_content
-#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__body
-msgid "Full Story"
-msgstr "Historia completa"
-
-#. module: website_local_content
-#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__photo_year
-msgid "Photo Year"
-msgstr "Año de la fotografía"
-
-#. module: website_local_content
-#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__decade
-msgid "Decade"
-msgstr "Década"
-
-#. module: website_local_content
-#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__type_id
-#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_category__type_id
-#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_subcategory__type_id
-msgid "Content Type"
-msgstr "Tipo de contenido"
-
-#. module: website_local_content
-#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__category_id
-#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_subcategory__category_id
-msgid "Category"
-msgstr "Categoría"
-
-#. module: website_local_content
-#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__subcategory_id
-msgid "Subcategory"
-msgstr "Subcategoría"
-
-#. module: website_local_content
-#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__like_count
-msgid "Like Count"
-msgstr "Número de «me gusta»"
-
-#. module: website_local_content
-#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__opening_hours
-msgid "Opening Hours"
-msgstr "Horario"
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_category__active
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__active
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_subcategory__active
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_tag__active
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_type__active
+msgid "Active"
+msgstr ""
 
 #. module: website_local_content
 #: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__address
@@ -161,9 +38,186 @@ msgid "Address"
 msgstr "Dirección"
 
 #. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "All"
+msgstr "Todas"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "All categories"
+msgstr "Todas las categorías"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_form
+msgid "Approve"
+msgstr "Aprobar"
+
+#. module: website_local_content
+#: model:ir.model.fields.selection,name:website_local_content.selection__website_local_content_item__state__approved
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_search
+msgid "Approved"
+msgstr "Aprobado"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_category_view_form
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_form
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_tag_view_form
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_type_view_form
+msgid "Archived"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__rating_avg
+msgid "Average Rating"
+msgstr "Valoración media"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__can_publish
+msgid "Can Publish"
+msgstr ""
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_start_view_form
+msgid "Cancel"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_image__name
+msgid "Caption"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.actions.act_window,name:website_local_content.local_content_category_action
+#: model:ir.ui.menu,name:website_local_content.menu_local_content_categories
+msgid "Categories"
+msgstr "Categorías"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__category_id
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_subcategory__category_id
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_search
+msgid "Category"
+msgstr "Categoría"
+
+#. module: website_local_content
 #: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__city
 msgid "City"
 msgstr "Ciudad"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_form
+msgid "Classification"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_like__ip_address
+msgid "Client IP, kept only for abuse review."
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_type__code
+msgid "Code"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_tag__color
+msgid "Color"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_tag__color
+msgid "Color of the tag badges in the backend."
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.ui.menu,name:website_local_content.menu_local_content_configuration
+msgid "Configuration"
+msgstr "Configuración"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_form
+msgid "Contact"
+msgstr ""
+
+#. module: website_local_content
+#: model:res.groups.privilege,name:website_local_content.privilege_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_form
+msgid "Content"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_category__type_id
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__type_id
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_subcategory__type_id
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_tag__type_id
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_category_view_search
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_search
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_tag_view_search
+msgid "Content Type"
+msgstr "Tipo de contenido"
+
+#. module: website_local_content
+#: model:ir.actions.act_window,name:website_local_content.local_content_type_action
+#: model:ir.ui.menu,name:website_local_content.menu_local_content_types
+msgid "Content Types"
+msgstr "Tipos de contenido"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_start_view_form
+msgid "Continue"
+msgstr "Continuar"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_category__create_uid
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_image__create_uid
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__create_uid
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item_start__create_uid
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_like__create_uid
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_subcategory__create_uid
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_tag__create_uid
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_type__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_category__create_date
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_image__create_date
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__create_date
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item_start__create_date
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_like__create_date
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_subcategory__create_date
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_tag__create_date
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_type__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__decade
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "Decade"
+msgstr "Década"
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_item__decade
+msgid "Decade of the photograph, computed from the photo year."
+msgstr "Década de la fotografía, calculada a partir del año de la foto."
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_type__description
+msgid "Description"
+msgstr "Descripción"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_category__display_name
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_image__display_name
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__display_name
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item_start__display_name
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_like__display_name
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_subcategory__display_name
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_tag__display_name
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_type__display_name
+msgid "Display Name"
+msgstr ""
 
 #. module: website_local_content
 #: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__district
@@ -176,65 +230,175 @@ msgid "Draft"
 msgstr "Borrador"
 
 #. module: website_local_content
-#: model:ir.model.fields.selection,name:website_local_content.selection__website_local_content_item__state__pending
-msgid "Pending Approval"
-msgstr "Pendiente de aprobación"
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__external_website
+msgid "External Website"
+msgstr ""
 
 #. module: website_local_content
-#: model:ir.model.fields.selection,name:website_local_content.selection__website_local_content_item__state__approved
-msgid "Approved"
-msgstr "Aprobado"
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_item__external_website
+msgid "External website of the place or business, if any."
+msgstr ""
 
 #. module: website_local_content
-#: model:ir.model.fields.selection,name:website_local_content.selection__website_local_content_item__state__rejected
-msgid "Rejected"
-msgstr "Rechazado"
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_item__opening_hours
+msgid "Free-form opening hours shown on the detail page."
+msgstr ""
 
 #. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__body
+msgid "Full Story"
+msgstr "Historia completa"
+
+#. module: website_local_content
+#: model:res.groups,comment:website_local_content.group_local_content_manager
+msgid ""
+"Full management of content types, taxonomy and items, including approval of "
+"submitted entries."
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__image_ids
 #: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_form
-msgid "Approve"
-msgstr "Aprobar"
+msgid "Gallery"
+msgstr "Galería"
 
 #. module: website_local_content
-#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_form
-msgid "Reject"
-msgstr "Rechazar"
+#: model:website.local.content.type,description:website_local_content.content_type_living_memory
+msgid ""
+"Historical photographs and stories of the neighbourhood, shared by its "
+"people."
+msgstr "Fotografías históricas e historias del barrio, compartidas por su gente."
 
 #. module: website_local_content
-#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_form
-msgid "Submit for Approval"
-msgstr "Enviar a aprobación"
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_category__id
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_image__id
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__id
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item_start__id
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_like__id
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_subcategory__id
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_tag__id
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_type__id
+msgid "ID"
+msgstr ""
 
 #. module: website_local_content
-#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_form
-msgid "Reset to Draft"
-msgstr "Volver a borrador"
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_item__submitter_identity
+msgid ""
+"Identity document (DNI/NIE) collected by the legacy public submission form. "
+"Kept for the data migration."
+msgstr ""
 
 #. module: website_local_content
-#: model:ir.ui.menu,name:website_local_content.menu_local_content_root
-msgid "Local Content"
-msgstr "Contenido local"
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_image__image_1920
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__image_1920
+msgid "Image"
+msgstr ""
 
 #. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_image__image_1024
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__image_1024
+msgid "Image 1024"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_image__image_128
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__image_128
+msgid "Image 128"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_image__image_256
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__image_256
+msgid "Image 256"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_image__image_512
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__image_512
+msgid "Image 512"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_tag__type_id
+msgid ""
+"Informative scoping only: a tag with a content type is meant for that "
+"vertical, an empty one is transversal. Items of any type may use any tag."
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__instagram
+msgid "Instagram"
+msgstr ""
+
+#. module: website_local_content
+#. odoo-python
+#: code:addons/website_local_content/models/local_content_type.py:0
+msgid ""
+"Invalid URL slug '%(slug)s': use lowercase letters, digits and dashes only."
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_like__ip_address
+msgid "Ip Address"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__is_published
+msgid "Is Published"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_image__item_id
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_like__item_id
+msgid "Item"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_type__item_count
+msgid "Item Count"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.actions.act_window,name:website_local_content.local_content_item_action
 #: model:ir.ui.menu,name:website_local_content.menu_local_content_items
 msgid "Items"
 msgstr "Elementos"
 
 #. module: website_local_content
-#: model:ir.ui.menu,name:website_local_content.menu_local_content_types
-msgid "Content Types"
-msgstr "Tipos de contenido"
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_type__use_photo_year
+msgid ""
+"Items of this type carry the year of the photograph and the public page "
+"offers a filter by decade (Living Memory style)."
+msgstr ""
 
 #. module: website_local_content
-#: model:ir.ui.menu,name:website_local_content.menu_local_content_categories
-msgid "Categories"
-msgstr "Categorías"
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_category__write_uid
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_image__write_uid
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__write_uid
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item_start__write_uid
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_like__write_uid
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_subcategory__write_uid
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_tag__write_uid
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_type__write_uid
+msgid "Last Updated by"
+msgstr ""
 
 #. module: website_local_content
-#. odoo-python
-#: code:addons/website_local_content/models/local_content_item.py:0
-msgid "The photo year must be between %(min_year)s and %(max_year)s."
-msgstr "El año de la fotografía debe estar entre %(min_year)s y %(max_year)s."
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_category__write_date
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_image__write_date
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__write_date
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item_start__write_date
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_like__write_date
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_subcategory__write_date
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_tag__write_date
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_type__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__latitude
+msgid "Latitude"
+msgstr ""
 
 #. module: website_local_content
 #. odoo-python
@@ -243,10 +407,374 @@ msgid "Latitude must be between -90 and 90."
 msgstr "La latitud debe estar entre -90 y 90."
 
 #. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__like_count
+msgid "Like Count"
+msgstr "Número de «me gusta»"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__like_ids
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_form
+msgid "Likes"
+msgstr ""
+
+#. module: website_local_content
+#: model:website.local.content.type,name:website_local_content.content_type_living_memory
+msgid "Living Memory"
+msgstr "Memoria Viva"
+
+#. module: website_local_content
+#: model:ir.module.category,name:website_local_content.category_local_content
+#: model:ir.ui.menu,name:website_local_content.menu_local_content_root
+msgid "Local Content"
+msgstr "Contenido local"
+
+#. module: website_local_content
+#: model:ir.model,name:website_local_content.model_website_local_content_category
+msgid "Local Content Category"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model,name:website_local_content.model_website_local_content_item
+msgid "Local Content Item"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model,name:website_local_content.model_website_local_content_image
+msgid "Local Content Item Image"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model,name:website_local_content.model_website_local_content_like
+msgid "Local Content Like"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model,name:website_local_content.model_website_local_content_subcategory
+msgid "Local Content Subcategory"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model,name:website_local_content.model_website_local_content_tag
+msgid "Local Content Tag"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model,name:website_local_content.model_website_local_content_type
+msgid "Local Content Type"
+msgstr ""
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_form
+msgid "Location"
+msgstr "Ubicación"
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_item__body
+msgid "Long, formatted description shown on the detail page."
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__longitude
+msgid "Longitude"
+msgstr ""
+
+#. module: website_local_content
 #. odoo-python
 #: code:addons/website_local_content/models/local_content_item.py:0
 msgid "Longitude must be between -180 and 180."
 msgstr "La longitud debe estar entre -180 y 180."
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__user_id
+msgid "Managed By"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.module.category,description:website_local_content.category_local_content
+msgid ""
+"Management of the public local content galleries (places of interest, living"
+" memory, ...)."
+msgstr ""
+
+#. module: website_local_content
+#: model:res.groups,name:website_local_content.group_local_content_manager
+msgid "Manager"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_item_start__type_id
+msgid ""
+"Memoria viva, lugares de interés, or any other content type configured on "
+"the platform."
+msgstr "Memoria viva, lugares de interés o cualquier otro tipo de contenido configurado en la plataforma."
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "Most liked"
+msgstr "Más gustados"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_category__name
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_subcategory__name
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_tag__name
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_type__name
+msgid "Name"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_item__submitter_name
+msgid "Name of the person who sent the entry."
+msgstr ""
+
+#. module: website_local_content
+#. odoo-python
+#: code:addons/website_local_content/wizards/local_content_item_start.py:0
+msgid "New %s"
+msgstr "Nuevo/a %s"
+
+#. module: website_local_content
+#: model:ir.actions.act_window,name:website_local_content.local_content_item_start_action
+#: model:ir.ui.menu,name:website_local_content.menu_local_content_item_start
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_start_view_form
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_list_picker
+msgid "New Item"
+msgstr "Nuevo elemento"
+
+#. module: website_local_content
+#: model:ir.model,name:website_local_content.model_website_local_content_item_start
+msgid "New local content item"
+msgstr "Nuevo elemento de contenido local"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "Newest first"
+msgstr "Más recientes primero"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "No content matches your filters."
+msgstr "Ningún contenido coincide con tus filtros."
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "Oldest first"
+msgstr "Más antiguos primero"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__opening_hours
+msgid "Opening Hours"
+msgstr "Horario"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_start_view_form
+msgid "Optional"
+msgstr "Opcional"
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_item_start__name
+msgid ""
+"Optional. Fills in the title of the new entry so the form opens with "
+"something in it; it can be changed there like any other field."
+msgstr "Opcional. Rellena el título de la nueva ficha para que el formulario se abra con algo escrito; allí se puede cambiar como cualquier otro campo."
+
+#. module: website_local_content
+#: model:ir.model.fields.selection,name:website_local_content.selection__website_local_content_item__state__pending
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_search
+msgid "Pending Approval"
+msgstr "Pendiente de aprobación"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__phone
+msgid "Phone"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__photo_year
+msgid "Photo Year"
+msgstr "Año de la fotografía"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "Photo year (newest)"
+msgstr "Año de la foto (más reciente)"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "Photo year (oldest)"
+msgstr "Año de la foto (más antiguo)"
+
+#. module: website_local_content
+#: model:website.local.content.type,name:website_local_content.content_type_places_of_interest
+msgid "Places of Interest"
+msgstr "Lugares de Interés"
+
+#. module: website_local_content
+#: model:website.local.content.type,description:website_local_content.content_type_places_of_interest
+msgid "Places worth visiting in the area: culture, leisure, nature and more."
+msgstr "Lugares que merece la pena visitar en la zona: cultura, ocio, naturaleza y más."
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_search
+msgid "Published"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_like__session_key
+msgid "Random anonymous visitor key stored in the browser cookie."
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__rating_count
+msgid "Rating Count"
+msgstr "Número de valoraciones"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__rating_ids
+msgid "Ratings"
+msgstr "Valoraciones"
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_item__partner_id
+msgid "Registered contact that sent this entry, when known."
+msgstr ""
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_form
+msgid "Reject"
+msgstr "Rechazar"
+
+#. module: website_local_content
+#: model:ir.model.fields.selection,name:website_local_content.selection__website_local_content_item__state__rejected
+msgid "Rejected"
+msgstr "Rechazado"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_form
+msgid "Reset to Draft"
+msgstr "Volver a borrador"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "Reviews"
+msgstr "Valoraciones"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "Search..."
+msgstr "Buscar..."
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_category__sequence
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_image__sequence
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__sequence
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_subcategory__sequence
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_tag__sequence
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_type__sequence
+msgid "Sequence"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_like__session_key
+msgid "Session Key"
+msgstr ""
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "Shared by"
+msgstr "Compartido por"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__description
+msgid "Short Description"
+msgstr "Descripción corta"
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_type__description
+msgid "Short introduction shown in the hero of the public index page."
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__slug
+msgid "Slug"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_type__code
+msgid "Stable technical identifier used by data files and migrations."
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__state
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_search
+msgid "State"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_category__subcategory_ids
+msgid "Subcategories"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__subcategory_id
+msgid "Subcategory"
+msgstr "Subcategoría"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_category__subcategory_count
+msgid "Subcategory Count"
+msgstr ""
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_form
+msgid "Submission"
+msgstr ""
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_form
+msgid "Submit for Approval"
+msgstr "Enviar a aprobación"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__partner_id
+msgid "Submitted By"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__submitter_email
+msgid "Submitter Email"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__submitter_identity
+msgid "Submitter ID Document"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__submitter_name
+msgid "Submitter Name"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__submitter_phone
+msgid "Submitter Phone"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.actions.act_window,name:website_local_content.local_content_tag_action
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__tag_ids
+#: model:ir.ui.menu,name:website_local_content.menu_local_content_tags
+msgid "Tags"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_item__description
+msgid "Teaser shown on the cards of the public index page."
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.constraint,message:website_local_content.constraint_website_local_content_type_url_slug_uniq
+msgid "The URL slug must be unique."
+msgstr ""
 
 #. module: website_local_content
 #. odoo-python
@@ -257,8 +785,26 @@ msgstr "La categoría no pertenece al tipo de contenido seleccionado."
 #. module: website_local_content
 #. odoo-python
 #: code:addons/website_local_content/models/local_content_item.py:0
-msgid "The subcategory does not belong to the selected category."
-msgstr "La subcategoría no pertenece a la categoría seleccionada."
+msgid ""
+"The external website must be an http(s) address or a scheme-less URL; the "
+"%(scheme)s scheme is not allowed."
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_item__website_absolute_url
+msgid "The full absolute URL to access the document through the website."
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_item__website_url
+msgid "The full relative URL to access the document through the website."
+msgstr ""
+
+#. module: website_local_content
+#. odoo-python
+#: code:addons/website_local_content/models/local_content_item.py:0
+msgid "The photo year must be between %(min_year)s and %(max_year)s."
+msgstr "El año de la fotografía debe estar entre %(min_year)s y %(max_year)s."
 
 #. module: website_local_content
 #: model:ir.model.constraint,message:website_local_content.constraint_website_local_content_item_slug_type_uniq
@@ -266,29 +812,136 @@ msgid "The slug must be unique within the same content type."
 msgstr "El slug debe ser único dentro del mismo tipo de contenido."
 
 #. module: website_local_content
+#. odoo-python
+#: code:addons/website_local_content/models/local_content_item.py:0
+msgid "The subcategory does not belong to the selected category."
+msgstr "La subcategoría no pertenece a la categoría seleccionada."
+
+#. module: website_local_content
+#: model:ir.model.constraint,message:website_local_content.constraint_website_local_content_type_code_uniq
+msgid "The technical code must be unique."
+msgstr ""
+
+#. module: website_local_content
 #: model:ir.model.constraint,message:website_local_content.constraint_website_local_content_like_item_session_uniq
 msgid "This visitor already liked this item."
 msgstr "Este visitante ya ha dado «me gusta» a este elemento."
 
 #. module: website_local_content
-#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__rating_ids
-msgid "Ratings"
-msgstr "Valoraciones"
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__tiktok
+msgid "Tiktok"
+msgstr ""
 
 #. module: website_local_content
-#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__rating_avg
-msgid "Average Rating"
-msgstr "Valoración media"
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__name
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item_start__name
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_item_view_form
+msgid "Title"
+msgstr "Título"
 
 #. module: website_local_content
-#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__rating_count
-msgid "Rating Count"
-msgstr "Número de valoraciones"
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_item__tag_ids
+msgid ""
+"Transversal themes of the item, independent of the category taxonomy (legacy"
+" theme level)."
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_item__slug
+msgid ""
+"URL segment of the public detail page. Generated from the title when left "
+"empty; must be unique within the content type."
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_type__url_slug
+msgid ""
+"URL segment of the public pages: /explora/<url_slug>. Lowercase letters, "
+"digits and dashes only."
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_type__url_slug
+msgid "Url Slug"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_type__use_photo_year
+msgid "Use Photo Year"
+msgstr ""
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_item_card
+msgid "View"
+msgstr "Ver"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__website_published
+msgid "Visible on current website"
+msgstr ""
+
+#. module: website_local_content
+#. odoo-python
+#: code:addons/website_local_content/models/local_content_item.py:0
+msgid "Visitor"
+msgstr "Visitante"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__website_absolute_url
+msgid "Website Absolute URL"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__website_url
+msgid "Website URL"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__website_ids
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_type__website_ids
+msgid "Websites"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_item__website_ids
+msgid ""
+"Websites (microsites) where this item is visible. Empty means every website "
+"on which its content type is available, matching the per-zone scoping of the"
+" legacy modules."
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_type__website_ids
+msgid ""
+"Websites where this content type is available. Empty means every website."
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item_start__type_id
+msgid "What are you creating"
+msgstr "¿Qué vas a crear?"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__whatsapp
+msgid "Whatsapp"
+msgstr ""
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_item__photo_year
+msgid ""
+"Year the photograph was taken (Living Memory style types). Enables the "
+"decade filter on the public page."
+msgstr ""
 
 #. module: website_local_content
 #: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
-msgid "Reviews"
-msgstr "Valoraciones"
+msgid "breadcrumb"
+msgstr "ruta de navegación"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "results"
+msgstr "resultados"
 
 #. module: website_local_content
 #: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
@@ -301,12 +954,241 @@ msgid "reviews"
 msgstr "valoraciones"
 
 #. module: website_local_content
-#. odoo-python
-#: code:addons/website_local_content/models/local_content_item.py:0
-msgid "Visitor"
-msgstr "Visitante"
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "s"
+msgstr ""
 
 #. module: website_local_content
-#: model:ir.ui.menu,name:website_local_content.menu_local_content_configuration
-msgid "Configuration"
-msgstr "Configuración"
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "<i class=\"fa fa-search me-2 text-primary\"/>Search"
+msgstr "<i class=\"fa fa-search me-2 text-primary\"/>Buscar"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "<i class=\"fa fa-tags text-primary me-2\"/>Category"
+msgstr "<i class=\"fa fa-tags text-primary me-2\"/>Categoría"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "All subcategories"
+msgstr "Todas las subcategorías"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "<i class=\"fa fa-calendar text-primary me-2\"/>Decade"
+msgstr "<i class=\"fa fa-calendar text-primary me-2\"/>Década"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "All decades"
+msgstr "Todas las décadas"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "<i class=\"fa fa-sort text-primary me-2\"/>Sort by"
+msgstr "<i class=\"fa fa-sort text-primary me-2\"/>Ordenar por"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "⭐ Best rated"
+msgstr "⭐ Mejor valorados"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "❤️ Most liked"
+msgstr "❤️ Más gustados"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "🕐 Newest first"
+msgstr "🕐 Más recientes primero"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "📅 Oldest first"
+msgstr "📅 Más antiguos primero"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "📷 Photo year (newest)"
+msgstr "📷 Año de la foto (más reciente)"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "📷 Photo year (oldest)"
+msgstr "📷 Año de la foto (más antiguo)"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "<i class=\"fa fa-list-ol text-primary me-2\"/>Show"
+msgstr "<i class=\"fa fa-list-ol text-primary me-2\"/>Mostrar"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "per page"
+msgstr "por página"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "in total"
+msgstr "en total"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "<i class=\"fa fa-trash me-2\"/>Remove filters"
+msgstr "<i class=\"fa fa-trash me-2\"/>Quitar filtros"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "Page navigation"
+msgstr "Navegación de páginas"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "Previous"
+msgstr "Anterior"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "Next"
+msgstr "Siguiente"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "Page"
+msgstr "Página"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "of"
+msgstr "de"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "Story"
+msgstr "Historia"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "<i class=\"fa fa-map-marker text-primary me-2\"/>Location"
+msgstr "<i class=\"fa fa-map-marker text-primary me-2\"/>Ubicación"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "<i class=\"fa fa-clock-o text-primary me-2\"/>Opening Hours"
+msgstr "<i class=\"fa fa-clock-o text-primary me-2\"/>Horario"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "<i class=\"fa fa-images me-2 text-primary\"/>Gallery"
+msgstr "<i class=\"fa fa-images me-2 text-primary\"/>Galería"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "<i class=\"fa fa-arrow-left me-2\"/>Back to"
+msgstr "<i class=\"fa fa-arrow-left me-2\"/>Volver a"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "<i class=\"fa fa-user me-2\"/>Information"
+msgstr "<i class=\"fa fa-user me-2\"/>Información"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "<strong>Shared by:</strong>"
+msgstr "<strong>Compartido por:</strong>"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "Anonymous"
+msgstr "Anónimo"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "likes"
+msgstr "me gusta"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "<i class=\"fa fa-star me-2 text-warning\"/>Rating"
+msgstr "<i class=\"fa fa-star me-2 text-warning\"/>Valoración"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "ratings"
+msgstr "valoraciones"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_like_button
+msgid "Like"
+msgstr "Me gusta"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.local_content_type_view_form
+msgid "Public Page Design"
+msgstr "Diseño de la página pública"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_type__hero_image
+msgid "Hero Image"
+msgstr "Imagen de cabecera"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_type__hero_subtitle
+msgid "Hero Subtitle"
+msgstr "Subtítulo de cabecera"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_type__sponsor_logo
+msgid "Sponsor Logo"
+msgstr "Logotipo del patrocinador"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_type__sponsor_name
+msgid "Sponsor Name"
+msgstr "Nombre del patrocinador"
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_type__hero_image
+msgid ""
+"Full-width photograph behind the hero of the public index page. A plain "
+"gradient is used when empty."
+msgstr ""
+"Fotografía a ancho completo detrás de la cabecera de la página pública de "
+"índice. Si está vacía se usa un degradado plano."
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_type__hero_subtitle
+msgid ""
+"Short tagline shown under the title inside the hero. Falls back to the "
+"description when empty."
+msgstr ""
+"Lema corto mostrado bajo el título dentro de la cabecera. Si está vacío se "
+"usa la descripción."
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_type__sponsor_logo
+msgid ""
+"Institutional logo shown in a band at the bottom of every public page of "
+"this type (e.g. the Gobierno de Canarias mark on Living Memory). Nothing is"
+" rendered when empty."
+msgstr ""
+"Logotipo institucional mostrado en una banda al pie de todas las páginas "
+"públicas de este tipo (p. ej., la marca del Gobierno de Canarias en Memoria"
+" Viva). Si está vacío no se muestra nada."
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_website_local_content_type__sponsor_name
+msgid "Accessible name of the sponsor logo (image alt text)."
+msgstr "Nombre accesible del logotipo del patrocinador (texto alternativo de la imagen)."
+
+#. module: website_local_content
+#: model:website.local.content.type,hero_subtitle:website_local_content.content_type_living_memory
+#: model:website.local.content.type,hero_subtitle:website_local_content.content_type_places_of_interest
+msgid "Discover and share the stories of the neighbourhood"
+msgstr "Descubre y comparte las historias del barrio"
+
+#. module: website_local_content
+#: model:website.local.content.type,sponsor_name:website_local_content.content_type_living_memory
+msgid "Gobierno de Canarias"
+msgstr "Gobierno de Canarias"

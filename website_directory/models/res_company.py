@@ -69,14 +69,18 @@ class ResCompany(models.Model):
     def _get_directory_website_url(self):
         """Public URL of the company for the directory entry.
 
-        Priority: extension hook > partner website > company website domain.
+        Priority: extension hook > company website domain > partner website.
+        The company's own microsite outranks whatever external site the
+        merchant typed on their contact card: the directory exists to send
+        visitors INTO the platform, and the microsite links back to the
+        external site anyway.
         """
         self.ensure_one()
         url = self._get_directory_extra_website_url()
-        if not url:
-            url = self.partner_id.website or ""
         if not url and self.website_id.domain:
             url = self.website_id.domain
+        if not url:
+            url = self.partner_id.website or ""
         if url and not url.startswith(("http://", "https://")):
             url = f"https://{url}"
         return url
@@ -96,8 +100,13 @@ class ResCompany(models.Model):
             # on the entry that reads _get_directory_website_url() live.
             "active": self.show_in_directory,
         }
+        # The 2026 logo recovery restored merchant logos onto website.logo;
+        # most companies never got one of their own, so the card falls back
+        # to the site's logo rather than showing a placeholder.
         if self.logo:
             values["image_1920"] = self.logo
+        elif self.website_id.logo:
+            values["image_1920"] = self.website_id.logo
         return values
 
     def _sync_to_directory_entry(self):
@@ -232,11 +241,14 @@ class ResCompany(models.Model):
         ``self`` is deliberately ignored: the caller does not get to choose
         the company. That is the entire point of the method.
 
-        Every rejection is a ``UserError`` (or ``AccessError``) on purpose:
-        those are the only exceptions the controller catches to redirect with
-        ``?error=1``. Anything else escapes as a 500. The checks live HERE and
-        not only in the controller because this is a public ORM method: it is
-        also reachable over XML-RPC, where there is no controller at all.
+        This is a thin wrapper: it resolves WHO is allowed to write (the
+        session's own company) and delegates the actual category validation
+        and write to :meth:`_set_directory_category_checked`, which trusts
+        its ``self`` completely. Callers that already resolved and verified
+        a target company through their OWN authorisation path (e.g. a
+        multi-shop picker) should call that method directly instead of this
+        one, so a single company is never checked twice against two
+        different authorities.
         """
         company = self._get_own_company_for_directory()
         if not company:
@@ -246,10 +258,27 @@ class ResCompany(models.Model):
                     "category to set."
                 )
             )
+        return company._set_directory_category_checked(category_id)
+
+    def _set_directory_category_checked(self, category_id):
+        """Validate and write ``category_id`` on an ALREADY authorised company.
+
+        ``self`` here is trusted: the caller established, through ITS OWN
+        authorisation path, that the current user may write to this company.
+        This method only validates and writes the CATEGORY — it never
+        decides, and never re-checks, WHICH company is being written to.
+
+        Every rejection is a ``UserError`` (or ``AccessError``) on purpose:
+        those are the only exceptions the controller catches to redirect with
+        ``?error=1``. Anything else escapes as a 500. The checks live HERE and
+        not only in the controller because this is a public ORM method: it is
+        also reachable over XML-RPC, where there is no controller at all.
+        """
+        self.ensure_one()
 
         if not category_id:
-            company.category_id = False
-            return company
+            self.category_id = False
+            return self
 
         # ``category_id`` arrives straight from a form field, so it can be
         # anything: "abc", "1.5", "  ". A bare ``int()`` raises ValueError,
@@ -281,8 +310,8 @@ class ResCompany(models.Model):
                 )
             )
 
-        company.category_id = category.id
-        return company
+        self.category_id = category.id
+        return self
 
     # ------------------------------------------------------------------
     # ORM overrides — flag pending instead of syncing inline

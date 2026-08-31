@@ -117,6 +117,36 @@ class TestLocalContentModels(TransactionCase):
         item = self._create_item()
         self.assertEqual(item.website_url, f"/explora/test-type-a/{item.slug}")
 
+    def test_image_url_sizes(self):
+        item = self._create_item()
+        self.assertEqual(
+            item.get_image_url(), f"/explora/test-type-a/img/{item.id}"
+        )
+        self.assertEqual(
+            item.get_image_url(size=512),
+            f"/explora/test-type-a/img/{item.id}?size=512",
+        )
+
+    def test_type_hero_and_sponsor_urls(self):
+        self.assertEqual(self.type_a.get_hero_image_url(), "")
+        self.assertEqual(self.type_a.get_sponsor_logo_url(), "")
+        self.type_a.write(
+            {
+                "hero_image": make_test_image(),
+                "hero_subtitle": "A subtitle",
+                "sponsor_logo": make_test_image(),
+                "sponsor_name": "A sponsor",
+            }
+        )
+        self.assertEqual(
+            self.type_a.get_hero_image_url(),
+            "/explora/test-type-a/type-img/hero_image",
+        )
+        self.assertEqual(
+            self.type_a.get_sponsor_logo_url(),
+            "/explora/test-type-a/type-img/sponsor_logo",
+        )
+
     def test_like_count_and_session_check(self):
         item = self._create_item()
         like_model = self.env["website.local.content.like"]
