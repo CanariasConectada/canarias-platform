@@ -163,6 +163,35 @@ class TestMicrositeContentEditor(TransactionCase):
         with self.assertRaises(Exception):
             editor.action_save()
 
+
+    def test_social_links_open_with_the_websites_value_first(self):
+        """The footer reads website first, company second. So does the screen."""
+        self.shop.website_id.sudo().social_facebook = "https://www.facebook.com/web"
+        self.shop.sudo().social_instagram = "https://www.instagram.com/cia"
+        values = self._editor().default_get(["social_facebook", "social_instagram"])
+        self.assertEqual(values["social_facebook"], "https://www.facebook.com/web")
+        self.assertEqual(values["social_instagram"], "https://www.instagram.com/cia")
+
+    def test_saving_a_social_link_reaches_the_footer(self):
+        editor = self._editor().create(
+            {"social_facebook": "https://www.facebook.com/micomercio"}
+        )
+        editor.action_save()
+        links = self.shop.website_id._pmm_footer_social_links()
+        self.assertIn(
+            "https://www.facebook.com/micomercio", [l["href"] for l in links]
+        )
+
+    def test_clearing_a_social_link_clears_both_sides(self):
+        """An emptied link must not resurrect through the company fallback."""
+        self.shop.website_id.sudo().social_youtube = "https://www.youtube.com/a"
+        self.shop.sudo().social_youtube = "https://www.youtube.com/b"
+        editor = self._editor().create({"social_youtube": False})
+        editor.action_save()
+        self.assertFalse(self.shop.website_id.social_youtube)
+        self.assertFalse(self.shop.social_youtube)
+        self.assertEqual(self.shop.website_id._pmm_footer_social_links(), [])
+
     def test_an_account_with_no_shop_is_told_so_rather_than_shown_a_traceback(self):
         nobody = new_test_user(
             self.env,

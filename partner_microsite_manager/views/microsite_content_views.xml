@@ -79,6 +79,28 @@
                                 </group>
                             </group>
                         </page>
+                        <page string="Social networks" name="social">
+                            <p class="text-muted">
+                                Shown at the bottom of your page. Leave a
+                                network empty to hide its icon.
+                            </p>
+                            <group>
+                                <group>
+                                    <field name="social_facebook"
+                                           placeholder="https://www.facebook.com/..."/>
+                                    <field name="social_instagram"
+                                           placeholder="https://www.instagram.com/..."/>
+                                    <field name="social_twitter"
+                                           placeholder="https://x.com/..."/>
+                                </group>
+                                <group>
+                                    <field name="social_youtube"
+                                           placeholder="https://www.youtube.com/..."/>
+                                    <field name="social_linkedin"
+                                           placeholder="https://www.linkedin.com/company/..."/>
+                                </group>
+                            </group>
+                        </page>
                     </notebook>
                 </sheet>
                 <footer>

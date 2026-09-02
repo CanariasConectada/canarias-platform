@@ -31,6 +31,22 @@ CONTENT_FIELDS = (
     "microsite_services_text",
 )
 
+# Social links are NOT part of ``CONTENT_FIELDS`` because they do not live
+# (only) on the company. The footer resolves each network as "website value
+# first, company value as fallback" (see ``models/website.py``), and the
+# migration left the real values on the website side: 119 of 211 sites carry
+# them there, and not one company does. So this screen reads them in the
+# footer's own order and writes them to BOTH sides -- the website so the
+# footer shows the change, the company so clearing a link actually clears it
+# instead of resurrecting an older company value through the fallback.
+SOCIAL_FIELDS = (
+    "social_facebook",
+    "social_instagram",
+    "social_twitter",
+    "social_youtube",
+    "social_linkedin",
+)
+
 
 class MicrositeContentEditor(models.TransientModel):
     """The merchant's own screen for the content of their page.
@@ -83,6 +99,11 @@ class MicrositeContentEditor(models.TransientModel):
     microsite_phone = fields.Char(string="Phone")
     microsite_phone2 = fields.Char(string="Second phone")
     microsite_map_url = fields.Char(string="Map")
+    social_facebook = fields.Char(string="Facebook")
+    social_instagram = fields.Char(string="Instagram")
+    social_twitter = fields.Char(string="X/Twitter")
+    social_youtube = fields.Char(string="YouTube")
+    social_linkedin = fields.Char(string="LinkedIn")
     microsite_about_title = fields.Char(string="Our story: heading")
     microsite_about_text = fields.Text(string="Our story")
     microsite_services_title = fields.Char(string="What we do: heading")
@@ -239,6 +260,11 @@ class MicrositeContentEditor(models.TransientModel):
                 values[name] = value.id
             else:
                 values[name] = value
+        # Same order the footer resolves them in: website first, company as
+        # the fallback. What the merchant sees here is what the page shows.
+        website = source.website_id
+        for name in SOCIAL_FIELDS:
+            values[name] = (website and website[name]) or source[name] or False
         return values
 
     # ------------------------------------------------------------------
@@ -276,5 +302,10 @@ class MicrositeContentEditor(models.TransientModel):
         # The opening-hours constraint and the map-URL scheme check live on
         # res.company and still run here: sudo skips the access rules, never
         # the validation.
-        company.write(payload)
+        social_payload = {name: self[name] or False for name in SOCIAL_FIELDS}
+        company.write(dict(payload, **social_payload))
+        # The website side wins in the footer, so it has to receive the same
+        # value -- including an emptied one, or the old link keeps rendering.
+        if company.website_id:
+            company.website_id.sudo().write(social_payload)
         return {"type": "ir.actions.act_window_close"}
