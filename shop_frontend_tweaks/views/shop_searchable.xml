@@ -20,10 +20,24 @@ SHOP SEARCHABLE CATEGORIES
                         <t t-if="search">Todas las categorías</t>
                         <t t-else="">Todas las categorías</t>
                     </option>
+                    <!-- Same-named sibling categories collapse into ONE
+                         entry (each merchant brought their own "Entrantes"
+                         from the migration: twelve of them). The first id
+                         represents the group; the shop domain expands it
+                         back to every twin, see
+                         product.public.category._shop_twin_categories. The
+                         selected state compares by name for the same
+                         reason: the URL may carry any twin's id. -->
+                    <t t-set="pmm_seen_categ_names" t-value="[]"/>
                     <t t-foreach="categories" t-as="c">
-                        <option t-att-value="c.id" t-att-selected="category and category.id == c.id">
-                            <t t-out="c.name"/>
-                        </option>
+                        <t t-set="pmm_categ_key" t-value="(c.name or '').strip().lower()"/>
+                        <t t-if="pmm_categ_key not in pmm_seen_categ_names">
+                            <t t-set="pmm_categ_ignored" t-value="pmm_seen_categ_names.append(pmm_categ_key)"/>
+                            <option t-att-value="c.id"
+                                    t-att-selected="category and (category.name or '').strip().lower() == pmm_categ_key">
+                                <t t-out="c.name"/>
+                            </option>
+                        </t>
                     </t>
                 </select>
             </form>
