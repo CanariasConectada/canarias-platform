@@ -44,6 +44,13 @@ class ResPartner(models.Model):
         zones = self.env["res.company"]._zone_companies()
         if self.company_id and self.company_id in zones:
             target |= self.company_id
+        # A card behind a user account must keep covering the user's
+        # companies -- ``partner_multi_company`` enforces exactly that at
+        # the end of every ``res.users.write``. Whether the USER may hold a
+        # zone company is ``res.users._drop_zone_companies``'s decision, not
+        # this sync's: stripping the zone from the card mid-alignment made
+        # that deferred check explode before the user guard had its turn.
+        target |= self.sudo().user_ids.company_ids & zones
         return target
 
     @api.model_create_multi

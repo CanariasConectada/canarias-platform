@@ -18,12 +18,12 @@ class TestTwinCategories(TransactionCase):
     def setUpClass(cls):
         super().setUpClass()
         Category = cls.env["product.public.category"]
-        cls.entrantes_a = Category.create({"name": "Entrantes"})
-        cls.entrantes_b = Category.create({"name": "entrantes "})
-        cls.postres = Category.create({"name": "Postres"})
+        cls.entrantes_a = Category.create({"name": "Twin Test Entrantes"})
+        cls.entrantes_b = Category.create({"name": "twin test entrantes "})
+        cls.postres = Category.create({"name": "Twin Test Postres"})
         # A subcategory sharing a top-level name must NOT be merged with it.
         cls.entrantes_child = Category.create(
-            {"name": "Entrantes", "parent_id": cls.postres.id}
+            {"name": "Twin Test Entrantes", "parent_id": cls.postres.id}
         )
 
     def test_twins_are_found_case_and_space_insensitively(self):
@@ -46,6 +46,6 @@ class TestTwinCategories(TransactionCase):
     def test_a_wildcard_in_the_name_stays_a_letter(self):
         """Merchant data must never widen into an SQL pattern."""
         Category = self.env["product.public.category"]
-        wild = Category.create({"name": "100% Canario"})
-        decoy = Category.create({"name": "100x Canario"})
+        wild = Category.create({"name": "Twin Test 100% Canario"})
+        decoy = Category.create({"name": "Twin Test 100x Canario"})
         self.assertNotIn(decoy, wild._shop_twin_categories())

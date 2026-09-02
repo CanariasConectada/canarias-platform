@@ -303,20 +303,40 @@ class TestZonePartnerOwnership(TransactionCase):
         self.assertEqual(partner.company_ids, self.zone_guanarteme)
 
     def test_zone_company_ids_reads_only_the_zone(self):
-        """The group-by field carries the zone alone, never the shop."""
+        """The group-by field carries the zone alone, never the shop.
+
+        Key-based assertions on purpose: the test database is a production
+        copy whose REAL zone companies share the fixtures' zone_company_key,
+        and the sync correctly derives every company standing for the key.
+        """
         partner = self._partner(self.shop | self.platform)
-        self.assertEqual(partner.zone_company_ids, self.zone_guanarteme)
+        self.assertIn(self.zone_guanarteme, partner.zone_company_ids)
+        self.assertTrue(
+            all(c.zone_company_key for c in partner.zone_company_ids),
+            "only zone companies may appear in the group-by field",
+        )
+        self.assertNotIn(self.shop, partner.zone_company_ids)
+        self.assertNotIn(self.platform, partner.zone_company_ids)
 
         self.shop.commercial_zone = "tamaraceite"
 
         partner.invalidate_recordset(["company_ids", "zone_company_ids"])
-        self.assertEqual(partner.zone_company_ids, self.zone_tamaraceite)
+        self.assertIn(self.zone_tamaraceite, partner.zone_company_ids)
+        self.assertFalse(
+            partner.zone_company_ids.filtered(
+                lambda c: c.zone_company_key == "guanarteme"
+            ),
+            "the old zone must fall out entirely",
+        )
 
     def test_products_carry_the_groupby_field_too(self):
         product = self.env["product.template"].create(
             {"name": "Zone Test Product", "company_ids": [(6, 0, self.shop.ids)]}
         )
-        self.assertEqual(product.zone_company_ids, self.zone_guanarteme)
+        self.assertIn(self.zone_guanarteme, product.zone_company_ids)
+        self.assertTrue(
+            all(c.zone_company_key for c in product.zone_company_ids)
+        )
 
     def test_a_users_card_gains_the_zone_without_the_user(self):
         """The contact goes into the zone; the account still does not."""
