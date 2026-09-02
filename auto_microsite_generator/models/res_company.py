@@ -148,6 +148,12 @@ MICROSITE_CONTENT_DEFAULTS = {
     "microsite_opening_hours": "L-V 09:00-17:00 / S 10:00-12:00",
     "microsite_delivery_info": "Entrega disponible",
     "microsite_parking_info": "Parking cercano",
+    # The intro banner is the first of the two full-width strips, and the
+    # template hides a strip that has neither title nor image. Website 221
+    # published with only the closing one, which reads as a broken page
+    # rather than as an empty field. A default title brings the strip back;
+    # the merchant replaces it with what they actually sell.
+    "microsite_intro_title": "Descubre lo que tenemos para ti",
     "microsite_about_title": "Sobre nosotros",
     "microsite_about_text": (
         "En nuestro espacio encontrarás productos y servicios seleccionados "
