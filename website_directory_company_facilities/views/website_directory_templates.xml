@@ -62,7 +62,11 @@
                                        t-att-aria-label="'Quitar filtro %s' % facility['name']">
                                         <i t-attf-class="fa #{facility['icon']} me-1"/>
                                         <t t-out="facility['name']"/>
-                                        <i class="fa fa-times ms-2" role="presentation"/>
+                                        <!-- fa-trash-o, not fa-times: asked for
+                                             explicitly on 2026-09-02 ("la UI no
+                                             invita" a quitar el filtro). FA 4.7,
+                                             so no fa-trash-alt here. -->
+                                        <i class="fa fa-trash-o ms-2" role="presentation"/>
                                     </a>
                                 </t>
                             </div>
@@ -83,7 +87,7 @@
                         <t t-esc="wdcf_active_facility.name"/>
                         <a t-att-href="facility_remove_urls.get(wdcf_active_facility.id)"
                            class="wd-filter-link wd-filter-chip-x"
-                           t-attf-aria-label="Quitar filtro {{ wdcf_active_facility.name }}">×</a>
+                           t-attf-aria-label="Quitar filtro {{ wdcf_active_facility.name }}"><i class="fa fa-trash-o" role="presentation"/></a>
                     </span>
                 </t>
             </t>
