@@ -120,7 +120,10 @@ def migrate(cr, version):
         if not source or not target:
             continue
         items = Item.search([("category_id", "in", source.ids)])
-        items.write({"category_id": target.id})
+        # The junk subcategory goes in the SAME write: the taxonomy
+        # consistency constraint (rightly) rejects a new category with the
+        # old category's subcategory still attached.
+        items.write({"subcategory_id": False, "category_id": target.id})
         # Their junk subcategories die with them.
         _drop_subcategories(env, Item, source)
         source.active = False
@@ -134,7 +137,7 @@ def migrate(cr, version):
     if len(twins) > 1:
         keeper, rest = twins[0], twins[1:]
         Item.search([("category_id", "in", rest.ids)]).write(
-            {"category_id": keeper.id}
+            {"subcategory_id": False, "category_id": keeper.id}
         )
         _drop_subcategories(env, Item, rest)
         rest.active = False
@@ -162,6 +165,7 @@ def migrate(cr, version):
                     {
                         "activity_category_ids": [(4, cat.id)],
                         "category_id": False,
+                        "subcategory_id": False,
                     }
                 )
                 moved += len(items)
