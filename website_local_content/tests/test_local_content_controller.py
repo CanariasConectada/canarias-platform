@@ -52,6 +52,14 @@ class TestLocalContentController(HttpCase):
             }
         )
 
+    def setUp(self):
+        super().setUp()
+        # Pinned to the website's default language: since the seven-language
+        # rollout the anonymous negotiation can land on en_US, turning every
+        # unprefixed request into a 303 hop this class does not expect.
+        website = self.env["website"].search([], limit=1)
+        self.opener.cookies["frontend_lang"] = website.default_lang_id.code
+
     def test_index_ok(self):
         response = self.url_open(self.index_url)
         self.assertEqual(response.status_code, 200)
