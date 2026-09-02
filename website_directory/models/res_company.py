@@ -85,12 +85,23 @@ class ResCompany(models.Model):
             url = f"https://{url}"
         return url
 
+    def _get_directory_display_name(self):
+        """The name the directory card shows. A hook, like the URL above.
+
+        The base module knows nothing but the legal name; the microsite
+        bridge overrides this with the trade name the merchant actually
+        uses. Kept as a hook so this module never grows a dependency on
+        where trade names live.
+        """
+        self.ensure_one()
+        return self.name
+
     def _prepare_directory_entry_values(self):
         """Values written on the directory entry at every sync."""
         self.ensure_one()
         partner = self.partner_id
         values = {
-            "name": self.name,
+            "name": self._get_directory_display_name(),
             "phone": partner.phone or "",
             "email": partner.email or "",
             "street": partner.street or "",
