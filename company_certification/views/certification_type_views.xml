@@ -161,10 +161,13 @@
          that direction and cannot be named here. The configuration entries
          below stay manager-only: a menu without groups inherits the
          visibility of its parent, so each one has to say so itself. -->
+    <!-- The user groups are named here since 2026-09-02: the retired
+         silver_economy / sustainability modules used to open this menu for
+         their holders, and their grant died with their uninstall. -->
     <menuitem id="menu_certification_root"
               name="Certificaciones"
               web_icon="company_certification,static/description/icon.png"
-              groups="company_certification.group_certification_manager"
+              groups="company_certification.group_certification_manager,company_certification.group_silver_user,company_certification.group_sustainability_user"
               sequence="49"/>
     <!-- No group restriction of its own, deliberately, and it is the only
          entry here without one: this is the list every seal holder came for,
