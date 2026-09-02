@@ -46,6 +46,10 @@ class TestMicrositeCompany(TransactionCase):
         self.assertEqual(action["res_id"], self.company.id)
 
     def test_opening_hours_constraint_accepts_valid(self):
+        # The day labels resolve lazily against the ambient language, which
+        # on this database is Spanish since the language rollout. Pinned so
+        # the expectation stays literal.
+        self.env.user.lang = "en_US"
         self.company.microsite_opening_hours = (
             "L-V 10:00-13:30 / L-V 16:30-20:00 / S 10:00-14:00"
         )

@@ -231,8 +231,18 @@ class TestMicrositeRender(TransactionCase):
         self.assertIn("fa-instagram", html)
 
     def test_shop_website_link_is_absolute(self):
-        """A bare host in an href would point back into the microsite."""
-        self.company.partner_id.website = "rendershop.com"
+        """A bare host in an href would point back into the microsite.
+
+        ``res.partner._clean_website`` now schemes every value that goes
+        through ``write``, so the bare host is planted with SQL -- which is
+        exactly how legacy imports produced the values this guard is for.
+        """
+        partner = self.company.partner_id
+        self.env.cr.execute(
+            "UPDATE res_partner SET website = %s WHERE id = %s",
+            ["rendershop.com", partner.id],
+        )
+        partner.invalidate_recordset(["website"])
         self.assertEqual(
             self.company._get_microsite_website_url(), "https://rendershop.com"
         )

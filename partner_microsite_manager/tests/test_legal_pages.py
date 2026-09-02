@@ -143,6 +143,11 @@ class TestLegalPagesHttp(HttpCase):
     """The four global pages answer on a website with no per-site copies."""
 
     def test_pages_serve_and_footer_links_present(self):
+        # Pinned to the website's default language: since the seven-language
+        # rollout the anonymous negotiation can land on en_US, and every
+        # href then carries the /en/ prefix this test does not assert.
+        website = self.env["website"].search([], limit=1)
+        self.opener.cookies["frontend_lang"] = website.default_lang_id.code
         for url, marker in [
             ("/politica-privacidad", "Política de Privacidad"),
             ("/politica-cookies", "Política de Cookies"),
@@ -182,6 +187,13 @@ class TestShadowLegalPageCleanup(TransactionCase):
 
     def setUp(self):
         super().setUp()
+        # The production copy this suite runs on still holds the per-site
+        # legal pages the real migration deliberately KEPT (merchants' own
+        # texts). They are data, not fixtures, and they dilute the majority
+        # below one half. Retired inside the test transaction only.
+        self.env["website.page"].sudo().search(
+            [("url", "=", "/politica-privacidad"), ("website_id", "!=", False)]
+        ).unlink()
         self.websites = self.env["website"]
         for index in range(5):
             company = self.env["res.company"].create({"name": f"Cleanup Shop {index}"})
