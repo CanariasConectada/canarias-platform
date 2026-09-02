@@ -75,13 +75,16 @@ class WebsiteLocalContent(http.Controller):
         ) & Domain(item_model._get_website_visibility_domain(request.website))
 
     def _get_search_domain(
-        self, content_type, category_id, subcategory_id, search, decade
+        self, content_type, category_id, subcategory_id, search, decade,
+        activity_id=None,
     ):
         domain = self._get_base_domain(content_type)
         if category_id:
             domain &= Domain("category_id", "=", category_id)
         if subcategory_id:
             domain &= Domain("subcategory_id", "=", subcategory_id)
+        if activity_id:
+            domain &= Domain("activity_category_ids", "in", [activity_id])
         if search:
             domain &= Domain("name", "ilike", search) | Domain(
                 "description", "ilike", search
@@ -91,7 +94,12 @@ class WebsiteLocalContent(http.Controller):
         return domain
 
     def _get_category_data(self, content_type):
-        """Sidebar categories of the type with their published item counts."""
+        """Sidebar place-type categories with their published item counts.
+
+        Place axis only: this list feeds the selector the /categoria/<id>
+        route filters on. The activity axis has its own selector, fed by
+        :meth:`_get_activity_data`.
+        """
         item_model = request.env["website.local.content.item"].sudo()
         counts = dict(
             item_model._read_group(
@@ -103,7 +111,7 @@ class WebsiteLocalContent(http.Controller):
         categories = (
             request.env["website.local.content.category"]
             .sudo()
-            .search([("type_id", "=", content_type.id)])
+            .search([("type_id", "=", content_type.id), ("axis", "=", "place")])
         )
         return [
             {
@@ -115,6 +123,35 @@ class WebsiteLocalContent(http.Controller):
                 ],
             }
             for category in categories
+        ]
+
+    def _get_activity_data(self, content_type):
+        """Activity-axis categories with counts, or [] when the type has none.
+
+        The empty list is the whole gating mechanism: a type without
+        activity categories (Memoria Viva) never renders the second
+        selector, with no per-type flag to configure.
+        """
+        item_model = request.env["website.local.content.item"].sudo()
+        counts = dict(
+            item_model._read_group(
+                self._get_base_domain(content_type),
+                ["activity_category_ids"],
+                ["__count"],
+            )
+        )
+        activities = (
+            request.env["website.local.content.category"]
+            .sudo()
+            .search([("type_id", "=", content_type.id), ("axis", "=", "activity")])
+        )
+        return [
+            {
+                "id": activity.id,
+                "name": activity.name,
+                "count": counts.get(activity, 0),
+            }
+            for activity in activities
         ]
 
     def _get_decades(self, content_type):
@@ -181,6 +218,7 @@ class WebsiteLocalContent(http.Controller):
         content_type = self._get_content_type(type_slug)
         category_id = category_id or self._sanitize_int(kw.get("category"))
         subcategory_id = self._sanitize_int(kw.get("subcategory"))
+        activity_id = self._sanitize_int(kw.get("activity"))
         decade = self._sanitize_int(kw.get("decade"))
         search = (kw.get("search") or "").strip()
         sort = kw.get("sort") if kw.get("sort") in SORT_OPTIONS else DEFAULT_SORT
@@ -188,7 +226,8 @@ class WebsiteLocalContent(http.Controller):
 
         item_model = request.env["website.local.content.item"].sudo()
         domain = self._get_search_domain(
-            content_type, category_id, subcategory_id, search, decade
+            content_type, category_id, subcategory_id, search, decade,
+            activity_id=activity_id,
         )
         items_count = item_model.search_count(domain)
         base_url = f"/explora/{content_type.url_slug}"
@@ -199,6 +238,7 @@ class WebsiteLocalContent(http.Controller):
         query_args = {
             "search": search or None,
             "subcategory": subcategory_id,
+            "activity": activity_id,
             "decade": decade,
             "sort": sort if sort != DEFAULT_SORT else None,
             "limit": ppg if ppg != PPG else None,
@@ -252,8 +292,10 @@ class WebsiteLocalContent(http.Controller):
                 "sort": sort,
                 "category_id": category_id,
                 "subcategory_id": subcategory_id,
+                "activity_id": activity_id,
                 "decade": decade,
                 "categories": self._get_category_data(content_type),
+                "activity_categories": self._get_activity_data(content_type),
                 "decades": self._get_decades(content_type),
                 "liked_item_ids": liked_item_ids,
                 "base_url": base_url,
@@ -271,6 +313,7 @@ class WebsiteLocalContent(http.Controller):
                     search
                     or category_id
                     or subcategory_id
+                    or activity_id
                     or decade
                     or sort != DEFAULT_SORT
                     or ppg != PPG

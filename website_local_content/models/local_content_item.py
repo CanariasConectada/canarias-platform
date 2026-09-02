@@ -57,10 +57,25 @@ class LocalContentItem(models.Model):
     category_id = fields.Many2one(
         comodel_name="website.local.content.category",
         string="Category",
-        required=True,
+        # No longer required: since the activity axis exists, an item
+        # classified only by what can be done there is legitimate data (the
+        # imported places arrived exactly like that). The form still invites
+        # completion; it just does not block it.
+        required=False,
         index=True,
         ondelete="restrict",
-        domain="[('type_id', '=', type_id)]",
+        domain="[('type_id', '=', type_id), ('axis', '=', 'place')]",
+    )
+    activity_category_ids = fields.Many2many(
+        comodel_name="website.local.content.category",
+        relation="website_local_content_item_activity_rel",
+        column1="item_id",
+        column2="category_id",
+        string="Activities",
+        domain="[('type_id', '=', type_id), ('axis', '=', 'activity')]",
+        help="What can be done at this place. Complementary to the "
+        "category: a sports facility (category) may host outdoor sport "
+        "and sports events (activities).",
     )
     subcategory_id = fields.Many2one(
         comodel_name="website.local.content.subcategory",

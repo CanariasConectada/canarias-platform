@@ -139,6 +139,8 @@
                 <div class="container-lg container py-4 mb-5">
                     <t t-set="active_categories" t-value="[c for c in categories if c['id'] == category_id]"/>
                     <t t-set="active_category" t-value="active_categories[0] if active_categories else None"/>
+                    <t t-set="active_activities" t-value="[a for a in activity_categories if a['id'] == activity_id]"/>
+                    <t t-set="active_activity" t-value="active_activities[0] if active_activities else None"/>
                     <div class="row">
                         <!-- Sidebar filters (stacked cards, auto-submit selects) -->
                         <aside class="col-12 col-lg-3 mb-4">
@@ -154,8 +156,16 @@
                                     </h6>
                                 </div>
                                 <div class="card-body">
+                                    <!-- Two complementary selectors, asked for on
+                                         2026-09-02: what the place IS and what can
+                                         be DONE there. The activity block renders
+                                         only when the type has activity-axis
+                                         categories, so Memoria Viva keeps its
+                                         single selector untouched. -->
+                                    <label t-if="activity_categories" class="form-label small text-muted mb-1">Place type</label>
                                     <form method="get" t-attf-action="{{ index_url }}#entries_grid">
                                         <input type="hidden" name="search" t-att-value="search" t-if="search"/>
+                                        <input type="hidden" name="activity" t-att-value="activity_id" t-if="activity_id"/>
                                         <input type="hidden" name="decade" t-att-value="decade" t-if="decade"/>
                                         <input type="hidden" name="sort" t-att-value="sort" t-if="sort != 'newest'"/>
                                         <input type="hidden" name="limit" t-att-value="ppg" t-if="ppg != 12"/>
@@ -175,6 +185,7 @@
                                         <input type="hidden" name="decade" t-att-value="decade" t-if="decade"/>
                                         <input type="hidden" name="sort" t-att-value="sort" t-if="sort != 'newest'"/>
                                         <input type="hidden" name="limit" t-att-value="ppg" t-if="ppg != 12"/>
+                                        <input type="hidden" name="activity" t-att-value="activity_id" t-if="activity_id"/>
                                         <select name="subcategory" class="form-select" onchange="this.form.submit()">
                                             <option value="">All subcategories</option>
                                             <t t-foreach="active_category['subcategories']" t-as="subcategory">
@@ -184,6 +195,25 @@
                                             </t>
                                         </select>
                                     </form>
+                                    <t t-if="activity_categories">
+                                        <label class="form-label small text-muted mb-1 mt-3">Activity type</label>
+                                        <form method="get" t-attf-action="{{ base_url }}#entries_grid">
+                                            <input type="hidden" name="search" t-att-value="search" t-if="search"/>
+                                            <input type="hidden" name="subcategory" t-att-value="subcategory_id" t-if="subcategory_id"/>
+                                            <input type="hidden" name="decade" t-att-value="decade" t-if="decade"/>
+                                            <input type="hidden" name="sort" t-att-value="sort" t-if="sort != 'newest'"/>
+                                            <input type="hidden" name="limit" t-att-value="ppg" t-if="ppg != 12"/>
+                                            <select name="activity" class="form-select" onchange="this.form.submit()">
+                                                <option value="">All activities</option>
+                                                <t t-foreach="activity_categories" t-as="activity_option">
+                                                    <option t-att-value="activity_option['id']"
+                                                            t-att-selected="activity_id == activity_option['id']">
+                                                        <t t-esc="activity_option['name']"/> (<t t-esc="activity_option['count']"/>)
+                                                    </option>
+                                                </t>
+                                            </select>
+                                        </form>
+                                    </t>
                                 </div>
                             </div>
                             <div t-if="content_type.use_photo_year and decades" class="card border-0 shadow-sm mb-3">
@@ -196,6 +226,7 @@
                                     <form method="get" t-attf-action="{{ base_url }}#entries_grid">
                                         <input type="hidden" name="search" t-att-value="search" t-if="search"/>
                                         <input type="hidden" name="subcategory" t-att-value="subcategory_id" t-if="subcategory_id"/>
+                                        <input type="hidden" name="activity" t-att-value="activity_id" t-if="activity_id"/>
                                         <input type="hidden" name="sort" t-att-value="sort" t-if="sort != 'newest'"/>
                                         <input type="hidden" name="limit" t-att-value="ppg" t-if="ppg != 12"/>
                                         <select name="decade" class="form-select" onchange="this.form.submit()">
@@ -220,6 +251,7 @@
                                     <form method="get" t-attf-action="{{ base_url }}#entries_grid">
                                         <input type="hidden" name="search" t-att-value="search" t-if="search"/>
                                         <input type="hidden" name="subcategory" t-att-value="subcategory_id" t-if="subcategory_id"/>
+                                        <input type="hidden" name="activity" t-att-value="activity_id" t-if="activity_id"/>
                                         <input type="hidden" name="decade" t-att-value="decade" t-if="decade"/>
                                         <input type="hidden" name="limit" t-att-value="ppg" t-if="ppg != 12"/>
                                         <select name="sort" class="form-select" onchange="this.form.submit()">
@@ -245,6 +277,7 @@
                                     <form method="get" t-attf-action="{{ base_url }}#entries_grid">
                                         <input type="hidden" name="search" t-att-value="search" t-if="search"/>
                                         <input type="hidden" name="subcategory" t-att-value="subcategory_id" t-if="subcategory_id"/>
+                                        <input type="hidden" name="activity" t-att-value="activity_id" t-if="activity_id"/>
                                         <input type="hidden" name="decade" t-att-value="decade" t-if="decade"/>
                                         <input type="hidden" name="sort" t-att-value="sort" t-if="sort != 'newest'"/>
                                         <select name="limit" class="form-select" onchange="this.form.submit()">
@@ -276,9 +309,10 @@
                                     <span class="text-muted">
                                         <strong t-esc="items_count"/> results
                                     </span>
-                                    <t t-if="active_category or decade">
+                                    <t t-if="active_category or active_activity or decade">
                                         <span class="text-muted">|</span>
                                         <span t-if="active_category" class="badge bg-primary" t-esc="active_category['name']"/>
+                                        <span t-if="active_activity" class="badge bg-primary" t-esc="active_activity['name']"/>
                                         <span t-if="decade" class="badge bg-primary">
                                             Decade <t t-esc="decade"/>-<t t-esc="decade + 9"/>
                                         </span>

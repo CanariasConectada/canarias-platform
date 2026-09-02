@@ -44,6 +44,28 @@ msgstr "Todas"
 
 #. module: website_local_content
 #: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "All activities"
+msgstr "Todas las actividades"
+
+#. module: website_local_content
+#: model:ir.model.fields.selection,name:website_local_content.selection__website_local_content_category__axis__place
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "Place type"
+msgstr "Tipo de lugar"
+
+#. module: website_local_content
+#: model:ir.model.fields.selection,name:website_local_content.selection__website_local_content_category__axis__activity
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "Activity type"
+msgstr "Tipo de actividad"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_website_local_content_item__activity_category_ids
+msgid "Activities"
+msgstr "Actividades"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
 msgid "All categories"
 msgstr "Todas las categorías"
 

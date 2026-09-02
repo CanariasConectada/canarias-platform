@@ -11,6 +11,7 @@
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="type_id"/>
+                <field name="axis"/>
                 <field name="subcategory_count"/>
             </list>
         </field>
@@ -26,6 +27,7 @@
                     <group>
                         <field name="name"/>
                         <field name="type_id"/>
+                        <field name="axis" widget="radio"/>
                         <field name="sequence"/>
                         <field name="active" invisible="1"/>
                     </group>
@@ -50,6 +52,7 @@
                 <field name="type_id"/>
                 <separator/>
                     <filter name="group_by_type" string="Content Type" context="{'group_by': 'type_id'}"/>
+                    <filter name="group_by_axis" string="Axis" context="{'group_by': 'axis'}"/>
             </search>
         </field>
     </record>
