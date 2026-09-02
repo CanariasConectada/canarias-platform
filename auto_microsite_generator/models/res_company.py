@@ -91,6 +91,27 @@ MENU_LABELS = {
         "pl_PL": "Katalog",
         "pt_PT": "Diretório",
     },
+    "/explora/lugares-de-interes": {
+        "es_ES": "Lugares de Interés",
+        "en_US": "Places of Interest",
+        "de_DE": "Sehenswürdigkeiten",
+        "fr_FR": "Lieux d'intérêt",
+        "it_IT": "Luoghi di interesse",
+        "pl_PL": "Atrakcje",
+        "pt_PT": "Locais de interesse",
+    },
+    # Absolute on purpose: the reviews page answers on the portal alone
+    # (404 on every zone and merchant site), so the entry deep-links there
+    # the same way the zone dropdown deep-links the zone shops.
+    "https://canariasconectada.es/resenas": {
+        "es_ES": "Reseñas",
+        "en_US": "Reviews",
+        "de_DE": "Bewertungen",
+        "fr_FR": "Avis",
+        "it_IT": "Recensioni",
+        "pl_PL": "Opinie",
+        "pt_PT": "Avaliações",
+    },
 }
 
 # "Zonas Comerciales" dropdown created on every new microsite: the
@@ -111,6 +132,33 @@ ZONE_MENU_CHILDREN = (
 # somebody renamed still has the links and must be left alone (same probe
 # as f18_zone_menu_restore).
 ZONE_MENU_PROBE_URL = ZONE_MENU_CHILDREN[1][1]
+
+# "Guía Local" dropdown: the platform's own verticals. Measured on
+# 2026-09-02 (and first raised in the navigation review of 2026-08-02):
+# Memoria Viva, Lugares de Interés and Reseñas exist and answer 200, yet
+# 215 of 218 sites linked none of them -- the portal included. The zone
+# sites carry this dropdown already (Guía Local, menus 118/130/142); this
+# makes it part of what a microsite is born with. Memoria Viva is a proper
+# noun and keeps its name in every language; the other two translate
+# through MENU_LABELS.
+LOCAL_GUIDE_MENU_NAME = "Guía Local"
+LOCAL_GUIDE_MENU_LABELS = {
+    "es_ES": "Guía Local",
+    "en_US": "Local Guide",
+    "de_DE": "Lokaler Guide",
+    "fr_FR": "Guide local",
+    "it_IT": "Guida locale",
+    "pl_PL": "Przewodnik lokalny",
+    "pt_PT": "Guia local",
+}
+# After the zone dropdown (40) and clear of the portal's Ferias entry (50).
+LOCAL_GUIDE_MENU_SEQUENCE = 55
+LOCAL_GUIDE_CHILDREN = (
+    ("Memoria Viva", "/explora/memoria-viva", 10),
+    ("Lugares de Interés", "/explora/lugares-de-interes", 20),
+    ("Reseñas", "https://canariasconectada.es/resenas", 30),
+)
+LOCAL_GUIDE_PROBE_URL = LOCAL_GUIDE_CHILDREN[1][1]
 
 # Stock menu entries that core copy_menu_hierarchy copies from the template
 # menus onto every new website. Production does not give them to merchant
@@ -602,6 +650,7 @@ class ResCompany(models.Model):
                 )
                 self._seed_menu_translations(menu, url)
         self._ensure_zone_menu_dropdown(Menu, website, root)
+        self._ensure_local_guide_dropdown(Menu, website, root)
         if prune_defaults:
             self._prune_stock_menus(Menu, website)
 
@@ -661,6 +710,43 @@ class ResCompany(models.Model):
                 for name, url, sequence in ZONE_MENU_CHILDREN
             ]
         )
+
+    def _ensure_local_guide_dropdown(self, Menu, website, root):
+        """Create the "Guía Local" dropdown when it is missing.
+
+        Same contract as the zone dropdown: create-only, presence probed on
+        a child URL so a renamed dropdown is recognised and left alone. The
+        children get their estate wording in every installed language.
+        """
+        self.ensure_one()
+        if Menu.search_count(
+            [("website_id", "=", website.id), ("url", "=", LOCAL_GUIDE_PROBE_URL)]
+        ):
+            return
+        parent = Menu.create(
+            {
+                "name": LOCAL_GUIDE_MENU_NAME,
+                "url": "#",
+                "parent_id": root.id,
+                "sequence": LOCAL_GUIDE_MENU_SEQUENCE,
+                "website_id": website.id,
+            }
+        )
+        installed = {lang[0] for lang in self.env["res.lang"].get_installed()}
+        for lang, label in LOCAL_GUIDE_MENU_LABELS.items():
+            if lang in installed:
+                parent.with_context(lang=lang).name = label
+        for name, url, sequence in LOCAL_GUIDE_CHILDREN:
+            child = Menu.create(
+                {
+                    "name": name,
+                    "url": url,
+                    "parent_id": parent.id,
+                    "sequence": sequence,
+                    "website_id": website.id,
+                }
+            )
+            self._seed_menu_translations(child, url)
 
     def _prune_stock_menus(self, Menu, website):
         """Remove the stock Events/Courses entries from a NEW website.

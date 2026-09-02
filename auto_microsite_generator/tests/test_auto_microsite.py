@@ -498,6 +498,76 @@ class TestAutoMicrosite(TransactionCase):
             "A new microsite must ask before setting optional cookies.",
         )
 
+    def test_a_new_microsite_carries_the_local_guide_dropdown(self):
+        """The platform's verticals travel in the navigation from birth.
+
+        Measured 2026-09-02: 215 of 218 sites linked neither Memoria Viva
+        nor Lugares de Interes, and Resenas was linked nowhere at all.
+        """
+        company = self.env["res.company"].create({"name": "Guided Shop"})
+        Menu = self.env["website.menu"]
+        guide = Menu.search(
+            [
+                ("website_id", "=", company.website_id.id),
+                ("name", "=", "Guía Local"),
+                ("url", "=", "#"),
+            ],
+            limit=1,
+        )
+        self.assertTrue(guide, "the Guía Local dropdown must be born with the site")
+        urls = guide.child_id.mapped("url")
+        self.assertIn("/explora/memoria-viva", urls)
+        self.assertIn("/explora/lugares-de-interes", urls)
+        self.assertIn(
+            "https://canariasconectada.es/resenas",
+            urls,
+            "reviews answer on the portal alone, so the entry deep-links there",
+        )
+
+    def test_the_local_guide_dropdown_is_created_only_once(self):
+        company = self.env["res.company"].create({"name": "Guided Twice Shop"})
+        Menu = self.env["website.menu"]
+        domain = [
+            ("website_id", "=", company.website_id.id),
+            ("url", "=", "/explora/lugares-de-interes"),
+        ]
+        self.assertEqual(Menu.search_count(domain), 1)
+        company._auto_generate_microsite()
+        self.assertEqual(
+            Menu.search_count(domain),
+            1,
+            "re-running must not duplicate the guide entries",
+        )
+
+    def test_the_guide_labels_are_seeded_in_every_installed_language(self):
+        english = self.env["res.lang"]._activate_lang("en_US")
+        if not english:
+            self.skipTest("en_US is not available in this database.")
+        company = self.env["res.company"].create({"name": "Guided Label Shop"})
+        Menu = self.env["website.menu"]
+        lugares = Menu.search(
+            [
+                ("website_id", "=", company.website_id.id),
+                ("url", "=", "/explora/lugares-de-interes"),
+            ],
+            limit=1,
+        )
+        self.assertEqual(
+            lugares.with_context(lang="en_US").name, "Places of Interest"
+        )
+        memoria = Menu.search(
+            [
+                ("website_id", "=", company.website_id.id),
+                ("url", "=", "/explora/memoria-viva"),
+            ],
+            limit=1,
+        )
+        self.assertEqual(
+            memoria.with_context(lang="en_US").name,
+            "Memoria Viva",
+            "a proper noun keeps its name in every language",
+        )
+
     def test_menu_labels_are_seeded_in_every_installed_language(self):
         """ "Comercio" is the directory, not the noun.
 
