@@ -506,15 +506,18 @@ class TestAutoMicrosite(TransactionCase):
         """
         company = self.env["res.company"].create({"name": "Guided Shop"})
         Menu = self.env["website.menu"]
-        guide = Menu.search(
+        # Found through a child URL, not the translated name: the label
+        # depends on the ambient language and somebody may rename it.
+        lugares = Menu.search(
             [
                 ("website_id", "=", company.website_id.id),
-                ("name", "=", "Guía Local"),
-                ("url", "=", "#"),
+                ("url", "=", "/explora/lugares-de-interes"),
             ],
             limit=1,
         )
-        self.assertTrue(guide, "the Guía Local dropdown must be born with the site")
+        self.assertTrue(lugares, "the guide entries must be born with the site")
+        guide = lugares.parent_id
+        self.assertEqual(guide.url, "#", "the verticals live under a dropdown")
         urls = guide.child_id.mapped("url")
         self.assertIn("/explora/memoria-viva", urls)
         self.assertIn("/explora/lugares-de-interes", urls)
