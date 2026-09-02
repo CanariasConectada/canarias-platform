@@ -89,6 +89,7 @@ class ResCompany(models.Model):
         if not self:
             return
         self.env["product.template"]._sync_zone_companies_for_owners(self)
+        self.env["res.partner"]._sync_zone_companies_for_owners(self)
         self.env["res.users"]._drop_zone_companies_for_owners(self)
 
     def write(self, vals):

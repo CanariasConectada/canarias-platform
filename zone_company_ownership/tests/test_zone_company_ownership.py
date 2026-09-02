@@ -239,3 +239,94 @@ class TestZoneCompanyOwnership(TransactionCase):
             "a record that is already right must not be written again",
         )
         self.assertEqual(product.company_ids, first)
+
+
+@tagged("post_install", "-at_install")
+class TestZonePartnerOwnership(TransactionCase):
+    """A merchant's contacts follow the merchant's neighbourhood too.
+
+    Asked for on 2026-09-02: "verifiques que se esten asignando tanto los
+    contactos como los productos a las zonas comerciales que les
+    correspondan [...] la idea es poder agrupar tambien por zona comercial".
+    Same contract as the catalogue: the contact GAINS the zone company, and
+    a zone change re-derives it from the real owners.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.zone_guanarteme = cls.env["res.company"].create(
+            {"name": "Zone P Guanarteme", "zone_company_key": "guanarteme"}
+        )
+        cls.zone_tamaraceite = cls.env["res.company"].create(
+            {"name": "Zone P Tamaraceite", "zone_company_key": "tamaraceite"}
+        )
+        cls.platform = cls.env.ref("base.main_company")
+        cls.shop = cls.env["res.company"].create(
+            {"name": "Zone P Shop", "commercial_zone": "guanarteme"}
+        )
+
+    def _partner(self, owners):
+        return self.env["res.partner"].create(
+            {"name": "Zone Test Contact", "company_ids": [(6, 0, owners.ids)]}
+        )
+
+    def test_a_new_contact_joins_its_zone(self):
+        partner = self._partner(self.shop)
+        self.assertIn(self.zone_guanarteme, partner.company_ids)
+        self.assertIn(self.shop, partner.company_ids)
+
+    def test_moving_the_shop_moves_its_address_book(self):
+        partner = self._partner(self.shop)
+
+        self.shop.commercial_zone = "tamaraceite"
+
+        partner.invalidate_recordset(["company_ids"])
+        self.assertIn(self.zone_tamaraceite, partner.company_ids)
+        self.assertNotIn(
+            self.zone_guanarteme,
+            partner.company_ids,
+            "a shop that moved must take its contacts out of the zone it left",
+        )
+
+    def test_a_global_contact_stays_global(self):
+        """No owners means visible everywhere. The sync must not narrow it."""
+        partner = self.env["res.partner"].create(
+            {"name": "Zone Test Global", "company_ids": [(5, 0, 0)]}
+        )
+        self.assertFalse(partner.company_ids)
+        self.assertFalse(partner.zone_company_ids)
+
+    def test_the_zones_own_card_keeps_its_company(self):
+        """A contact whose own company IS the zone must not be stripped."""
+        partner = self._partner(self.zone_guanarteme)
+        self.assertEqual(partner.company_ids, self.zone_guanarteme)
+
+    def test_zone_company_ids_reads_only_the_zone(self):
+        """The group-by field carries the zone alone, never the shop."""
+        partner = self._partner(self.shop | self.platform)
+        self.assertEqual(partner.zone_company_ids, self.zone_guanarteme)
+
+        self.shop.commercial_zone = "tamaraceite"
+
+        partner.invalidate_recordset(["company_ids", "zone_company_ids"])
+        self.assertEqual(partner.zone_company_ids, self.zone_tamaraceite)
+
+    def test_products_carry_the_groupby_field_too(self):
+        product = self.env["product.template"].create(
+            {"name": "Zone Test Product", "company_ids": [(6, 0, self.shop.ids)]}
+        )
+        self.assertEqual(product.zone_company_ids, self.zone_guanarteme)
+
+    def test_a_users_card_gains_the_zone_without_the_user(self):
+        """The contact goes into the zone; the account still does not."""
+        user = self.env["res.users"].create(
+            {
+                "name": "Zone Test Merchant",
+                "login": "zone-partner-merchant@example.invalid",
+                "company_id": self.shop.id,
+                "company_ids": [(6, 0, self.shop.ids)],
+            }
+        )
+        self.assertIn(self.zone_guanarteme, user.partner_id.company_ids)
+        self.assertNotIn(self.zone_guanarteme, user.company_ids)

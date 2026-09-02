@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- ================================================================
+         Group contacts and products by commercial zone
+         ================================================================
+         The zone companies already ride in `company_ids`, but that field is
+         gated behind base.group_multi_company and mixes the zone with the
+         platform and the shop itself. `zone_company_ids` carries only the
+         zone, so a list can be grouped or filtered by neighbourhood and an
+         optional column can say which zone a record belongs to. -->
+
+    <record id="view_res_partner_filter_zone" model="ir.ui.view">
+        <field name="name">res.partner.select.zone.company</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <filter name="group_company" position="after">
+                <filter name="group_zone_company"
+                        string="Commercial Zone"
+                        context="{'group_by': 'zone_company_ids'}"/>
+            </filter>
+        </field>
+    </record>
+
+    <record id="view_partner_tree_zone" model="ir.ui.view">
+        <field name="name">res.partner.list.zone.company</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_tree"/>
+        <field name="arch" type="xml">
+            <field name="company_id" position="after">
+                <field name="zone_company_ids"
+                       widget="many2many_tags"
+                       optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="product_template_search_view_zone" model="ir.ui.view">
+        <field name="name">product.template.search.zone.company</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <search position="inside">
+                <group expand="0" string="Group By">
+                    <filter name="group_zone_company"
+                            string="Commercial Zone"
+                            context="{'group_by': 'zone_company_ids'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="product_template_tree_view_zone" model="ir.ui.view">
+        <field name="name">product.template.list.zone.company</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <list position="inside">
+                <field name="zone_company_ids"
+                       widget="many2many_tags"
+                       optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+</odoo>
