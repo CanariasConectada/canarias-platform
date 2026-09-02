@@ -6,14 +6,20 @@ from datetime import date
 from psycopg2.errors import UniqueViolation
 
 from odoo.exceptions import AccessError, ValidationError
-from odoo.tests import TransactionCase
+from odoo.tests import TransactionCase, tagged
 from odoo.tests.common import new_test_user
 from odoo.tools import mute_logger
 
 from .common import create_taxonomy, make_test_image
 
 
+@tagged("post_install", "-at_install")
 class TestLocalContentModels(TransactionCase):
+    """post_install: test_website_visibility creates website records, and at
+    install time the registry is partial -- website_sale is not loaded yet
+    while its NOT NULL columns already sit on the table, so the insert
+    explodes on a field the ORM cannot know about."""
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
