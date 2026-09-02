@@ -269,7 +269,7 @@ class TestLocalContentController(HttpCase):
             self.assertTrue(response.headers["Content-Type"].startswith("image/"))
 
     def test_hero_image_rendered(self):
-        hero_url = f"{self.index_url}/n/hero_image"
+        hero_url = f"{self.index_url}/type-img/hero_image"
         # Without a hero image: gradient fallback, streaming route 404s.
         response = self.url_open(self.index_url)
         self.assertNotIn(hero_url, response.text)
@@ -286,11 +286,11 @@ class TestLocalContentController(HttpCase):
         )
 
     def test_type_image_field_whitelist(self):
-        response = self.url_open(f"{self.index_url}/n/create_uid")
+        response = self.url_open(f"{self.index_url}/type-img/create_uid")
         self.assertEqual(response.status_code, 404)
 
     def test_sponsor_band_gated_on_type(self):
-        sponsor_url = f"{self.index_url}/n/sponsor_logo"
+        sponsor_url = f"{self.index_url}/type-img/sponsor_logo"
         response = self.url_open(self.index_url)
         self.assertNotIn(sponsor_url, response.text)
         self.type_a.sponsor_logo = make_test_image()
@@ -306,12 +306,12 @@ class TestLocalContentController(HttpCase):
     def test_seeded_sponsor_only_on_living_memory(self):
         """The Gobierno de Canarias band is seeded on Living Memory only."""
         response = self.url_open("/explora/memoria-viva")
-        self.assertIn("/explora/memoria-viva/n/sponsor_logo", response.text)
+        self.assertIn("/explora/memoria-viva/type-img/sponsor_logo", response.text)
         self.assertIn("Gobierno de Canarias", response.text)
         response = self.url_open("/explora/lugares-de-interes")
-        self.assertNotIn("n/sponsor_logo", response.text)
+        self.assertNotIn("type-img/sponsor_logo", response.text)
 
     def test_seeded_hero_images(self):
         for slug in ("memoria-viva", "lugares-de-interes"):
             response = self.url_open(f"/explora/{slug}")
-            self.assertIn(f"/explora/{slug}/n/hero_image", response.text)
+            self.assertIn(f"/explora/{slug}/type-img/hero_image", response.text)
