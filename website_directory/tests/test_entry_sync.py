@@ -226,7 +226,13 @@ class TestDirectoryEntrySync(TransactionCase):
     def test_cron_syncs_and_clears_pending(self):
         company = self.Company.create({"name": "WD Cron Co"})
         self.assertTrue(company.directory_sync_pending)
-        self.env["res.company"]._cron_sync_directory_entries()
+        # Drained in a loop: the queue may hold an estate-wide backlog (a
+        # migration queues a full resync) and the cron works in batches, so
+        # one pass has no right to reach this particular company.
+        for _ in range(20):
+            self.env["res.company"]._cron_sync_directory_entries()
+            if not company.directory_sync_pending:
+                break
         self.assertFalse(company.directory_sync_pending)
         entry = self._get_entry(company)
         self.assertEqual(entry.name, "WD Cron Co")

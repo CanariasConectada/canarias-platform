@@ -8,6 +8,14 @@ from odoo.tests import HttpCase, tagged
 
 @tagged("post_install", "-at_install")
 class TestDirectoryController(HttpCase):
+    def setUp(self):
+        super().setUp()
+        # Pinned to the website's default language: since the seven-language
+        # rollout the anonymous negotiation can land on en_US and every
+        # unprefixed request becomes a 303 language hop first.
+        website = self.env["website"].search([], limit=1)
+        self.opener.cookies["frontend_lang"] = website.default_lang_id.code
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
