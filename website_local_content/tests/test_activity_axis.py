@@ -107,3 +107,25 @@ class TestActivityAxis(HttpCase):
         )
         self.assertFalse(item.category_id)
         self.assertEqual(item.activity_category_ids, self.activity)
+
+    def test_the_axes_do_not_cross(self):
+        """A place category in the activity field (or the reverse) is refused."""
+        from odoo.exceptions import ValidationError
+
+        Item = self.env["website.local.content.item"]
+        with self.assertRaises(ValidationError):
+            Item.create(
+                {
+                    "name": "WLC Crossed Ax 1",
+                    "type_id": self.type_a.id,
+                    "category_id": self.activity.id,
+                }
+            )
+        with self.assertRaises(ValidationError):
+            Item.create(
+                {
+                    "name": "WLC Crossed Ax 2",
+                    "type_id": self.type_a.id,
+                    "activity_category_ids": [(6, 0, self.category_a.ids)],
+                }
+            )

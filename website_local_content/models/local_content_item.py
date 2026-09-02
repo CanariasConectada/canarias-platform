@@ -271,12 +271,23 @@ class LocalContentItem(models.Model):
                     )
                 )
 
-    @api.constrains("type_id", "category_id", "subcategory_id")
+    @api.constrains(
+        "type_id", "category_id", "subcategory_id", "activity_category_ids"
+    )
     def _check_taxonomy_consistency(self):
         for record in self:
-            if record.category_id.type_id != record.type_id:
+            # Guarded: an item may carry no category at all now that the
+            # activity axis exists (the imported places arrived classified
+            # only by activity). An empty category is fine; a WRONG one is
+            # still not.
+            if record.category_id and record.category_id.type_id != record.type_id:
                 raise ValidationError(
                     _("The category does not belong to the selected content type.")
+                )
+            if record.category_id and record.category_id.axis != "place":
+                raise ValidationError(
+                    _("The category must be a place type; activities go in "
+                      "their own field.")
                 )
             if (
                 record.subcategory_id
@@ -285,6 +296,12 @@ class LocalContentItem(models.Model):
                 raise ValidationError(
                     _("The subcategory does not belong to the selected category.")
                 )
+            for activity in record.activity_category_ids:
+                if activity.type_id != record.type_id or activity.axis != "activity":
+                    raise ValidationError(
+                        _("Activities must be activity-axis categories of "
+                          "the same content type.")
+                    )
 
     # --- Computes ------------------------------------------------------------
     @api.depends("photo_year")
