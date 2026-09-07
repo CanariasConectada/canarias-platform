@@ -358,6 +358,11 @@ msgid "Microsite Company"
 msgstr "Compañía del microsite"
 
 #. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_name
+msgid "Microsite Heading"
+msgstr "Titular del microsite"
+
+#. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_homepage_page_id
 msgid "Microsite Homepage"
 msgstr "Portada del microsite"
@@ -467,8 +472,13 @@ msgstr "Teléfono público 2"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_name
-msgid "Public name shown on the microsite. Falls back to the company name."
-msgstr "Nombre público mostrado en el microsite. Si se deja vacío, se usa el nombre de la compañía."
+msgid ""
+"Heading printed on the microsite homepage. Falls back to the company name. "
+"The shop's trade name lives on the company itself."
+msgstr ""
+"Titular que se muestra en la portada del microsite. Si se deja vacío, se usa "
+"el nombre de la compañía. El nombre comercial del comercio está en la propia "
+"compañía."
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
@@ -606,11 +616,6 @@ msgid ""
 "Too many time ranges for %(day)s: at most %(limit)s per day (morning and "
 "afternoon)."
 msgstr "Demasiadas franjas horarias para %(day)s: máximo %(limit)s por día (mañana y tarde)."
-
-#. module: partner_microsite_manager
-#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_name
-msgid "Trade Name"
-msgstr "Nombre comercial"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_name

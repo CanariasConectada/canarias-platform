@@ -63,9 +63,14 @@ class ResCompany(models.Model):
         compute="_compute_has_microsite",
         help="True when the company has its own website, i.e. a microsite.",
     )
+    # Not the company's trade name: that one is `comercial`, on the company
+    # itself (`res_company_zone`), and two fields labelled "Trade name" on
+    # one form is a question, not a form. This is the heading the microsite
+    # prints, which a merchant may well want to word differently.
     microsite_name = fields.Char(
-        string="Trade Name",
-        help="Public name shown on the microsite. " "Falls back to the company name.",
+        string="Microsite Heading",
+        help="Heading printed on the microsite homepage. Falls back to the "
+        "company name. The shop's trade name lives on the company itself.",
     )
     microsite_button_text = fields.Char(
         string="Hero Button Label",

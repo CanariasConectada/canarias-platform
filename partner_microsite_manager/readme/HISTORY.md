@@ -1,3 +1,12 @@
+## 19.0.2.6.1 (2026-09-07)
+
+* `microsite_name` is labelled **Microsite Heading**, not "Trade Name". The
+  company now carries the real trade name (`comercial`, from
+  `l10n_es_partner`, exposed by `res_company_zone`), and two fields labelled
+  the same on one form is a question rather than a form. The field itself is
+  untouched: it is still the heading the microsite prints, and the directory
+  card still reads it.
+
 ## 19.0.2.5.0 (2026-08-31)
 
 Two blocks that all 206 migrated microsites carry hardcoded in their own
