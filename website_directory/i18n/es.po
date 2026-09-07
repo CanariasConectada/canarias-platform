@@ -61,11 +61,6 @@ msgstr "<i class=\"fa fa-tags text-primary me-2\"/>Categoría"
 
 #. module: website_directory
 #: model_terms:ir.ui.view,arch_db:website_directory.directory_sidebar
-msgid "<i class=\"fa fa-times me-1\"/>Clear"
-msgstr "<i class=\"fa fa-times me-1\"/>Limpiar"
-
-#. module: website_directory
-#: model_terms:ir.ui.view,arch_db:website_directory.directory_sidebar
 msgid "<option value=\"\">All categories</option>"
 msgstr "<option value=\"\">Todas las categorías</option>"
 
@@ -102,15 +97,15 @@ msgid "<small class=\"text-muted d-block mb-1\">Filtering by:</small>"
 msgstr "<small class=\"text-muted d-block mb-1\">Filtrando por:</small>"
 
 #. module: website_directory
-#: model_terms:ir.ui.view,arch_db:website_directory.directory_sidebar
-msgid "<small class=\"text-muted\">Filtering by:</small>"
-msgstr "<small class=\"text-muted\">Filtrando por:</small>"
-
-#. module: website_directory
 #: model_terms:ir.ui.view,arch_db:website_directory.directory_index
 #: model_terms:ir.ui.view,arch_db:website_directory.directory_sidebar
 msgid "<span class=\"visually-hidden\">Loading...</span>"
 msgstr "<span class=\"visually-hidden\">Cargando...</span>"
+
+#. module: website_directory
+#: model_terms:ir.ui.view,arch_db:website_directory.directory_filter_chip
+msgid "<span class=\"visually-hidden\">Remove filter</span>"
+msgstr "<span class=\"visually-hidden\">Quitar filtro</span>"
 
 #. module: website_directory
 #: model:ir.model.fields,field_description:website_directory.field_website_directory_entry__active
@@ -369,17 +364,6 @@ msgstr ""
 #: model:ir.model.fields,field_description:website_directory.field_website_directory_entry__phone
 msgid "Phone"
 msgstr "Teléfono"
-
-#. module: website_directory
-#: model_terms:ir.ui.view,arch_db:website_directory.directory_search_results
-msgid "Quitar filtro de categoría"
-msgstr ""
-
-#. module: website_directory
-#: model_terms:ir.ui.view,arch_db:website_directory.directory_search_results
-#: model_terms:ir.ui.view,arch_db:website_directory.directory_sidebar
-msgid "Quitar filtro de zona"
-msgstr ""
 
 #. module: website_directory
 #: model_terms:ir.ui.view,arch_db:website_directory.directory_index

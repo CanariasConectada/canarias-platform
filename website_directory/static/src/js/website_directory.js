@@ -189,9 +189,10 @@
     }
 
     // ------------------------------------------------------------------
-    // Filter chip / pill links: any anchor marked wd-filter-link (the
-    // certification chips, the facilities "Quitar"/pill remove buttons, the
-    // active-filters summary at the top) follows its href through the same
+    // Filter chip / pill links: any anchor marked wd-filter-link -- every
+    // selected chip drawn by directory_filter_chip, wherever it sits (a
+    // sidebar card, the active-filters summary at the top), plus the
+    // bridges' own unselected pills -- follows its href through the same
     // AJAX pipeline. Delegated on #wrap so chips re-rendered by an AJAX
     // response (a fresh sidebar, a fresh summary bar) are wired without
     // re-scanning the DOM after every fetch.
