@@ -80,7 +80,6 @@ class WebsiteDirectoryFacilities(WebsiteDirectory):
         values["facility_filter_groups"] = self._facility_filter_groups(
             selected, zone, url, kw
         )
-        values["facility_filter_clear_url"] = self._facility_url(url, kw, [])
         # One "remove just this one" URL per ticked facility, for the top
         # active-filters chip -- QWeb cannot call a controller method
         # directly, so it is precomputed here the same way the pill URLs

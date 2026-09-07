@@ -18,14 +18,15 @@
         <xpath expr="//div[@id='o_wd_sidebar_extra']" position="inside">
             <div t-if="facility_filter_groups" class="card border-0 shadow-sm mb-3 o_wdcf_filter">
                 <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h6 class="card-title fw-bold mb-0">
-                            <i class="fa fa-list-ul me-2"/>Instalaciones y servicios
-                        </h6>
-                        <a t-if="selected_facility_ids"
-                           t-att-href="facility_filter_clear_url"
-                           class="wd-filter-link small text-decoration-none">Quitar</a>
-                    </div>
+                    <!-- No section-level "Quitar" link any more: each pill
+                         removes itself through the directory's shared chip,
+                         and the active-filters bar at the top of the page
+                         still clears everything at once. Two extra words for
+                         the same job were one deselect affordance too many
+                         (reported 2026-09-05). -->
+                    <h6 class="card-title fw-bold mb-3">
+                        <i class="fa fa-list-ul me-2"/>Instalaciones y servicios
+                    </h6>
                     <!-- One dropdown per subdivision, the selection shown as
                          removable pills right below it: chips-per-option do
                          not scale past a handful of facilities, a dropdown
@@ -54,20 +55,22 @@
                                             t-esc="facility['name']"/>
                                 </t>
                             </select>
+                            <!-- A ticked facility is the directory's shared
+                                 chip, cross and all. The trash glyph it used
+                                 to carry (2026-09-02, "la UI no invita" a
+                                 quitar el filtro) was the right instinct and
+                                 the wrong icon: at the pill's icon size it
+                                 was unreadable, and it was a third way of
+                                 saying "remove" on one page. -->
                             <div t-if="wdcf_selected" class="d-flex flex-wrap gap-2 mt-2">
                                 <t t-foreach="wdcf_selected" t-as="facility">
-                                    <a t-att-href="facility['url']"
-                                       class="wd-filter-link btn btn-sm btn-primary o_wdcf_pill"
-                                       aria-pressed="true"
-                                       t-att-aria-label="'Quitar filtro %s' % facility['name']">
+                                    <t t-call="website_directory.directory_filter_chip">
+                                        <t t-set="remove_url" t-value="facility['url']"/>
+                                        <t t-set="remove_label" t-value="facility['name']"/>
+                                        <t t-set="chip_class" t-value="'btn btn-sm btn-primary o_wdcf_pill'"/>
                                         <i t-attf-class="fa #{facility['icon']} me-1"/>
-                                        <t t-out="facility['name']"/>
-                                        <!-- fa-trash-o, not fa-times: asked for
-                                             explicitly on 2026-09-02 ("la UI no
-                                             invita" a quitar el filtro). FA 4.7,
-                                             so no fa-trash-alt here. -->
-                                        <i class="fa fa-trash-o ms-2" role="presentation"/>
-                                    </a>
+                                        <t t-out="remove_label"/>
+                                    </t>
                                 </t>
                             </div>
                         </div>
@@ -82,13 +85,13 @@
         <xpath expr="//span[@id='o_wd_active_filters_extra']" position="inside">
             <t t-if="selected_facility_ids">
                 <t t-foreach="request.env['company.facility'].sudo().browse(selected_facility_ids)" t-as="wdcf_active_facility">
-                    <span class="badge bg-primary wd-filter-chip d-inline-flex align-items-center">
+                    <t t-call="website_directory.directory_filter_chip">
+                        <t t-set="remove_url" t-value="facility_remove_urls.get(wdcf_active_facility.id)"/>
+                        <t t-set="remove_label" t-value="wdcf_active_facility.name"/>
+                        <t t-set="chip_class" t-value="'badge bg-primary wd-filter-chip d-inline-flex align-items-center'"/>
                         <i t-attf-class="fa #{wdcf_active_facility.icon or 'fa-check'} me-1"/>
-                        <t t-esc="wdcf_active_facility.name"/>
-                        <a t-att-href="facility_remove_urls.get(wdcf_active_facility.id)"
-                           class="wd-filter-link wd-filter-chip-x"
-                           t-attf-aria-label="Quitar filtro {{ wdcf_active_facility.name }}"><i class="fa fa-trash-o" role="presentation"/></a>
-                    </span>
+                        <t t-esc="remove_label"/>
+                    </t>
                 </t>
             </t>
         </xpath>

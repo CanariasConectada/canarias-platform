@@ -1,7 +1,9 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo.tests import tagged
+import re
+
+from odoo.tests import HttpCase, tagged
 from odoo.tests.common import TransactionCase
 
 from odoo.addons.http_routing.tests.common import MockRequest
@@ -169,3 +171,42 @@ class TestFacilityFilter(TransactionCase):
         }
         self.assertTrue(by_name["Rampa"]["selected"])
         self.assertFalse(by_name["Aparcamiento"]["selected"])
+
+
+@tagged("post_install", "-at_install")
+class TestFacilityPanelRendering(HttpCase):
+    """The panel as the visitor meets it.
+
+    The domain tests above answer "which shops come back"; this one answers
+    "how does the visitor untick one", which is a question about markup.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.category = cls.env["company.facility.category"].create(
+            {"name": "WDCF Acceso", "sequence": 1}
+        )
+        cls.ramp = cls.env["company.facility"].create(
+            {"name": "WDCF Rampa", "category_id": cls.category.id}
+        )
+
+    def test_a_ticked_facility_wears_the_shared_remove_chip(self):
+        """Reported 2026-09-05: this panel offered a "Quitar" link AND a
+        trash glyph too small to read, where every other section offered
+        something else again. Both are now the directory's one chip."""
+        response = self.url_open(f"/comercio?facility={self.ramp.id}")
+        self.assertEqual(response.status_code, 200)
+        chips = re.findall(
+            r'<a[^>]*class="wd-filter-selected[^"]*"[^>]*>.*?</a>',
+            response.text,
+            re.DOTALL,
+        )
+        # The pill under its dropdown and the top active-filters bar.
+        self.assertEqual(len(chips), 2, chips)
+        for chip in chips:
+            self.assertIn("wd-filter-link", chip)
+            self.assertIn('class="wd-filter-remove"', chip)
+            self.assertIn("WDCF Rampa", chip)
+        self.assertNotIn("fa-trash-o", response.text)
+        self.assertNotIn(">Quitar</a>", response.text)

@@ -23,7 +23,7 @@ ZONE_B = "tamaraceite"
 # browser_js wants a strict boolean, not the matched element.
 READY = (
     "!!(document.getElementById('wd_data')"
-    " && document.querySelector('a.wd-filter-chip-x'))"
+    " && document.querySelector('a.wd-filter-selected'))"
 )
 
 
@@ -89,13 +89,16 @@ class TestZoneFilters(ZoneFixtures, HttpCase):
         return _unlang(unescape(value.group(1)))
 
     def _category_chip_hrefs(self, html):
-        """The href of every category "x" chip (top bar), lang prefix removed.
+        """The href of every category chip in the given markup, lang prefix
+        removed. A whole page holds two -- the sidebar card and the top bar.
 
-        Attribute order is QWeb's (static ``class`` first, ``t-att-href``
-        last), and the website layer prefixes hrefs with the language code.
+        The zone chip is a selected chip too, but not a ``wd-filter-link``
+        (removing the zone is a real navigation), so the link class is what
+        tells the two apart. The website layer prefixes hrefs with the
+        language code.
         """
         chips = re.findall(
-            r'<a[^>]*class="wd-filter-link wd-filter-chip-x"[^>]*>', html
+            r'<a[^>]*class="wd-filter-selected wd-filter-link [^"]*"[^>]*>', html
         )
         return [
             _unlang(unescape(re.search(r'href="([^"]*)"', chip).group(1)))
@@ -148,31 +151,24 @@ class TestZoneFilters(ZoneFixtures, HttpCase):
         )
 
     # ------------------------------------------------------------------
-    # Category chip "x": keeps the zone path and the other filters
+    # Category chip: keeps the zone path and the other filters
     # ------------------------------------------------------------------
     def test_category_clear_chip_keeps_zone_path_and_search(self):
         response = self.url_open(f"{self.zone_page}?category={self.leaf.id}&search=WDZ")
         self.assertEqual(response.status_code, 200)
+        # The sidebar card's chip and the top bar's: one address for both.
         hrefs = self._category_chip_hrefs(response.text)
-        self.assertEqual(hrefs, [f"{self.zone_page}?search=WDZ"])
-        # Same address on the sidebar's own "Clear" button.
-        clear = re.search(
-            r'<a[^>]*class="wd-filter-link btn[^"]*"[^>]*href="([^"]*)"', response.text
-        )
-        self.assertIsNotNone(clear, "sidebar Clear button not rendered")
-        self.assertEqual(
-            _unlang(unescape(clear.group(1))), f"{self.zone_page}?search=WDZ"
-        )
+        self.assertEqual(hrefs, [f"{self.zone_page}?search=WDZ"] * 2)
 
     def test_category_clear_chip_on_global_page(self):
         response = self.url_open(f"/comercio?category={self.leaf.id}&search=WDZ")
         hrefs = self._category_chip_hrefs(response.text)
-        self.assertEqual(hrefs, ["/comercio?search=WDZ"])
+        self.assertEqual(hrefs, ["/comercio?search=WDZ"] * 2)
         # From the category PATH route the chip must leave the category path
         # too, or it would clear nothing.
         response = self.url_open(f"/comercio/categoria/{self.leaf.id}?search=WDZ")
         hrefs = self._category_chip_hrefs(response.text)
-        self.assertEqual(hrefs, ["/comercio?search=WDZ"])
+        self.assertEqual(hrefs, ["/comercio?search=WDZ"] * 2)
 
     def test_category_form_exposes_selected_path(self):
         response = self.url_open(f"/comercio?category={self.leaf.id}")
@@ -194,9 +190,17 @@ class TestZoneFilters(ZoneFixtures, HttpCase):
         self.assertNotIn("WDZ Beta Tamaraceite", response.text)
         # The sidebar rendered by the same response is built on the zone
         # path, and does not leak `zone=` into the filter links.
-        self.assertEqual(
-            self._category_chip_hrefs(response.text), [f"{self.zone_page}?search=WDZ"]
-        )
+        #
+        # Two chips, on purpose: the response carries the results partial and
+        # a fresh sidebar, and a selected category is now the same removable
+        # chip in each -- the active-filters bar and the category card. They
+        # are asserted per block rather than as a list of two, so one block
+        # emitting the chip twice would still fail.
+        results, separator, sidebar = response.text.partition('id="wd_ajax_sidebar"')
+        self.assertTrue(separator, "the AJAX response lost its sidebar block")
+        expected = [f"{self.zone_page}?search=WDZ"]
+        self.assertEqual(self._category_chip_hrefs(results), expected)
+        self.assertEqual(self._category_chip_hrefs(sidebar), expected)
         self.assertNotIn("zone=", response.text)
 
     def test_ajax_search_legacy_zone_alias_is_normalised(self):
@@ -317,7 +321,7 @@ class ChipBrowserMixin(ZoneFixtures):
             (function () {
                 function fail(message) { console.error(message); }
                 function run() {
-                    var chip = document.querySelector('a.wd-filter-link.wd-filter-chip-x');
+                    var chip = document.querySelector('a.wd-filter-selected.wd-filter-link');
                     if (!chip) { return fail('no category chip rendered'); }
                     var requests = [];
                     var nativeFetch = window.fetch;
@@ -329,7 +333,7 @@ class ChipBrowserMixin(ZoneFixtures):
                     var tries = 0;
                     var timer = setInterval(function () {
                         tries += 1;
-                        var stillThere = document.querySelector('a.wd-filter-link.wd-filter-chip-x');
+                        var stillThere = document.querySelector('a.wd-filter-selected.wd-filter-link');
                         var badge = document.getElementById('wd_category_badge');
                         if (!stillThere && !badge) {
                             clearInterval(timer);

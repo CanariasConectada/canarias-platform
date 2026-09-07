@@ -186,12 +186,72 @@
     font-weight: 500;
 }
 
-/* The "x": a real inline-flex button, not a floated icon riding whatever
- * line-height the surrounding badge happens to have. Bootstrap's badge is
- * `inline-flex` itself, but ONLY the badge's own centering benefits from
- * that — a bare `<a>×</a>` child still lays out inline, so the glyph's own
- * font metrics decided where it sat, usually low and off the visual middle
- * of the pill (reported 2026-08-21, "centra las x"). */
+/* A selected filter is one anchor (see directory_filter_chip): the badge
+ * chips of the zone and the category are anchors now too, and an anchor
+ * inherits the theme's link colour and underline unless told otherwise. */
+a.wd-filter-chip,
+a.wd-filter-chip:hover,
+a.wd-filter-chip:focus {
+    color: #fff;
+    text-decoration: none;
+}
+
+.wd-filter-selected {
+    text-decoration: none;
+}
+
+/* The cross that removes a filter: the same bold glyph, at the right edge of
+ * every selected chip and pill on the page, whichever section drew it.
+ * Reported 2026-09-05: the small "x", the "Clear" button and the trash icon
+ * the sections had each grown read as three different things, and only the
+ * boldest one was ever noticed. A real inline-flex box, not a floated icon
+ * riding whatever line-height the surrounding pill happens to have: the
+ * glyph's own font metrics used to decide where it sat, usually low and off
+ * the visual middle (reported 2026-08-21, "centra las x").
+ *
+ * 1.5rem: the chip as a whole is the click target, but the cross alone has
+ * to clear 24px for a finger that aims at it. */
+.wd-filter-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-left: 0.5rem;
+    border-radius: 50%;
+    color: inherit;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1em;
+    line-height: 1;
+}
+
+/* The whole chip is the control, so hovering or focusing ANY part of it
+ * lights the cross: that is the invitation the small "x" never made. */
+.wd-filter-selected:hover .wd-filter-remove,
+.wd-filter-selected:focus-visible .wd-filter-remove {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Clear-all: the chips' cross, at the chips' weight. It stays a red
+ * outlined button with its own tooltip, because it removes every filter,
+ * not the one it sits next to. */
+.wd-clear-filters {
+    font-weight: 700;
+}
+
+/* Keyboard users get a ring on the chip; the lit cross alone is not a
+ * focus indicator. Same ring the bridge modules' pills already use. */
+.wd-filter-selected:focus-visible {
+    outline: 2px solid var(--scc-brand-primary, #714b67);
+    outline-offset: 2px;
+    box-shadow: none;
+}
+
+/* The pre-2026-09 name, kept for the shop's own category chip
+ * (website_sale_canarias, which depends on this bundle); the directory
+ * itself no longer draws it. */
 .wd-filter-chip-x {
     display: inline-flex;
     align-items: center;

@@ -25,14 +25,24 @@ SIDEBAR_TERMS = (
     "Subcategory",
     "Specialty",
     "Filtering by:",
-    ">Clear",
     ">Category",
 )
+# The selected-filter chip every section calls. A STATIC text node on
+# purpose: QWeb hands an expression attribute (t-attf-aria-label) to the
+# translator as "Remove filter: {{0}}", so the words a screen reader
+# announces would never come back translated. It lives in its own template,
+# so it is bound there and not to the sidebar.
+REMOVE_TERM = '<span class="visually-hidden">Remove filter</span>'
+REMOVE_TERM_ES = '<span class="visually-hidden">Quitar filtro</span>'
 RESULT_TERMS = ("No businesses found", "Try another search term")
 
 
 def _po_entries(path):
-    """(msgid, [references]) pairs of a .po file, stdlib only."""
+    """(msgid, [references]) pairs of a .po file, stdlib only.
+
+    Inner double quotes come back unescaped, so a msgid built from markup
+    can be compared against the markup as it is written in the template.
+    """
     entries = []
     refs, msgid, in_msgid = [], [], False
     with open(path, encoding="utf-8") as handle:
@@ -44,7 +54,8 @@ def _po_entries(path):
                 msgid, in_msgid = [line[6:]], True
             elif line.startswith("msgstr"):
                 if in_msgid:
-                    entries.append(("".join(part.strip('"') for part in msgid), refs))
+                    text = "".join(part.strip('"') for part in msgid)
+                    entries.append((text.replace('\\"', '"'), refs))
                 refs, in_msgid = [], False
             elif in_msgid and line.startswith('"'):
                 msgid.append(line)
@@ -86,6 +97,15 @@ class TestSidebarTranslations(TransactionCase):
                 ),
                 f"{term!r} is not attached to directory_results: {matching[0]}",
             )
+        matching = [refs for msgid, refs in entries if msgid == REMOVE_TERM]
+        self.assertTrue(matching, f"no es.po entry for {REMOVE_TERM!r}")
+        self.assertTrue(
+            any(
+                ref.endswith("website_directory.directory_filter_chip")
+                for ref in matching[0]
+            ),
+            f"{REMOVE_TERM!r} is not attached to directory_filter_chip: {matching[0]}",
+        )
 
     def test_sidebar_arch_is_spanish(self):
         """Loading es.po attaches the Spanish terms to the live sidebar record."""
@@ -99,10 +119,22 @@ class TestSidebarTranslations(TransactionCase):
             lang="es_ES"
         )
         arch = sidebar.arch
-        for expected in ("Zona Comercial", "Limpiar", "Todas las zonas", "Categoría"):
+        for expected in (
+            "Zona Comercial",
+            "Subcategoría",
+            "Todas las zonas",
+            "Categoría",
+        ):
             self.assertIn(expected, arch)
         self.assertNotIn(">Commercial Zone<", arch)
         self.assertNotIn("All zones", arch)
+        # The shared chip's accessible name is a static text node, so it
+        # travels the same path as the sidebar's own terms.
+        chip = self.env.ref("website_directory.directory_filter_chip").with_context(
+            lang="es_ES"
+        )
+        self.assertIn(REMOVE_TERM_ES, chip.arch)
+        self.assertNotIn("Remove filter", chip.arch)
         results = self.env.ref("website_directory.directory_results").with_context(
             lang="es_ES"
         )
@@ -139,3 +171,44 @@ class TestSidebarTranslations(TransactionCase):
         self.assertIn("Zona Comercial", html)
         self.assertIn("Todas las zonas", html)
         self.assertNotIn("Commercial Zone", html)
+
+    def test_the_chip_announces_itself_in_spanish(self):
+        """The words a screen reader reads out, in the rendered page.
+
+        The arch assertions above prove the term reached the record; this
+        one proves it survives rendering. Both are needed: an accessible
+        name built from an expression attribute translates in neither
+        place, and that regression is invisible on screen.
+        """
+        self.env["res.lang"]._activate_lang("es_ES")
+        module = self.env["ir.module.module"].search(
+            [("name", "=", "website_directory")]
+        )
+        module._update_translations(filter_lang="es_ES", overwrite=True)
+        html = str(
+            self.env["ir.qweb"]
+            .with_context(lang="es_ES")
+            ._render(
+                "website_directory.directory_sidebar",
+                {
+                    # A zone that is not "canarias" is what draws a chip.
+                    "current_zone": "guanarteme",
+                    "zone_options": [
+                        ("canarias", "Canarias"),
+                        ("guanarteme", "Guanarteme"),
+                    ],
+                    "zone_urls": {"canarias": "/comercio"},
+                    "zone_clear_url": "/comercio",
+                    "category_clear_url": "/comercio",
+                    "base_url": "/comercio",
+                    "search": "",
+                    "category_tree": [],
+                    "selected_category": None,
+                    "selected_category_path": [None, None, None],
+                    "selected_category_json": "[null, null, null]",
+                },
+            )
+        )
+        self.assertIn("wd-filter-remove", html, "no chip rendered to check")
+        self.assertIn(REMOVE_TERM_ES, re.sub(r"\s+", " ", html))
+        self.assertNotIn("Remove filter", html)

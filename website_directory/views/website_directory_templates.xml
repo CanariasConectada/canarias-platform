@@ -99,6 +99,41 @@
         </div>
     </template>
 
+    <!-- The one "remove this filter" control. Every selected option on the
+         page is this anchor: the zone and category chips, the certification
+         and facility pills the bridge modules draw, the summary bar at the
+         top. Clicking anywhere on it removes the filter, and the bold cross
+         at its right edge is what tells the visitor so. Reported 2026-09-05:
+         each section had grown its own deselect affordance (a small "x", a
+         "Clear" button, a trash icon) and only the boldest one, the
+         certification cross, was ever noticed.
+
+         Context: `remove_url` (the page without this filter), `remove_label`
+         (the filter's name, for the tooltip), `chip_class` (the section's
+         own pill look) and, for the zone only, `remove_navigates`: the zone
+         is a different site/domain in the multi-website setup, not a
+         query-string filter, so removing it is a real navigation like the
+         zone select already is, not an AJAX refresh (no wd-filter-link).
+         The visible content of the chip is the t-call body.
+
+         The screen reader gets its name from the anchor's own content
+         ("Remove filter" followed by the chip's visible label), NOT from an
+         aria-label. An aria-label would have to carry the filter's name,
+         which makes it an expression, and QWeb hands expression attributes
+         to the translator as `Remove filter: {{0}}`: the term stops being
+         readable and the words announced stop being translatable in
+         practice. A static text node is extracted as itself, so "Remove
+         filter" reaches es.po and every other language intact. -->
+    <template id="directory_filter_chip" name="Directory Selected Filter Chip">
+        <a t-att-href="remove_url"
+           t-attf-class="wd-filter-selected {{ '' if remove_navigates else 'wd-filter-link ' }}{{ chip_class or '' }}"
+           t-att-title="remove_label">
+            <span class="visually-hidden">Remove filter</span>
+            <t t-out="0"/>
+            <span class="wd-filter-remove" aria-hidden="true"><i class="fa fa-times"/></span>
+        </a>
+    </template>
+
     <!-- AJAX partial: active filter badges + results. -->
     <template id="directory_search_results" name="Directory Search Results">
         <div class="wd-active-filters mb-3 d-flex flex-wrap gap-2 align-items-center">
@@ -106,36 +141,46 @@
                 <i class="fa fa-search me-1"/>
                 <t t-esc="search"/>
             </span>
-            <span t-if="current_zone and current_zone != 'canarias'" class="badge bg-primary wd-filter-chip d-inline-flex align-items-center">
+            <t t-if="current_zone and current_zone != 'canarias'" t-call="website_directory.directory_filter_chip">
+                <t t-set="remove_url" t-value="zone_clear_url"/>
+                <t t-set="remove_label" t-value="dict(zone_options).get(current_zone, current_zone)"/>
+                <t t-set="remove_navigates" t-value="True"/>
+                <t t-set="chip_class" t-value="'badge bg-primary wd-filter-chip d-inline-flex align-items-center'"/>
                 <i class="fa fa-map-marker me-1"/>
-                <t t-esc="dict(zone_options).get(current_zone, current_zone)"/>
-                <!-- Not wd-filter-link: the zone is a different site/domain
-                     in the multi-website setup, not a query-string filter,
-                     so removing it is a real navigation like the zone
-                     select already is. -->
-                <a t-att-href="zone_clear_url" class="wd-filter-chip-x" aria-label="Quitar filtro de zona">×</a>
-            </span>
+                <t t-esc="remove_label"/>
+            </t>
             <t t-if="selected_category">
                 <t t-set="filter_category_obj" t-value="request.env['res.company.category'].sudo().browse(selected_category)"/>
-                <span t-if="filter_category_obj.exists()" class="badge bg-primary wd-filter-chip d-inline-flex align-items-center">
+                <t t-if="filter_category_obj.exists()" t-call="website_directory.directory_filter_chip">
+                    <t t-set="remove_url" t-value="category_clear_url"/>
+                    <t t-set="remove_label" t-value="filter_category_obj.name"/>
+                    <t t-set="chip_class" t-value="'badge bg-primary wd-filter-chip d-inline-flex align-items-center'"/>
                     <i class="fa fa-folder me-1"/>
-                    <t t-esc="filter_category_obj.name"/>
-                    <a t-att-href="category_clear_url" class="wd-filter-link wd-filter-chip-x" aria-label="Quitar filtro de categoría">×</a>
-                </span>
+                    <t t-esc="remove_label"/>
+                </t>
             </t>
             <!-- Extension hook: bridge modules (certification, facilities...)
                  add their own removable chip here, next to search/zone/
                  category, so the visitor sees every active filter in one
                  place instead of hunting for it in each sidebar card. -->
             <t t-call="website_directory.directory_active_filters_extra"/>
-            <!-- Red trash: wipes every active filter (search, category, zone)
-                 by reloading the bare directory page. Only rendered when
-                 there is something to clear. -->
+            <!-- Wipes every active filter (search, category, zone) at once by
+                 reloading the bare directory page. Only rendered when there
+                 is something to clear. It wears the chips' cross rather than
+                 its own trash glyph — one "remove" vocabulary per page — and
+                 stays a red outlined button with its own accessible name, so
+                 "clear everything" cannot be mistaken for one chip's cross.
+
+                 No text label on purpose: the whole content of this anchor is
+                 one translation term, and a text node would fold the markup
+                 below into it and orphan the existing "Clear all filters"
+                 translation. -->
             <a t-if="search or selected_category or (current_zone and current_zone != 'canarias')"
                href="/comercio"
                class="btn btn-sm btn-outline-danger wd-clear-filters d-inline-flex align-items-center"
+               aria-label="Clear all filters"
                title="Clear all filters">
-                <i class="fa fa-trash"/>
+                <i class="fa fa-times"/>
             </a>
             <span class="text-muted small ms-auto">
                 <t t-esc="entries_count"/> result(s)
@@ -183,10 +228,13 @@
                 </select>
                 <div t-if="current_zone and current_zone != 'canarias'" class="mt-3">
                     <small class="text-muted d-block mb-1">Filtering by:</small>
-                    <span class="badge bg-primary wd-filter-chip d-inline-flex align-items-center">
-                        <t t-esc="dict(zone_options).get(current_zone, current_zone)"/>
-                        <a t-att-href="zone_clear_url" class="wd-filter-chip-x" aria-label="Quitar filtro de zona">×</a>
-                    </span>
+                    <t t-call="website_directory.directory_filter_chip">
+                        <t t-set="remove_url" t-value="zone_clear_url"/>
+                        <t t-set="remove_label" t-value="dict(zone_options).get(current_zone, current_zone)"/>
+                        <t t-set="remove_navigates" t-value="True"/>
+                        <t t-set="chip_class" t-value="'badge bg-primary wd-filter-chip d-inline-flex align-items-center'"/>
+                        <t t-esc="remove_label"/>
+                    </t>
                 </div>
             </div>
         </div>
@@ -235,18 +283,19 @@
                         </select>
                     </div>
                 </form>
+                <!-- The chip itself clears the category, like every other
+                     selected filter on the page; the separate "Clear"
+                     button it used to sit under is gone with it. -->
                 <div t-if="selected_category" class="mt-3 pt-3 border-top" id="wd_category_badge">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <small class="text-muted">Filtering by:</small>
-                        <a t-att-href="category_clear_url" class="wd-filter-link btn btn-sm btn-outline-secondary py-0 px-2">
-                            <i class="fa fa-times me-1"/>Clear
-                        </a>
-                    </div>
+                    <small class="text-muted d-block mb-1">Filtering by:</small>
                     <div class="d-flex flex-wrap gap-1">
                         <t t-set="selected_category_obj" t-value="request.env['res.company.category'].sudo().browse(selected_category)"/>
-                        <span t-if="selected_category_obj.exists()" class="badge bg-primary">
+                        <t t-if="selected_category_obj.exists()" t-call="website_directory.directory_filter_chip">
+                            <t t-set="remove_url" t-value="category_clear_url"/>
+                            <t t-set="remove_label" t-value="selected_category_obj.name"/>
+                            <t t-set="chip_class" t-value="'badge bg-primary wd-filter-chip d-inline-flex align-items-center text-start'"/>
                             <i class="fa fa-folder-open me-1"/><t t-esc="selected_category_obj.complete_name"/>
-                        </span>
+                        </t>
                     </div>
                 </div>
             </div>
