@@ -7,6 +7,9 @@ This is that module.
 
 It also lets a company answer to its trade name, the ``comercial`` field
 ``l10n_es_partner`` puts on the partner: the Settings › Companies list and
-search box, and every company dropdown, match the trade name and show it
-first, as ``TRADE NAME (Legal Name)``. For a third of the shops the legal
-name is the owner's own name, and nobody types it first.
+search box, every company dropdown and the company switcher match the trade
+name and show it first, as ``TRADE NAME (Legal Name)``. For a third of the
+shops the legal name is the owner's own name, and nobody types it first.
+
+The switcher needs its own override: ``web`` builds its labels from
+``res.company.name``, never from ``display_name``.
