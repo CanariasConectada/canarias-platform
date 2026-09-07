@@ -1,5 +1,7 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+import re
+
 from dateutil.relativedelta import relativedelta
 
 from odoo import fields
@@ -104,3 +106,26 @@ class TestDirectoryCertificationRendering(HttpCase):
         # The seed certification types ship with company_certification, so
         # the card renders on a bare database.
         self.assertIn("o_wdcc_filter", response.text)
+
+    def test_the_selected_seal_wears_the_shared_remove_chip(self):
+        """This card's cross became the whole directory's cross.
+
+        Reported 2026-09-05: every section had its own deselect affordance
+        and only this one was ever noticed, so the control moved into
+        ``website_directory.directory_filter_chip`` and the card now calls
+        it instead of drawing a bare ``fa-times``.
+        """
+        response = self.url_open("/comercio?certification=silver")
+        self.assertEqual(response.status_code, 200)
+        chips = re.findall(
+            r'<a[^>]*class="wd-filter-selected[^"]*"[^>]*>.*?</a>',
+            response.text,
+            re.DOTALL,
+        )
+        # The sidebar card and the top active-filters bar.
+        self.assertEqual(len(chips), 2, chips)
+        for chip in chips:
+            self.assertIn("wd-filter-link", chip)
+            self.assertIn('class="wd-filter-remove"', chip)
+        # The unticked seals offer no cross of their own.
+        self.assertNotIn("fa-times ms-2", response.text)

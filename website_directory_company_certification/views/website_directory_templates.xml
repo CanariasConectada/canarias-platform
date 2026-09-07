@@ -39,24 +39,26 @@
                     <h6 class="card-title fw-bold mb-3">
                         <i class="fa fa-certificate me-2"/>Certifications
                     </h6>
+                    <!-- The selected seal is the directory's shared chip
+                         (`website_directory.directory_filter_chip`), so its
+                         cross is the same control the zone, the category and
+                         the facilities now carry. This card is where that
+                         cross came from: it was the only deselect affordance
+                         a visitor ever noticed (reported 2026-09-05), which
+                         is why the others were made to match it. -->
                     <div class="d-flex flex-column gap-2">
                         <t t-foreach="certification_types" t-as="cert_type">
-                            <a t-att-href="certification_urls.get(cert_type.code)"
-                               t-attf-class="wd-filter-link btn btn-sm text-start d-flex align-items-center justify-content-between {{
-                                   'btn-primary' if selected_certification == cert_type.code else 'btn-outline-secondary'
-                               }}"
-                               t-att-aria-pressed="'true' if selected_certification == cert_type.code else 'false'"
-                               t-att-aria-label="('Quitar filtro %s' % cert_type.name) if selected_certification == cert_type.code else None">
+                            <t t-if="selected_certification == cert_type.code"
+                               t-call="website_directory.directory_filter_chip">
+                                <t t-set="remove_url" t-value="certification_urls.get(cert_type.code)"/>
+                                <t t-set="remove_label" t-value="cert_type.name"/>
+                                <t t-set="chip_class" t-value="'btn btn-sm btn-primary text-start d-flex align-items-center justify-content-between'"/>
                                 <t t-esc="cert_type.name"/>
-                                <!-- The selected chip toggles OFF on click; the
-                                     cross is what tells the visitor so. Flex
-                                     alignment, not `float-end` + a margin
-                                     guess: the float used to sit the cross
-                                     low and off-centre against the label
-                                     (reported 2026-08-21). -->
-                                <i t-if="selected_certification == cert_type.code"
-                                   class="fa fa-times ms-2"
-                                   role="presentation"/>
+                            </t>
+                            <a t-else=""
+                               t-att-href="certification_urls.get(cert_type.code)"
+                               class="wd-filter-link btn btn-sm btn-outline-secondary text-start d-flex align-items-center justify-content-between">
+                                <t t-esc="cert_type.name"/>
                             </a>
                         </t>
                     </div>
@@ -71,13 +73,13 @@
             <t t-if="selected_certification">
                 <t t-set="selected_certification_type"
                    t-value="request.env['certification.type'].sudo().search([('code', '=', selected_certification)], limit=1)"/>
-                <span t-if="selected_certification_type" class="badge bg-primary wd-filter-chip d-inline-flex align-items-center">
+                <t t-if="selected_certification_type" t-call="website_directory.directory_filter_chip">
+                    <t t-set="remove_url" t-value="certification_urls.get(selected_certification)"/>
+                    <t t-set="remove_label" t-value="selected_certification_type.name"/>
+                    <t t-set="chip_class" t-value="'badge bg-primary wd-filter-chip d-inline-flex align-items-center'"/>
                     <i class="fa fa-certificate me-1"/>
-                    <t t-esc="selected_certification_type.name"/>
-                    <a t-att-href="certification_urls.get(selected_certification)"
-                       class="wd-filter-link wd-filter-chip-x"
-                       t-attf-aria-label="Quitar filtro {{ selected_certification_type.name }}">×</a>
-                </span>
+                    <t t-esc="remove_label"/>
+                </t>
             </t>
         </xpath>
     </template>
