@@ -1,3 +1,24 @@
+## 19.0.2.2.0 (2026-09-07)
+
+* **The "Guía Local" dropdown belongs to the zone sites only.** 19.0.2.1.0
+  had given it to every site, the portal included; the client ruled that it
+  must not show on the Canarias Conectada home page, only on the commercial
+  zone pages. A merchant microsite is no longer born with it, and the
+  migration takes it back from the portal and from every merchant site --
+  recognised by structure (the dropdown holding the three vertical URLs),
+  never by label, and never on the website of a company carrying
+  `zone_company_key`. The migration reads those companies straight from the
+  column: a post-migration runs before `zone_company_ownership` is in the
+  registry, so asking the ORM for the field there answers "no zones
+  anywhere" and the sweep spares every site in silence. When the column is
+  absent, or no company is keyed, the migration removes nothing and warns.
+
+## 19.0.2.1.0 (2026-09-02)
+
+* Every site linked the platform's own verticals (Memoria Viva, Lugares de
+  Interés, Reseñas) through a "Guía Local" dropdown, and the 21 sites missing
+  the `/comercio` entry got it back. Superseded for the dropdown by 19.0.2.2.0.
+
 ## 19.0.2.0.0 (2026-08-31)
 
 Measured against website 221, the first microsite created after the cutover.

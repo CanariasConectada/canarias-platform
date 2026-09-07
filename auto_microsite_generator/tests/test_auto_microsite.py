@@ -1,6 +1,9 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import importlib.util
+import re
+from pathlib import Path
 from unittest.mock import patch
 
 from odoo.exceptions import UserError, ValidationError
@@ -8,7 +11,19 @@ from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
 from ..hooks import uninstall_hook
-from ..models.res_company import MICROSITE_CONTENT_DEFAULTS, _normalize_subdomain
+from ..models.res_company import (
+    LOCAL_GUIDE_CHILDREN,
+    LOCAL_GUIDE_URLS,
+    MICROSITE_CONTENT_DEFAULTS,
+    _normalize_subdomain,
+)
+
+MIGRATION_2_2_0 = (
+    Path(__file__).resolve().parents[1]
+    / "migrations"
+    / "19.0.2.2.0"
+    / "post-migration.py"
+)
 
 
 @tagged("post_install", "-at_install")
@@ -498,77 +513,20 @@ class TestAutoMicrosite(TransactionCase):
             "A new microsite must ask before setting optional cookies.",
         )
 
-    def test_a_new_microsite_carries_the_local_guide_dropdown(self):
-        """The platform's verticals travel in the navigation from birth.
-
-        Measured 2026-09-02: 215 of 218 sites linked neither Memoria Viva
-        nor Lugares de Interes, and Resenas was linked nowhere at all.
+    def test_a_new_microsite_is_born_without_the_local_guide_dropdown(self):
+        """The platform's verticals are the zone sites' navigation, not a
+        merchant's. 19.0.2.1.0 gave the dropdown to every site; the client
+        ruled it out of everywhere but the commercial zone pages.
         """
-        company = self.env["res.company"].create({"name": "Guided Shop"})
-        Menu = self.env["website.menu"]
-        # Found through a child URL, not the translated name: the label
-        # depends on the ambient language and somebody may rename it.
-        lugares = Menu.search(
-            [
-                ("website_id", "=", company.website_id.id),
-                ("url", "=", "/explora/lugares-de-interes"),
-            ],
-            limit=1,
-        )
-        self.assertTrue(lugares, "the guide entries must be born with the site")
-        guide = lugares.parent_id
-        self.assertEqual(guide.url, "#", "the verticals live under a dropdown")
-        urls = guide.child_id.mapped("url")
-        self.assertIn("/explora/memoria-viva", urls)
-        self.assertIn("/explora/lugares-de-interes", urls)
-        self.assertIn(
-            "https://canariasconectada.es/resenas",
-            urls,
-            "reviews answer on the portal alone, so the entry deep-links there",
-        )
-
-    def test_the_local_guide_dropdown_is_created_only_once(self):
-        company = self.env["res.company"].create({"name": "Guided Twice Shop"})
-        Menu = self.env["website.menu"]
-        domain = [
-            ("website_id", "=", company.website_id.id),
-            ("url", "=", "/explora/lugares-de-interes"),
-        ]
-        self.assertEqual(Menu.search_count(domain), 1)
-        company._auto_generate_microsite()
-        self.assertEqual(
-            Menu.search_count(domain),
-            1,
-            "re-running must not duplicate the guide entries",
-        )
-
-    def test_the_guide_labels_are_seeded_in_every_installed_language(self):
-        english = self.env["res.lang"]._activate_lang("en_US")
-        if not english:
-            self.skipTest("en_US is not available in this database.")
-        company = self.env["res.company"].create({"name": "Guided Label Shop"})
-        Menu = self.env["website.menu"]
-        lugares = Menu.search(
-            [
-                ("website_id", "=", company.website_id.id),
-                ("url", "=", "/explora/lugares-de-interes"),
-            ],
-            limit=1,
-        )
-        self.assertEqual(
-            lugares.with_context(lang="en_US").name, "Places of Interest"
-        )
-        memoria = Menu.search(
-            [
-                ("website_id", "=", company.website_id.id),
-                ("url", "=", "/explora/memoria-viva"),
-            ],
-            limit=1,
-        )
-        self.assertEqual(
-            memoria.with_context(lang="en_US").name,
-            "Memoria Viva",
-            "a proper noun keeps its name in every language",
+        company = self.env["res.company"].create({"name": "Unguided Shop"})
+        self.assertFalse(
+            self.env["website.menu"].search_count(
+                [
+                    ("website_id", "=", company.website_id.id),
+                    ("url", "in", list(LOCAL_GUIDE_URLS)),
+                ]
+            ),
+            "a merchant microsite must not link the verticals at birth",
         )
 
     def test_menu_labels_are_seeded_in_every_installed_language(self):
@@ -608,6 +566,178 @@ class TestAutoMicrosite(TransactionCase):
         self.assertTrue(
             set(stored) <= installed,
             f"Only installed languages may be written; got {sorted(stored)}.",
+        )
+
+
+@tagged("post_install", "-at_install")
+class TestLocalGuideDropdown(TransactionCase):
+    """The Guía Local dropdown is taken back from every site but the zones.
+
+    A zone site is the website of a company carrying ``zone_company_key``,
+    a field ``zone_company_ownership`` brings; that module is not a hard
+    dependency here, so the cases that need a zone skip without it (as it
+    is installed in the platform's real deployment, they run there).
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.Company = self.env["res.company"]
+        self.Menu = self.env["website.menu"]
+        self.env["ir.config_parameter"].sudo().set_param(
+            "auto_microsite_generator.subdomain_mode", "auto"
+        )
+
+    def _website_of(self, name, zone_key=None):
+        """A company with a bare website: a merchant, or a zone when keyed."""
+        if zone_key and "zone_company_key" not in self.Company._fields:
+            self.skipTest("zone_company_ownership is not installed here")
+        company = self.Company.with_context(no_microsite_auto=True).create(
+            {"name": name}
+        )
+        website = self.env["website"].create({"name": name, "company_id": company.id})
+        if zone_key:
+            company.zone_company_key = zone_key
+        return website
+
+    def _plant_local_guide(self, website, extra_url=None):
+        """Build the dropdown exactly as 19.0.2.1.0 left it on every site."""
+        root = self.Menu.search(
+            [("website_id", "=", website.id), ("parent_id", "=", False)], limit=1
+        )
+        guide = self.Menu.create(
+            {
+                "name": "Guía Local",
+                "url": "#",
+                "parent_id": root.id,
+                "website_id": website.id,
+            }
+        )
+        children = [
+            {"name": name, "url": url, "sequence": sequence}
+            for name, url, sequence in LOCAL_GUIDE_CHILDREN
+        ]
+        if extra_url:
+            children.append({"name": "Eventos", "url": extra_url, "sequence": 40})
+        self.Menu.create(
+            [dict(vals, parent_id=guide.id, website_id=website.id) for vals in children]
+        )
+        return guide
+
+    def _has_local_guide(self, website):
+        return bool(
+            self.Menu.search_count(
+                [("website_id", "=", website.id), ("url", "in", list(LOCAL_GUIDE_URLS))]
+            )
+        )
+
+    def test_the_sweep_clears_the_merchant_and_spares_the_zone(self):
+        zone = self._website_of("Zona Guía", zone_key="guanarteme")
+        merchant = self._website_of("Comercio Guía")
+        curated = self._plant_local_guide(zone)
+        self._plant_local_guide(merchant)
+
+        removed = self.Company._remove_local_guide_dropdowns(zone | merchant)
+
+        self.assertEqual(removed, 1, "one site cleaned, one site spared")
+        self.assertFalse(self._has_local_guide(merchant))
+        self.assertTrue(curated.exists(), "the zone dropdown must not be touched")
+        self.assertEqual(len(curated.child_id), len(LOCAL_GUIDE_CHILDREN))
+
+    def test_the_sweep_is_idempotent(self):
+        zone = self._website_of("Zona Twice", zone_key="tamaraceite")
+        merchant = self._website_of("Comercio Twice")
+        self._plant_local_guide(zone)
+        self._plant_local_guide(merchant)
+        self.Company._remove_local_guide_dropdowns(zone | merchant)
+        self.assertEqual(
+            self.Company._remove_local_guide_dropdowns(zone | merchant),
+            0,
+            "a second run must find nothing left to remove",
+        )
+
+    def test_a_dropdown_that_gained_an_entry_is_somebody_s_navigation(self):
+        """Only the generated structure goes: the three vertical URLs under a
+        '#' parent. One more child and it is a merchant's own menu.
+        """
+        self._website_of("Zona Anchor", zone_key="lomolosfrailes")
+        merchant = self._website_of("Comercio Curated")
+        guide = self._plant_local_guide(merchant, extra_url="/eventos-del-barrio")
+        self.Company._remove_local_guide_dropdowns(merchant)
+        self.assertTrue(guide.exists(), "a dropdown with its own entries is kept")
+
+    def _migration_script(self):
+        spec = importlib.util.spec_from_file_location("post_migration", MIGRATION_2_2_0)
+        script = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(script)
+        return script
+
+    def test_the_migration_sweeps_the_estate_and_spares_the_zone(self):
+        """A realistic estate: several merchants and a zone site."""
+        zone = self._website_of("Zona Script", zone_key="guanarteme")
+        curated = self._plant_local_guide(zone)
+        merchants = self.env["website"].browse()
+        for index in range(3):
+            merchant = self._website_of(f"Comercio Script {index}")
+            self._plant_local_guide(merchant)
+            merchants |= merchant
+
+        script = self._migration_script()
+        with self.assertLogs(script._logger.name, level="INFO") as capture:
+            script.migrate(self.env.cr, "19.0.2.1.0")
+
+        for merchant in merchants:
+            self.assertFalse(
+                self._has_local_guide(merchant),
+                f"{merchant.name} must have lost the dropdown",
+            )
+        self.assertTrue(curated.exists(), "the migration must spare the zone site")
+        self.assertEqual(len(curated.child_id), len(LOCAL_GUIDE_CHILDREN))
+        removed = int(re.search(r"removed from (\d+) ", capture.output[0]).group(1))
+        self.assertGreaterEqual(
+            removed,
+            len(merchants),
+            "the migration must report what it actually removed",
+        )
+
+    def test_the_migration_finds_the_zone_sites_without_the_orm_field(self):
+        """The registry is INCOMPLETE while a post-migration runs.
+
+        This module depends only on ``website``, so ``zone_company_ownership``
+        is not loaded yet and the ORM does not know ``zone_company_key``: a
+        script asking the ORM for the zone companies is told there are none,
+        spares every site and reports success. That is what the first cut did
+        on production -- 211 sites, 0 removed. The script must resolve the
+        zone companies in SQL, so the ORM probe returning nothing (simulated
+        here) may not change the outcome.
+        """
+        zone = self._website_of("Zona Sin ORM", zone_key="tamaraceite")
+        merchant = self._website_of("Comercio Sin ORM")
+        curated = self._plant_local_guide(zone)
+        self._plant_local_guide(merchant)
+
+        script = self._migration_script()
+        with patch.object(
+            type(self.Company), "_zone_companies_or_none", lambda self: None
+        ):
+            script.migrate(self.env.cr, "19.0.2.1.0")
+
+        self.assertFalse(
+            self._has_local_guide(merchant),
+            "the sweep must run on the merchant even with the ORM probe blind",
+        )
+        self.assertTrue(curated.exists(), "the zone site must still be spared")
+        self.assertEqual(len(curated.child_id), len(LOCAL_GUIDE_CHILDREN))
+
+    def test_the_migration_removes_nothing_when_no_zone_can_be_told_apart(self):
+        """No keyed company: spare everything rather than strip the zones."""
+        merchant = self._website_of("Comercio Sin Zona")
+        self._plant_local_guide(merchant)
+        script = self._migration_script()
+        with patch.object(script, "_zone_company_ids", lambda cr: []):
+            script.migrate(self.env.cr, "19.0.2.1.0")
+        self.assertTrue(
+            self._has_local_guide(merchant),
+            "with no zone known the sweep must not touch a thing",
         )
 
 

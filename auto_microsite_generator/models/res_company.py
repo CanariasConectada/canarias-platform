@@ -133,14 +133,15 @@ ZONE_MENU_CHILDREN = (
 # as f18_zone_menu_restore).
 ZONE_MENU_PROBE_URL = ZONE_MENU_CHILDREN[1][1]
 
-# "Guía Local" dropdown: the platform's own verticals. Measured on
-# 2026-09-02 (and first raised in the navigation review of 2026-08-02):
-# Memoria Viva, Lugares de Interés and Reseñas exist and answer 200, yet
-# 215 of 218 sites linked none of them -- the portal included. The zone
-# sites carry this dropdown already (Guía Local, menus 118/130/142); this
-# makes it part of what a microsite is born with. Memoria Viva is a proper
-# noun and keeps its name in every language; the other two translate
-# through MENU_LABELS.
+# "Guía Local" dropdown: the platform's own verticals (Memoria Viva,
+# Lugares de Interés, Reseñas). It belongs to the three ZONE sites alone
+# (Guía Local, menus 118/130/142), where it is curated by hand. 19.0.2.1.0
+# gave it to every site, the portal included; the client ruled on
+# 2026-09-07 that it must not show anywhere else, so a merchant microsite
+# is no longer born with it and 19.0.2.2.0 takes it back from every
+# non-zone site. The constants stay: the 19.0.2.1.0 script imports them,
+# and the child URLs are how the generated dropdown is recognised (by
+# structure, never by label) on its way out.
 LOCAL_GUIDE_MENU_NAME = "Guía Local"
 LOCAL_GUIDE_MENU_LABELS = {
     "es_ES": "Guía Local",
@@ -159,6 +160,7 @@ LOCAL_GUIDE_CHILDREN = (
     ("Reseñas", "https://canariasconectada.es/resenas", 30),
 )
 LOCAL_GUIDE_PROBE_URL = LOCAL_GUIDE_CHILDREN[1][1]
+LOCAL_GUIDE_URLS = frozenset(url for _name, url, _sequence in LOCAL_GUIDE_CHILDREN)
 
 # Stock menu entries that core copy_menu_hierarchy copies from the template
 # menus onto every new website. Production does not give them to merchant
@@ -650,7 +652,6 @@ class ResCompany(models.Model):
                 )
                 self._seed_menu_translations(menu, url)
         self._ensure_zone_menu_dropdown(Menu, website, root)
-        self._ensure_local_guide_dropdown(Menu, website, root)
         if prune_defaults:
             self._prune_stock_menus(Menu, website)
 
@@ -711,42 +712,92 @@ class ResCompany(models.Model):
             ]
         )
 
-    def _ensure_local_guide_dropdown(self, Menu, website, root):
-        """Create the "Guía Local" dropdown when it is missing.
+    # ------------------------------------------------------------------
+    # Guía Local: the zone sites' dropdown, taken back from everywhere else
+    # ------------------------------------------------------------------
+    @api.model
+    def _zone_companies_or_none(self):
+        """The companies standing for a commercial zone, or ``None``.
 
-        Same contract as the zone dropdown: create-only, presence probed on
-        a child URL so a renamed dropdown is recognised and left alone. The
-        children get their estate wording in every installed language.
+        A zone site is the website of a company carrying
+        ``zone_company_key``, which ``zone_company_ownership`` exposes as
+        ``_zone_companies``. Reached through ``hasattr`` so this module
+        keeps depending only on ``website`` -- the same soft dependency
+        ``partner_microsite_manager`` uses for its picker. ``None`` when the
+        question cannot be answered here, which the caller must treat as
+        "cannot tell", never as "there are no zones".
         """
-        self.ensure_one()
-        if Menu.search_count(
-            [("website_id", "=", website.id), ("url", "=", LOCAL_GUIDE_PROBE_URL)]
-        ):
-            return
-        parent = Menu.create(
-            {
-                "name": LOCAL_GUIDE_MENU_NAME,
-                "url": "#",
-                "parent_id": root.id,
-                "sequence": LOCAL_GUIDE_MENU_SEQUENCE,
-                "website_id": website.id,
-            }
+        if not hasattr(self, "_zone_companies"):
+            return None
+        return self.sudo()._zone_companies()
+
+    @api.model
+    def _local_guide_dropdown(self, website):
+        """The generated Guía Local dropdown of ``website``, or an empty set.
+
+        Recognised by structure, never by label (the label depends on the
+        ambient language and somebody may have renamed it): the parent of
+        the Lugares entry, when that parent is a dropdown holding nothing
+        but the platform's verticals. A dropdown that gained an entry of its
+        own is somebody's navigation and does not qualify; neither does one
+        anchored to the data migration.
+        """
+        Menu = self.env["website.menu"].sudo()
+        anchor = Menu.search(
+            [("website_id", "=", website.id), ("url", "=", LOCAL_GUIDE_PROBE_URL)],
+            limit=1,
         )
-        installed = {lang[0] for lang in self.env["res.lang"].get_installed()}
-        for lang, label in LOCAL_GUIDE_MENU_LABELS.items():
-            if lang in installed:
-                parent.with_context(lang=lang).name = label
-        for name, url, sequence in LOCAL_GUIDE_CHILDREN:
-            child = Menu.create(
-                {
-                    "name": name,
-                    "url": url,
-                    "parent_id": parent.id,
-                    "sequence": sequence,
-                    "website_id": website.id,
-                }
+        guide = anchor.parent_id
+        if not guide or guide.url != "#":
+            return Menu.browse()
+        if not set(guide.child_id.mapped("url")) <= LOCAL_GUIDE_URLS:
+            return Menu.browse()
+        if any(self._is_migrated_record(menu) for menu in guide | guide.child_id):
+            return Menu.browse()
+        return guide
+
+    @api.model
+    def _remove_local_guide_dropdowns(self, websites=None, zone_companies=None):
+        """Remove the Guía Local dropdown from every site that is not a zone.
+
+        Idempotent: a site already without it is skipped, and the zone
+        sites are never touched. Returns how many dropdowns went, for the
+        caller to log. Refuses to run -- returning 0 and warning -- when no
+        zone site can be told apart, because the only thing worse than
+        leaving the dropdown on the portal would be taking it off the three
+        sites it was made for.
+
+        ``zone_companies`` is passed in by the 19.0.2.2.0 migration, which
+        resolves them in SQL: a post-migration runs before
+        ``zone_company_ownership`` is in the registry, so the ORM probe
+        below answers "no zones anywhere" there and the sweep would spare
+        every site in silence. Left out, the probe is used -- which is the
+        right answer at runtime, registry complete.
+        """
+        if zone_companies is None:
+            zone_companies = self._zone_companies_or_none()
+        if not zone_companies:
+            _logger.warning(
+                "No zone company is known here (is zone_company_ownership "
+                "installed, with zone_company_key set?): leaving every Guía "
+                "Local dropdown in place."
             )
-            self._seed_menu_translations(child, url)
+            return 0
+        if websites is None:
+            websites = self.env["website"].sudo().search([])
+        removed = 0
+        for website in websites:
+            if website.company_id in zone_companies:
+                continue
+            guide = self._local_guide_dropdown(website)
+            if not guide:
+                continue
+            # Children first: core cascades them anyway, but counting the
+            # parent alone is what makes the number mean "sites cleaned".
+            guide.child_id.unlink()
+            guide.unlink()
+            removed += 1
+        return removed
 
     def _prune_stock_menus(self, Menu, website):
         """Remove the stock Events/Courses entries from a NEW website.
