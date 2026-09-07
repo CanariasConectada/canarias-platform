@@ -87,8 +87,12 @@
     color: #fff;
 }
 
-/* The icon earns its place at scanning size, not at label size. */
-.o_wdcf_filter .btn .fa {
+/* The pill's own leading icon earns its place at scanning size, not at label
+ * size. Direct child only: the cross of the shared deselect chip lives one
+ * level deeper (inside .wd-filter-remove) and is the one icon on the pill
+ * that must stay full size and full strength -- shrunk and faded, it was
+ * exactly the unreadable glyph reported on 2026-09-05. */
+.o_wdcf_filter .btn > .fa {
     font-size: 0.75em;
     opacity: 0.7;
 }
