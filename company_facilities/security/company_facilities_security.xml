@@ -10,9 +10,8 @@
     </record>
 
     <!-- A group rather than "system only": the client is meant to add their
-         own subdivisions and items without an administrator. Remember this
-         platform grants groups through roles (base_user_role); ticking it on a
-         user by hand is reverted on the next synchronisation. -->
+         own subdivisions and items without an administrator. It is ticked on
+         the user form. -->
     <record id="group_facility_manager" model="res.groups">
         <field name="name">Manage the facilities catalogue</field>
         <field name="sequence">10</field>

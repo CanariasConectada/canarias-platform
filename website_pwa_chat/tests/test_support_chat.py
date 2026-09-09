@@ -31,33 +31,25 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
 
     @classmethod
     def _make_agent(cls, login, name):
-        """Appoint somebody to support the way this platform appoints anybody.
+        """Appoint somebody to support: the group, ticked on the user.
 
-        NOT by writing ``group_ids`` on the user. ``base_user_role`` is
-        installed, and it re-derives a user's groups from their roles inside
-        every ``res.users.write`` — so a group ticked on the user form saves
-        without complaint and is gone by the next write. The first draft of
-        this suite did exactly that and the group finished the run with no
-        members at all, which is how the platform's own support role came to
-        exist (``f41_support_role``).
-
-        Granting through a role is therefore not a test convenience; it is the
-        only grant that lasts, and the test asserts against the real gesture.
+        Until 2026-09-09 this went through a ``res.users.role`` because
+        ``base_user_role`` re-derived every user's groups inside each write
+        and a group set by hand was gone by the next one. The roles were
+        retired (permissions are managed per user now), so the plain grant
+        is the real gesture again and the one this suite asserts against.
         """
-        user = cls.env["res.users"].create(
-            {"name": name, "login": login, "email": "%s@example.com" % login}
-        )
-        role = cls.env["res.users.role"].create({"name": "Support: %s" % login})
-        role.write(
+        return cls.env["res.users"].create(
             {
-                "implied_ids": [
+                "name": name,
+                "login": login,
+                "email": "%s@example.com" % login,
+                "group_ids": [
                     (4, cls.env.ref("base.group_user").id),
                     (4, cls.support_group.id),
                 ],
-                "line_ids": [(0, 0, {"user_id": user.id})],
             }
         )
-        return user
 
     def _support_channels(self):
         return self.env["discuss.channel"].sudo().search([("support_key", "!=", False)])

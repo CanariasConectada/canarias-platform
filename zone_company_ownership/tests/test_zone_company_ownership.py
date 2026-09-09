@@ -153,9 +153,8 @@ class TestZoneCompanyOwnership(TransactionCase):
         """The only other exemption, and it is ``group_system``, not
         ``group_multi_company``: the merchants hold that one.
 
-        The real administrator is used rather than a freshly built one because
-        ``base_user_role`` reverts group writes made directly on a user, so a
-        fixture "admin" would silently not be one.
+        The real administrator is used rather than a freshly built one: it is
+        the account whose exemption the platform actually relies on.
         """
         admin = self.env.ref("base.user_admin")
         admin.with_context(**{SKIP_CONTEXT: True}).company_ids = [
