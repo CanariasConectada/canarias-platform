@@ -1,3 +1,10 @@
+## 19.0.6.3.1 (2026-09-09)
+
+- Support agents are appointed by ticking **Soporte: atender a los
+  visitantes** on the user form. `base_user_role` was retired from the
+  platform, so the role `canarias_mig.role_support` no longer exists; the
+  tests grant the group directly too.
+
 ## 19.0.2.0.0 (2026-08-14)
 
 - A private line to support, above the channel list: one conversation per

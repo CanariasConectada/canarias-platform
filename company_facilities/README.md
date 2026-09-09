@@ -14,9 +14,8 @@ its own company form.
 "Subdivisions" holds the headings, "Items" holds what a shop can offer. Both
 take a Font Awesome 4.7 class as the icon (`fa-wifi`, `fa-wheelchair`…).
 
-Reserved for the *Manage the facilities catalogue* group. On this platform
-groups are granted through roles (`base_user_role`); ticking the group on a
-user by hand is reverted on the next synchronisation.
+Reserved for the *Manage the facilities catalogue* group, ticked on the
+user form (Settings > Users, under Website).
 
 **Per shop** — the company form, Microsite page: pick the items and, if the
 default heading does not fit, give the block a title of its own.

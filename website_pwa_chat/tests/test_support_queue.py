@@ -33,24 +33,17 @@ class TestSupportQueue(WebsiteChatMixin, HttpCase):
         super().setUpClass()
         cls._setup_chat_fixtures()
         cls.support_group = cls.env.ref("website_pwa_chat.group_support_agent")
+        # The group, ticked on the user. Roles (`base_user_role`) were retired
+        # on 2026-09-09; see test_support_chat._make_agent.
         cls.agent = cls.env["res.users"].create(
             {
                 "name": "WPQ Support Agent",
                 "login": "wpq_support",
                 "email": "wpq_support@example.com",
-            }
-        )
-        # Granted through a ROLE, because `base_user_role` re-derives group_ids
-        # inside every write and a group ticked on the user is gone by the next
-        # one. See test_support_chat._make_agent for the full story.
-        role = cls.env["res.users.role"].create({"name": "WPQ Support"})
-        role.write(
-            {
-                "implied_ids": [
+                "group_ids": [
                     (4, cls.env.ref("base.group_user").id),
                     (4, cls.support_group.id),
                 ],
-                "line_ids": [(0, 0, {"user_id": cls.agent.id})],
             }
         )
         cls.visitor_partner = cls.env["res.partner"].create({"name": "WPQ Visitante"})
