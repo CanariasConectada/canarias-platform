@@ -36,6 +36,19 @@ class TestMicrositeContentEditor(TransactionCase):
         cls.stranger.website_id = cls.env["website"].create(
             {"name": "Comercio Ajeno", "company_id": cls.stranger.id}
         )
+        # A new website copies the main company's social links (core's
+        # _default_social_*). On a CI database that is Odoo's own Facebook
+        # and Instagram, and the social tests below assert what the merchant
+        # typed, so the fixtures start blank -- as a merchant's site does.
+        (cls.shop | cls.neighbour | cls.stranger).website_id.write(
+            {
+                "social_facebook": False,
+                "social_instagram": False,
+                "social_twitter": False,
+                "social_youtube": False,
+                "social_linkedin": False,
+            }
+        )
         cls.merchant = new_test_user(
             cls.env,
             login="microsite_merchant",

@@ -23,6 +23,10 @@ class TestPastEventsFallback(HttpCase):
     def setUpClass(cls):
         super().setUpClass()
         now = fields.Datetime.now()
+        # The fallback only fires when NOTHING upcoming is published, and
+        # both a demo database and a copy of production have upcoming
+        # events of their own. Only this suite's events exist for /event.
+        cls.env["event.event"].search([]).write({"active": False})
         cls.past_event = cls.env["event.event"].create(
             {
                 "name": "WEC Feria del Barrio",
