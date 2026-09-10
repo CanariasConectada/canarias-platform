@@ -20,7 +20,7 @@ class TestTrainingMenu(TransactionCase):
         self.assertFalse(menu.parent_id, "a root entry, next to the apps")
         action = self.env.ref("training_menu.action_training_courses")
         self.assertEqual(action.url, "https://canariasconectada.es/slides")
-        self.assertEqual(action.target, "new")
+        self.assertEqual(action.target, "self", "a new tab is a blocked popup")
 
     def test_the_entry_is_for_internal_users_only(self):
         """Gated on base.group_user: a portal account never carries it."""

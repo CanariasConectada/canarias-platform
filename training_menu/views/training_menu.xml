@@ -5,10 +5,13 @@
     <!-- Absolute on purpose: the courses are published on the portal
          website (canariasconectada.es) and a relative /slides would resolve
          against whatever host the backend is opened on. -->
+    <!-- Same tab, not a new one: Odoo opens a "new" act_url with
+         window.open AFTER the action round-trip, which browsers treat as a
+         popup and block until the user allows it (reported 2026-09-10). -->
     <record id="action_training_courses" model="ir.actions.act_url">
         <field name="name">Formación</field>
         <field name="url">https://canariasconectada.es/slides</field>
-        <field name="target">new</field>
+        <field name="target">self</field>
     </record>
 
     <!-- A root entry every internal user sees in the apps menu; asked for on
