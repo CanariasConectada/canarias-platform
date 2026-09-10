@@ -58,6 +58,14 @@ ENTITY = re.compile(r"&amp;" + _ENTITY_NAME + r"|&" + _ENTITY_NAME)
 # characters that carries at least one letter.
 WORD = re.compile(r"\S*[^\W\d_]\S*", re.UNICODE)
 
+# A token that mixes digits and letters -- "2x1", "24h", "3D". It is a word
+# for counting (a heading with one is still a heading) but its letters say
+# nothing about case: the "x" of "2x1" is a symbol, not a lower-case letter,
+# and shouting it as "2X1" would change what the offer says. "OFERTA 2x1 EN
+# EL LOCAL" was read as ordinary prose because of that "x", sent to the
+# engine unfolded, and came back as "_" (2026-09-07).
+MIXED = re.compile(r"(?=\S*\d)(?=\S*[^\W\d_])\S+", re.UNICODE)
+
 # Below this many letters a single all-caps word is read as an acronym ("NIF",
 # "TV", "IVA") and left alone. See :func:`is_shouting`.
 SHOUT_MIN_LETTERS = 6
@@ -109,11 +117,17 @@ def _content_pieces(text):
             yield index, piece
 
 
+# What a case change must step around: an entity, or a token that mixes
+# digits and letters (see :data:`MIXED`).
+_UNTOUCHED = re.compile(ENTITY.pattern + "|" + MIXED.pattern, re.UNICODE)
+
+
 def _map_letters(piece, transform):
-    """Apply ``transform`` to ``piece`` everywhere except inside an entity."""
+    """Apply ``transform`` to ``piece`` everywhere except inside an entity or
+    a mixed digit-and-letter token."""
     out = []
     cursor = 0
-    for found in ENTITY.finditer(piece):
+    for found in _UNTOUCHED.finditer(piece):
         out.append(transform(piece[cursor : found.start()]))
         out.append(found.group(0))
         cursor = found.end()
@@ -136,7 +150,9 @@ def is_shouting(text):
     * a *single* word needs at least :data:`SHOUT_MIN_LETTERS` letters. "NIF",
       "TV" and "IVA" are acronyms and stay as they are; "DESCUBRE" is a word.
       Two or more words are always a heading, whatever their length: "EN TU
-      ZONA" is nobody's acronym.
+      ZONA" is nobody's acronym;
+    * a token that mixes digits and letters ("2x1", "24h") counts as a word
+      but its letters are not looked at: "OFERTA 2x1 EN EL LOCAL" is shouted.
 
     A mixed-case sentence fails the second test on its first lower-case
     letter, so the acronyms it carries are never even looked at.
@@ -144,10 +160,12 @@ def is_shouting(text):
     visible = " ".join(
         ENTITY.sub(" ", piece) for _index, piece in _content_pieces(text)
     )
-    letters = LETTER.findall(visible)
+    words = WORD.findall(visible)
+    # Only prose words have a case; "2x1" counts as a word and says nothing.
+    prose = [word for word in words if not MIXED.fullmatch(word)]
+    letters = LETTER.findall(" ".join(prose))
     if not letters or any(letter.islower() for letter in letters):
         return False
-    words = WORD.findall(visible)
     return len(words) >= 2 or len(letters) >= SHOUT_MIN_LETTERS
 
 
