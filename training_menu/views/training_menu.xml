@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!-- Absolute on purpose: the courses are published on the portal
+         website (canariasconectada.es) and a relative /slides would resolve
+         against whatever host the backend is opened on. -->
+    <record id="action_training_courses" model="ir.actions.act_url">
+        <field name="name">Formación</field>
+        <field name="url">https://canariasconectada.es/slides</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- A root entry every internal user sees in the apps menu; asked for on
+         2026-09-10 so that the training is one click away for the people who
+         work in the backend. -->
+    <menuitem id="menu_training_root"
+              name="Formación"
+              action="action_training_courses"
+              web_icon="training_menu,static/description/icon.png"
+              groups="base.group_user"
+              sequence="95"/>
+</odoo>
