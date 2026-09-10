@@ -157,6 +157,20 @@ class TestAutoTranslateEngine(TransactionCase):
         self.assertTrue(is_shouting("TARTAS"))
         self.assertEqual(SHOUT_MIN_LETTERS, 6)
 
+    def test_a_digit_and_letter_token_has_no_case_of_its_own(self):
+        """"OFERTA 2x1 EN EL LOCAL" slipped through as prose on 2026-09-07:
+        the "x" of "2x1" read as a lower-case letter, the heading went to
+        the engine unfolded and came back as "_". The token counts as a
+        word, says nothing about case, and keeps its spelling both ways."""
+        term = "OFERTA 2x1 EN EL LOCAL"
+        self.assertTrue(is_shouting(term))
+        self.assertTrue(is_shouting("PROMO 2x1"), "two words, one of them a code")
+        self.assertFalse(is_shouting("2x1"), "no prose word at all")
+        self.assertFalse(is_shouting("Oferta 2x1 en el local"))
+        self.assertEqual(whisper(term), "Oferta 2x1 en el local")
+        self.assertEqual(shout(whisper(term)), term)
+        self.assertEqual(shout("abierto 24h"), "ABIERTO 24h")
+
     def test_a_builder_hard_space_between_shouted_words_is_no_word(self):
         """The builder's "&amp;nbsp;" must not read as the word "nbsp".
 
