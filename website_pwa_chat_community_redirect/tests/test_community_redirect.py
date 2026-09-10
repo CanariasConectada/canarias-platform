@@ -74,9 +74,11 @@ class TestCommunityRedirect(WebsiteChatMixin, HttpCase):
     def test_the_support_page_still_serves_the_conversation(self):
         """/chat/soporte is support, not community: no redirect, a page.
 
-        Asserted directly (redirects forbidden) and by its observable side
-        effect -- a private conversation keyed to this visitor -- because a
-        200 alone could be any page.
+        Asserted directly (redirects forbidden) and by what the page carries
+        -- the support composer -- because a 200 alone could be any page.
+        Since website_pwa_chat 19.0.5 a page view opens NO conversation: the
+        first message does (see test_support_chat), so the visit must leave
+        the support conversations exactly as they were.
         """
         before = (
             self.env["discuss.channel"].sudo().search([("support_key", "!=", False)])
@@ -84,12 +86,12 @@ class TestCommunityRedirect(WebsiteChatMixin, HttpCase):
         response = self.url_open("/chat/soporte", allow_redirects=False)
         self.assertEqual(response.status_code, 200)
         self.assertIn('id="wrapwrap"', response.text)
-        opened = (
+        self.assertIn("o_cc_chat_composer", response.text)
+        self.assertIn('data-support="1"', response.text)
+        after = (
             self.env["discuss.channel"].sudo().search([("support_key", "!=", False)])
-        ) - before
-        self.assertEqual(
-            len(opened), 1, "the visit must still open one support conversation"
         )
+        self.assertEqual(after, before, "a page view is not participation")
 
     def test_the_jsonrpc_routes_still_answer_with_content(self):
         """The support window's live half rides these; they must not decay.
