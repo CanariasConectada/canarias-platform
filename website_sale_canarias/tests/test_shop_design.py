@@ -27,6 +27,10 @@ class TestShopDesign(HttpCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        # website_sale's demo data ships categories WITH a cover image, so on
+        # a demo database the tile row is curated before this suite starts.
+        # The suite decides what is curated: nothing, until a test says so.
+        cls.env["product.public.category"].search([]).write({"cover_image": False})
         cls.category = cls.env["product.public.category"].create(
             {"name": "WSC Alimentación"}
         )
