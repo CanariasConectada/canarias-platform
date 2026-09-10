@@ -1,3 +1,11 @@
+## 19.0.2.5.1 (2026-09-10)
+
+- The Silver Economy and Sustainability groups move from `data/` to the
+  security file. The Certificaciones menu names them and views load before
+  data, so a fresh install failed with "External ID not found:
+  company_certification.group_silver_user" (every doodba CI run since
+  2026-09-02). Same xmlids: nothing changes on an upgraded database.
+
 ## 19.0.2.4.0 (2026-08-18)
 
 - The per-question recommendation is now read-only guidance under the
