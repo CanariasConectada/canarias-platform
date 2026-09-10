@@ -26,6 +26,41 @@
             <field name="implied_ids" eval="[(4, ref('group_certification_user')), (4, ref('survey.group_survey_user'))]"/>
             <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
         </record>
+
+        <!-- The vertical groups live here, not in data/: the Certificaciones
+             menu in views/ names them, and views load before data. On a
+             fresh database the menu used to fail with "External ID not
+             found: group_silver_user" (every doodba CI run since 2026-09-02);
+             production never noticed because the xmlids already existed. -->
+        <!-- Silver Economy groups -->
+        <record id="group_silver_user" model="res.groups">
+            <field name="name">Silver Economy User</field>
+            <field name="sequence">30</field>
+            <field name="privilege_id" ref="res_groups_privilege_certification"/>
+            <field name="implied_ids" eval="[(4, ref('group_certification_user'))]"/>
+        </record>
+        <record id="group_silver_manager" model="res.groups">
+            <field name="name">Silver Economy Manager</field>
+            <field name="sequence">31</field>
+            <field name="privilege_id" ref="res_groups_privilege_certification"/>
+            <field name="implied_ids" eval="[(4, ref('group_silver_user')), (4, ref('group_certification_manager'))]"/>
+            <field name="user_ids" eval="[(4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- Sustainability groups -->
+        <record id="group_sustainability_user" model="res.groups">
+            <field name="name">Sustainability User</field>
+            <field name="sequence">32</field>
+            <field name="privilege_id" ref="res_groups_privilege_certification"/>
+            <field name="implied_ids" eval="[(4, ref('group_certification_user'))]"/>
+        </record>
+        <record id="group_sustainability_manager" model="res.groups">
+            <field name="name">Sustainability Manager</field>
+            <field name="sequence">33</field>
+            <field name="privilege_id" ref="res_groups_privilege_certification"/>
+            <field name="implied_ids" eval="[(4, ref('group_sustainability_user')), (4, ref('group_certification_manager'))]"/>
+            <field name="user_ids" eval="[(4, ref('base.user_admin'))]"/>
+        </record>
     </data>
 
     <data noupdate="1">
