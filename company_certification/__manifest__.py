@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Company Certification",
-    "version": "19.0.2.5.1",
+    "version": "19.0.2.6.0",
     "category": "Marketing/Surveys",
     "summary": "Parameterizable company certification seals built on Survey",
     "author": "MikeColangelo",
@@ -23,6 +23,9 @@
         # wizard has to be loaded between the two.
         "views/certification_type_views.xml",
         "wizards/certification_evaluation_start_views.xml",
+        # After the menus and the start wizard: it hangs two more entries
+        # off the same root and sits between them in sequence.
+        "views/certification_guidance_views.xml",
         "views/res_company_views.xml",
         "views/survey_survey_views.xml",
         "views/survey_user_input_views.xml",

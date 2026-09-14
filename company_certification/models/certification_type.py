@@ -106,6 +106,22 @@ class CertificationType(models.Model):
         help="Body of the public landing page. Plain content, editable "
         "without touching code.",
     )
+    # The two halves of the guidance a survey carries: what the questionnaire
+    # says before it starts and what it says once it is over. They live on
+    # `survey.survey` (restored from the legacy platform on 2026-09-10), and
+    # the seal is where a merchant looks for them, so the seal reads them
+    # through. Read-only on purpose: the questionnaire is edited from the
+    # survey, not from here, and seal holders only have read access to it.
+    instructions_html = fields.Html(
+        related="survey_id.description",
+        string="Instructions",
+        readonly=True,
+    )
+    closing_html = fields.Html(
+        related="survey_id.description_done",
+        string="Closing note",
+        readonly=True,
+    )
     material_ids = fields.One2many(
         "certification.material", "type_id", string="Training Material"
     )

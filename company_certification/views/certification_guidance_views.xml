@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+     What a seal holder needs BEFORE and AROUND an evaluation: the
+     instructions of the questionnaire and the training material. Both
+     already existed - the instructions on the survey, the material on the
+     seal - but the only backend surface for either was the seal's own
+     configuration form, which is manager-only. Asked for on 2026-09-14:
+     "habilitar Instrucciones y Learning en la pestana de certificaciones".
+
+     Read-only everywhere: this is a reading room, not a second editor. -->
+<odoo>
+    <record id="certification_type_view_guidance_list" model="ir.ui.view">
+        <field name="name">certification.type.guidance.list</field>
+        <field name="model">certification.type</field>
+        <field name="arch" type="xml">
+            <list create="false" delete="false" edit="false">
+                <field name="sequence" column_invisible="1"/>
+                <field name="name"/>
+                <field name="website_title" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="certification_type_view_guidance_form" model="ir.ui.view">
+        <field name="name">certification.type.guidance.form</field>
+        <field name="model">certification.type</field>
+        <field name="arch" type="xml">
+            <form create="false" delete="false" edit="false">
+                <sheet>
+                    <field name="badge_image" widget="image" class="oe_avatar"/>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <notebook>
+                        <page string="Instructions" name="instructions">
+                            <field name="instructions_html" readonly="1"/>
+                        </page>
+                        <page string="When you finish" name="closing">
+                            <field name="closing_html" readonly="1"/>
+                        </page>
+                        <page string="Training material" name="material">
+                            <field name="material_ids" readonly="1" nolabel="1">
+                                <list create="false" delete="false" edit="false">
+                                    <field name="sequence" column_invisible="1"/>
+                                    <field name="name"/>
+                                    <field name="description" optional="show"/>
+                                    <field name="download_url" widget="url" string="Download"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_certification_instructions" model="ir.actions.act_window">
+        <field name="name">Instrucciones</field>
+        <field name="res_model">certification.type</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'create': False, 'edit': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Todavía no hay sellos publicados</p>
+            <p>Aquí se leen las instrucciones de cada evaluación y se descarga su material.</p>
+        </field>
+    </record>
+
+    <record id="action_certification_instructions_list_view" model="ir.actions.act_window.view">
+        <field name="sequence">1</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="certification_type_view_guidance_list"/>
+        <field name="act_window_id" ref="action_certification_instructions"/>
+    </record>
+
+    <record id="action_certification_instructions_form_view" model="ir.actions.act_window.view">
+        <field name="sequence">2</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="certification_type_view_guidance_form"/>
+        <field name="act_window_id" ref="action_certification_instructions"/>
+    </record>
+
+    <record id="certification_material_view_list" model="ir.ui.view">
+        <field name="name">certification.material.list</field>
+        <field name="model">certification.material</field>
+        <field name="arch" type="xml">
+            <list create="false" delete="false" edit="false">
+                <field name="sequence" column_invisible="1"/>
+                <field name="type_id"/>
+                <field name="name"/>
+                <field name="description" optional="show"/>
+                <field name="download_url" widget="url" string="Download"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="certification_material_view_search" model="ir.ui.view">
+        <field name="name">certification.material.search</field>
+        <field name="model">certification.material</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="type_id"/>
+                <!-- Odoo 19 dropped expand/string on a search view's group -->
+                <group>
+                    <filter name="group_by_type" string="Certification"
+                            context="{'group_by': 'type_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_certification_material" model="ir.actions.act_window">
+        <field name="name">Formación</field>
+        <field name="res_model">certification.material</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'create': False, 'edit': False, 'search_default_group_by_type': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Todavía no hay material publicado</p>
+            <p>Los módulos formativos de cada sello se descargan desde aquí.</p>
+        </field>
+    </record>
+
+    <!-- Both sit between "New Evaluation" (15) and the manager-only
+         configuration entries (20, 30), and neither names a group: a menu
+         without one inherits the visibility of Certificaciones, which is
+         exactly the audience asked for - seal holders and administrators. -->
+    <menuitem id="menu_certification_instructions"
+              name="Instrucciones"
+              parent="menu_certification_root"
+              action="action_certification_instructions"
+              sequence="16"/>
+
+    <menuitem id="menu_certification_material"
+              name="Formación"
+              parent="menu_certification_root"
+              action="action_certification_material"
+              sequence="17"/>
+</odoo>

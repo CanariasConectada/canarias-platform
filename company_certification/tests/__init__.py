@@ -1,3 +1,4 @@
+from . import test_guidance_menus
 from . import (
     test_amenities,
     test_certification_flow,
