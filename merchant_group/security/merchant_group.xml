@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <data noupdate="0">
+        <!-- What "being a merchant" means on this platform, in one tick.
+             The list is not invented: it is exactly what the retired role
+             `canarias_mig.role_merchant` implied when it was materialised
+             onto the 115 merchants on 2026-09-09, read back from the
+             snapshot taken before the uninstall. Asked for on 2026-09-14:
+             "crear un grupo que se llame comercios asi como lo teniamos
+             antes en user roles".
+
+             A group, not a role: nothing recomposes anything. Ticking it
+             adds these nine; anything else granted by hand stays, and
+             unticking it takes away only what it gave. -->
+        <record id="group_merchant" model="res.groups">
+            <field name="name">Comercios</field>
+            <field name="sequence">10</field>
+            <field name="comment">Permisos de un comercio de la plataforma: su tienda, su catálogo, su sitio web, sus sellos y sus envíos de marketing.</field>
+            <field name="implied_ids" eval="[(6, 0, [
+                ref('base.group_user'),
+                ref('base.group_multi_company'),
+                ref('website.group_website_restricted_editor'),
+                ref('sales_team.group_sale_salesman'),
+                ref('product.group_product_manager'),
+                ref('company_certification.group_silver_user'),
+                ref('company_certification.group_sustainability_user'),
+                ref('mass_mailing.group_mass_mailing_user'),
+                ref('partner_reviews.group_partner_reviews_user'),
+            ])]"/>
+        </record>
+
+        <!-- Every internal user created from now on starts as a merchant.
+             This is core's own hook: `res.users._default_groups()` returns
+             `base.default_user_group.implied_ids` (base/models/res_users.py).
+             (4) rather than (6): whatever else that group already grants
+             stays. An administrator created later gets these too, which is
+             harmless - they hold a superset already - and was the explicit
+             request: "colocarles este por defecto cada vez que creemos un
+             usuario". -->
+        <record id="base.default_user_group" model="res.groups">
+            <field name="implied_ids" eval="[(4, ref('group_merchant'))]"/>
+        </record>
+    </data>
+</odoo>

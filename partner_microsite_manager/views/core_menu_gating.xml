@@ -7,4 +7,15 @@
     <record id="spreadsheet_dashboard.spreadsheet_dashboard_menu_root" model="ir.ui.menu">
         <field name="group_ids" eval="[(6, 0, [ref('base.group_system')])]" />
     </record>
+
+    <!-- Apps, for the same reason and with the same remedy. The root menu
+         ships with no groups at all, and its child action only needs read
+         on ir.module.module, which every internal user has - so a merchant
+         opening the backend was offered the module list of the whole
+         platform. Reported 2026-09-14: "quitar el item de Aplicaciones a
+         los duenos de comercios". Installing is already impossible for
+         them; what this removes is the door. -->
+    <record id="base.menu_management" model="ir.ui.menu">
+        <field name="group_ids" eval="[(6, 0, [ref('base.group_system')])]" />
+    </record>
 </odoo>

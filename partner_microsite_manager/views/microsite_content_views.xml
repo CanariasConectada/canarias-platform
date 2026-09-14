@@ -145,6 +145,47 @@
         </field>
     </record>
 
+    <!-- The shops themselves, as a list. This is what an owner of several
+         shops now meets instead of the picker modal: a screen they can work
+         from - open the content editor of one, jump to its pages or to its
+         orders - rather than a dialog standing in front of the editor.
+         Read-only: a website is configured elsewhere, this is a hub. -->
+    <record id="website_view_list_merchant" model="ir.ui.view">
+        <field name="name">website.list.merchant</field>
+        <field name="model">website</field>
+        <field name="arch" type="xml">
+            <list create="false" delete="false" edit="false" string="My shops">
+                <field name="name"/>
+                <field name="company_id" optional="show"/>
+                <field name="domain" widget="url" string="Address"/>
+                <field name="merchant_can_open_orders" column_invisible="1"/>
+                <field name="merchant_can_open_pages" column_invisible="1"/>
+                <button name="action_microsite_content" type="object"
+                        string="Content" icon="fa-pencil-square-o"/>
+                <button name="action_microsite_pages" type="object"
+                        string="Pages" icon="fa-file-text-o"
+                        invisible="not merchant_can_open_pages"/>
+                <button name="action_microsite_orders" type="object"
+                        string="Orders" icon="fa-shopping-cart"
+                        invisible="not merchant_can_open_orders"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_own_websites" model="ir.actions.server">
+        <field name="name">My shops</field>
+        <field name="model_id" ref="base.model_res_company"/>
+        <field name="state">code</field>
+        <field name="code">action = model._action_open_own_websites()</field>
+    </record>
+
+    <menuitem id="menu_own_websites"
+              name="My shops"
+              parent="website.menu_website_configuration"
+              action="action_own_websites"
+              groups="website.group_website_restricted_editor"
+              sequence="3"/>
+
     <!-- A server action rather than a window action, because the right screen
          depends on who clicked. The group on the menu is the one the 218
          merchants hold, and every administrator holds it too; an

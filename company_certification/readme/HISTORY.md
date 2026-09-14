@@ -1,3 +1,11 @@
+## 19.0.2.6.0 (2026-09-14)
+
+- **Instrucciones** and **Formación** in the Certificaciones menu, for seal
+  holders and administrators. The instructions of each questionnaire and the
+  training material were already in the database but the only backend screen
+  showing them was the seal's configuration form, which is manager-only.
+  Both new screens are read-only.
+
 ## 19.0.2.5.1 (2026-09-10)
 
 - The Silver Economy and Sustainability groups move from `data/` to the
