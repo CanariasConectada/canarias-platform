@@ -362,6 +362,26 @@ class ResCompany(models.Model):
         return company
 
     @api.model
+    def write(self, vals):
+        """A shop has one logo, and the microsite header shows it.
+
+        The public header reads ``website.logo``; the company form, the
+        directory and the self-service screen write ``res.company.logo``
+        (the partner image). Two fields, and until 2026-09-14 nothing kept
+        them together: a merchant changed their logo and the header kept the
+        old one (or Odoo's grey placeholder, on 97 sites). Mirroring it on
+        write is the smallest thing that makes "cambio el logo" true
+        everywhere the visitor looks.
+        """
+        result = super().write(vals)
+        if "logo" in vals:
+            for company in self:
+                websites = company.website_id | self.env["website"].sudo().search(
+                    [("company_id", "=", company.id)]
+                )
+                websites.sudo().write({"logo": vals["logo"]})
+        return result
+
     @api.model
     def _action_open_own_websites(self, companies=None):
         """The caller's shops, as a list they can work from.
