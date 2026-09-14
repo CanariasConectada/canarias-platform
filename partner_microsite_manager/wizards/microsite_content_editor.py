@@ -177,8 +177,11 @@ class MicrositeContentEditor(models.TransientModel):
         only outcome was an error dialog.
 
         Sole owner of a shop: straight to the editor, zero extra clicks,
-        exactly as before. Owner of several: a picker step first, so they say
-        WHICH one before the editor opens. Zone staff whose session company
+        exactly as before. Owner of several: the list of their shops, which
+        is a screen they can work from -- open one, jump to its orders, its
+        pages, or its content -- rather than the modal that used to stand in
+        front of the editor and nothing else (reported 2026-09-14: "estamos
+        limitando bastante por el modal ... mejor una vista de lista"). Zone staff whose session company
         IS the zone company (absent from the picker set on purpose) still
         reach their own editor directly through the legacy singular. An
         administrator gets the shops themselves, where the very same content
@@ -188,13 +191,7 @@ class MicrositeContentEditor(models.TransientModel):
         Company = self.env["res.company"]
         candidates = Company._get_own_microsite_companies()
         if len(candidates) > 1:
-            return {
-                "type": "ir.actions.act_window",
-                "name": _("Choose your shop"),
-                "res_model": "microsite.company.picker",
-                "view_mode": "form",
-                "target": "new",
-            }
+            return Company._action_open_own_websites(candidates)
         if len(candidates) == 1:
             return {
                 "type": "ir.actions.act_window",

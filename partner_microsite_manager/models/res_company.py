@@ -362,6 +362,38 @@ class ResCompany(models.Model):
         return company
 
     @api.model
+    @api.model
+    def _action_open_own_websites(self, companies=None):
+        """The caller's shops, as a list they can work from.
+
+        Built from ids rather than from a domain on purpose: `website` has
+        no record rule of its own here, and it must not get one -- every
+        request reads that model, so narrowing it for merchants would break
+        their browsing of any site but their own.
+        """
+        if companies is None:
+            companies = self._get_own_microsite_companies()
+        websites = self.env["website"].sudo().search(
+            [("company_id", "in", companies.ids)]
+        )
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("My shops"),
+            "res_model": "website",
+            "view_mode": "list",
+            "views": [
+                (
+                    self.env.ref(
+                        "partner_microsite_manager.website_view_list_merchant"
+                    ).id,
+                    "list",
+                )
+            ],
+            "domain": [("id", "in", websites.ids)],
+            "target": "current",
+            "context": {"create": False, "delete": False},
+        }
+
     def _get_own_microsite_companies(self):
         """Every REAL shop the caller may pick the page content of.
 

@@ -232,13 +232,44 @@ class TestMicrositeContentEditor(TransactionCase):
             self.shop.id,
         )
 
-    def test_the_owner_of_two_shops_gets_a_picker_instead(self):
-        """`self.merchant` owns two real shops (see setUpClass): the picker
-        step must appear instead of an editor opened on a guess.
+    def test_the_owner_of_two_shops_gets_their_shops_instead(self):
+        """`self.merchant` owns two real shops (see setUpClass).
+
+        Until 2026-09-14 this was a modal asking which one, and nothing
+        else. It is now the list of their sites -- the same decision, made
+        on a screen they can also work from -- so the editor is still never
+        opened on a guess.
         """
         action = self._editor().action_open_page_content()
-        self.assertEqual(action["res_model"], "microsite.company.picker")
-        self.assertEqual(action["target"], "new")
+        self.assertEqual(action["res_model"], "website")
+        self.assertEqual(action["target"], "current")
+        listed = self.env["website"].search(action["domain"])
+        self.assertEqual(
+            listed.company_id, self.shop | self.neighbour,
+            "their own two shops, and no more",
+        )
+        self.assertNotIn(self.stranger, listed.company_id)
+
+    def test_a_button_of_that_list_refuses_somebody_elses_site(self):
+        """The rows are the caller's own, but a button carries an id."""
+        with self.assertRaises(AccessError):
+            self.stranger.website_id.with_user(
+                self.merchant
+            ).action_microsite_content()
+
+    def test_the_buttons_open_the_right_screens_for_their_own_site(self):
+        site = self.shop.website_id.with_user(self.merchant)
+        content = site.action_microsite_content()
+        self.assertEqual(content["res_model"], "microsite.content.editor")
+        self.assertEqual(content["context"]["microsite_company_id"], self.shop.id)
+        for method, model in (
+            ("action_microsite_pages", "website.page"),
+            ("action_microsite_orders", "sale.order"),
+        ):
+            with self.subTest(method=method):
+                action = getattr(site, method)()
+                self.assertEqual(action["res_model"], model)
+                self.assertEqual(action["domain"], [("website_id", "=", site.id)])
 
     def test_an_administrator_gets_the_shops_instead_of_an_error(self):
         """Reported on 2026-08-17 with a screenshot of the dialog.

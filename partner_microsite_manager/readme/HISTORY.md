@@ -1,3 +1,10 @@
+## 19.0.2.7.0 (2026-09-14)
+
+* **My shops**: an owner of several shops gets the list of their sites
+  instead of the picker modal, with a button per row for the content editor,
+  the site's pages and the orders placed on it. A sole owner still lands in
+  the editor directly. Reported as "estamos limitando bastante por el modal".
+
 ## 19.0.2.6.2 (2026-09-14)
 
 * **Apps** leaves the merchants' backend. The root menu ships with no groups
