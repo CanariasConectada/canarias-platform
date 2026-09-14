@@ -1,3 +1,11 @@
+## 19.0.2.7.1 (2026-09-14)
+
+* The microsite header follows the company logo. `website.logo` and
+  `res.company.logo` are two fields; a merchant changing theirs saw the
+  header keep the old one. Writing the company logo now mirrors it onto
+  the company's websites. (The 120 headers that still showed a placeholder
+  are repaired by data fix f51.)
+
 ## 19.0.2.7.0 (2026-09-14)
 
 * **My shops**: an owner of several shops gets the list of their sites

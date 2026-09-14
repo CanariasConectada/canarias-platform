@@ -1,3 +1,4 @@
+from . import test_logo_follows_company
 from . import test_core_menu_gating
 from . import (
     test_content_editor,
