@@ -125,6 +125,12 @@ class CertificationType(models.Model):
     material_ids = fields.One2many(
         "certification.material", "type_id", string="Training Material"
     )
+    training_url = fields.Char(
+        string="Training course URL",
+        help="Absolute link to the online course of this seal, published on "
+        "the portal website (e.g. https://canariasconectada.es/slides/...). "
+        "The Formación menu of the Certificaciones app opens it.",
+    )
     amenities_title = fields.Char(
         translate=True,
         help="Heading above the highlight icons on the microsite. Falls back "

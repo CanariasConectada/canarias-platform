@@ -84,6 +84,10 @@
                             </p>
                         </page>
                         <page string="Training Material" name="material">
+                            <group>
+                                <field name="training_url" widget="url"
+                                       placeholder="https://canariasconectada.es/slides/..."/>
+                            </group>
                             <field name="material_ids">
                                 <list editable="bottom">
                                     <field name="sequence" widget="handle"/>
