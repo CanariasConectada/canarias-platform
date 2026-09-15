@@ -6,7 +6,7 @@ from odoo import fields
 from odoo.tests import HttpCase, TransactionCase, tagged
 
 CC_LOGO = "/website_login_branding/static/src/img/canarias_conectada_logo.webp"
-ZCA_LOGO = "/website_login_branding/static/src/img/zca_logo.webp"
+FUNDING_STRIP = "/website_login_branding/static/src/img/subvenciones.png"
 
 
 @tagged("post_install", "-at_install")
@@ -15,7 +15,10 @@ class TestLoginBranding(HttpCase):
 
     def _assert_branding(self, body):
         self.assertIn(CC_LOGO, body, "Canarias Conectada logo missing")
-        self.assertIn(ZCA_LOGO, body, "ZCA logo missing")
+        self.assertIn(FUNDING_STRIP, body, "funding strip missing")
+        self.assertIn("o_cc_login_subvention_logo", body, "funding strip class missing")
+        self.assertIn("FEDER Canarias 2021-2027", body, "FEDER legend missing")
+        self.assertIn("NextGenerationEU", body, "NextGenerationEU legend missing")
 
     def test_login_page_has_logos(self):
         response = self.url_open("/web/login")

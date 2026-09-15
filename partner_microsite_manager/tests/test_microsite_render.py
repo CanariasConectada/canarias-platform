@@ -312,6 +312,10 @@ class TestMicrositeRender(TransactionCase):
             "/partner_microsite_manager/static/src/img/subvenciones.png", html
         )
         self.assertIn("NextGenerationEU", html)
+        self.assertIn("FEDER Canarias 2021-2027", html)
+        self.assertIn("«Guanarteme en tu mano»", html)
+        # The client asked for the strip at this height everywhere it shows.
+        self.assertIn("max-height: 120px;", html)
 
     def test_the_estate_blocks_survive_an_empty_company(self):
         """They belong to the platform, not to what a merchant filled in."""

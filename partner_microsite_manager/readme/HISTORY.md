@@ -1,3 +1,10 @@
+## 19.0.2.8.4 (2026-09-15)
+
+* The funding strip on every microsite homepage is the new combined
+  image: the FEDER Canarias 2021-2027 row and the NextGenerationEU /
+  PRTR row with their legal legends, shown at 120px high. The `alt`
+  carries both legends.
+
 ## 19.0.2.8.3 (2026-09-15)
 
 * A click on a row of My shops opens the page content, as the Content

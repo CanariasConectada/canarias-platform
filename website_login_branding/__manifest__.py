@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Website Login Branding",
-    "version": "19.0.2.2.0",
+    "version": "19.0.2.2.1",
     "category": "Website",
     "summary": "Branded login card + anonymous portal guest access with Discuss & push",
     "description": """
 Website Login Branding
 ======================
 Turns the plain website auth page into a single, on-brand card: the Canarias
-Conectada logo on top, the ZCA (Zonas Comerciales Abiertas) subvention logo at
-the foot, and the login/signup/reset form in between with a clear primary
+Conectada logo on top, the funding strip (FEDER Canarias 2021-2027 and
+NextGenerationEU / PRTR, with their legal legends) at the foot, and the login/signup/reset form in between with a clear primary
 action.
 
 It also replaces the old anonymous "continue as guest" link with a real,
