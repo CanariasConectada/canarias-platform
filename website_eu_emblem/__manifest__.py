@@ -3,8 +3,8 @@
 
 {
     "name": "Website EU Emblem",
-    "summary": "Show the European Union emblem and its funding statement in the header",
-    "version": "19.0.1.3.0",
+    "summary": "EU emblem in every header and the FEDER / NextGenerationEU funding strip in every footer",
+    "version": "19.0.1.4.0",
     "author": "Canarias Conectada",
     "website": "https://github.com/CanariasConectada/canarias-platform",
     "category": "Website",
