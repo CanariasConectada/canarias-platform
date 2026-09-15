@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
     <!-- Writing group_ids on an existing menu REPLACES its gate (a
-         menuitem's groups attribute would only ADD). Dashboards ships
-         with no groups at all, so every internal user - merchants
-         included - saw it. Platform staff keeps it via group_system. -->
-    <record id="spreadsheet_dashboard.spreadsheet_dashboard_menu_root" model="ir.ui.menu">
-        <field name="group_ids" eval="[(6, 0, [ref('base.group_system')])]" />
-    </record>
+         menuitem's groups attribute would only ADD). The Dashboards root
+         used to be gated here for the same reason as Apps below; since
+         19.0.2.8.1 that gate lives in merchant_group (views/menu_gating.xml),
+         which owns every gate of the merchant profile. -->
 
-    <!-- Apps, for the same reason and with the same remedy. The root menu
-         ships with no groups at all, and its child action only needs read
-         on ir.module.module, which every internal user has - so a merchant
-         opening the backend was offered the module list of the whole
-         platform. Reported 2026-09-14: "quitar el item de Aplicaciones a
-         los duenos de comercios". Installing is already impossible for
-         them; what this removes is the door. -->
+    <!-- Apps. The root menu ships with no groups at all, and its child
+         action only needs read on ir.module.module, which every internal
+         user has - so a merchant opening the backend was offered the
+         module list of the whole platform. Reported 2026-09-14: "quitar el
+         item de Aplicaciones a los duenos de comercios". Installing is
+         already impossible for them; what this removes is the door. -->
     <record id="base.menu_management" model="ir.ui.menu">
         <field name="group_ids" eval="[(6, 0, [ref('base.group_system')])]" />
     </record>

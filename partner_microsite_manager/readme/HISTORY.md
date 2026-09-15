@@ -1,3 +1,10 @@
+## 19.0.2.8.1 (2026-09-15)
+
+* The gate on the Dashboards root menu (`spreadsheet_dashboard`) moves to
+  `merchant_group`, which now owns every menu gate of the merchant
+  profile. Nothing changes for the user: the menu stays with the
+  administrators.
+
 ## 19.0.2.8.0 (2026-09-15)
 
 * **Opening hours as rows.** The merchant no longer types the compact
