@@ -3,13 +3,19 @@
      License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
      What a seal holder needs BEFORE and AROUND an evaluation: the
-     instructions of the questionnaire and the training material. Both
-     already existed - the instructions on the survey, the material on the
-     seal - but the only backend surface for either was the seal's own
-     configuration form, which is manager-only. Asked for on 2026-09-14:
-     "habilitar Instrucciones y Learning en la pestana de certificaciones".
+     instructions of the questionnaire and the online course of the seal.
+     The instructions already existed on the survey, but the only backend
+     surface for them was the seal's own configuration form, which is
+     manager-only. Asked for on 2026-09-14: "habilitar Instrucciones y
+     Learning en la pestana de certificaciones".
 
-     Read-only everywhere: this is a reading room, not a second editor. -->
+     Read-only everywhere: this is a reading room, not a second editor.
+
+     The course lives on the portal website, one per seal, and the
+     Formación menu links there (2026-09-15). The material list this file
+     used to show under Formación was a download table nobody asked for
+     once the courses existed; the material itself stays on the seal's
+     landing page. -->
 <odoo>
     <record id="certification_type_view_guidance_list" model="ir.ui.view">
         <field name="name">certification.type.guidance.list</field>
@@ -40,16 +46,6 @@
                         <page string="When you finish" name="closing">
                             <field name="closing_html" readonly="1"/>
                         </page>
-                        <page string="Training material" name="material">
-                            <field name="material_ids" readonly="1" nolabel="1">
-                                <list create="false" delete="false" edit="false">
-                                    <field name="sequence" column_invisible="1"/>
-                                    <field name="name"/>
-                                    <field name="description" optional="show"/>
-                                    <field name="download_url" widget="url" string="Download"/>
-                                </list>
-                            </field>
-                        </page>
                     </notebook>
                 </sheet>
             </form>
@@ -63,7 +59,7 @@
         <field name="context">{'create': False, 'edit': False}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">Todavía no hay sellos publicados</p>
-            <p>Aquí se leen las instrucciones de cada evaluación y se descarga su material.</p>
+            <p>Aquí se leen las instrucciones de cada evaluación.</p>
         </field>
     </record>
 
@@ -81,47 +77,6 @@
         <field name="act_window_id" ref="action_certification_instructions"/>
     </record>
 
-    <record id="certification_material_view_list" model="ir.ui.view">
-        <field name="name">certification.material.list</field>
-        <field name="model">certification.material</field>
-        <field name="arch" type="xml">
-            <list create="false" delete="false" edit="false">
-                <field name="sequence" column_invisible="1"/>
-                <field name="type_id"/>
-                <field name="name"/>
-                <field name="description" optional="show"/>
-                <field name="download_url" widget="url" string="Download"/>
-            </list>
-        </field>
-    </record>
-
-    <record id="certification_material_view_search" model="ir.ui.view">
-        <field name="name">certification.material.search</field>
-        <field name="model">certification.material</field>
-        <field name="arch" type="xml">
-            <search>
-                <field name="name"/>
-                <field name="type_id"/>
-                <!-- Odoo 19 dropped expand/string on a search view's group -->
-                <group>
-                    <filter name="group_by_type" string="Certification"
-                            context="{'group_by': 'type_id'}"/>
-                </group>
-            </search>
-        </field>
-    </record>
-
-    <record id="action_certification_material" model="ir.actions.act_window">
-        <field name="name">Formación</field>
-        <field name="res_model">certification.material</field>
-        <field name="view_mode">list</field>
-        <field name="context">{'create': False, 'edit': False, 'search_default_group_by_type': 1}</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">Todavía no hay material publicado</p>
-            <p>Los módulos formativos de cada sello se descargan desde aquí.</p>
-        </field>
-    </record>
-
     <!-- Both sit between "New Evaluation" (15) and the manager-only
          configuration entries (20, 30), and neither names a group: a menu
          without one inherits the visibility of Certificaciones, which is
@@ -132,9 +87,60 @@
               action="action_certification_instructions"
               sequence="16"/>
 
-    <menuitem id="menu_certification_material"
+    <!-- One entry per seal, each opening the seal's online course. The
+         link is data (``certification.type.training_url``), read at click
+         time by a server action, so moving a course never touches code.
+         Same tab, not a new one: Odoo opens a "new" act_url with
+         window.open AFTER the action round-trip, which browsers treat as a
+         popup and block until the user allows it (reported 2026-09-10 for
+         the training_menu module). Odoo 19 lets a user run a code action
+         only if they can WRITE its model - or if they belong to one of the
+         action's groups, which is the check that applies here: every seal
+         holder is a certification user, and the code only reads. -->
+    <record id="action_training_silver" model="ir.actions.server">
+        <field name="name">Silver Economy course</field>
+        <field name="model_id" ref="model_certification_type"/>
+        <field name="state">code</field>
+        <field name="group_ids" eval="[(4, ref('company_certification.group_certification_user'))]"/>
+        <field name="code">
+cert = model.search([("code", "=", "silver")], limit=1)
+action = {
+    "type": "ir.actions.act_url",
+    "url": cert.training_url or "https://canariasconectada.es/slides",
+    "target": "self",
+}
+        </field>
+    </record>
+
+    <record id="action_training_sustainability" model="ir.actions.server">
+        <field name="name">Sostenibilidad course</field>
+        <field name="model_id" ref="model_certification_type"/>
+        <field name="state">code</field>
+        <field name="group_ids" eval="[(4, ref('company_certification.group_certification_user'))]"/>
+        <field name="code">
+cert = model.search([("code", "=", "sustainability")], limit=1)
+action = {
+    "type": "ir.actions.act_url",
+    "url": cert.training_url or "https://canariasconectada.es/slides",
+    "target": "self",
+}
+        </field>
+    </record>
+
+    <menuitem id="menu_certification_training"
               name="Formación"
               parent="menu_certification_root"
-              action="action_certification_material"
               sequence="17"/>
+
+    <menuitem id="menu_certification_training_silver"
+              name="Silver Economy"
+              parent="menu_certification_training"
+              action="action_training_silver"
+              sequence="10"/>
+
+    <menuitem id="menu_certification_training_sustainability"
+              name="Sostenibilidad"
+              parent="menu_certification_training"
+              action="action_training_sustainability"
+              sequence="20"/>
 </odoo>

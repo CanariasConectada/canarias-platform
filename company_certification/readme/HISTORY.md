@@ -1,3 +1,16 @@
+## 19.0.2.7.0 (2026-09-15)
+
+- **Formación** in the Certificaciones menu now opens the online course of
+  each seal (Silver Economy, Sostenibilidad) on the portal website, in the
+  same tab, instead of listing downloadable material. The link is a new
+  field of the seal, `training_url`, editable from the seal's Training
+  Material tab; the shipped seals carry the two current course URLs and a
+  post-migration fills them on an upgraded database when empty. The
+  "Training material" tab of the Instrucciones screen goes with it: the
+  material is still published on the seal's landing page.
+- The tabs of the Instrucciones screen read "Instrucciones" and "Al
+  terminar" on a Spanish backend.
+
 ## 19.0.2.6.0 (2026-09-14)
 
 - **Instrucciones** and **Formación** in the Certificaciones menu, for seal

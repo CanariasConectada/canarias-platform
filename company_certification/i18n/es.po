@@ -1298,6 +1298,12 @@ msgid "Indica si un administrador modificó la puntuación"
 msgstr ""
 
 #. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__instructions_html
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_guidance_form
+msgid "Instructions"
+msgstr "Instrucciones"
+
+#. module: company_certification
 #: model:ir.model.fields,help:company_certification.field_certification_type__group_user_id
 msgid ""
 "Internal users in this group can see the vertical's menu and run evaluations"
@@ -2526,6 +2532,11 @@ msgid "Todavía no hay comercios con este nivel."
 msgstr ""
 
 #. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__training_url
+msgid "Training course URL"
+msgstr "URL del curso de formación"
+
+#. module: company_certification
 #: model:ir.model.fields,field_description:company_certification.field_certification_type__material_ids
 #: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
 msgid "Training Material"
@@ -2672,6 +2683,11 @@ msgid ""
 "When set, this survey is the questionnaire of a company certification "
 "vertical."
 msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_guidance_form
+msgid "When you finish"
+msgstr "Al terminar"
 
 #. module: company_certification
 #: model:ir.model.fields,help:company_certification.field_certification_evaluation_start__certification_type_id
