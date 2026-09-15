@@ -187,10 +187,17 @@
         </field>
     </record>
 
+    <!-- Odoo 19 lets a user run a code action only when they can WRITE its
+         model, or when they belong to one of the action's groups. A merchant
+         reads companies and writes none, so without a group the click was
+         answered with "Error de acceso" (reported 2026-09-15). Any internal
+         user may run these: the code itself resolves the shops from the
+         account, so nothing more than the caller's own is ever opened. -->
     <record id="action_own_websites" model="ir.actions.server">
         <field name="name">My shops</field>
         <field name="model_id" ref="base.model_res_company"/>
         <field name="state">code</field>
+        <field name="group_ids" eval="[(6, 0, [ref('base.group_user')])]"/>
         <field name="code">action = model._action_open_own_websites()</field>
     </record>
 
@@ -210,6 +217,7 @@
         <field name="name">Page content</field>
         <field name="model_id" ref="model_microsite_content_editor"/>
         <field name="state">code</field>
+        <field name="group_ids" eval="[(6, 0, [ref('base.group_user')])]"/>
         <field name="code">action = model.action_open_page_content()</field>
     </record>
 
