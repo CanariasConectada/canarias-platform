@@ -2,18 +2,35 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 import json
+import logging
 from datetime import datetime
 from urllib.parse import urlsplit
 
 import pytz
+from lxml import etree
 
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tools.translate import LazyTranslate
 
-from ..tools.opening_hours import MAX_RANGES_PER_DAY, parse_opening_hours
+from ..tools.opening_hours import (
+    MAX_RANGES_PER_DAY,
+    format_opening_hours,
+    parse_opening_hours,
+    slots_from_parsed,
+)
 
 _lt = LazyTranslate(__name__)
+_logger = logging.getLogger(__name__)
+
+# The static hours card the 2026 legacy importer baked into every migrated
+# homepage (``build_horario_accordion`` in ``rebuild_microsites_v2026``):
+# an accordion with the week's hours as literal HTML plus an inline script.
+# It never read the company, which is why editing the hours in the backend
+# changed nothing on the site. ``_relink_legacy_opening_hours_card`` swaps
+# that element -- and only that element -- for the dynamic card template.
+LEGACY_HOURS_CARD_CLASS = "horario-card-accordion"
+OPENING_HOURS_CARD_TEMPLATE = "partner_microsite_manager.microsite_opening_hours_card"
 
 # Only https map URLs are embeddable in the microsite contact iframe. A
 # 'javascript:' or 'data:' src would run in the visitor's page context
@@ -82,11 +99,30 @@ class ResCompany(models.Model):
     microsite_intro_image = fields.Image(string="Intro Banner Image")
     microsite_banner_title = fields.Char(string="Closing Banner Title")
     microsite_banner_image = fields.Image(string="Closing Banner Image")
+    # The schedule as rows, which is how a merchant edits it since
+    # 19.0.2.8.0 ("El campo horario no lo entiendo", 2026-09-15). The text
+    # below is generated from them; the public templates keep reading the
+    # text, so nothing downstream had to change.
+    microsite_opening_slot_ids = fields.One2many(
+        comodel_name="microsite.opening.slot",
+        inverse_name="company_id",
+        string="Opening Periods",
+        copy=False,
+    )
+    # Computed but writable: a company WITH slots always carries the text
+    # generated from them; a company WITHOUT slots keeps whatever text it
+    # has (the legacy free notation, still validated by the constraint
+    # below), so nothing is lost for the shops the migration could not
+    # convert.
     microsite_opening_hours = fields.Char(
         string="Opening Hours",
+        compute="_compute_microsite_opening_hours",
+        store=True,
+        readonly=False,
         help="Compact notation, e.g. "
         "L-V 10:00-13:30 / L-V 16:30-20:00 / S 10:00-14:00 "
-        "(L M X J V S D = Monday..Sunday, at most two ranges per day).",
+        "(L M X J V S D = Monday..Sunday). Generated from the opening "
+        "periods when the company has any.",
     )
     microsite_delivery_info = fields.Char(string="Delivery / Shipping")
     microsite_parking_info = fields.Char(string="Parking / Directions")
@@ -128,6 +164,27 @@ class ResCompany(models.Model):
         for company in self:
             company.has_microsite = bool(company.website_id)
 
+    @api.depends(
+        "microsite_opening_slot_ids.weekday",
+        "microsite_opening_slot_ids.open_time",
+        "microsite_opening_slot_ids.close_time",
+    )
+    def _compute_microsite_opening_hours(self):
+        for company in self:
+            slots = company.microsite_opening_slot_ids
+            if slots:
+                company.microsite_opening_hours = format_opening_hours(
+                    (slot.weekday, slot.open_time, slot.close_time) for slot in slots
+                )
+            else:
+                # No rows: keep the stored text as it is (the legacy free
+                # notation of a shop the migration could not convert).
+                # Deleting the last row is handled by
+                # ``microsite.opening.slot.unlink``, which clears the text.
+                # Reading the field inside its own compute is safe here --
+                # the record is protected, so the ORM serves the stored value.
+                company.microsite_opening_hours = company.microsite_opening_hours
+
     @api.constrains("microsite_opening_hours")
     def _check_microsite_opening_hours(self):
         for company in self:
@@ -142,6 +199,12 @@ class ResCompany(models.Model):
                         "'L-V 10:00-13:30 / L-V 16:30-20:00 / S 10:00-14:00'."
                     )
                 )
+            if company.microsite_opening_slot_ids:
+                # Generated from rows the slot model already validated
+                # (ordered, non-overlapping). The per-day cap below is a
+                # guard for free text, and "as many periods as the shop
+                # needs" is the whole point of the rows.
+                continue
             for day, ranges in parsed.items():
                 if len(ranges) > MAX_RANGES_PER_DAY:
                     raise ValidationError(
@@ -281,6 +344,130 @@ class ResCompany(models.Model):
                 }
             ),
         }
+
+    # ------------------------------------------------------------------
+    # Opening hours: text -> rows, and the legacy homepage card
+    # ------------------------------------------------------------------
+    def _sync_slots_from_text(self):
+        """Create the opening rows of every company that only has the text.
+
+        Idempotent: a company that already has rows is left alone, and so
+        is one with no text. A text the parser refuses -- or one that parses
+        into overlapping periods -- keeps its text untouched and is reported
+        back, so the merchant can redo it in the new editor.
+
+        Returns ``(synced, unparsed)`` recordsets. Used by the 19.0.2.8.0
+        post-migration and by the editor when it opens a shop the migration
+        has not seen.
+        """
+        Slot = self.env["microsite.opening.slot"].sudo()
+        synced_ids, unparsed_ids = [], []
+        for company in self.sudo():
+            text = company.microsite_opening_hours
+            if not text or company.microsite_opening_slot_ids:
+                continue
+            parsed = parse_opening_hours(text)
+            if parsed is None:
+                unparsed_ids.append(company.id)
+                continue
+            try:
+                with self.env.cr.savepoint():
+                    Slot.create(
+                        [
+                            {
+                                "company_id": company.id,
+                                "weekday": str(weekday),
+                                "open_time": open_time,
+                                "close_time": close_time,
+                            }
+                            for weekday, open_time, close_time in slots_from_parsed(
+                                parsed
+                            )
+                        ]
+                    )
+            except ValidationError:
+                unparsed_ids.append(company.id)
+                continue
+            synced_ids.append(company.id)
+        return self.browse(synced_ids), self.browse(unparsed_ids)
+
+    def _relink_legacy_opening_hours_card(self):
+        """Point the legacy homepage's hours card at the company.
+
+        The 2026 importer wrote every migrated homepage as static HTML, hours
+        included (``div.horario-card-accordion`` with the week spelled out
+        and an inline script deciding "Abierto ahora"). 210 of the 211 live
+        homepages are such pages, so the content editor wrote the company
+        and the site never noticed -- the 2026-09-15 complaint.
+
+        This replaces that one element with a ``t-call`` of the dynamic card
+        template, on the ``/`` page of each of the company's websites. The
+        rest of the page -- the merchant's own edits included -- is not
+        touched, and a page without the card is skipped. Idempotent: once
+        swapped, the class is gone and the page is skipped next time.
+
+        Returns the companies whose homepage was changed.
+        """
+        Page = self.env["website.page"].sudo()
+        Website = self.env["website"].sudo()
+        relinked_ids = []
+        for company in self:
+            websites = company.website_id | Website.search(
+                [("company_id", "=", company.id)]
+            )
+            # Every page at "/" of the site, not the first one: a website
+            # bootstraps a "Home" of its own on creation, and the imported
+            # legacy homepage sits next to it as a second record.
+            pages = Page.search(
+                [("website_id", "in", websites.ids), ("url", "=", "/")]
+            )
+            # lang=None: the base (en_US) arch is what gets rewritten; the
+            # translated copies re-map their unchanged terms.
+            for view in pages.view_id.with_context(lang=None):
+                arch = view.arch_db or ""
+                if LEGACY_HOURS_CARD_CLASS not in arch:
+                    continue
+                # One page at a time: a homepage the importer left as
+                # something lxml refuses, or one the view validation
+                # rejects, keeps its card and is logged; it must not take
+                # the other 210 sites' upgrade down with it.
+                try:
+                    with self.env.cr.savepoint():
+                        if self._swap_legacy_opening_hours_card(view, arch):
+                            if company.id not in relinked_ids:
+                                relinked_ids.append(company.id)
+                except (etree.XMLSyntaxError, ValueError, ValidationError):
+                    _logger.exception(
+                        "Opening hours: could not relink the legacy card of "
+                        "view %s (company %s); the page keeps its static hours.",
+                        view.id,
+                        company.id,
+                    )
+        return self.browse(relinked_ids)
+
+    @api.model
+    def _swap_legacy_opening_hours_card(self, view, arch):
+        """Replace the legacy card(s) in ``arch`` and write it back to
+        ``view``. Returns whether anything was replaced."""
+        tree = etree.fromstring(arch.encode("utf-8"))
+        cards = tree.xpath(
+            "//*[contains(concat(' ', normalize-space(@class), ' '), "
+            f"' {LEGACY_HOURS_CARD_CLASS} ')]"
+        )
+        replaced = False
+        for card in cards:
+            parent = card.getparent()
+            if parent is None:
+                # A card nested inside a card already swapped out.
+                continue
+            call = etree.Element("t")
+            call.set("t-call", OPENING_HOURS_CARD_TEMPLATE)
+            call.tail = card.tail
+            parent.replace(card, call)
+            replaced = True
+        if replaced:
+            view.write({"arch_db": etree.tostring(tree, encoding="unicode")})
+        return replaced
 
     def _get_microsite_website_url(self):
         """The shop's own site as a clickable absolute URL, or ``""``.

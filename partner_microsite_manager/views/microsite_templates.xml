@@ -49,48 +49,7 @@
                     <div t-if="hours_pill" class="col-lg-4 pt16 pb16 text-center">
                         <span class="fa fa-clock-o fa-2x mb-3 o_microsite_feature_icon"/>
                         <h5 class="fw-bold">Opening Hours</h5>
-                        <!-- Collapsed by default: today's line is the answer
-                             a visitor actually wants; the full week is one
-                             click away. The day, the hours and the badge are
-                             rendered server-side and refreshed by
-                             microsite_opening_hours.js from the visitor's
-                             clock, so a cached page cannot lie about it. -->
-                        <div class="o_microsite_hours" t-att-data-microsite-hours="hours_pill['payload']">
-                            <div class="accordion accordion-flush" t-attf-id="micrositeHours#{company.id}">
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header">
-                                        <button
-                                            class="accordion-button collapsed"
-                                            type="button"
-                                            data-bs-toggle="collapse"
-                                            t-attf-data-bs-target="#micrositeHoursBody#{company.id}"
-                                        >
-                                            <span class="o_microsite_hours_summary">
-                                                <span data-hours-day="" t-esc="hours_pill['today_label']"/><span>: </span><span data-hours-today="" t-esc="hours_pill['today_text']"/>
-                                            </span>
-                                            <span class="o_microsite_hours_status" data-hours-status=""/>
-                                        </button>
-                                    </h2>
-                                    <div
-                                        t-attf-id="micrositeHoursBody#{company.id}"
-                                        class="accordion-collapse collapse"
-                                        t-attf-data-bs-parent="#micrositeHours#{company.id}"
-                                    >
-                                        <div class="accordion-body p-2">
-                                            <div
-                                                t-foreach="hours_pill['rows']"
-                                                t-as="row"
-                                                class="o_microsite_hours_row"
-                                                t-att-data-hours-row="str(row[0])"
-                                            >
-                                                <span t-esc="row[1]"/>
-                                                <span t-esc="row[2]"/>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <t t-call="partner_microsite_manager.microsite_opening_hours_card"/>
                     </div>
                     <div t-if="company.microsite_parking_info" class="col-lg-4 pt16 pb16 text-center">
                         <span class="fa fa-map-marker fa-2x mb-3 o_microsite_feature_icon"/>
@@ -383,6 +342,60 @@
                 <h2 t-if="banner_title" class="text-center text-white" t-esc="banner_title"/>
             </div>
         </section>
+    </template>
+
+    <!-- The opening-hours card, on its own so a page other than the dynamic
+         homepage can call it: the 210 legacy homepages had this card baked
+         in as static HTML, and ``res.company._relink_legacy_opening_hours_card``
+         swaps that for a t-call of this template. Renders nothing when the
+         company has no hours.
+
+         Collapsed by default: today's line is the answer a visitor actually
+         wants; the full week is one click away. The day, the hours and the
+         badge are rendered server-side and refreshed by
+         microsite_opening_hours.js from the visitor's clock, so a cached
+         page cannot lie about it. -->
+    <template id="microsite_opening_hours_card" name="Microsite Opening Hours Card">
+        <t t-set="company" t-value="website.company_id.sudo()"/>
+        <t t-set="hours_pill" t-value="company._get_microsite_opening_hours_pill()"/>
+        <t t-if="hours_pill">
+        <div class="o_microsite_hours" t-att-data-microsite-hours="hours_pill['payload']">
+            <div class="accordion accordion-flush" t-attf-id="micrositeHours#{company.id}">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button
+                            class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            t-attf-data-bs-target="#micrositeHoursBody#{company.id}"
+                        >
+                            <span class="o_microsite_hours_summary">
+                                <span data-hours-day="" t-esc="hours_pill['today_label']"/><span>: </span><span data-hours-today="" t-esc="hours_pill['today_text']"/>
+                            </span>
+                            <span class="o_microsite_hours_status" data-hours-status=""/>
+                        </button>
+                    </h2>
+                    <div
+                        t-attf-id="micrositeHoursBody#{company.id}"
+                        class="accordion-collapse collapse"
+                        t-attf-data-bs-parent="#micrositeHours#{company.id}"
+                    >
+                        <div class="accordion-body p-2">
+                            <div
+                                t-foreach="hours_pill['rows']"
+                                t-as="row"
+                                class="o_microsite_hours_row"
+                                t-att-data-hours-row="str(row[0])"
+                            >
+                                <span t-esc="row[1]"/>
+                                <span t-esc="row[2]"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </t>
     </template>
 
 </odoo>

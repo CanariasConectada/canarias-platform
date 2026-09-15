@@ -104,8 +104,9 @@ msgstr "Imagen del banner de cierre"
 #: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_opening_hours
 msgid ""
 "Compact notation, e.g. L-V 10:00-13:30 / L-V 16:30-20:00 / S 10:00-14:00 (L "
-"M X J V S D = Monday..Sunday, at most two ranges per day)."
-msgstr "Notación compacta, p. ej. L-V 10:00-13:30 / L-V 16:30-20:00 / S 10:00-14:00 (L M X J V S D = lunes..domingo, como máximo dos franjas por día)."
+"M X J V S D = Monday..Sunday). Generated from the opening periods when the "
+"company has any."
+msgstr "Notación compacta, p. ej. L-V 10:00-13:30 / L-V 16:30-20:00 / S 10:00-14:00 (L M X J V S D = lunes..domingo). Se genera a partir de las franjas horarias cuando la compañía tiene alguna."
 
 #. module: partner_microsite_manager
 #: model:ir.model,name:partner_microsite_manager.model_res_company
@@ -230,6 +231,8 @@ msgstr "Facebook"
 
 #. module: partner_microsite_manager
 #. odoo-python
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_content_editor_slot__weekday__4
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_opening_slot__weekday__4
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 msgid "Friday"
 msgstr "Viernes"
@@ -371,6 +374,8 @@ msgstr "Portada del microsite"
 
 #. module: partner_microsite_manager
 #. odoo-python
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_content_editor_slot__weekday__0
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_opening_slot__weekday__0
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 msgid "Monday"
 msgstr "Lunes"
@@ -389,6 +394,7 @@ msgstr "Horario"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_opening_hours
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "Opening hours"
 msgstr "Horario"
 
@@ -531,6 +537,8 @@ msgstr "Se deduce de tu cuenta. No es una elección."
 
 #. module: partner_microsite_manager
 #. odoo-python
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_content_editor_slot__weekday__5
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_opening_slot__weekday__5
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 msgid "Saturday"
 msgstr "Sábado"
@@ -573,6 +581,8 @@ msgstr "Tienda"
 
 #. module: partner_microsite_manager
 #. odoo-python
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_content_editor_slot__weekday__6
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_opening_slot__weekday__6
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 msgid "Sunday"
 msgstr "Domingo"
@@ -609,6 +619,8 @@ msgstr "Esto sustituye la portada actual del website de la compañía por la pla
 
 #. module: partner_microsite_manager
 #. odoo-python
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_content_editor_slot__weekday__3
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_opening_slot__weekday__3
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 msgid "Thursday"
 msgstr "Jueves"
@@ -634,6 +646,8 @@ msgstr "Verdadero cuando la compañía tiene su propio sitio web, es decir, un m
 
 #. module: partner_microsite_manager
 #. odoo-python
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_content_editor_slot__weekday__1
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_opening_slot__weekday__1
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 msgid "Tuesday"
 msgstr "Martes"
@@ -645,6 +659,8 @@ msgstr "Sitio web"
 
 #. module: partner_microsite_manager
 #. odoo-python
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_content_editor_slot__weekday__2
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_opening_slot__weekday__2
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 msgid "Wednesday"
 msgstr "Miércoles"
@@ -802,3 +818,88 @@ msgstr "Pedidos accesibles"
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.website_view_list_merchant
 msgid "Pages reachable"
 msgstr "Páginas accesibles"
+
+#. module: partner_microsite_manager
+#: model:ir.model,name:partner_microsite_manager.model_microsite_opening_slot
+msgid "Microsite Opening Slot"
+msgstr "Franja horaria del microsite"
+
+#. module: partner_microsite_manager
+#: model:ir.model,name:partner_microsite_manager.model_microsite_content_editor_slot
+msgid "Opening period of the page content editor"
+msgstr "Franja horaria del editor de contenido de la página"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_opening_slot_ids
+msgid "Opening Periods"
+msgstr "Franjas horarias"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__opening_slot_ids
+msgid "Opening periods"
+msgstr "Franjas horarias"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_opening_slot__company_id
+msgid "Company"
+msgstr "Compañía"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor_slot__editor_id
+msgid "Editor"
+msgstr "Editor"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor_slot__weekday
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_opening_slot__weekday
+msgid "Weekday"
+msgstr "Día"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor_slot__open_time
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_opening_slot__open_time
+msgid "Opens"
+msgstr "Abre"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor_slot__close_time
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_opening_slot__close_time
+msgid "Closes"
+msgstr "Cierra"
+
+#. module: partner_microsite_manager
+#: model:ir.rule,name:partner_microsite_manager.rule_microsite_opening_slot_company
+msgid "Opening slots of allowed companies"
+msgstr "Franjas horarias de las compañías permitidas"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "Add one row per period your shop is open. A day that closes at midday and reopens in the afternoon takes two rows. Leave the list empty to show no hours at all."
+msgstr "Añade una fila por cada tramo en que tu comercio está abierto. Un día que cierra a mediodía y vuelve a abrir por la tarde lleva dos filas. Deja la lista vacía para no mostrar horario."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "Shown on the page"
+msgstr "Así se verá en la página"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/microsite_opening_slot.py:0
+msgid "%(day)s: the shop cannot close (%(close)s) before it opens (%(open)s). Times must stay within one day, opening first."
+msgstr "%(day)s: el comercio no puede cerrar (%(close)s) antes de abrir (%(open)s). Las horas deben estar dentro del mismo día, primero la apertura."
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/microsite_opening_slot.py:0
+msgid "%(day)s: %(first)s and %(second)s overlap. Each period of the day must end before the next one starts."
+msgstr "%(day)s: %(first)s y %(second)s se solapan. Cada tramo del día debe terminar antes de que empiece el siguiente."
+
+#. module: partner_microsite_manager
+#: model:ir.rule,name:partner_microsite_manager.rule_microsite_content_editor_owner
+msgid "Page content editor: only its author"
+msgstr "Editor de contenido de la página: solo su autor"
+
+#. module: partner_microsite_manager
+#: model:ir.rule,name:partner_microsite_manager.rule_microsite_content_editor_slot_owner
+msgid "Page content editor rows: only their author"
+msgstr "Filas del editor de contenido de la página: solo su autor"

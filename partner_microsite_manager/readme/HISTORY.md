@@ -1,3 +1,28 @@
+## 19.0.2.8.0 (2026-09-15)
+
+* **Opening hours as rows.** The merchant no longer types the compact
+  notation (`L-V 09:00-14:00 / ...`, reported as "El campo horario no lo
+  entiendo"): the content editor and the company form show one row per
+  opening period (weekday, opens, closes, clock widget), as many per day as
+  the shop needs. The text every public template reads is generated from
+  the rows (`microsite.opening.slot` -> `res.company.microsite_opening_hours`,
+  computed and stored) in the canonical form the parser round-trips; a
+  company without rows keeps its free text. Overlapping or inverted periods
+  are refused on the screen. The migration creates the rows of every
+  company whose text parses and logs the ones it could not convert.
+* **The hours a merchant saves now reach the page.** 210 of the 211 live
+  homepages are the static pages the 2026 importer wrote, hours baked in as
+  HTML; the editor wrote the company and the page never noticed ("No se
+  modifican los datos en la web aunque los modifiques aquí"). The
+  migration swaps that one card for a `t-call` of the new
+  `microsite_opening_hours_card` template (the dynamic homepage uses the
+  same one); nothing else on the page is touched. Saving the editor also
+  drops the one-hour public page cache, which hid a change for logged-out
+  visitors.
+* The content editor and its rows are their author's only (record rules on
+  `create_uid`): Odoo 19 no longer scopes transient records to their owner,
+  and every merchant can write both models.
+
 ## 19.0.2.7.2 (2026-09-15)
 
 * The hero shows the merchant's picture whole on a phone. The 60vh box

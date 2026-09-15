@@ -48,10 +48,25 @@
                             </group>
                         </page>
                         <page string="Practical information" name="practical">
+                            <!-- One row per opening period, typed with the
+                                 clock widget. A day with a morning and an
+                                 afternoon shift is two rows. The line under
+                                 the list is what the page will print,
+                                 generated from the rows. -->
+                            <group string="Opening hours" name="opening_hours">
+                                <p class="text-muted" colspan="2">Add one row per period your shop is open. A day that closes at midday and reopens in the afternoon takes two rows. Leave the list empty to show no hours at all.</p>
+                                <field name="opening_slot_ids" nolabel="1" colspan="2">
+                                    <list editable="bottom">
+                                        <field name="weekday"/>
+                                        <field name="open_time" widget="float_time"/>
+                                        <field name="close_time" widget="float_time"/>
+                                    </list>
+                                </field>
+                                <field name="microsite_opening_hours"
+                                       string="Shown on the page" readonly="1"/>
+                            </group>
                             <group>
                                 <group>
-                                    <field name="microsite_opening_hours"
-                                           placeholder="e.g. L-V 10:00-13:30 / L-V 16:30-20:00 / S 10:00-14:00"/>
                                     <field name="microsite_delivery_info"/>
                                     <field name="microsite_parking_info"/>
                                 </group>
