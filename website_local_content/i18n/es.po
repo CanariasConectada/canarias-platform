@@ -1214,3 +1214,23 @@ msgstr "Descubre y comparte las historias del barrio"
 #: model:website.local.content.type,sponsor_name:website_local_content.content_type_living_memory
 msgid "Gobierno de Canarias"
 msgstr "Gobierno de Canarias"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "<option value=\"\">All categories</option>"
+msgstr "<option value=\"\">Todas las categorías</option>"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "<option value=\"\">All subcategories</option>"
+msgstr "<option value=\"\">Todas las subcategorías</option>"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "<option value=\"\">All activities</option>"
+msgstr "<option value=\"\">Todas las actividades</option>"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_index
+msgid "<option value=\"\">All decades</option>"
+msgstr "<option value=\"\">Todas las décadas</option>"

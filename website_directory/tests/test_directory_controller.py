@@ -260,8 +260,9 @@ class TestDirectoryController(HttpCase):
             re.DOTALL,
         )
         self.assertIsNotNone(clear_all, "clear-all button not rendered")
-        self.assertIn("fa-times", clear_all.group(0))
+        self.assertIn(">X<", clear_all.group(0))
         self.assertNotIn("fa-trash", clear_all.group(0))
+        self.assertNotIn("fa-times", clear_all.group(0))
         self.assertRegex(clear_all.group(0), r"aria-label=\"[^\"]+\"")
 
     def test_ajax_search_partial(self):
