@@ -1,6 +1,9 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+import re
+
 from odoo import _, api, fields, models
+from odoo.exceptions import ValidationError
 
 # Certification levels shared by every model of this module.
 CERTIFICATION_LEVELS = [
@@ -33,7 +36,8 @@ class CertificationType(models.Model):
     code = fields.Char(
         required=True,
         help="Technical identifier used in website URLs and filters, "
-        "e.g. 'silver' or 'sustainability'.",
+        "e.g. 'silver' or 'sustainability'. Lowercase letters, digits and "
+        "hyphens only.",
     )
     sequence = fields.Integer(default=10)
     active = fields.Boolean(default=True)
@@ -161,6 +165,19 @@ class CertificationType(models.Model):
     _code_uniq = models.Constraint(
         "unique(code)", "The certification type code must be unique."
     )
+
+    # The code lands in public URLs and, since 19.0.2.8.0, inside the hero's
+    # inline background-image url(): a slug and nothing else, so no value a
+    # manager types can ever break out of that CSS context.
+    _CODE_RE = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
+
+    @api.constrains("code")
+    def _check_code_is_a_slug(self):
+        for record in self:
+            if not self._CODE_RE.match(record.code or ""):
+                raise ValidationError(
+                    _("The code must contain only lowercase letters, digits, hyphens and underscores.")
+                )
 
     @api.model_create_multi
     def create(self, vals_list):

@@ -349,3 +349,14 @@ class TestCertificationLanding(HttpCase):
         self.cert_type.unlink()
 
         self.assertFalse(material.exists())
+
+    def test_the_code_is_a_slug_and_nothing_else(self):
+        """The code sits inside the hero's inline url(): only a slug gets in."""
+        from odoo.exceptions import ValidationError
+
+        for bad in ("Silver", "a b", "x);}body{", "ñ", ""):
+            with self.subTest(code=bad), self.assertRaises(ValidationError):
+                self.cert_type.write({"code": bad})
+        for good in ("landing-vertical-2", "test_locked_seal"):
+            self.cert_type.write({"code": good})
+            self.assertEqual(self.cert_type.code, good)
