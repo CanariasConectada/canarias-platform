@@ -19,7 +19,7 @@
 
     .o_cc_login_brand_logo {
         // The brand mark is the first thing that identifies the card, so it
-        // carries more weight than the subvention strip at the foot (64px).
+        // carries more weight than the funding strip at the foot (120px).
         // 128 -> 160 on 2026-08-14, 160 -> 208 on 2026-08-15, both because the
         // mark still read as a header sitting on top of the card rather than
         // as its subject.
@@ -88,9 +88,15 @@
     }
 
     .o_cc_login_subvention_logo {
-        max-height: 64px;
+        // 64 -> 120 on 2026-09-15 (client request: the combined FEDER +
+        // NextGenerationEU strip at 120px wherever it appears). The image
+        // is 962x220, so 120px high means ~525px wide; inside this card
+        // (420px minus the strip's 1.5rem side padding) `img-fluid` caps
+        // the width first and the height lands nearer 85px. Full opacity:
+        // the strip now carries legal legends as text, not just emblems.
+        max-height: 120px;
         width: auto;
-        opacity: 0.9;
+        opacity: 1;
     }
 }
 
