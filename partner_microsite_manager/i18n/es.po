@@ -810,12 +810,12 @@ msgid "Cancel"
 msgstr "Cancelar"
 
 #. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.website_view_list_merchant
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_website__merchant_can_open_orders
 msgid "Orders reachable"
 msgstr "Pedidos accesibles"
 
 #. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.website_view_list_merchant
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_website__merchant_can_open_pages
 msgid "Pages reachable"
 msgstr "Páginas accesibles"
 
@@ -903,3 +903,29 @@ msgstr "Editor de contenido de la página: solo su autor"
 #: model:ir.rule,name:partner_microsite_manager.rule_microsite_content_editor_slot_owner
 msgid "Page content editor rows: only their author"
 msgstr "Filas del editor de contenido de la página: solo su autor"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_company_picker__company_ids
+msgid "Your shops"
+msgstr "Tus tiendas"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_company_picker__selected_company_id
+msgid "Shop to edit"
+msgstr "Tienda a editar"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "Shown at the bottom of your page. Leave a\n                                network empty to hide its icon."
+msgstr "Se muestran al pie de tu página. Deja una red vacía para ocultar su icono."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_company_picker_form
+msgid "You manage more than one shop. Choose which one's\n                        page content you want to edit."
+msgstr "Gestionas más de una tienda. Elige de cuál quieres editar el contenido de la página."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_company_picker_form
+msgid "<i class=\"fa fa-globe me-1\" title=\"Address\" role=\"img\" aria-label=\"Address\"/>"
+msgstr "<i class=\"fa fa-globe me-1\" title=\"Dirección\" role=\"img\" aria-label=\"Dirección\"/>"
