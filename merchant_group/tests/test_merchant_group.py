@@ -47,14 +47,14 @@ VISIBLE_INNER_MENUS = (
     "sale_loyalty.menu_discount_loyalty_type_config",
     "website_sale_loyalty.menu_loyalty",
     "website_sale_loyalty.menu_discount_loyalty_type_config",
+    "sale_loyalty.menu_gift_ewallet_type_config",
+    "website_sale_loyalty.menu_gift_ewallet_type_config",
 )
 HIDDEN_MENUS = (
     "project.menu_main_pm",
     "spreadsheet_dashboard.spreadsheet_dashboard_menu_root",
     "board.menu_board_my_dash",
     "merchant_group.menu_merchant_dashboard_root",
-    "sale_loyalty.menu_gift_ewallet_type_config",
-    "website_sale_loyalty.menu_gift_ewallet_type_config",
     "base.menu_management",
 )
 
@@ -179,7 +179,7 @@ class TestMerchantGroup(TransactionCase):
         )
         self.assertEqual(
             self.env.ref("sale_loyalty.menu_gift_ewallet_type_config").group_ids,
-            manager,
+            manager | self.merchant_group,
         )
 
     def test_ticking_the_dashboard_shows_only_my_dashboard(self):
@@ -227,3 +227,13 @@ class TestMerchantGroup(TransactionCase):
             Program.browse(foreign.id).read(["name"])
         program.write({"active": False})
         program.unlink()
+
+    def test_a_merchant_issues_gift_cards_of_their_own_company(self):
+        """Gift cards and eWallets opened to merchants on 2026-09-15."""
+        program = self.env["loyalty.program"].with_user(self.merchant).create(
+            {"name": "Merchant gift cards", "program_type": "gift_card", "company_id": self.company.id}
+        )
+        card = self.env["loyalty.card"].with_user(self.merchant).create(
+            {"program_id": program.id, "points": 25}
+        )
+        self.assertTrue(card.code)

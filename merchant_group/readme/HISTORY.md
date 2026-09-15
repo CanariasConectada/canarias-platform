@@ -1,3 +1,8 @@
+## 19.0.2.1.0 (2026-09-15)
+
+* Gift cards and eWallets open to merchants: both menus (Sales > Products
+  and eCommerce > Loyalty) and create/delete on loyalty cards.
+
 ## 19.0.2.0.0 (2026-09-15)
 
 - **The default merchant profile.** Comercios now also implies purchase
