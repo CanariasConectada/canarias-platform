@@ -1,3 +1,14 @@
+## 19.0.3.0.0 (2026-09-15)
+
+* The "Facilities and services" tab of the page-content screen is down to two
+  things: the section title and the catalogue as checkboxes grouped under
+  their subdivision headings, in catalogue order (`facility_checkboxes`
+  widget). The "show on page" switch is gone from the screen, the company form
+  and the model: the section shows exactly when the shop has ticked something.
+  A pre-migration logs the shops whose page changes because of it.
+* The title says what it is: "Section title", the default heading as
+  placeholder, and "Leave empty to use the default heading." underneath.
+
 ## 19.0.1.0.0 (2026-08-16)
 
 * First version: catalogue of subdivisions and items with icons, per-company

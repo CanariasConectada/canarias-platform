@@ -63,14 +63,6 @@ msgid ""
 msgstr "Añade, renombra y archiva las subdivisiones y los elementos entre los que elige cada comercio."
 
 #. module: company_facilities
-#: model:ir.model.fields,help:company_facilities.field_res_company__facility_block_enabled
-msgid ""
-"Adds the block to this shop's site, above the footer. Off by default: the "
-"homepages were built page by page in the website builder, and nothing may "
-"appear on one of them without its owner asking for it."
-msgstr "Añade el bloque al sitio de este comercio, encima del pie. Desactivado por defecto: las portadas se construyeron una a una en el editor, y en ninguna debe aparecer nada sin que su dueño lo pida."
-
-#. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_air_conditioning
 msgid "Air conditioning"
 msgstr "Aire acondicionado"
@@ -208,11 +200,6 @@ msgid "Facilities and services"
 msgstr "Instalaciones y servicios"
 
 #. module: company_facilities
-#: model:ir.model.fields,field_description:company_facilities.field_res_company__facility_block_title
-msgid "Facilities block title"
-msgstr "Título del bloque de instalaciones"
-
-#. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility_category__facility_ids
 msgid "Facility"
 msgstr "Instalación o servicio"
@@ -262,18 +249,6 @@ msgstr "Cómo llegar"
 #: model:company.facility,name:company_facilities.facility_gift_wrapping
 msgid "Gift wrapping"
 msgstr "Envoltorio para regalo"
-
-#. module: company_facilities
-#: model:ir.model.fields,field_description:company_facilities.field_microsite_content_editor__facility_block_title
-msgid "Heading"
-msgstr "Título"
-
-#. module: company_facilities
-#: model:ir.model.fields,help:company_facilities.field_res_company__facility_block_title
-msgid ""
-"Heading of the block on the microsite. Left empty it reads “Facilities and "
-"services”."
-msgstr "Título del bloque en el microsite. Vacío, pone «Instalaciones y servicios»."
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_high_chair_changing
@@ -355,13 +330,6 @@ msgid "Name"
 msgstr "Nombre"
 
 #. module: company_facilities
-#: model:ir.model.fields,help:company_facilities.field_microsite_content_editor__facility_block_enabled
-msgid ""
-"Off by default. The ticks still feed the directory filter whether or not the"
-" block is shown."
-msgstr "Desactivado por defecto. Lo que marques alimenta el filtro del directorio se muestre o no el bloque."
-
-#. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_company_facility__company_ids
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_form
 msgid "Offered by"
@@ -405,7 +373,6 @@ msgstr "Espacio pet friendly"
 
 #. module: company_facilities
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_form_facilities
-#: model_terms:ir.ui.view,arch_db:company_facilities.view_microsite_content_editor_form_facilities
 msgid "Pick what this shop offers"
 msgstr "Elige lo que ofrece este comercio"
 
@@ -439,21 +406,6 @@ msgstr "Secuencia"
 #: model:company.facility.category,name:company_facilities.category_service
 msgid "Service"
 msgstr "Servicio"
-
-#. module: company_facilities
-#: model:ir.model.fields,field_description:company_facilities.field_res_company__facility_block_enabled
-msgid "Show facilities on the website"
-msgstr "Mostrar las instalaciones en la web"
-
-#. module: company_facilities
-#: model_terms:ir.ui.view,arch_db:company_facilities.view_microsite_content_editor_form_facilities
-msgid "Show it on the page"
-msgstr "Mostrarlo en la página"
-
-#. module: company_facilities
-#: model:ir.model.fields,field_description:company_facilities.field_microsite_content_editor__facility_block_enabled
-msgid "Show them on my page"
-msgstr "Mostrarlas en mi página"
 
 #. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_speaks_spanish
@@ -530,16 +482,14 @@ msgstr "Qué ofrece este comercio"
 
 #. module: company_facilities
 #: model:ir.model.fields,help:company_facilities.field_res_company__facility_ids
-msgid "What this shop offers. Shown on its microsite, grouped by subdivision."
-msgstr "Lo que ofrece este comercio. Se muestra en su microsite, agrupado por subdivisión."
-
-#. module: company_facilities
-#: model_terms:ir.ui.view,arch_db:company_facilities.view_microsite_content_editor_form_facilities
 msgid ""
-"What you tick here is also what visitors can filter the\n"
-"                        directory by, whether or not you show the block on your\n"
-"                        own page."
-msgstr "Lo que marques aquí es también por lo que la gente puede filtrar en el directorio, muestres o no el bloque en tu propia página."
+"What this shop offers. Shown on its microsite, grouped by subdivision. The "
+"section appears as soon as one item is ticked and stays hidden while none "
+"is."
+msgstr ""
+"Lo que ofrece este comercio. Se muestra en su microsite, agrupado por "
+"subdivisión. La sección aparece en cuanto se marca un elemento y permanece "
+"oculta mientras no haya ninguno."
 
 #. module: company_facilities
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_category_form
@@ -553,3 +503,36 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_company_facility_list
 msgid "fa-wifi"
 msgstr ""
+
+#. module: company_facilities
+#: model:ir.model.fields,field_description:company_facilities.field_microsite_content_editor__facility_block_title
+msgid "Section title"
+msgstr "Título de la sección"
+
+#. module: company_facilities
+#: model:ir.model.fields,field_description:company_facilities.field_res_company__facility_block_title
+msgid "Facilities section title"
+msgstr "Título de la sección de instalaciones"
+
+#. module: company_facilities
+#: model:ir.model.fields,help:company_facilities.field_microsite_content_editor__facility_block_title
+#: model:ir.model.fields,help:company_facilities.field_res_company__facility_block_title
+msgid "Leave empty to use the default heading."
+msgstr "Déjalo vacío para usar el título por defecto."
+
+#. module: company_facilities
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_microsite_content_editor_form_facilities
+msgid ""
+"The section appears on your page as soon as you tick something and stays "
+"hidden while nothing is ticked. What you tick is also what visitors can "
+"filter the directory by."
+msgstr ""
+"La sección aparece en tu página en cuanto marcas algo y permanece oculta "
+"mientras no haya nada marcado. Lo que marques es también por lo que la gente "
+"puede filtrar en el directorio."
+
+#. module: company_facilities
+#. odoo-javascript
+#: code:addons/company_facilities/static/src/js/facility_checkboxes_field.js:0
+msgid "Checkboxes by subdivision"
+msgstr "Casillas por subdivisión"

@@ -3,10 +3,10 @@
 
 from odoo import fields, models
 
-# What a shop offers, added to the merchant's own page-content screen. The
-# block switch and its heading travel with it: deciding to show the block is
-# part of the same sitting as deciding what goes in it.
-FACILITY_FIELDS = ("facility_ids", "facility_block_enabled", "facility_block_title")
+# What a shop offers, added to the merchant's own page-content screen, and
+# the heading over it. No visibility switch travels with them any more: the
+# section shows exactly when something is ticked (2026-09-15).
+FACILITY_FIELDS = ("facility_ids", "facility_block_title")
 
 
 class MicrositeContentEditor(models.TransientModel):
@@ -24,12 +24,10 @@ class MicrositeContentEditor(models.TransientModel):
         comodel_name="company.facility",
         string="What this shop offers",
     )
-    facility_block_enabled = fields.Boolean(
-        string="Show them on my page",
-        help="Off by default. The ticks still feed the directory filter "
-        "whether or not the block is shown.",
+    facility_block_title = fields.Char(
+        string="Section title",
+        help="Leave empty to use the default heading.",
     )
-    facility_block_title = fields.Char(string="Heading")
 
     def _editable_field_names(self):
         return super()._editable_field_names() + list(FACILITY_FIELDS)
