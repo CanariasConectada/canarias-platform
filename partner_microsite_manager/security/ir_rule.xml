@@ -46,4 +46,37 @@
         <field name="perm_unlink" eval="True"/>
     </record>
 
+    <!-- Opening slots follow the company they belong to: a user sees the
+         rows of the companies in their allowed list, like every other
+         company-owned record on the platform. The public microsite never
+         reads the rows (it reads the generated text on the company, with
+         sudo), so this rule only shapes the backend. -->
+    <record id="rule_microsite_opening_slot_company" model="ir.rule">
+        <field name="name">Opening slots of allowed companies</field>
+        <field name="model_id" ref="model_microsite_opening_slot"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="global" eval="True"/>
+    </record>
+
+    <!-- Odoo 19 gives transient models no implicit "owner only" rule any
+         more: they use plain ACLs and record rules. The editor and its rows
+         are writable by every merchant (that is what lets them save), so
+         without these two rules a merchant could, through a raw RPC call on
+         a guessed id, edit another merchant's still-open editor, and that
+         merchant's own Save would then write the tampered content to THEIR
+         shop with sudo. A screen is its author's, and nobody else's. -->
+    <record id="rule_microsite_content_editor_owner" model="ir.rule">
+        <field name="name">Page content editor: only its author</field>
+        <field name="model_id" ref="model_microsite_content_editor"/>
+        <field name="domain_force">[('create_uid', '=', user.id)]</field>
+        <field name="global" eval="True"/>
+    </record>
+
+    <record id="rule_microsite_content_editor_slot_owner" model="ir.rule">
+        <field name="name">Page content editor rows: only their author</field>
+        <field name="model_id" ref="model_microsite_content_editor_slot"/>
+        <field name="domain_force">[('editor_id.create_uid', '=', user.id)]</field>
+        <field name="global" eval="True"/>
+    </record>
+
 </odoo>

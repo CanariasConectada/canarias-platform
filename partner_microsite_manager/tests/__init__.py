@@ -9,5 +9,6 @@ from . import (
     test_microsite_render,
     test_microsite_settings,
     test_opening_hours,
+    test_opening_slots,
     test_view_scoping,
 )

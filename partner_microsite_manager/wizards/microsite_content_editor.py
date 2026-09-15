@@ -2,7 +2,15 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 from odoo import _, api, fields, models
-from odoo.exceptions import AccessError, UserError
+from odoo.exceptions import AccessError, UserError, ValidationError
+
+from ..models.microsite_opening_slot import WEEKDAY_SELECTION, slot_problem_message
+from ..tools.opening_hours import (
+    find_slot_problem,
+    format_opening_hours,
+    parse_opening_hours,
+    slots_from_parsed,
+)
 
 # The fields a merchant is allowed to change about their own page, and the
 # only ones this screen ever writes. Everything else on ``res.company`` --
@@ -11,6 +19,10 @@ from odoo.exceptions import AccessError, UserError
 #
 # One tuple, read by both ``default_get`` and ``action_save``, so the screen
 # and the write can never come to disagree about what is editable.
+#
+# ``microsite_opening_hours`` is NOT in it any more: the merchant edits the
+# opening periods as rows (``opening_slot_ids``) and the text is generated
+# from them on the company. See ``_load_opening_slots`` / ``_save_opening_slots``.
 CONTENT_FIELDS = (
     "microsite_name",
     "microsite_button_text",
@@ -19,7 +31,6 @@ CONTENT_FIELDS = (
     "microsite_intro_image",
     "microsite_banner_title",
     "microsite_banner_image",
-    "microsite_opening_hours",
     "microsite_delivery_info",
     "microsite_parking_info",
     "microsite_phone",
@@ -93,7 +104,21 @@ class MicrositeContentEditor(models.TransientModel):
     microsite_intro_image = fields.Image(string="Intro banner image")
     microsite_banner_title = fields.Char(string="Closing banner")
     microsite_banner_image = fields.Image(string="Closing banner image")
-    microsite_opening_hours = fields.Char(string="Opening hours")
+    # One row per opening period; a day with a morning and an afternoon
+    # shift is two rows. What the merchant asked for on 2026-09-15: "que
+    # pueda introducir, por día, tantas horas de apertura y cierre como
+    # necesite", instead of a notation they did not understand.
+    opening_slot_ids = fields.One2many(
+        comodel_name="microsite.content.editor.slot",
+        inverse_name="editor_id",
+        string="Opening periods",
+    )
+    # Read-only preview of the text the page will show, generated from the
+    # rows exactly as the company will generate it on save.
+    microsite_opening_hours = fields.Char(
+        string="Opening hours",
+        compute="_compute_microsite_opening_hours",
+    )
     microsite_delivery_info = fields.Char(string="Delivery")
     microsite_parking_info = fields.Char(string="Parking and directions")
     microsite_phone = fields.Char(string="Phone")
@@ -262,7 +287,46 @@ class MicrositeContentEditor(models.TransientModel):
         website = source.website_id
         for name in SOCIAL_FIELDS:
             values[name] = (website and website[name]) or source[name] or False
+        values["opening_slot_ids"] = [
+            (0, 0, {"weekday": str(weekday), "open_time": open_time, "close_time": close_time})
+            for weekday, open_time, close_time in self._load_opening_slots(source)
+        ]
         return values
+
+    @api.model
+    def _load_opening_slots(self, company):
+        """The shop's schedule as ``[(weekday, open, close), ...]``.
+
+        The rows when the company has them; otherwise the legacy text,
+        parsed, so a shop the migration did not convert still opens on
+        what its page shows rather than on an empty list. A text that does
+        not parse yields no rows: the merchant types the schedule again,
+        which is the point of the screen.
+        """
+        slots = company.microsite_opening_slot_ids
+        if slots:
+            return [(int(s.weekday), s.open_time, s.close_time) for s in slots]
+        parsed = slots_from_parsed(parse_opening_hours(company.microsite_opening_hours))
+        # A text that parses but cannot be rows (one shop closes at 01:00,
+        # past midnight) opens empty as well, exactly as the migration left
+        # it: the rows would be refused the moment the screen is built.
+        return [] if find_slot_problem(parsed) else parsed
+
+    @api.depends(
+        "opening_slot_ids.weekday",
+        "opening_slot_ids.open_time",
+        "opening_slot_ids.close_time",
+    )
+    def _compute_microsite_opening_hours(self):
+        for editor in self:
+            editor.microsite_opening_hours = (
+                format_opening_hours(
+                    (row.weekday, row.open_time, row.close_time)
+                    for row in editor.opening_slot_ids
+                    if row.weekday
+                )
+                or False
+            )
 
     # ------------------------------------------------------------------
     # Saving
@@ -300,9 +364,88 @@ class MicrositeContentEditor(models.TransientModel):
         # res.company and still run here: sudo skips the access rules, never
         # the validation.
         social_payload = {name: self[name] or False for name in SOCIAL_FIELDS}
-        company.write(dict(payload, **social_payload))
+        company.write(
+            dict(payload, **social_payload, **self._save_opening_slots(company))
+        )
         # The website side wins in the footer, so it has to receive the same
         # value -- including an emptied one, or the old link keeps rendering.
         if company.website_id:
             company.website_id.sudo().write(social_payload)
+        # Public visitors get the homepage from a one-hour response cache
+        # (``website.page._get_response``, the ``templates.cached_values``
+        # container), keyed by page, not by the company it renders. Writing
+        # the company does not empty it; a merchant who saved and then
+        # checked their site logged out would have seen the old hours for up
+        # to an hour and called it "no se modifica". ``templates`` is the
+        # group that container belongs to (``registry._CACHES_BY_KEY``).
+        self.env.registry.clear_cache("templates")
         return {"type": "ir.actions.act_window_close"}
+
+    def _save_opening_slots(self, company):
+        """The write values that replace the shop's schedule with the rows.
+
+        All rows are replaced (``5`` then ``0`` commands) rather than
+        diffed: the schedule is small and the merchant sees the whole of it.
+        The text is deliberately NOT written here: the company generates it
+        from the rows (a value in the same write would be protected from
+        recompute), and deleting the last row clears it
+        (``microsite.opening.slot.unlink``). A shop whose legacy text never
+        became rows keeps that text when the merchant saves something else
+        with an empty list: nothing is written at all, so the company is
+        not even asked to regenerate a text it could not have produced.
+        """
+        self.ensure_one()
+        if not self.opening_slot_ids and not company.microsite_opening_slot_ids:
+            return {}
+        return {
+            "microsite_opening_slot_ids": [(5, 0, 0)]
+            + [
+                (
+                    0,
+                    0,
+                    {
+                        "weekday": row.weekday,
+                        "open_time": row.open_time,
+                        "close_time": row.close_time,
+                    },
+                )
+                for row in self.opening_slot_ids
+            ]
+        }
+
+
+class MicrositeContentEditorSlot(models.TransientModel):
+    """One row of the editor's schedule: a weekday, opens, closes.
+
+    A transient mirror of ``microsite.opening.slot``: the editor never lets
+    a merchant touch the company's rows directly (the company is writable
+    by ``base.group_erp_manager`` alone, see the editor's docstring), so the
+    rows are copied in on open and written back with sudo on save.
+    """
+
+    _name = "microsite.content.editor.slot"
+    _description = "Opening period of the page content editor"
+    _order = "weekday, open_time, id"
+
+    editor_id = fields.Many2one(
+        comodel_name="microsite.content.editor",
+        required=True,
+        ondelete="cascade",
+    )
+    weekday = fields.Selection(WEEKDAY_SELECTION, required=True)
+    open_time = fields.Float(string="Opens", required=True)
+    close_time = fields.Float(string="Closes", required=True)
+
+    @api.constrains("editor_id", "weekday", "open_time", "close_time")
+    def _check_slots(self):
+        """Same checks as the stored rows, so the complaint reaches the
+        merchant on the screen they typed in, not as a failed save."""
+        for editor in self.editor_id:
+            problem = find_slot_problem(
+                (row.weekday, row.open_time, row.close_time)
+                for row in editor.opening_slot_ids
+            )
+            if problem:
+                raise ValidationError(
+                    slot_problem_message(self.env, self._fields["weekday"], problem)
+                )

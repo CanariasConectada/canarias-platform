@@ -91,7 +91,10 @@ class TestMicrositeContentEditor(TransactionCase):
         editor = self._editor().create(
             {
                 "microsite_about_title": "Quiénes somos",
-                "microsite_opening_hours": "L-V 10:00-14:00",
+                "opening_slot_ids": [
+                    (0, 0, {"weekday": str(day), "open_time": 10, "close_time": 14})
+                    for day in range(5)
+                ],
             }
         )
         editor.action_save()
@@ -171,10 +174,16 @@ class TestMicrositeContentEditor(TransactionCase):
         )
 
     def test_the_validation_on_the_company_still_runs(self):
-        """sudo skips the access rules. It must not skip the constraints."""
-        editor = self._editor().create({"microsite_opening_hours": "no es un horario"})
+        """sudo skips the access rules. It must not skip the constraints.
+
+        The map URL scheme check lives on ``res.company`` (opening hours are
+        rows now, validated before they reach the company, see
+        ``test_opening_slots``).
+        """
+        editor = self._editor().create({"microsite_map_url": "javascript:alert(1)"})
         with self.assertRaises(Exception):
             editor.action_save()
+        self.assertFalse(self.shop.microsite_map_url)
 
 
     def test_social_links_open_with_the_websites_value_first(self):
