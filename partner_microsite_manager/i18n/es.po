@@ -64,6 +64,8 @@ msgstr "Sobre el comercio"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__website_url
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.website_view_list_merchant
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_company_picker__selected_company_website_url
 msgid "Address"
 msgstr "Dirección"
 
@@ -410,6 +412,8 @@ msgstr "Nuestra historia: título"
 #: model:ir.actions.act_window,name:partner_microsite_manager.action_own_microsite_content
 #: model:ir.ui.menu,name:partner_microsite_manager.menu_own_microsite_content
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+#: code:addons/partner_microsite_manager/wizards/microsite_content_editor.py:0
+#: code:addons/partner_microsite_manager/models/website.py:0
 msgid "Page content"
 msgstr "Contenido de la página"
 
@@ -738,3 +742,63 @@ msgstr "Abierto ahora"
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 msgid "Closed"
 msgstr "Cerrado"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.website_view_list_merchant
+#: model:ir.actions.server,name:partner_microsite_manager.action_own_websites
+#: model:ir.ui.menu,name:partner_microsite_manager.menu_own_websites
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid "My shops"
+msgstr "Mis tiendas"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.website_view_list_merchant
+msgid "Content"
+msgstr "Contenido"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.website_view_list_merchant
+#: code:addons/partner_microsite_manager/models/website.py:0
+msgid "Pages"
+msgstr "Páginas"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.website_view_list_merchant
+#: code:addons/partner_microsite_manager/models/website.py:0
+msgid "Orders"
+msgstr "Pedidos"
+
+#. module: partner_microsite_manager
+#: code:addons/partner_microsite_manager/models/website.py:0
+msgid "That website does not belong to your shop."
+msgstr "Ese sitio web no pertenece a tu comercio."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "Social networks"
+msgstr "Redes sociales"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_company_picker_form
+msgid "Choose your shop"
+msgstr "Elige tu tienda"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_company_picker_form
+msgid "Continue"
+msgstr "Continuar"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_company_picker_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.website_view_list_merchant
+msgid "Orders reachable"
+msgstr "Pedidos accesibles"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.website_view_list_merchant
+msgid "Pages reachable"
+msgstr "Páginas accesibles"

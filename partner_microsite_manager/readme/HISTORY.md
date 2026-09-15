@@ -1,3 +1,12 @@
+## 19.0.2.7.2 (2026-09-15)
+
+* The hero shows the merchant's picture whole on a phone. The 60vh box
+  cropped a landscape picture to a strip on narrow screens; below 768px
+  the hero now takes the picture's proportion (16:9) and the picture fits
+  the width, with the title and the button scaled to match. Desktop is
+  unchanged. Size and padding moved from inline styles to
+  `microsite_hero.scss`.
+
 ## 19.0.2.7.1 (2026-09-14)
 
 * The microsite header follows the company logo. `website.logo` and
