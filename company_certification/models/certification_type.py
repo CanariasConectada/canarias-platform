@@ -106,6 +106,15 @@ class CertificationType(models.Model):
         help="Body of the public landing page. Plain content, editable "
         "without touching code.",
     )
+    # Bounded to a full-HD frame: the picture is a hero background, and a
+    # merchant-supplied 4000px photograph would be re-sent to every visitor
+    # at a size no screen shows. Smaller pictures are stored as they come.
+    landing_image = fields.Image(
+        max_width=1920,
+        max_height=1080,
+        help="Picture behind the title of the public landing page. Without "
+        "one the page keeps its plain gradient band.",
+    )
     # The two halves of the guidance a survey carries: what the questionnaire
     # says before it starts and what it says once it is over. They live on
     # `survey.survey` (restored from the legacy platform on 2026-09-10), and

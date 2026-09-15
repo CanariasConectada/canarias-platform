@@ -1,3 +1,19 @@
+## 19.0.2.8.0 (2026-09-15)
+
+- The public landing pages get their final polish. The seal gains a
+  `landing_image` (Landing page tab): when set, the hero renders it as a
+  full-width background behind the title, with a dark veil, served from
+  `/certification/<code>/landing_image` like the badge; without it the
+  gradient band stays. The hero is a 16:9 band on phones.
+- One accent colour per vertical: the wrapper carries
+  `data-certification-code`, and the stylesheet paints headings green for
+  `sustainability` and brand blue for `silver`. The bodies no longer need
+  the `sust-green` / `silver-blue` classes the retired modules served.
+- The ODS icon grid, carousel captions and picture-plus-text layouts of the
+  legacy bodies are styled again, scoped under the landing's rich text.
+- The page closes on the platform's seals: one card per published vertical
+  (the page's own included), linking to its landing page.
+
 ## 19.0.2.7.0 (2026-09-15)
 
 - **Formación** in the Certificaciones menu now opens the online course of
