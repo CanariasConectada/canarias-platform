@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!-- "Settings > Companies" was the door asked for, but the Settings
+         root needs the access-rights manager group, which opens far more
+         than a list of companies. The same list hangs here under
+         Contacts instead, read only by access list and filtered by the
+         record rule to the manager's zone. -->
+    <record id="action_zone_companies" model="ir.actions.act_window">
+        <field name="name">Companies</field>
+        <field name="res_model">res.company</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'create': False, 'edit': False, 'delete': False}</field>
+    </record>
+    <menuitem id="menu_zone_companies"
+        name="Companies"
+        parent="contacts.menu_contacts"
+        action="action_zone_companies"
+        groups="group_zca_manager"
+        sequence="3"/>
+
+    <!-- Writing group_ids on an existing menu REPLACES its gate (a
+         menuitem's groups attribute would only ADD). Core ships
+         Website > Site > Content > Products with no gate at all, and
+         every internal user can read products, so a manager who must
+         "not see products" was one click away from the whole catalogue.
+         Merchants keep it through the salesman group Comercios implies;
+         designers and administrators through the designer group. -->
+    <record id="website_sale.menu_product_pages" model="ir.ui.menu">
+        <field name="group_ids" eval="[(6, 0, [
+            ref('sales_team.group_sale_salesman'),
+            ref('website.group_website_designer'),
+        ])]"/>
+    </record>
+</odoo>
