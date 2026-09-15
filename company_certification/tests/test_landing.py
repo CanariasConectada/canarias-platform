@@ -214,6 +214,104 @@ class TestCertificationLanding(HttpCase):
 
         self.assertEqual(response.status_code, 404)
 
+    # -- the hero picture -----------------------------------------------
+    def test_the_hero_carries_the_picture_when_the_vertical_has_one(self):
+        self.cert_type.landing_image = base64.b64encode(self.BADGE_PNG)
+
+        response = self.url_open("/certification/landing-vertical")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("o_cc_landing_hero--image", response.text)
+        self.assertIn(
+            "certification/landing-vertical/landing_image)",
+            response.text,
+        )
+
+    def test_the_hero_keeps_the_gradient_without_a_picture(self):
+        response = self.url_open("/certification/landing-vertical")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("o_cc_landing_hero--image", response.text)
+        self.assertNotIn("/landing_image", response.text)
+
+    def test_a_visitor_can_fetch_the_hero_picture(self):
+        self.cert_type.landing_image = base64.b64encode(self.BADGE_PNG)
+
+        response = self.url_open("/certification/landing-vertical/landing_image")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.headers["Content-Type"].startswith("image/"))
+        self.assertEqual(response.content, self.BADGE_PNG)
+        self.assertGreater(
+            response.headers.get("Cache-Control", "").find("max-age"), -1
+        )
+
+    def test_a_vertical_without_a_hero_picture_is_a_404(self):
+        response = self.url_open("/certification/landing-vertical/landing_image")
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_the_hero_picture_of_an_unpublished_vertical_is_a_404(self):
+        self.cert_type.landing_image = base64.b64encode(self.BADGE_PNG)
+        self.cert_type.landing_published = False
+
+        response = self.url_open("/certification/landing-vertical/landing_image")
+
+        self.assertEqual(response.status_code, 404)
+
+    # -- the accent -----------------------------------------------------
+    def test_the_wrapper_carries_the_code_for_the_accent_colour(self):
+        # The stylesheet keys the vertical's colour on this attribute; the
+        # template itself must know nothing about green or blue.
+        response = self.url_open("/certification/landing-vertical")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('data-certification-code="landing-vertical"', response.text)
+        self.assertIn("o_cc_landing_landing-vertical", response.text)
+
+    # -- the seal footer ------------------------------------------------
+    def _add_vertical(self, code, published=True):
+        return self.env["certification.type"].create(
+            {
+                "name": code.title(),
+                "code": code,
+                "group_user_id": self.group.id,
+                "website_title": "The %s seal" % code,
+                "website_description": "About the %s seal." % code,
+                "landing_published": published,
+            }
+        )
+
+    def test_the_footer_lists_every_published_seal_the_pages_own_included(self):
+        self._add_vertical("other-vertical")
+        self._add_vertical("draft-vertical", published=False)
+        published = self.env["certification.type"].search_count(
+            [("landing_published", "=", True)]
+        )
+
+        response = self.url_open("/certification/landing-vertical")
+
+        self.assertEqual(response.status_code, 200)
+        footer = response.text[response.text.index("o_cc_landing_seals") :]
+        self.assertEqual(footer.count("o_cc_seal_card card"), published)
+        self.assertIn('certification/other-vertical"', footer)
+        self.assertIn("The other-vertical seal", footer)
+        self.assertIn("About the other-vertical seal.", footer)
+        self.assertIn('certification/landing-vertical"', footer)
+        self.assertNotIn("draft-vertical", footer)
+
+    def test_the_footer_follows_the_seal_sequence(self):
+        self._add_vertical("first-vertical").sequence = 1
+        self.cert_type.sequence = 99
+
+        response = self.url_open("/certification/landing-vertical")
+
+        footer = response.text[response.text.index("o_cc_landing_seals") :]
+        self.assertLess(
+            footer.index('certification/first-vertical"'),
+            footer.index('certification/landing-vertical"'),
+        )
+
     # -- the download ---------------------------------------------------
     def test_attaching_material_publishes_the_file(self):
         # A private attachment would answer 403 to exactly the visitors this
@@ -251,3 +349,14 @@ class TestCertificationLanding(HttpCase):
         self.cert_type.unlink()
 
         self.assertFalse(material.exists())
+
+    def test_the_code_is_a_slug_and_nothing_else(self):
+        """The code sits inside the hero's inline url(): only a slug gets in."""
+        from odoo.exceptions import ValidationError
+
+        for bad in ("Silver", "a b", "x);}body{", "ñ", ""):
+            with self.subTest(code=bad), self.assertRaises(ValidationError):
+                self.cert_type.write({"code": bad})
+        for good in ("landing-vertical-2", "test_locked_seal"):
+            self.cert_type.write({"code": good})
+            self.assertEqual(self.cert_type.code, good)

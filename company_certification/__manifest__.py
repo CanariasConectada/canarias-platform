@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Company Certification",
-    "version": "19.0.2.7.0",
+    "version": "19.0.2.8.0",
     "category": "Marketing/Surveys",
     "summary": "Parameterizable company certification seals built on Survey",
     "author": "MikeColangelo",
@@ -43,6 +43,7 @@
     "assets": {
         "web.assets_frontend": [
             "company_certification/static/src/scss/certification_landing.scss",
+            "company_certification/static/src/interactions/landing_body.js",
         ],
     },
     "installable": True,

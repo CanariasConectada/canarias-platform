@@ -51,10 +51,17 @@
     <template id="certification_landing" name="Certification - Landing Page">
         <t t-call="website.layout">
             <t t-set="additional_title" t-value="cert_type.website_title or cert_type.name"/>
-            <div id="wrap" class="oe_structure o_cc_landing">
-                <!-- Hero: gradient band with the vertical's title, lead and seal.
-                     Same treatment as the Lugares de Interes / Memoria Viva heros. -->
-                <section class="o_cc_landing_hero">
+            <!-- The code travels on the wrapper so the stylesheet can pick the
+                 vertical's accent colour; the template itself knows no colour. -->
+            <div id="wrap"
+                 t-attf-class="oe_structure o_cc_landing o_cc_landing_{{ cert_type.code }}"
+                 t-att-data-certification-code="cert_type.code">
+                <!-- Hero: the vertical's picture behind the title when it has
+                     one (a dark overlay keeps the title readable), otherwise
+                     the same gradient band as the Lugares de Interes / Memoria
+                     Viva heros. -->
+                <section t-attf-class="o_cc_landing_hero {{ 'o_cc_landing_hero--image' if cert_type.landing_image else '' }}"
+                         t-att-style="'background-image: url(/certification/%s/landing_image);' % cert_type.code if cert_type.landing_image else None">
                     <div class="container">
                         <div class="row align-items-center g-4">
                             <div class="col-lg-8 text-center text-lg-start">
@@ -186,6 +193,34 @@
                                     </a>
                                 </div>
                             </t>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- The platform's seals, the page's own included: the legacy
+                     pages closed on this pair of cards whichever seal the
+                     visitor was reading about. -->
+                <section t-if="seals" class="o_cc_landing_section o_cc_landing_seals py-5">
+                    <div class="container">
+                        <h2 class="o_cc_landing_section__title text-center mb-5">Los sellos de Canarias Conectada</h2>
+                        <div class="row g-4 justify-content-center">
+                            <div t-foreach="seals" t-as="seal" class="col-12 col-md-6">
+                                <a t-attf-href="/certification/{{ seal['code'] }}"
+                                   class="o_cc_seal_card card h-100 border-0 shadow-sm text-decoration-none text-center">
+                                    <div class="card-body">
+                                        <img t-if="seal['has_badge']"
+                                             t-attf-src="/certification/{{ seal['code'] }}/badge"
+                                             class="o_cc_seal_card__img img-fluid mb-3"
+                                             t-att-alt="seal['title']"
+                                             loading="lazy"/>
+                                        <span class="o_cc_seal_card__title d-block h5 fw-bold"
+                                              t-out="seal['title']"/>
+                                        <p t-if="seal['description']"
+                                           class="o_cc_seal_card__desc text-muted mb-0"
+                                           t-out="seal['description']"/>
+                                    </div>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </section>
