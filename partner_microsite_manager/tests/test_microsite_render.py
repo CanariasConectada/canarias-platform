@@ -295,15 +295,13 @@ class TestMicrositeRender(TransactionCase):
 
     # -- estate-wide blocks ---------------------------------------------------
 
-    def test_homepage_links_back_to_the_directory(self):
-        """The cross-link every migrated microsite carries.
-
-        Website 221 was born from this template without it and had no way in
-        to the directory at all.
-        """
+    def test_homepage_carries_no_zone_cross_link_block(self):
+        """"Cientos de comercios en tu zona" left every microsite on
+        2026-09-15 at the client's request; the directory stays one click
+        away in the site menu."""
         html = self._render_homepage_content()
-        self.assertIn("https://canariasconectada.es/comercio", html)
-        self.assertIn('data-name="Zona Comercial"', html)
+        self.assertNotIn('data-name="Zona Comercial"', html)
+        self.assertNotIn("Cientos de comercios en tu zona", html)
 
     def test_homepage_carries_the_funding_disclosure(self):
         """Not decoration: the grant requires the emblem on public pages."""
@@ -330,16 +328,5 @@ class TestMicrositeRender(TransactionCase):
             }
         )
         html = self._render_homepage_content()
-        self.assertIn('data-name="Zona Comercial"', html)
         self.assertIn('data-name="Subvenciones"', html)
 
-    def test_the_directory_heading_is_not_shouted(self):
-        """ALL CAPS is what LibreTranslate returns "_" for.
-
-        The migrated pages carry "CIENTOS DE COMERCIOS EN TU ZONA" and their
-        English came back empty. Sentence case here, styled by CSS if a
-        design ever wants capitals back.
-        """
-        html = self._render_homepage_content()
-        self.assertNotIn("CIENTOS DE COMERCIOS EN TU ZONA", html)
-        self.assertIn("Cientos de comercios en tu zona", html)
