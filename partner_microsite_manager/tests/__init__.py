@@ -12,3 +12,4 @@ from . import (
     test_opening_slots,
     test_view_scoping,
 )
+from . import test_merchant_server_actions

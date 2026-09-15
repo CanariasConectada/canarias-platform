@@ -1,3 +1,11 @@
+## 19.0.2.8.2 (2026-09-15)
+
+* "My shops" and "Page content" answered a merchant with "Error de acceso":
+  Odoo 19 only runs a code action for a user who can write its model or
+  belongs to one of the action's groups, and neither action named one.
+  Both are now open to every internal user; the code still resolves the
+  shop from the account.
+
 ## 19.0.2.8.1 (2026-09-15)
 
 * The gate on the Dashboards root menu (`spreadsheet_dashboard`) moves to
