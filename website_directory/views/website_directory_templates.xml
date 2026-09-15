@@ -130,7 +130,10 @@
            t-att-title="remove_label">
             <span class="visually-hidden">Remove filter</span>
             <t t-out="0"/>
-            <span class="wd-filter-remove" aria-hidden="true"><i class="fa fa-times"/></span>
+            <!-- A capital X in the chip's own weight, not an icon: the one
+                 deselect control the client's reviewer said everybody
+                 noticed (2026-09-15, "X en negrita y mayúsculas"). -->
+            <span class="wd-filter-remove" aria-hidden="true">X</span>
         </a>
     </template>
 
@@ -180,7 +183,7 @@
                class="btn btn-sm btn-outline-danger wd-clear-filters d-inline-flex align-items-center"
                aria-label="Clear all filters"
                title="Clear all filters">
-                <i class="fa fa-times"/>
+                <span aria-hidden="true">X</span>
             </a>
             <span class="text-muted small ms-auto">
                 <t t-esc="entries_count"/> result(s)

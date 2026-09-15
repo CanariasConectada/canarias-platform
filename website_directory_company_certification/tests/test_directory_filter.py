@@ -92,6 +92,23 @@ class TestDirectoryCertificationFilter(TransactionCase):
         self.assertIn("category=12", url)
         self.assertNotIn("certification", url)
 
+    def test_two_seals_narrow_rather_than_widen(self):
+        """"Silver y Sostenibilidad", not "o": one leaf per seal (2026-09-15)."""
+        controller = WebsiteDirectoryCertification()
+        domain = controller._get_certification_filter_domain(["silver", "sustainability"])
+        self.assertEqual(len(domain), 2)
+        self.assertEqual({leaf[2][0][2] for leaf in domain}, {"silver", "sustainability"})
+        # A company holding only Silver does not match both.
+        entries = self.env["website.directory.entry"].sudo().search(domain)
+        self.assertNotIn(self.certified_company, entries.mapped("company_id"))
+
+    def test_the_second_tick_keeps_the_first(self):
+        controller = WebsiteDirectoryCertification()
+        url = controller._certification_url(
+            "/comercio", {"certification": "silver"}, ["silver", "sustainability"]
+        )
+        self.assertIn("certification=silver%2Csustainability", url)
+
 
 @tagged("post_install", "-at_install")
 class TestDirectoryCertificationRendering(HttpCase):
@@ -129,3 +146,14 @@ class TestDirectoryCertificationRendering(HttpCase):
             self.assertIn('class="wd-filter-remove"', chip)
         # The unticked seals offer no cross of their own.
         self.assertNotIn("fa-times ms-2", response.text)
+
+    def test_both_seals_ticked_wear_two_chips_each(self):
+        response = self.url_open("/comercio?certification=silver,sustainability")
+        self.assertEqual(response.status_code, 200)
+        chips = re.findall(
+            r'<a[^>]*class="wd-filter-selected[^"]*"[^>]*>.*?</a>',
+            response.text,
+            re.DOTALL,
+        )
+        # Two seals x (sidebar + summary bar).
+        self.assertEqual(len(chips), 4, chips)
