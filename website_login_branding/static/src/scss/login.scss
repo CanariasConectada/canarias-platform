@@ -11,7 +11,10 @@
 
     .o_cc_login_card {
         width: 100%;
-        max-width: 420px;
+        // 420 -> 580 on 2026-09-15: the funding strip at the foot is 962x220
+        // and must show at its full 120px (client's request), which takes
+        // 525px of width plus the strip's 2 x 1.5rem padding.
+        max-width: 580px;
         border-radius: 1rem;
         overflow: hidden;
         background-color: var(--o-cc-card-bg, #ffffff);
