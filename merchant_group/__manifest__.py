@@ -15,6 +15,9 @@
         # a record whose module is absent aborts the install, so each one
         # is a real dependency rather than a hope.
         "sale",
+        # The Sales app itself: core ships sale.sale_menu_root archived and
+        # sale_management is what switches it on. The profile promises Ventas.
+        "sale_management",
         "product",
         "website",
         "mass_mailing",
