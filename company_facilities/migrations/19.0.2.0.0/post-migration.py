@@ -168,6 +168,11 @@ def migrate(cr, version):
     # the block renders `t-if="facility_groups"`, so a shop that has ticked
     # nothing still shows nothing. What this buys is that the day a merchant
     # ticks something, it appears -- instead of appearing to do nothing.
+    #
+    # 19.0.3.0.0 removed the switch altogether (the ticks decide), so on a
+    # database that skips straight past 2.0.0 there is nothing to switch on.
+    if "facility_block_enabled" not in env["res.company"]._fields:
+        return
     shops = env["res.company"].search(
         [("website_id", "!=", False), ("facility_block_enabled", "=", False)]
     )

@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Company Facilities",
-    "version": "19.0.2.3.0",
+    "version": "19.0.3.0.0",
     "category": "Website",
     "summary": "Facilities and services a shop offers, by subdivision and icon",
     "author": "MikeColangelo",
@@ -30,6 +30,10 @@
         "data/company_facility_data.xml",
     ],
     "assets": {
+        "web.assets_backend": [
+            "company_facilities/static/src/js/facility_checkboxes_field.js",
+            "company_facilities/static/src/xml/facility_checkboxes_field.xml",
+        ],
         "web.assets_frontend": [
             "company_facilities/static/src/scss/facilities.scss",
             "company_facilities/static/src/js/facilities_order.js",

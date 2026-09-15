@@ -15,7 +15,7 @@ import {Interaction} from "@web/public/interaction";
  *
  * Moving OUR block to the band, never the reverse: the band is the shops'
  * own authored content and stays exactly where its author put it whenever
- * this block is absent (facilities disabled, or nothing ticked).
+ * this block is absent (nothing ticked).
  */
 export class FacilitiesAboveGrants extends Interaction {
     static selector = "section.o_cf_facilities";
