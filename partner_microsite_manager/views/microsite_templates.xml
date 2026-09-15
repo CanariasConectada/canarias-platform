@@ -10,10 +10,14 @@
         <t t-set="company" t-value="website.company_id.sudo()"/>
 
         <!-- Hero -->
+        <!-- The picture is the only thing that changes per shop, so it is the
+             only thing set inline; size, proportion and padding live in
+             microsite_hero.scss, where a phone gets a different answer than
+             a desktop (reported 2026-09-15: "en móvil no se percibe nada"). -->
         <section
-            class="s_cover pt96 pb96 text-center"
+            class="s_cover text-center o_pmm_hero"
             data-name="Hero"
-            t-attf-style="#{'background-image: url(/web/image/res.company/%s/microsite_hero_image); background-size: cover; background-position: center;' % company.id if company.microsite_hero_image else 'background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);'} min-height: 60vh; display: flex; align-items: center; position: relative;"
+            t-attf-style="#{'background-image: url(/web/image/res.company/%s/microsite_hero_image);' % company.id if company.microsite_hero_image else 'background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);'}"
         >
             <div
                 style="position: absolute; inset: 0; background: rgba(0,0,0,0.4);"
