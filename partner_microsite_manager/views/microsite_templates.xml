@@ -134,27 +134,6 @@
             </div>
         </section>
 
-        <!-- Funding disclosure. Not decoration: the grant that paid for the
-             platform requires the emblem next to the mention of the fund on
-             every public page of the estate, and 209 of the 211 live sites
-             carry this exact strip. Since 2026-09-15 the strip combines the
-             FEDER Canarias 2021-2027 row and the NextGenerationEU / PRTR row
-             with their legal legends (962x220, ~525px wide at the 120px
-             height below). Shipped as a module asset so a microsite
-             is born compliant instead of depending on a migration
-             attachment id that only exists in production. -->
-        <section class="s_picture pt64 pb64 o_colored_level" data-snippet="s_picture" data-name="Subvenciones">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="o_colored_level col-lg-12 text-center">
-                        <figure class="figure w-100 mb-0">
-                            <img src="/partner_microsite_manager/static/src/img/subvenciones.png" class="figure-img img-fluid rounded mb-0" style="max-height: 120px;" alt="Plataforma desarrollada en el marco del proyecto Canarias Conectada, cofinanciado por la Unión Europea a través del Programa FEDER Canarias 2021-2027 — Consejería de Economía, Industria, Comercio y Autónomos del Gobierno de Canarias. Plataforma que integra los resultados del proyecto «Guanarteme en tu mano», financiado por la Unión Europea – NextGenerationEU, en el marco del Plan de Recuperación, Transformación y Resiliencia — Ministerio de Industria, Comercio y Turismo y Gobierno de Canarias." loading="lazy"/>
-                        </figure>
-                    </div>
-                </div>
-            </div>
-        </section>
-
         <!-- Contact: message form on the left, map + reachable data and
              social links on the right. Same two-column shape the migrated
              microsites carry, so a merchant moving from one to the other
@@ -317,6 +296,29 @@
                                 </a>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Funding disclosure. Not decoration: the grant that paid for the
+             platform requires the emblem next to the mention of the fund on
+             every public page of the estate, and 209 of the 211 live sites
+             carry this exact strip. Since 2026-09-15 the strip combines the
+             FEDER Canarias 2021-2027 row and the NextGenerationEU / PRTR row
+             with their legal legends (962x220, ~525px wide at the 120px
+             height below). Shipped as a module asset so a microsite
+             is born compliant instead of depending on a migration
+             attachment id that only exists in production. Last block of
+             the page on purpose (2026-09-15): contact form, then the strip,
+             then the site footer. -->
+        <section class="s_picture pt64 pb64 o_colored_level" data-snippet="s_picture" data-name="Subvenciones">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="o_colored_level col-lg-12 text-center">
+                        <figure class="figure w-100 mb-0">
+                            <img src="/partner_microsite_manager/static/src/img/subvenciones.png" class="figure-img img-fluid rounded mb-0" style="max-height: 120px;" alt="Plataforma desarrollada en el marco del proyecto Canarias Conectada, cofinanciado por la Unión Europea a través del Programa FEDER Canarias 2021-2027 — Consejería de Economía, Industria, Comercio y Autónomos del Gobierno de Canarias. Plataforma que integra los resultados del proyecto «Guanarteme en tu mano», financiado por la Unión Europea – NextGenerationEU, en el marco del Plan de Recuperación, Transformación y Resiliencia — Ministerio de Industria, Comercio y Turismo y Gobierno de Canarias." loading="lazy"/>
+                        </figure>
                     </div>
                 </div>
             </div>
