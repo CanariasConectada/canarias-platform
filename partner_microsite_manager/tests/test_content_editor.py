@@ -1,6 +1,8 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+from lxml import etree
+
 from odoo.exceptions import AccessError, UserError
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase, new_test_user
@@ -265,6 +267,23 @@ class TestMicrositeContentEditor(TransactionCase):
             self.stranger.website_id.with_user(
                 self.merchant
             ).action_microsite_content()
+
+    def test_a_row_of_the_list_opens_the_content_as_its_button_does(self):
+        """Reported 2026-09-15: the row landed on the website form.
+
+        The list names the `js_class` whose controller answers a click on
+        the row with the row's `action_microsite_content`, the very method
+        behind the Content button -- so the ownership guard above is the
+        one the row goes through as well. The button itself stays.
+        """
+        view = self.env.ref("partner_microsite_manager.website_view_list_merchant")
+        root = etree.fromstring(view.arch)
+        self.assertEqual(root.tag, "list")
+        self.assertEqual(root.get("js_class"), "merchant_website_list")
+        self.assertTrue(
+            root.xpath("//button[@name='action_microsite_content']"),
+            "the Content button is still on the row",
+        )
 
     def test_the_buttons_open_the_right_screens_for_their_own_site(self):
         site = self.shop.website_id.with_user(self.merchant)

@@ -169,7 +169,8 @@
         <field name="name">website.list.merchant</field>
         <field name="model">website</field>
         <field name="arch" type="xml">
-            <list create="false" delete="false" edit="false" string="My shops">
+            <list create="false" delete="false" edit="false" string="My shops"
+                  js_class="merchant_website_list">
                 <field name="name"/>
                 <field name="company_id" optional="show"/>
                 <field name="domain" widget="url" string="Address"/>
