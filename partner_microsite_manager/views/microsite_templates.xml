@@ -111,29 +111,6 @@
             <t t-set="banner_has_image" t-value="bool(company.microsite_banner_image)"/>
         </t>
 
-        <!-- Commercial area: the cross-link that ties one shop back to the
-             network. All 206 migrated microsites carry it hardcoded in their
-             own homepage; a microsite born from this template had no way in
-             to the directory at all, so it is part of the template now.
-             Copy, illustration and destination mirror the migrated block. -->
-        <section class="s_text_image pt80 pb80 o_colored_level" data-snippet="s_text_image" data-name="Zona Comercial">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-lg-6 order-lg-2 pb-4 pb-lg-0">
-                        <img src="/partner_microsite_manager/static/src/img/zona_comercial.webp" class="img img-fluid mx-auto d-block rounded" alt="Zonas Comerciales Abiertas" loading="lazy"/>
-                    </div>
-                    <div class="col-lg-6 order-lg-1">
-                        <h2 class="h3-fs"><strong>Cientos de comercios en tu zona</strong></h2>
-                        <p><strong>¡Increíbles ofertas por descubrir!</strong></p>
-                        <p>Atrévete a explorar nuestras Zonas Comerciales Abiertas. En un solo clic, descubrirás una amplia variedad de comercios, miles de productos irresistibles y oportunidades exclusivas. ¡Tu próxima experiencia de compra te espera aquí!</p>
-                        <p class="mb-0">
-                            <a href="https://canariasconectada.es/comercio" class="btn btn-secondary btn-lg">Directorio</a>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
         <!-- Contact: message form on the left, map + reachable data and
              social links on the right. Same two-column shape the migrated
              microsites carry, so a merchant moving from one to the other

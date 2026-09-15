@@ -1,3 +1,9 @@
+## 19.0.2.8.6 (2026-09-15)
+
+* The "Cientos de comercios en tu zona" block leaves the generated
+  homepage (client request); the directory stays one click away in the
+  site menu. The 206 imported homepages lose theirs through fix f63.
+
 ## 19.0.2.8.5 (2026-09-15)
 
 * The funding strip is the last block of a generated homepage: contact
