@@ -1,3 +1,9 @@
+## 19.0.2.8.5 (2026-09-15)
+
+* The funding strip is the last block of a generated homepage: contact
+  form, then the strip, then the site footer, the order the 206 imported
+  homepages already follow.
+
 ## 19.0.2.8.4 (2026-09-15)
 
 * The funding strip on every microsite homepage is the new combined

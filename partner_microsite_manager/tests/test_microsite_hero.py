@@ -45,3 +45,11 @@ class TestMicrositeHero(TransactionCase):
         html = self._render()
         self.assertIn("linear-gradient", html)
         self.assertIn("o_pmm_hero", html)
+
+    def test_the_funding_strip_closes_the_page_after_the_contact_form(self):
+        """Contact form, then the strip, then the site footer (2026-09-15)."""
+        html = self._render()
+        form = html.index('data-name="Contact"')
+        strip = html.index('data-name="Subvenciones"')
+        self.assertGreater(strip, form)
+        self.assertNotIn('<section', html[strip + 20 :].split("</section>")[-1])

@@ -33,14 +33,21 @@
             ref('group_merchant'),
         ])]"/>
     </record>
-    <!-- Gift cards and eWallets are NOT offered to merchants (client
-         decision, 2026-09-15). The Sales > Products entry
-         (sale_loyalty.menu_gift_ewallet_type_config) keeps core's manager
-         gate untouched; the eCommerce twin ships with no gate of its own
-         and would surface the moment its parent opened, so it gets the
-         manager gate explicitly. -->
+    <!-- Gift cards and eWallets: offered to merchants since 2026-09-15
+         (the client reversed the morning's decision). Core gates the
+         Sales > Products entry on the sales manager; the eCommerce twin
+         ships with no gate of its own. Both open to Comercios here. -->
+    <record id="sale_loyalty.menu_gift_ewallet_type_config" model="ir.ui.menu">
+        <field name="group_ids" eval="[(6, 0, [
+            ref('sales_team.group_sale_manager'),
+            ref('group_merchant'),
+        ])]"/>
+    </record>
     <record id="website_sale_loyalty.menu_gift_ewallet_type_config" model="ir.ui.menu">
-        <field name="group_ids" eval="[(6, 0, [ref('sales_team.group_sale_manager')])]"/>
+        <field name="group_ids" eval="[(6, 0, [
+            ref('sales_team.group_sale_manager'),
+            ref('group_merchant'),
+        ])]"/>
     </record>
 
     <!-- Dashboards. The spreadsheet root ships with no groups at all, so
