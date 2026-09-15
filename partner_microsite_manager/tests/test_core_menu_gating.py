@@ -10,11 +10,13 @@ class TestCoreMenuGating(TransactionCase):
     """Menus a merchant has no business opening are closed for good.
 
     Writing ``group_ids`` on an existing menu REPLACES its gate; a menuitem's
-    ``groups`` attribute would only add one. Both menus below ship with no
-    gate at all, which is why every internal user could see them.
+    ``groups`` attribute would only add one. The Apps menu ships with no
+    gate at all, which is why every internal user could see it. The
+    Dashboards root is gated by ``merchant_group`` since 19.0.2.8.1 and
+    tested there: a database without that module has no such gate.
     """
 
-    GATED = ["base.menu_management", "spreadsheet_dashboard.spreadsheet_dashboard_menu_root"]
+    GATED = ["base.menu_management"]
 
     @classmethod
     def setUpClass(cls):
