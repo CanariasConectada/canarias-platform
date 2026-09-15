@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!-- Writing group_ids on an existing menu REPLACES its gate (a
+         menuitem's groups attribute would only ADD). Every gate a merchant
+         profile depends on is owned here, in (6, 0) form, so that a `-u`
+         of the module that ships the menu cannot flip it back. -->
+
+    <!-- CRM. Core ships it for salesman + manager, but the production
+         database only had the manager (nobody knows since when), so the
+         salesman that Comercios implies saw no CRM. Own the gate. -->
+    <record id="crm.crm_menu_root" model="ir.ui.menu">
+        <field name="group_ids" eval="[(6, 0, [
+            ref('sales_team.group_sale_salesman'),
+            ref('sales_team.group_sale_manager'),
+        ])]"/>
+    </record>
+
+    <!-- Discount and loyalty programs, for the merchant's own company
+         (the loyalty models carry company record rules; the write access
+         is in security/ir.model.access.csv). Two doors to the same
+         action: Sales > Products and Website > eCommerce > Loyalty. -->
+    <record id="sale_loyalty.menu_discount_loyalty_type_config" model="ir.ui.menu">
+        <field name="group_ids" eval="[(6, 0, [
+            ref('sales_team.group_sale_manager'),
+            ref('group_merchant'),
+        ])]"/>
+    </record>
+    <record id="website_sale_loyalty.menu_loyalty" model="ir.ui.menu">
+        <field name="group_ids" eval="[(6, 0, [
+            ref('sales_team.group_sale_manager'),
+            ref('group_merchant'),
+        ])]"/>
+    </record>
+    <!-- Gift cards and eWallets are NOT offered to merchants (client
+         decision, 2026-09-15). The Sales > Products entry
+         (sale_loyalty.menu_gift_ewallet_type_config) keeps core's manager
+         gate untouched; the eCommerce twin ships with no gate of its own
+         and would surface the moment its parent opened, so it gets the
+         manager gate explicitly. -->
+    <record id="website_sale_loyalty.menu_gift_ewallet_type_config" model="ir.ui.menu">
+        <field name="group_ids" eval="[(6, 0, [ref('sales_team.group_sale_manager')])]"/>
+    </record>
+
+    <!-- Dashboards. The spreadsheet root ships with no groups at all, so
+         every internal user saw it; platform staff keeps it via
+         group_system (moved here from partner_microsite_manager
+         19.0.2.8.1, which used to own this gate). -->
+    <record id="spreadsheet_dashboard.spreadsheet_dashboard_menu_root" model="ir.ui.menu">
+        <field name="group_ids" eval="[(6, 0, [ref('base.group_system')])]"/>
+    </record>
+
+    <!-- "My Dashboard" (module board) hangs under that spreadsheet root,
+         and the root's own action is the spreadsheet dashboards client
+         action - so opening the root to a merchant would hand them the
+         platform's spreadsheet dashboards before they ever reached their
+         board. Instead the opted-in merchant gets a root app of their
+         own that points straight at the board action. Admins keep the
+         core entry under Dashboards; nothing of core is re-parented. -->
+    <menuitem id="menu_merchant_dashboard_root"
+        name="My Dashboard"
+        action="board.open_board_my_dash_action"
+        web_icon="board,static/description/icon.png"
+        groups="group_merchant_dashboard"
+        sequence="37"/>
+</odoo>

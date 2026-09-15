@@ -4,31 +4,54 @@
 <odoo>
     <data noupdate="0">
         <!-- What "being a merchant" means on this platform, in one tick.
-             The list is not invented: it is exactly what the retired role
-             `canarias_mig.role_merchant` implied when it was materialised
-             onto the 115 merchants on 2026-09-09, read back from the
-             snapshot taken before the uninstall. Asked for on 2026-09-14:
-             "crear un grupo que se llame comercios asi como lo teniamos
-             antes en user roles".
+             Born on 2026-09-14 as exactly the nine groups the retired role
+             `canarias_mig.role_merchant` implied ("crear un grupo que se
+             llame comercios asi como lo teniamos antes en user roles").
+             Widened on 2026-09-15 into the default merchant backend
+             profile: CRM (through the salesman group it already had, see
+             views/menu_gating.xml), purchases, inventory, invoicing of the
+             merchant's own company, product variants and the discount and
+             loyalty programs. Gift cards and eWallets stay out (client
+             decision, 2026-09-15).
 
              A group, not a role: nothing recomposes anything. Ticking it
-             adds these nine; anything else granted by hand stays, and
-             unticking it takes away only what it gave. -->
+             adds these; anything else granted by hand stays, and unticking
+             it takes away only what it gave. (6, 0) on purpose: an update
+             of this module is the one place the list is decided. -->
         <record id="group_merchant" model="res.groups">
             <field name="name">Comercios</field>
             <field name="sequence">10</field>
-            <field name="comment">Permisos de un comercio de la plataforma: su tienda, su catálogo, su sitio web, sus sellos y sus envíos de marketing.</field>
+            <field name="comment">Permisos de un comercio de la plataforma: su tienda, su catálogo, su sitio web, sus sellos, sus envíos de marketing, su CRM, sus compras, su inventario, sus facturas y sus programas de descuento y fidelidad.</field>
             <field name="implied_ids" eval="[(6, 0, [
                 ref('base.group_user'),
                 ref('base.group_multi_company'),
                 ref('website.group_website_restricted_editor'),
                 ref('sales_team.group_sale_salesman'),
                 ref('product.group_product_manager'),
+                ref('product.group_product_variant'),
                 ref('company_certification.group_silver_user'),
                 ref('company_certification.group_sustainability_user'),
                 ref('mass_mailing.group_mass_mailing_user'),
                 ref('partner_reviews.group_partner_reviews_user'),
+                ref('purchase.group_purchase_user'),
+                ref('stock.group_stock_user'),
+                ref('account.group_account_invoice'),
             ])]"/>
+        </record>
+
+        <!-- Opt-in, per user: the personal dashboard of the `board`
+             module ("My Dashboard"). Deliberately NOT implied by
+             Comercios, and deliberately without a privilege: in Odoo 19 a
+             privilege always renders on the user form as a selection with
+             a "No" placeholder (web/static/src/webclient/
+             res_user_group_ids_field/res_user_group_ids_field.js), while
+             a group with no privilege renders as a plain checkbox under
+             "Extra rights" - which is what was asked for. Sequence 11 so
+             it sits right under Comercios there. -->
+        <record id="group_merchant_dashboard" model="res.groups">
+            <field name="name">Merchant dashboard</field>
+            <field name="sequence">11</field>
+            <field name="comment">Shows the merchant a personal dashboard ("My Dashboard") where views can be pinned. Opt-in: tick it per user. The platform's spreadsheet dashboards stay with the administrators.</field>
         </record>
 
         <!-- Every internal user created from now on starts as a merchant.

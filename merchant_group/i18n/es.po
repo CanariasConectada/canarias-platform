@@ -1,0 +1,30 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* merchant_group
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: Canarias Conectada\n"
+"Language-Team: \n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: merchant_group
+#: model:res.groups,name:merchant_group.group_merchant_dashboard
+msgid "Merchant dashboard"
+msgstr "Tablero"
+
+#. module: merchant_group
+#: model:res.groups,comment:merchant_group.group_merchant_dashboard
+msgid "Shows the merchant a personal dashboard (\"My Dashboard\") where views can be pinned. Opt-in: tick it per user. The platform's spreadsheet dashboards stay with the administrators."
+msgstr "Muestra al comercio un tablero personal («Mi tablero») donde puede fijar vistas. Opcional: se marca usuario a usuario. Los tableros de hoja de cálculo de la plataforma siguen siendo de los administradores."
+
+#. module: merchant_group
+#: model:ir.ui.menu,name:merchant_group.menu_merchant_dashboard_root
+msgid "My Dashboard"
+msgstr "Mi tablero"
