@@ -1,3 +1,10 @@
+## 19.0.2.8.3 (2026-09-15)
+
+* A click on a row of My shops opens the page content, as the Content
+  button does. The list carries a `js_class` whose controller runs the
+  row's `action_microsite_content` instead of opening the website form;
+  the three buttons stay.
+
 ## 19.0.2.8.2 (2026-09-15)
 
 * "My shops" and "Page content" answered a merchant with "Error de acceso":
