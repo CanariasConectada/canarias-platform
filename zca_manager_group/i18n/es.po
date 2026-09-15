@@ -44,3 +44,50 @@ msgstr "mailing.mailing: el gestor ZCA trabaja con los envíos de su zona"
 #: model:ir.rule,name:zca_manager_group.res_company_rule_zca_manager
 msgid "res.company: ZCA manager reads the companies of their zone"
 msgstr "res.company: el gestor ZCA lee las compañías de su zona"
+
+#. module: zca_manager_group
+#: model:ir.rule,name:zca_manager_group.mailing_contact_rule_zca_manager
+msgid "mailing.contact: ZCA manager works on the mailing contacts of their zone"
+msgstr "mailing.contact: el gestor ZCA trabaja con los contactos de correo de su zona"
+
+#. module: zca_manager_group
+#: model:ir.rule,name:zca_manager_group.mailing_subscription_rule_zca_manager
+msgid "mailing.subscription: ZCA manager works on the subscriptions of their zone"
+msgstr "mailing.subscription: el gestor ZCA trabaja con las suscripciones de su zona"
+
+#. module: zca_manager_group
+#: model:ir.rule,name:zca_manager_group.mail_blacklist_rule_zca_manager_readonly
+msgid "mail.blacklist: ZCA manager reads the blacklist and edits nothing"
+msgstr "mail.blacklist: el gestor ZCA lee la lista negra y no edita nada"
+
+#. module: zca_manager_group
+#: model:ir.rule,name:zca_manager_group.mailing_subscription_optout_rule_zca_manager_readonly
+msgid "mailing.subscription.optout: ZCA manager reads the opt-out reasons and edits nothing"
+msgstr "mailing.subscription.optout: el gestor ZCA lee los motivos de baja y no edita nada"
+
+#. module: zca_manager_group
+#: model:ir.rule,name:zca_manager_group.event_event_rule_zca_manager_write
+msgid "event.event: ZCA manager edits the events of their zone only"
+msgstr "event.event: el gestor ZCA edita solo los eventos de su zona"
+
+#. module: zca_manager_group
+#: model:ir.rule,name:zca_manager_group.event_registration_rule_zca_manager_write
+msgid "event.registration: ZCA manager edits the registrations of their zone only"
+msgstr "event.registration: el gestor ZCA edita solo las inscripciones de su zona"
+
+#. module: zca_manager_group
+#: model:ir.rule,name:zca_manager_group.event_event_ticket_rule_zca_manager_write
+msgid "event.event.ticket: ZCA manager edits the tickets of their zone only"
+msgstr "event.event.ticket: el gestor ZCA edita solo las entradas de su zona"
+
+#. module: zca_manager_group
+#. odoo-python
+#: code:addons/zca_manager_group/models/res_users.py:0
+msgid "%s is a ZCA Manager: the only allowed company must be the zone company."
+msgstr "%s es Gestor ZCA: la única compañía permitida debe ser la compañía de la zona."
+
+#. module: zca_manager_group
+#. odoo-python
+#: code:addons/zca_manager_group/models/res_users.py:0
+msgid "%(user)s is a ZCA Manager, but %(company)s is not a zone company."
+msgstr "%(user)s es Gestor ZCA, pero %(company)s no es una compañía de zona."

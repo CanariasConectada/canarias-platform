@@ -1,7 +1,7 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo.exceptions import AccessError
+from odoo.exceptions import AccessError, ValidationError
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
@@ -395,3 +395,168 @@ class TestZcaManagerGroup(TransactionCase):
         user.write({"group_ids": [(4, self.group.id)]})
         self.assertEqual(user._get_chat_zone(), "guanarteme")
         self.assertIn(user.partner_id, channel.channel_member_ids.partner_id)
+
+    # -- what the security review closed (19.0.1.0.0) ----------------------
+
+    def test_a_manager_cannot_touch_the_events_of_nobody(self):
+        """Core lets every company edit an event with no company."""
+        shared = self.env["event.event"].create(
+            {
+                "name": "ZCA Test Shared Event",
+                "date_begin": "2026-11-01 10:00:00",
+                "date_end": "2026-11-01 12:00:00",
+                "company_id": False,
+                # website_event refuses a website of another company on
+                # an event of none; the current website is the default.
+                "website_id": False,
+            }
+        )
+        Event = self._as(self.manager_a, "event.event")
+        # Readable: a platform-wide event belongs on every calendar.
+        self.assertIn(shared, Event.search([]))
+        with self.assertRaises(AccessError):
+            Event.browse(shared.id).write({"name": "hijacked"})
+        with self.assertRaises(AccessError):
+            Event.browse(shared.id).unlink()
+        with self.assertRaises(AccessError):
+            self._as(self.manager_a, "event.event.ticket").create(
+                {"name": "ZCA Test Ticket", "event_id": shared.id}
+            )
+        with self.assertRaises(AccessError):
+            self._as(self.manager_a, "event.registration").create(
+                {"event_id": shared.id, "name": "Somebody"}
+            )
+        # Nor of the other zone, whatever the form sends.
+        with self.assertRaises(AccessError):
+            Event.create(
+                {
+                    "name": "ZCA Test Foreign Event",
+                    "date_begin": "2026-11-01 10:00:00",
+                    "date_end": "2026-11-01 12:00:00",
+                    "company_id": self.zone_b.id,
+                    # Without this the zone website default trips
+                    # website_event's company check before the rule does.
+                    "website_id": False,
+                }
+            )
+
+    def test_a_manager_event_is_always_of_their_zone(self):
+        Event = self._as(self.manager_a, "event.event")
+        self.assertEqual(
+            Event.default_get(["company_id"])["company_id"], self.zone_a.id
+        )
+        event = Event.create(
+            {
+                "name": "ZCA Test Event Without Company",
+                "date_begin": "2026-11-01 10:00:00",
+                "date_end": "2026-11-01 12:00:00",
+                "company_id": False,
+            }
+        )
+        self.assertEqual(event.company_id, self.zone_a)
+        event.write({"name": "renamed"})
+        event.unlink()
+
+    def test_a_manager_works_on_the_mailing_contacts_of_their_zone_only(self):
+        list_b = self._as(self.manager_b, "mailing.list").create({"name": "ZCA List B"})
+        contact_b = self._as(self.manager_b, "mailing.contact").create(
+            {
+                "name": "ZCA Contact B",
+                "email": "b@example.com",
+                "list_ids": [(4, list_b.id)],
+            }
+        )
+        # The platform's own contact, in no list of anybody's.
+        contact_platform = self.env["mailing.contact"].create(
+            {"name": "ZCA Contact Platform", "email": "platform@example.com"}
+        )
+        Contact = self._as(self.manager_a, "mailing.contact")
+        contact_a = Contact.create({"name": "ZCA Contact A", "email": "a@example.com"})
+        seen = Contact.search([])
+        self.assertIn(contact_a, seen)
+        self.assertNotIn(contact_b, seen)
+        self.assertNotIn(contact_platform, seen)
+        with self.assertRaises(AccessError):
+            Contact.browse(contact_b.id).read(["email"])
+        with self.assertRaises(AccessError):
+            Contact.browse(contact_b.id).write({"name": "hijacked"})
+        with self.assertRaises(AccessError):
+            self._as(self.manager_a, "mailing.subscription").browse(
+                contact_b.subscription_ids.ids
+            ).read(["list_id"])
+        # Subscribing the zone's contact to the zone's list is theirs.
+        list_a = self._as(self.manager_a, "mailing.list").create({"name": "ZCA List A"})
+        contact_a.write({"list_ids": [(4, list_a.id)]})
+        self.assertIn(
+            contact_a.subscription_ids,
+            self._as(self.manager_a, "mailing.subscription").search([]),
+        )
+
+    def test_a_manager_reads_the_blacklist_and_edits_nothing(self):
+        entry = self.env["mail.blacklist"].create({"email": "blocked@example.com"})
+        Blacklist = self._as(self.manager_a, "mail.blacklist")
+        self.assertIn(entry, Blacklist.search([]))
+        with self.assertRaises(AccessError):
+            Blacklist.browse(entry.id).unlink()
+        with self.assertRaises(AccessError):
+            Blacklist.browse(entry.id).write({"active": False})
+        with self.assertRaises(AccessError):
+            Blacklist.create({"email": "another@example.com"})
+        Optout = self._as(self.manager_a, "mailing.subscription.optout")
+        Optout.search([])
+        with self.assertRaises(AccessError):
+            Optout.create({"name": "ZCA Test Reason"})
+
+    def test_the_product_pages_gate_keeps_merchants_and_designers(self):
+        menu = self._menu("website_sale.menu_product_pages")
+        base = self.env.ref("base.group_user")
+        cases = {
+            "designer": (True, base | self.env.ref("website.group_website_designer")),
+            "merchant": (
+                True,
+                base
+                | self.env.ref("sales_team.group_sale_salesman")
+                | self.env.ref("product.group_product_manager"),
+            ),
+            "plain": (False, base),
+        }
+        for tag, (expected, groups) in cases.items():
+            with self.subTest(user=tag):
+                user = self.env["res.users"].create(
+                    {
+                        "name": "ZCA Gate %s" % tag,
+                        "login": "zca_gate_%s" % tag,
+                        "group_ids": [(6, 0, groups.ids)],
+                    }
+                )
+                self.assertEqual(menu.id in self._visible_ids(user), expected)
+
+    def test_one_zone_per_manager(self):
+        with self.assertRaises(ValidationError):
+            self.manager_a.write({"company_ids": [(4, self.zone_b.id)]})
+        with self.assertRaises(ValidationError):
+            self.manager_a.write(
+                {
+                    "company_id": self.shop_a.id,
+                    "company_ids": [(6, 0, [self.shop_a.id])],
+                }
+            )
+        with self.assertRaises(ValidationError):
+            self.env["res.users"].create(
+                {
+                    "name": "ZCA Manager Of A Shop",
+                    "login": "zca_manager_shop",
+                    "company_id": self.shop_a.id,
+                    "company_ids": [(6, 0, [self.shop_a.id])],
+                    "group_ids": [(6, 0, [self.group.id])],
+                }
+            )
+        # Without the group the same user is anybody's business.
+        self.env["res.users"].create(
+            {
+                "name": "ZCA Staff Of Two",
+                "login": "zca_staff_two",
+                "company_id": self.zone_a.id,
+                "company_ids": [(6, 0, [self.zone_a.id, self.zone_b.id])],
+            }
+        )
