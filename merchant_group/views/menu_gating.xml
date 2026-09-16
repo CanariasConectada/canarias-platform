@@ -58,6 +58,36 @@
         <field name="group_ids" eval="[(6, 0, [ref('base.group_system')])]"/>
     </record>
 
+    <!-- Link tracker: hidden for the whole platform unless ticked per
+         user (group_link_tracker) or held by an administrator. Core gates
+         the root and its child on base.group_no_one, which merchants in
+         debug mode pass; the Email Marketing and Website entries ship
+         with no gate at all. -->
+    <record id="utm.menu_link_tracker_root" model="ir.ui.menu">
+        <field name="group_ids" eval="[(6, 0, [
+            ref('base.group_system'),
+            ref('group_link_tracker'),
+        ])]"/>
+    </record>
+    <record id="link_tracker.link_tracker_menu_main" model="ir.ui.menu">
+        <field name="group_ids" eval="[(6, 0, [
+            ref('base.group_system'),
+            ref('group_link_tracker'),
+        ])]"/>
+    </record>
+    <record id="mass_mailing.link_tracker_menu_mass_mailing" model="ir.ui.menu">
+        <field name="group_ids" eval="[(6, 0, [
+            ref('base.group_system'),
+            ref('group_link_tracker'),
+        ])]"/>
+    </record>
+    <record id="website_links.menu_link_tracker" model="ir.ui.menu">
+        <field name="group_ids" eval="[(6, 0, [
+            ref('base.group_system'),
+            ref('group_link_tracker'),
+        ])]"/>
+    </record>
+
     <!-- "My Dashboard" (module board) hangs under that spreadsheet root,
          and the root's own action is the spreadsheet dashboards client
          action - so opening the root to a merchant would hand them the

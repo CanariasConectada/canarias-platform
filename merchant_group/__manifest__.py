@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Merchant Group",
-    "version": "19.0.2.1.0",
+    "version": "19.0.3.0.0",
     "category": "Tools",
     "summary": "One group that makes a user a merchant, given to every new user",
     "author": "Canarias Conectada",
@@ -24,6 +24,9 @@
         "company_certification",
         "partner_reviews",
         "crm",
+        # Purchase, Inventory and Invoicing are no longer implied (19.0.3.0.0)
+        # but stay installed: they are the opt-in an administrator ticks per
+        # user, and the tests check that opt-in.
         "purchase",
         "stock",
         "account",
@@ -32,6 +35,10 @@
         "board",
         "spreadsheet_dashboard",
         "project_todo",
+        # The link tracker menus gated in views/menu_gating.xml.
+        "utm",
+        "link_tracker",
+        "website_links",
     ],
     "data": [
         "security/merchant_group.xml",

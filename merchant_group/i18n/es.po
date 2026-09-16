@@ -28,3 +28,13 @@ msgstr "Muestra al comercio un tablero personal («Mi tablero») donde puede fij
 #: model:ir.ui.menu,name:merchant_group.menu_merchant_dashboard_root
 msgid "My Dashboard"
 msgstr "Mi tablero"
+
+#. module: merchant_group
+#: model:res.groups,name:merchant_group.group_link_tracker
+msgid "Link Tracker"
+msgstr "Rastreador de enlaces"
+
+#. module: merchant_group
+#: model:res.groups,comment:merchant_group.group_link_tracker
+msgid "Shows the link tracker menus (Link Tracker app, Email Marketing and Website entries). Opt-in: tick it per user. Administrators always see them."
+msgstr "Muestra los menús del rastreador de enlaces (la aplicación Rastreador de enlaces y sus entradas en Marketing por correo y en Sitio web). Opcional: se marca usuario a usuario. Los administradores siempre los ven."
