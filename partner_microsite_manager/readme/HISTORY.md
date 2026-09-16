@@ -1,3 +1,18 @@
+## 19.0.2.9.0 (2026-09-16)
+
+* The merchant's own website (client request 2026-09-16: "falta un espacio
+  en donde podamos colocar el website de las personas") has a field on the
+  Social networks tab of the page content editor. It is core
+  `res.company.website`: a bare host gets `https://`, anything that is not
+  an http(s) address is refused. The microsite footer shows it first, with
+  a globe icon and the host as title; the homepage contact block links
+  the host.
+* The page content dialog opened titled "Page content" for Spanish users.
+  Odoo 19 loads a Python term from the `.po` only when its block carries
+  the `#. odoo-python` comment, and six blocks of `es.po` had the `code:`
+  reference without it ("Page content", "My shops", "Pages", "Orders" and
+  the foreign-website refusal). The comment is back on all of them.
+
 ## 19.0.2.8.6 (2026-09-15)
 
 * The "Cientos de comercios en tu zona" block leaves the generated

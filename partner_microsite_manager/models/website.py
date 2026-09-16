@@ -143,6 +143,31 @@ class Website(models.Model):
                 links.append({"href": href, "title": title, "icon": icon})
         return links
 
+    def _pmm_own_website_link(self):
+        """The owning company's OWN site as a footer link, or ``None``.
+
+        Core ``res.company.website`` (client request 2026-09-16: "falta un
+        espacio en donde podamos colocar el website de las personas"). Not
+        the microsite's own address: that is ``website.domain``. The title
+        is the host, which is what a visitor wants to know before leaving.
+        """
+        self.ensure_one()
+        company = self.company_id.sudo()
+        href = company._get_microsite_website_url()
+        if not href:
+            return None
+        return {
+            "href": href,
+            "title": company._get_microsite_website_host() or href,
+            "icon": "fa-globe",
+        }
+
+    def _pmm_footer_links(self):
+        """The footer's icon row: the shop's own site first, then the networks."""
+        self.ensure_one()
+        own = self._pmm_own_website_link()
+        return ([own] if own else []) + self._pmm_footer_social_links()
+
     def _pmm_footer_certifications(self):
         """Certification badges to show in the microsite footer.
 

@@ -484,6 +484,16 @@ class ResCompany(models.Model):
             return "https://" + url
         return url
 
+    def _get_microsite_website_host(self):
+        """The host of the shop's own site (``www.myshop.com``), or ``""``.
+
+        What the contact block and the footer show as text: the address a
+        visitor can read, not the scheme and path they cannot.
+        """
+        self.ensure_one()
+        url = self._get_microsite_website_url()
+        return urlsplit(url).netloc if url else ""
+
     def _get_microsite_map_url(self):
         """Embeddable map URL: the custom one, or one built from the address.
 

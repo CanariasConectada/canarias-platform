@@ -1,6 +1,9 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import re
+from urllib.parse import urlsplit
+
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError, ValidationError
 
@@ -57,6 +60,19 @@ SOCIAL_FIELDS = (
     "social_youtube",
     "social_linkedin",
 )
+
+# The shop's OWN site (client request 2026-09-16: "falta un espacio en donde
+# podamos colocar el website de las personas"). It is core
+# ``res.company.website`` -- a related field on the partner -- so it is not
+# in ``CONTENT_FIELDS`` either: it gets its own load/save because the value
+# is normalised and checked before it reaches the company, and because its
+# name on this screen (``company_website``) must not collide with
+# ``website_url``, which is the address of the MICROSITE this screen edits.
+_ALLOWED_WEBSITE_SCHEMES = ("http", "https")
+# ``scheme:`` at the start of what the merchant typed -- ``javascript:``,
+# ``mailto:``, ``ftp://`` -- as opposed to ``localhost:8080``, where the colon
+# introduces a port. Only a value WITHOUT a scheme gets ``https://`` added.
+_URL_SCHEME_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9+.-]*:(?!\d)")
 
 
 class MicrositeContentEditor(models.TransientModel):
@@ -129,6 +145,11 @@ class MicrositeContentEditor(models.TransientModel):
     social_twitter = fields.Char(string="X/Twitter")
     social_youtube = fields.Char(string="YouTube")
     social_linkedin = fields.Char(string="LinkedIn")
+    company_website = fields.Char(
+        string="Website",
+        help="Your shop's own site outside this platform, shown with a globe "
+        "icon next to the social links.",
+    )
     microsite_about_title = fields.Char(string="Our story: heading")
     microsite_about_text = fields.Text(string="Our story")
     microsite_services_title = fields.Char(string="What we do: heading")
@@ -287,6 +308,7 @@ class MicrositeContentEditor(models.TransientModel):
         website = source.website_id
         for name in SOCIAL_FIELDS:
             values[name] = (website and website[name]) or source[name] or False
+        values["company_website"] = source.website or False
         values["opening_slot_ids"] = [
             (0, 0, {"weekday": str(weekday), "open_time": open_time, "close_time": close_time})
             for weekday, open_time, close_time in self._load_opening_slots(source)
@@ -331,6 +353,32 @@ class MicrositeContentEditor(models.TransientModel):
     # ------------------------------------------------------------------
     # Saving
     # ------------------------------------------------------------------
+    def _normalize_company_website(self, value):
+        """The merchant's own site as it will be stored, or ``False``.
+
+        Merchants type ``www.myshop.com`` as often as the full URL, so a
+        missing scheme becomes ``https://`` here rather than at render
+        time. Anything that is not an http(s) address is refused: the value
+        ends up in an ``href`` on a public page, and ``javascript:`` is not
+        a website.
+        """
+        url = (value or "").strip()
+        if not url:
+            return False
+        if url.startswith("//"):
+            url = "https:" + url
+        elif not _URL_SCHEME_RE.match(url):
+            url = "https://" + url
+        parts = urlsplit(url)
+        if parts.scheme.lower() not in _ALLOWED_WEBSITE_SCHEMES or not parts.netloc:
+            raise ValidationError(
+                _(
+                    "The website must be an http:// or https:// address, "
+                    "for example https://www.example.com."
+                )
+            )
+        return url
+
     def action_save(self):
         """Write the whitelist back to the resolved shop, and nothing else.
 
@@ -364,6 +412,7 @@ class MicrositeContentEditor(models.TransientModel):
         # res.company and still run here: sudo skips the access rules, never
         # the validation.
         social_payload = {name: self[name] or False for name in SOCIAL_FIELDS}
+        payload["website"] = self._normalize_company_website(self.company_website)
         company.write(
             dict(payload, **social_payload, **self._save_opening_slots(company))
         )

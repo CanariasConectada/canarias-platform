@@ -253,7 +253,7 @@
                                 t-att-href="company._get_microsite_website_url()"
                                 target="_blank"
                                 rel="noopener"
-                                t-esc="company.partner_id.website"
+                                t-esc="company._get_microsite_website_host() or company.partner_id.website"
                             />
                         </p>
                         <div t-if="microsite_social" class="mt-4">
