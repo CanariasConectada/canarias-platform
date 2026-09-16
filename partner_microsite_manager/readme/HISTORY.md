@@ -1,3 +1,7 @@
+## 19.0.2.9.3 (2026-09-16)
+
+* "Mis sitios" no longer shows the "Páginas" button (client request).
+
 ## 19.0.2.9.2 (2026-09-16)
 
 * Contacts > shop contact > Microsite (client report 2026-09-16: merchants

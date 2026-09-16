@@ -63,3 +63,10 @@ class TestMerchantServerActions(TransactionCase):
             with self.subTest(method=method):
                 action = getattr(site, method)()
                 self.assertTrue(action.get("views"), method)
+
+    def test_my_sites_list_has_no_pages_button(self):
+        """The client removed "Pages" from the merchant's list (2026-09-16)."""
+        arch = self.env.ref("partner_microsite_manager.website_view_list_merchant").arch
+        self.assertNotIn("action_microsite_pages", arch)
+        self.assertIn("action_microsite_content", arch)
+
