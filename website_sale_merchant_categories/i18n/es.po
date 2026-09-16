@@ -1,0 +1,251 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* website_sale_merchant_categories
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: Canarias Conectada\n"
+"Language-Team: \n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: website_sale_merchant_categories
+#. odoo-python
+#: code:addons/website_sale_merchant_categories/models/website_category_tile.py:0
+msgid ""
+"%(category)s belongs to another shop's site, so it cannot be shown as a tile"
+" here."
+msgstr ""
+"%(category)s pertenece al sitio de otro comercio, así que no puede mostrarse "
+"como mosaico aquí."
+
+#. module: website_sale_merchant_categories
+#. odoo-python
+#: code:addons/website_sale_merchant_categories/models/product_public_category.py:0
+msgid ""
+"%(parent)s is not one of your own categories. Your categories can only hang "
+"under a category of your own shop, or under none."
+msgstr ""
+"%(parent)s no es una de tus categorías propias. Tus categorías solo pueden "
+"colgar de una categoría de tu propia tienda, o de ninguna."
+
+#. module: website_sale_merchant_categories
+#. odoo-python
+#: code:addons/website_sale_merchant_categories/models/product_public_category.py:0
+msgid ""
+"A category of your shop stays on your shop's site: it cannot be moved to "
+"another site or made shared."
+msgstr ""
+"Una categoría de tu tienda se queda en el sitio de tu tienda: no puede "
+"moverse a otro sitio ni convertirse en compartida."
+
+#. module: website_sale_merchant_categories
+#: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.website_view_list_merchant_categories
+msgid "Categories"
+msgstr "Categorías"
+
+#. module: website_sale_merchant_categories
+#: model:ir.model.fields,field_description:website_sale_merchant_categories.field_website_category_tile__allowed_category_ids
+msgid "Categories of this shop"
+msgstr "Categorías de esta tienda"
+
+#. module: website_sale_merchant_categories
+#: model:ir.model.fields,field_description:website_sale_merchant_categories.field_website_category_tile__category_id
+msgid "Category"
+msgstr "Categoría"
+
+#. module: website_sale_merchant_categories
+#: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.product_public_category_view_form_merchant
+#: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.product_public_category_view_list_merchant
+msgid "Category name"
+msgstr "Nombre de la categoría"
+
+#. module: website_sale_merchant_categories
+#: model:ir.model,name:website_sale_merchant_categories.model_website_category_tile
+msgid "Category tile of a shop"
+msgstr "Mosaico de categoría de una tienda"
+
+#. module: website_sale_merchant_categories
+#: model:ir.model.fields,field_description:website_sale_merchant_categories.field_website_category_tile__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: website_sale_merchant_categories
+#: model:ir.model.fields,field_description:website_sale_merchant_categories.field_website_category_tile__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: website_sale_merchant_categories
+#: model:ir.model.fields,field_description:website_sale_merchant_categories.field_product_public_category__display_name
+#: model:ir.model.fields,field_description:website_sale_merchant_categories.field_website__display_name
+#: model:ir.model.fields,field_description:website_sale_merchant_categories.field_website_category_tile__display_name
+msgid "Display Name"
+msgstr "Nombre mostrado"
+
+#. module: website_sale_merchant_categories
+#: model:ir.model.fields,field_description:website_sale_merchant_categories.field_product_public_category__id
+#: model:ir.model.fields,field_description:website_sale_merchant_categories.field_website__id
+#: model:ir.model.fields,field_description:website_sale_merchant_categories.field_website_category_tile__id
+msgid "ID"
+msgstr "ID"
+
+#. module: website_sale_merchant_categories
+#: model:ir.model.fields,field_description:website_sale_merchant_categories.field_website_category_tile__image
+#: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.product_public_category_view_form_merchant
+#: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.product_public_category_view_list_merchant
+msgid "Image for my shop"
+msgstr "Imagen para mi tienda"
+
+#. module: website_sale_merchant_categories
+#: model:ir.model.fields,field_description:website_sale_merchant_categories.field_website_category_tile__name
+msgid "Label for my shop"
+msgstr "Etiqueta para mi tienda"
+
+#. module: website_sale_merchant_categories
+#: model:ir.model.fields,field_description:website_sale_merchant_categories.field_website_category_tile__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: website_sale_merchant_categories
+#: model:ir.model.fields,field_description:website_sale_merchant_categories.field_website_category_tile__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: website_sale_merchant_categories
+#. odoo-python
+#: code:addons/website_sale_merchant_categories/models/website_category_tile.py:0
+#: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.website_category_tile_view_list
+msgid "New own category"
+msgstr "Nueva categoría propia"
+
+#. module: website_sale_merchant_categories
+#: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.product_public_category_view_form_merchant
+msgid ""
+"Only your shop lists this category. File your products under it from the "
+"product form, in eCommerce categories."
+msgstr ""
+"Solo tu tienda muestra esta categoría. Asigna tus productos a ella desde la "
+"ficha del producto, en categorías de comercio electrónico."
+
+#. module: website_sale_merchant_categories
+#. odoo-python
+#: code:addons/website_sale_merchant_categories/models/website_category_tile.py:0
+msgid "Open this screen from the Shop categories menu."
+msgstr "Abre esta pantalla desde el menú Categorías de la tienda."
+
+#. module: website_sale_merchant_categories
+#: model:ir.model.fields,help:website_sale_merchant_categories.field_website_category_tile__name
+msgid "Optional. Replaces the category name on the tile of your shop only."
+msgstr ""
+"Opcional. Sustituye el nombre de la categoría solo en el mosaico de tu "
+"tienda."
+
+#. module: website_sale_merchant_categories
+#. odoo-python
+#: code:addons/website_sale_merchant_categories/models/website_category_tile.py:0
+#: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.product_public_category_view_list_merchant
+#: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.website_category_tile_view_list
+msgid "Own categories"
+msgstr "Categorías propias"
+
+#. module: website_sale_merchant_categories
+#: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.product_public_category_view_form_merchant
+msgid "Own category"
+msgstr "Categoría propia"
+
+#. module: website_sale_merchant_categories
+#: model:ir.model.fields,help:website_sale_merchant_categories.field_product_public_category__website_id
+msgid "Restrict to a specific website."
+msgstr "Restringir a un sitio web específico."
+
+#. module: website_sale_merchant_categories
+#: model:ir.model.fields,field_description:website_sale_merchant_categories.field_website_category_tile__sequence
+msgid "Sequence"
+msgstr "Secuencia"
+
+#. module: website_sale_merchant_categories
+#: model:ir.model.fields,field_description:website_sale_merchant_categories.field_website_category_tile__website_id
+#: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.product_public_category_view_form_merchant
+#: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.product_public_category_view_list_merchant
+msgid "Shop"
+msgstr "Tienda"
+
+#. module: website_sale_merchant_categories
+#. odoo-python
+#: code:addons/website_sale_merchant_categories/models/website_category_tile.py:0
+#: model:ir.actions.server,name:website_sale_merchant_categories.action_open_shop_categories
+#: model:ir.ui.menu,name:website_sale_merchant_categories.menu_shop_categories
+#: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.website_category_tile_view_list
+msgid "Shop categories"
+msgstr "Categorías de la tienda"
+
+#. module: website_sale_merchant_categories
+#: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.website_category_tile_view_form
+msgid "Shop category"
+msgstr "Categoría de la tienda"
+
+#. module: website_sale_merchant_categories
+#: model:ir.model.fields,help:website_sale_merchant_categories.field_website_category_tile__image
+msgid ""
+"Shown on the tile of this category at the top of your shop. The image only "
+"changes in your shop; the shared category stays the same for the other "
+"shops."
+msgstr ""
+"Se muestra en el mosaico de esta categoría en la parte superior de tu "
+"tienda. La imagen solo cambia en tu tienda; la categoría compartida sigue "
+"igual para los demás comercios."
+
+#. module: website_sale_merchant_categories
+#: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.website_category_tile_view_form
+msgid ""
+"The image only changes in your shop; the shared category stays the same for "
+"the other shops."
+msgstr ""
+"La imagen solo cambia en tu tienda; la categoría compartida sigue igual para "
+"los demás comercios."
+
+#. module: website_sale_merchant_categories
+#: model:ir.model.constraint,message:website_sale_merchant_categories.constraint_website_category_tile_website_category_unique
+msgid "This shop already has a tile for that category."
+msgstr "Esta tienda ya tiene un mosaico para esa categoría."
+
+#. module: website_sale_merchant_categories
+#: model:ir.model,name:website_sale_merchant_categories.model_website
+#: model:ir.model.fields,field_description:website_sale_merchant_categories.field_product_public_category__website_id
+msgid "Website"
+msgstr "Sitio web"
+
+#. module: website_sale_merchant_categories
+#: model:ir.model,name:website_sale_merchant_categories.model_product_public_category
+msgid "Website Product Category"
+msgstr "Categoría de producto del sitio web"
+
+#. module: website_sale_merchant_categories
+#. odoo-python
+#: code:addons/website_sale_merchant_categories/models/website.py:0
+msgid ""
+"Your account is not linked to a shop with its own site, so it cannot own a "
+"category."
+msgstr ""
+"Tu cuenta no está vinculada a un comercio con sitio propio, así que no puede "
+"tener categorías propias."
+
+#. module: website_sale_merchant_categories
+#. odoo-python
+#: code:addons/website_sale_merchant_categories/models/website_category_tile.py:0
+msgid ""
+"Your account is not linked to a shop with its own site, so there are no shop"
+" categories to curate."
+msgstr ""
+"Tu cuenta no está vinculada a un comercio con sitio propio, así que no hay "
+"categorías de tienda que gestionar."
+
+#. module: website_sale_merchant_categories
+#: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.product_public_category_view_form_merchant
+msgid "e.g. Fountains and volcanoes"
+msgstr "p. ej. Fuentes y volcanes"
