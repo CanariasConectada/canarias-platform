@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website Sale Merchant Categories",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     "category": "Website/eCommerce",
     "summary": "Merchants curate the category tiles of their own shop: a "
     "per-site image for a shared category, and categories of their own",
