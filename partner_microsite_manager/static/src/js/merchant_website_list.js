@@ -17,15 +17,19 @@ import {ListController} from "@web/views/list/list_controller";
  */
 export class MerchantWebsiteListController extends ListController {
     async openRecord(record, options) {
-        const action = await this.orm.call(
-            record.resModel,
-            "action_microsite_content",
-            [[record.resId]]
-        );
-        if (!action) {
-            return super.openRecord(record, options);
-        }
-        return this.actionService.doAction(action);
+        // Through the button path, not a bare ORM call: `call_button` runs
+        // the returned action through the server's clean_action (views
+        // derived from view_mode), which a raw orm.call skips and doAction
+        // then fails on "action.views is undefined" (2026-09-16).
+        return this.actionService.doActionButton({
+            type: "object",
+            name: "action_microsite_content",
+            resModel: record.resModel,
+            resId: record.resId,
+            resIds: [record.resId],
+            context: record.context,
+            onClose: () => this.model.load(),
+        });
     }
 }
 

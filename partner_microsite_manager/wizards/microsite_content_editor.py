@@ -244,6 +244,7 @@ class MicrositeContentEditor(models.TransientModel):
                 "name": _("Page content"),
                 "res_model": self._name,
                 "view_mode": "form",
+                "views": [(False, "form")],
                 "target": "new",
                 "context": {"microsite_company_id": candidates.id},
             }
@@ -253,6 +254,7 @@ class MicrositeContentEditor(models.TransientModel):
                 "name": _("Page content"),
                 "res_model": self._name,
                 "view_mode": "form",
+                "views": [(False, "form")],
                 "target": "new",
             }
         if self.env.user.has_group("base.group_erp_manager"):
@@ -261,6 +263,7 @@ class MicrositeContentEditor(models.TransientModel):
                 "name": _("Page content of the shops"),
                 "res_model": "res.company",
                 "view_mode": "list,form",
+                "views": [(False, "list"), (False, "form")],
                 # Deliberately not sudo: the list has to show what this user
                 # may actually open, not a promise it cannot keep.
                 "domain": [("website_id", "!=", False)],

@@ -82,6 +82,7 @@ class Website(models.Model):
             "name": _("Page content"),
             "res_model": "microsite.content.editor",
             "view_mode": "form",
+            "views": [(False, "form")],
             "target": "new",
             "context": {"microsite_company_id": self.company_id.id},
         }
@@ -94,6 +95,7 @@ class Website(models.Model):
             "name": _("Orders"),
             "res_model": "sale.order",
             "view_mode": "list,form",
+            "views": [(False, "list"), (False, "form")],
             "domain": [("website_id", "=", self.id)],
             "context": {"create": False},
         }
@@ -106,6 +108,7 @@ class Website(models.Model):
             "name": _("Pages"),
             "res_model": "website.page",
             "view_mode": "list,form",
+            "views": [(False, "list"), (False, "form")],
             "domain": [("website_id", "=", self.id)],
             "context": {"create": False, "delete": False},
         }

@@ -1,3 +1,9 @@
+## 19.0.2.9.1 (2026-09-16)
+
+* A click on a row of "My shops" crashed with "action.views is undefined":
+  it now goes through the button path, and the merchant actions carry
+  explicit views.
+
 ## 19.0.2.9.0 (2026-09-16)
 
 * The merchant's own website (client request 2026-09-16: "falta un espacio
