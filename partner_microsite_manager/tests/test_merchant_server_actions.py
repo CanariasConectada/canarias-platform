@@ -52,3 +52,14 @@ class TestMerchantServerActions(TransactionCase):
     def test_page_content_opens_for_a_merchant(self):
         result = self._run("partner_microsite_manager.action_own_microsite_content")
         self.assertEqual(result.get("type"), "ir.actions.act_window")
+
+    def test_the_row_and_button_actions_carry_views(self):
+        """doAction on a raw action dict needs ``views``: a row click of My
+        shops crashed without them (2026-09-16)."""
+        site = self.website.with_user(self.merchant).with_context(
+            allowed_company_ids=self.company.ids
+        )
+        for method in ("action_microsite_content", "action_microsite_pages"):
+            with self.subTest(method=method):
+                action = getattr(site, method)()
+                self.assertTrue(action.get("views"), method)
