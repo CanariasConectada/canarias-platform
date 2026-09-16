@@ -181,11 +181,24 @@ class Website(models.Model):
                 .search([("id", "not in", self._marketplace_companies().ids)])
                 .ids
             )
+            # The service products behind delivery carriers belong to one
+            # shop only: a carrier's company follows its product's, and
+            # linking the portal would move it away from the shop's warehouse
+            # ("The delivery method and a warehouse must share the same
+            # company", CI 2026-09-16, once every shop got its pickup carrier).
+            carrier_product_tmpl_ids = (
+                self.env["delivery.carrier"]
+                .sudo()
+                .with_context(active_test=False)
+                .search([])
+                .product_id.product_tmpl_id.ids
+            )
             missing_ids = Product.search(
                 [
                     ("company_ids", "!=", False),
                     ("company_ids", "not in", company.ids),
                     ("company_ids", "in", active_owner_ids),
+                    ("id", "not in", carrier_product_tmpl_ids),
                 ]
             ).ids
             vals = {"company_ids": [fields.Command.link(company.id)]}

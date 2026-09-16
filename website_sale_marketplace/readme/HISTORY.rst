@@ -1,3 +1,9 @@
+19.0.1.8.1 (2026-09-16)
+~~~~~~~~~~~~~~~~~~~~~~~
+
+* The marketplace backfill skips the service products of delivery carriers:
+  linking the portal to them moved the carrier away from its shop warehouse.
+
 19.0.1.8.0 (2026-09-16)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
