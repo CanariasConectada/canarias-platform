@@ -38,11 +38,6 @@ msgid "<span class=\"o_stat_text\">Microsite</span>"
 msgstr "<span class=\"o_stat_text\">Microsite</span>"
 
 #. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
-msgid "About"
-msgstr "Sobre nosotros"
-
-#. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_about_text
 msgid "About Text"
 msgstr "Texto sobre nosotros"
@@ -58,6 +53,7 @@ msgid "About Us"
 msgstr "Sobre nosotros"
 
 #. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "About the shop"
 msgstr "Sobre el comercio"
@@ -92,11 +88,13 @@ msgstr "Título del banner de cierre"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_banner_title
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 msgid "Closing banner"
 msgstr "Banner de cierre"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_banner_image
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 msgid "Closing banner image"
 msgstr "Imagen del banner de cierre"
 
@@ -158,17 +156,20 @@ msgid "Corporate Microsite Look"
 msgstr "Aspecto corporativo del microsite"
 
 #. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "Cover"
 msgstr "Portada"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_button_text
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 msgid "Cover button"
 msgstr "Botón de portada"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_hero_image
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 msgid "Cover image"
 msgstr "Imagen de portada"
 
@@ -194,6 +195,7 @@ msgstr "URL de mapa personalizado"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_delivery_info
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 msgid "Delivery"
 msgstr "Entrega"
 
@@ -226,6 +228,7 @@ msgstr "URL de mapa incrustable. Si se deja vacía, se genera un mapa de Google 
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 msgid "Facebook"
 msgstr "Facebook"
 
@@ -245,11 +248,13 @@ msgid "Has Microsite"
 msgstr "Tiene microsite"
 
 #. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "Header"
 msgstr "Cabecera"
 
 #. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "Heading"
 msgstr "Título"
@@ -270,6 +275,7 @@ msgid "Homepage published by the 'Publish Homepage' action."
 msgstr "Página de inicio publicada por la acción «Publicar página de inicio»."
 
 #. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "How your shop is called on its page"
 msgstr "Cómo se llama tu comercio en su página"
@@ -284,12 +290,8 @@ msgid "ID"
 msgstr "ID"
 
 #. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
-msgid "Identity"
-msgstr "Identidad"
-
-#. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 msgid "Instagram"
 msgstr "Instagram"
 
@@ -305,11 +307,13 @@ msgstr "Título del banner de introducción"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_intro_title
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 msgid "Intro banner"
 msgstr "Banner de entrada"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_intro_image
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 msgid "Intro banner image"
 msgstr "Imagen del banner de entrada"
 
@@ -340,12 +344,14 @@ msgstr "Última actualización el"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 msgid "LinkedIn"
 msgstr "LinkedIn"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_map_url
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 msgid "Map"
 msgstr "Mapa"
 
@@ -363,6 +369,11 @@ msgid "Microsite Company"
 msgstr "Compañía del microsite"
 
 #. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_social_facebook
+msgid "Microsite Facebook"
+msgstr "Facebook del microsite"
+
+#. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_name
 msgid "Microsite Heading"
 msgstr "Titular del microsite"
@@ -371,6 +382,26 @@ msgstr "Titular del microsite"
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_homepage_page_id
 msgid "Microsite Homepage"
 msgstr "Portada del microsite"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_social_instagram
+msgid "Microsite Instagram"
+msgstr "Instagram del microsite"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_social_linkedin
+msgid "Microsite LinkedIn"
+msgstr "LinkedIn del microsite"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_social_twitter
+msgid "Microsite X/Twitter"
+msgstr "X/Twitter del microsite"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_social_youtube
+msgid "Microsite YouTube"
+msgstr "YouTube del microsite"
 
 #. module: partner_microsite_manager
 #. odoo-python
@@ -394,6 +425,7 @@ msgstr "Horario"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_opening_hours
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "Opening hours"
 msgstr "Horario"
@@ -405,6 +437,7 @@ msgstr "Nuestros servicios"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_about_text
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "Our story"
 msgstr "Nuestra historia"
@@ -441,11 +474,13 @@ msgstr "Parking / Cómo llegar"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_parking_info
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 msgid "Parking and directions"
 msgstr "Aparcamiento y cómo llegar"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_phone
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 msgid "Phone"
 msgstr "Teléfono"
 
@@ -458,10 +493,6 @@ msgstr "Teléfono mostrado en el microsite. Si se deja vacío, se usa el teléfo
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
-msgid "Practical Information"
-msgstr "Información práctica"
-
-#. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "Practical information"
 msgstr "Información práctica"
@@ -551,6 +582,7 @@ msgstr "Guardar"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_phone2
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 msgid "Second phone"
 msgstr "Segundo teléfono"
 
@@ -558,11 +590,6 @@ msgstr "Segundo teléfono"
 #: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_phone2
 msgid "Second phone shown on the microsite, below the first one."
 msgstr "Segundo teléfono mostrado en el microsite, debajo del primero."
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
-msgid "Services"
-msgstr "Servicios"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_services_text
@@ -589,11 +616,13 @@ msgid "Sunday"
 msgstr "Domingo"
 
 #. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "Tell your customers what you offer"
 msgstr "Cuenta a tu clientela qué ofreces"
 
 #. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "Tell your customers who you are"
 msgstr "Cuenta a tu clientela quién eres"
@@ -626,6 +655,12 @@ msgstr "Esto sustituye la portada actual del website de la compañía por la pla
 
 #. module: partner_microsite_manager
 #. odoo-python
+#: code:addons/partner_microsite_manager/models/res_partner.py:0
+msgid "This contact has no microsite."
+msgstr "Este contacto no tiene microsite."
+
+#. module: partner_microsite_manager
+#. odoo-python
 #: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_content_editor_slot__weekday__3
 #: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_opening_slot__weekday__3
 #: code:addons/partner_microsite_manager/models/res_company.py:0
@@ -642,6 +677,7 @@ msgstr "Demasiadas franjas horarias para %(day)s: máximo %(limit)s por día (ma
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_name
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "Trade name"
 msgstr "Nombre comercial"
@@ -662,6 +698,7 @@ msgstr "Martes"
 #. module: partner_microsite_manager
 #: model:ir.model,name:partner_microsite_manager.model_website
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__company_website
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 msgid "Website"
 msgstr "Sitio web"
 
@@ -675,6 +712,7 @@ msgstr "Miércoles"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_services_text
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "What we do"
 msgstr "Qué hacemos"
@@ -691,11 +729,13 @@ msgstr "Dónde se ve la página que edita esta pantalla."
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 msgid "X/Twitter"
 msgstr "X/Twitter"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 msgid "YouTube"
 msgstr "YouTube"
 
@@ -807,6 +847,7 @@ msgid "That website does not belong to your shop."
 msgstr "Ese sitio web no pertenece a tu comercio."
 
 #. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "Social networks"
 msgstr "Redes sociales"
@@ -895,6 +936,7 @@ msgid "Add one row per period your shop is open. A day that closes at midday and
 msgstr "Añade una fila por cada tramo en que tu comercio está abierto. Un día que cierra a mediodía y vuelve a abrir por la tarde lleva dos filas. Deja la lista vacía para no mostrar horario."
 
 #. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "Shown on the page"
 msgstr "Así se verá en la página"
@@ -932,6 +974,7 @@ msgid "Shop to edit"
 msgstr "Tienda a editar"
 
 #. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "Shown at the bottom of your page. Leave a\n                                network empty to hide its icon."
 msgstr "Se muestran al pie de tu página. Deja una red vacía para ocultar su icono."
@@ -948,6 +991,7 @@ msgid "<i class=\"fa fa-globe me-1\" title=\"Address\" role=\"img\" aria-label=\
 msgstr "<i class=\"fa fa-globe me-1\" title=\"Dirección\" role=\"img\" aria-label=\"Dirección\"/>"
 
 #. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "https://www.example.com"
 msgstr "https://www.ejemplo.com"

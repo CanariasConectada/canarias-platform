@@ -1,3 +1,9 @@
+## 19.0.3.1.1 (2026-09-16)
+
+* On the company form, facilities are the last section of the Microsite
+  page, laid out as on the merchant's content editor (section title, then
+  the catalogue as checkboxes).
+
 ## 19.0.3.1.0 (2026-09-16)
 
 * A merchant homepage ends contact section, funding strip, footer, in that

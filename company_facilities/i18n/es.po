@@ -372,11 +372,6 @@ msgid "Pet friendly"
 msgstr "Espacio pet friendly"
 
 #. module: company_facilities
-#: model_terms:ir.ui.view,arch_db:company_facilities.view_company_form_facilities
-msgid "Pick what this shop offers"
-msgstr "Elige lo que ofrece este comercio"
-
-#. module: company_facilities
 #: model:company.facility,name:company_facilities.facility_power_socket
 msgid "Power socket"
 msgstr "Enchufe de corriente"
@@ -476,6 +471,7 @@ msgstr "Hablamos"
 
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_microsite_content_editor__facility_ids
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_company_form_facilities
 #: model_terms:ir.ui.view,arch_db:company_facilities.view_microsite_content_editor_form_facilities
 msgid "What this shop offers"
 msgstr "Qué ofrece este comercio"
@@ -506,6 +502,7 @@ msgstr ""
 
 #. module: company_facilities
 #: model:ir.model.fields,field_description:company_facilities.field_microsite_content_editor__facility_block_title
+#: model_terms:ir.ui.view,arch_db:company_facilities.view_company_form_facilities
 msgid "Section title"
 msgstr "Título de la sección"
 
