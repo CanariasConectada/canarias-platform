@@ -1,8 +1,10 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import Command, api, models
+from odoo import SUPERUSER_ID, Command, api, models
 from odoo.http import request
+
+from odoo.addons.website_sale.models.website import CART_SESSION_CACHE_KEY
 
 # The customer fields website_sale fills in with the shopper's own partner.
 WEBSITE_CUSTOMER_FIELDS = frozenset(
@@ -14,14 +16,32 @@ class SaleOrder(models.Model):
     _inherit = "sale.order"
 
     def _wsm_is_website_customer_flow(self):
-        """True for a shop order handled in a shopper's own request.
+        """True for a shop order handled in its own shopper's request.
 
         Only a request from a non-internal user (portal or public) on an order
-        that belongs to a website qualifies: every backend path, and an
-        internal user shopping on a website, keeps core's checks untouched.
+        that belongs to a website AND to that shopper qualifies:
+
+        * a logged-in shopper must be the order's customer (same commercial
+          partner), so a portal user cannot borrow the exemption for another
+          partner's order;
+        * the public user must be working on the cart of its own session.
+
+        Every backend path, and an internal user shopping on a website, keeps
+        core's checks untouched.
         """
         self.ensure_one()
-        return bool(request and self.website_id and not request.env.user._is_internal())
+        if not (request and self.website_id):
+            return False
+        user = request.env.user
+        if user._is_internal():
+            return False
+        if user._is_public():
+            session = getattr(request, "session", None)
+            return bool(session) and self.id == session.get(CART_SESSION_CACHE_KEY)
+        return (
+            self.sudo().partner_id.commercial_partner_id
+            == user.sudo().partner_id.commercial_partner_id
+        )
 
     def _check_company(self, fnames=None):
         """Do not reject a shop order because of where its CUSTOMER lives.
@@ -76,10 +96,18 @@ class SaleOrder(models.Model):
         Unrestricted partners (empty ``company_ids``) are left alone, as
         linking a company would restrict them instead.
 
-        Not gated on the request: payment post-processing may confirm the
-        order from a cron or a provider webhook.
+        Only when a shopper-side flow confirms: the shopper's own request
+        (portal or public user, e.g. ``/payment/status/poll``) or the
+        superuser (the payment post-processing cron, provider webhooks run
+        sudo as the public user). An internal user confirming an order in the
+        backend widens nothing, even when the order has a website. And only a
+        customer who is a shopper: a commercial partner whose users are all
+        portal/public (share) users, or who has none (guest checkout).
         """
+        if self.env.uid != SUPERUSER_ID and self.env.user._is_internal():
+            return super()._action_confirm()
         for order in self.filtered("website_id"):
+            company = order.company_id
             partners = (
                 (
                     order.partner_id
@@ -90,11 +118,12 @@ class SaleOrder(models.Model):
                 .commercial_partner_id
             )
             restricted = partners.filtered(
-                lambda p, company=order.company_id: p.company_ids
+                lambda p, company=company: p.company_ids
                 and company not in p.company_ids
+                and all(u.share for u in p.with_context(active_test=False).user_ids)
             )
             if restricted:
-                restricted.write({"company_ids": [Command.link(order.company_id.id)]})
+                restricted.write({"company_ids": [Command.link(company.id)]})
         return super()._action_confirm()
 
     @api.constrains("company_id", "order_line")

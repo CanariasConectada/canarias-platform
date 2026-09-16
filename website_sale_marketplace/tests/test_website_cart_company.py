@@ -144,3 +144,50 @@ class TestWebsiteCartCompany(TransactionCase):
                     "website_id": self.website.id,
                 }
             )
+
+    def test_backend_confirmation_does_not_widen_the_customer(self):
+        # A service keeps confirmation free of delivery orders, so only the
+        # widening itself is under test.
+        service = self._product("Cart Service", self.shop | self.zone)
+        service.type = "service"
+        env = self._shopper_env(self.customer, self.zone)
+        website = self.website.with_env(env)
+        with MockRequest(env, website=website):
+            order = website._create_cart()
+            order._cart_add(service.product_variant_id.id, 1)
+        salesman = new_test_user(
+            self.env,
+            login="cart_backend_salesman",
+            groups="sales_team.group_sale_manager",
+            company_id=self.shop.id,
+            company_ids=[Command.set(self.shop.ids)],
+        )
+        order.with_user(salesman).with_company(self.shop).sudo().action_confirm()
+        self.assertEqual(order.state, "sale")
+        partner = self.customer.partner_id.sudo()
+        if "company_ids" in partner._fields:
+            self.assertNotIn(self.shop, partner.company_ids)
+        else:
+            self.assertEqual(partner.company_id, self.zone)
+
+    def test_portal_user_cannot_borrow_the_exemption(self):
+        other = new_test_user(
+            self.env,
+            login="cart_other_customer",
+            groups="base.group_portal",
+            company_id=self.zone.id,
+            company_ids=[Command.set(self.zone.ids)],
+        )
+        env = self._shopper_env(other, self.zone)
+        with (
+            MockRequest(env, website=self.website.with_env(env)),
+            self.assertRaises(UserError),
+        ):
+            # An order of the shop for ANOTHER customer, in other's request.
+            self.env["sale.order"].with_company(self.shop).create(
+                {
+                    "partner_id": self.customer.partner_id.id,
+                    "company_id": self.shop.id,
+                    "website_id": self.website.id,
+                }
+            )
