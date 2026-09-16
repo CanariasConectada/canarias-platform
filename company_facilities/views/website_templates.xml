@@ -61,34 +61,11 @@
         </xpath>
     </template>
 
-    <!-- ...and for every other site, which is nearly all of them.
-
-         None of the 219 microsite homepages calls
-         ``microsite_homepage_content``: they were migrated from the old
-         platform as pages built snippet by snippet in the builder, so a block
-         attached to that template renders nowhere. Hanging it off the layout
-         instead reaches every one of them, above the footer of the home page,
-         and the ``t-if="facility_groups"`` inside the block is what keeps it
-         off the sites that have ticked nothing: no switch, the ticks decide
-         (2026-09-15).
-
-         Priority 90 rather than the default: ``partner_microsite_manager``
-         replaces the whole footer at priority 100 and wraps it in a
-         ``t-if="website.is_microsite_themed"``. Applying first leaves this
-         block a sibling of the footer instead of a passenger inside that
-         condition. -->
-    <template id="layout_facilities"
-              inherit_id="website.layout"
-              name="Facilities and services above the footer"
-              priority="90">
-        <xpath expr="//div[@id='footer']" position="before">
-            <t t-set="cf_company" t-value="website.company_id.sudo()"/>
-            <t t-if="main_object
-                     and main_object._name == 'website.page'
-                     and main_object.url == '/'">
-                <t t-call="company_facilities.facilities_block"/>
-            </t>
-        </xpath>
-    </template>
+    <!-- The imported homepages (built snippet by snippet in the builder, not
+         from ``microsite_homepage_content``) call ``facilities_block``
+         themselves, right before their contact section: see
+         ``website._cf_place_facilities_in_homepage``. The block no longer
+         hangs off ``website.layout``, where it landed after the funding strip
+         and inside the footer area (2026-09-16). -->
 
 </odoo>

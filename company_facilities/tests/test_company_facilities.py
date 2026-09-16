@@ -205,21 +205,17 @@ class TestCompanyFacilities(TransactionCase):
         self.assertIn("Lo que encontrarás", rendered)
         self.assertNotIn("Facilities and services", rendered)
 
-    def test_the_block_reaches_a_homepage_built_in_the_website_builder(self):
-        """None of the 219 migrated homepages calls the microsite template.
+    def test_the_block_no_longer_hangs_off_the_site_layout(self):
+        """Above ``div#footer`` it rendered after the funding strip.
 
-        Attaching the block to ``microsite_homepage_content`` alone meant it
-        rendered nowhere at all, which is what "no lo veo habilitado" was.
-        The layout hook has no per-shop switch left in it: the block's own
-        ``t-if`` on the ticked items is the only condition.
+        The client wants a homepage to end contact, strip, footer
+        (2026-09-16): the block now lives inside the homepage itself.
         """
-        view = self.env["ir.ui.view"].search(
-            [("key", "=", "company_facilities.layout_facilities")], limit=1
+        self.assertFalse(
+            self.env.ref(
+                "company_facilities.layout_facilities", raise_if_not_found=False
+            )
         )
-        self.assertTrue(view, "the block has to hang off the site layout")
-        self.assertEqual(view.inherit_id.key, "website.layout")
-        self.assertIn("company_facilities.facilities_block", view.arch_db)
-        self.assertNotIn("facility_block_enabled", view.arch_db)
 
     # ------------------------------------------------------------------
     # The merchant's screen

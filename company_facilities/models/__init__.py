@@ -6,4 +6,5 @@ from . import (
     company_facility_category,
     microsite_content_editor,
     res_company,
+    website,
 )

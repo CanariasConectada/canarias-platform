@@ -1,3 +1,17 @@
+## 19.0.3.1.0 (2026-09-16)
+
+* A merchant homepage ends contact section, funding strip, footer, in that
+  order (client request). The facilities block no longer hangs off
+  `website.layout` above `div#footer` (the `layout_facilities` view is
+  removed): there it rendered after the funding strip, between the footer
+  parts. Instead a post-migration inserts
+  `<t t-call="company_facilities.facilities_block"/>` right before the first
+  contact section (`data-name` "Formulario" or "Formulario Contacto") of every
+  imported homepage, in every language of the arch
+  (`website._cf_place_facilities_in_homepage`). Homepages built from
+  `microsite_homepage_content` keep the block after About; new microsites use
+  that template.
+
 ## 19.0.3.0.0 (2026-09-15)
 
 * The "Facilities and services" tab of the page-content screen is down to two
