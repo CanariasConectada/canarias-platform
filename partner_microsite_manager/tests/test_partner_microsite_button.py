@@ -62,29 +62,21 @@ class TestPartnerMicrositeButton(TransactionCase):
         self.assertEqual(action["views"], [(False, "form")])
 
     def test_the_company_form_sections_follow_the_editor(self):
-        self.env["res.lang"]._activate_lang("es_ES")
-        arch = (
-            self.env["res.company"]
-            .with_context(lang="es_ES")
-            .get_view(view_type="form")["arch"]
-        )
+        """Same five sections as the editor, in the editor's order.
+
+        Asserted on the page names, not the labels: a database without the
+        Spanish terms (the CI) renders the English source strings.
+        """
+        arch = self.env["res.company"].get_view(view_type="form")["arch"]
         notebook = etree.fromstring(arch).xpath(
             "//page[@name='microsite']//notebook[@name='microsite_sections']"
         )
         self.assertTrue(notebook)
-        labels = [page.get("string") for page in notebook[0].xpath("./page")]
-        expected = [
-            "Portada",
-            "Información práctica",
-            "Sobre el comercio",
-            "Redes sociales",
-        ]
+        names = [page.get("name") for page in notebook[0].xpath("./page")]
+        expected = ["cover", "practical", "about", "social"]
         if "company_facilities" in self.env.registry._init_modules:
-            expected.append("Instalaciones y servicios")
-        self.assertEqual(labels[: len(expected)], expected)
-        self.assertEqual(
-            [labels.index(label) for label in expected], list(range(len(expected)))
-        )
+            expected.append("facilities")
+        self.assertEqual(names[: len(expected)], expected)
 
     def test_social_links_show_and_save_what_the_footer_prints(self):
         website = self.shop.website_id
