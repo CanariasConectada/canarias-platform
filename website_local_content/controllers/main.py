@@ -4,6 +4,8 @@
 import uuid
 from urllib.parse import urlencode, urlsplit
 
+import psycopg2
+
 from odoo import http
 from odoo.fields import Domain
 from odoo.http import request
@@ -32,6 +34,10 @@ IMAGE_SIZE_FIELDS = {
 }
 LIKE_COOKIE = "wlc_session"
 LIKE_COOKIE_MAX_AGE = 365 * 24 * 60 * 60  # One year, as the legacy default.
+# Anchor of the rating card on the detail page (redirect target of the
+# rating routes) and the cap of the optional rating comment.
+RATING_ANCHOR = "wlc_rating"
+RATING_FEEDBACK_MAX_LENGTH = 1000
 
 
 class WebsiteLocalContent(http.Controller):
@@ -179,6 +185,74 @@ class WebsiteLocalContent(http.Controller):
 
     def _get_visitor_session_key(self):
         return request.httprequest.cookies.get(LIKE_COOKIE)
+
+    def _get_public_item(self, content_type, item_id):
+        """Item by id when publicly visible on the current website, or None.
+
+        Same checks as the public pages: approved, published, of the URL's
+        content type and visible on the current website.
+        """
+        item = request.env["website.local.content.item"].sudo().browse(item_id)
+        item = item.exists()
+        if (
+            not item
+            or item.type_id != content_type
+            or item.state != "approved"
+            or not item.is_published
+            or not item._is_visible_on_website(request.website)
+        ):
+            return None
+        return item
+
+    def _get_own_rating(self, item):
+        """The current user's rating of ``item`` (empty when anonymous).
+
+        Always filtered on the caller's own partner, so the rating routes
+        can never reach another partner's row.
+        """
+        rating_model = request.env["rating.rating"].sudo()
+        if request.env.user._is_public():
+            return rating_model.browse()
+        return rating_model.search(
+            [
+                ("res_model", "=", item._name),
+                ("res_id", "=", item.id),
+                ("partner_id", "=", request.env.user.partner_id.id),
+            ],
+            order="id desc",
+            limit=1,
+        )
+
+    def _save_own_rating(self, item, vals):
+        """Create or update the current user's rating of ``item``.
+
+        The partial unique index on (res_id, partner_id) makes a concurrent
+        duplicate create fail; the savepoint keeps the transaction usable
+        and the losing request updates the row the winner created.
+        """
+        own_rating = self._get_own_rating(item)
+        if own_rating:
+            own_rating.write(vals)
+            return own_rating
+        try:
+            with request.env.cr.savepoint():
+                return (
+                    request.env["rating.rating"]
+                    .sudo()
+                    .create(
+                        dict(
+                            vals,
+                            res_model_id=request.env["ir.model"]._get_id(item._name),
+                            res_id=item.id,
+                            partner_id=request.env.user.partner_id.id,
+                            rated_partner_id=False,
+                        )
+                    )
+                )
+        except psycopg2.IntegrityError:
+            own_rating = self._get_own_rating(item)
+            own_rating.write(vals)
+            return own_rating
 
     def _is_safe_local_path(self, url):
         """Whether ``url`` is a same-site absolute path, safe to redirect to.
@@ -353,6 +427,11 @@ class WebsiteLocalContent(http.Controller):
                 "item": item,
                 "reviews": item.get_public_ratings(),
                 "already_liked": item.has_session_liked(session_key),
+                "my_rating": self._get_own_rating(item),
+                "rating_error": bool(kw.get("rating_error")),
+                "login_url": "/web/login?"
+                + urlencode({"redirect": f"{item.website_url}#{RATING_ANCHOR}"}),
+                "rating_feedback_max_length": RATING_FEEDBACK_MAX_LENGTH,
                 "index_url": f"/explora/{content_type.url_slug}",
             },
         )
@@ -430,15 +509,8 @@ class WebsiteLocalContent(http.Controller):
     )
     def content_like(self, type_slug, item_id, **kw):
         """Register one anonymous like per visitor session and redirect back."""
-        self._get_content_type(type_slug)
-        item = request.env["website.local.content.item"].sudo().browse(item_id)
-        item = item.exists()
-        if (
-            not item
-            or item.state != "approved"
-            or not item.is_published
-            or not item._is_visible_on_website(request.website)
-        ):
+        item = self._get_public_item(self._get_content_type(type_slug), item_id)
+        if not item:
             return request.not_found()
         session_key = self._get_visitor_session_key()
         is_new_session = not session_key
@@ -466,6 +538,50 @@ class WebsiteLocalContent(http.Controller):
             samesite="Lax",
         )
         return response
+
+    # ------------------------------------------------------------------
+    # Ratings (logged-in users only: one rating per partner per item,
+    # stored as a consumed core ``rating.rating`` row)
+    # ------------------------------------------------------------------
+    @http.route(
+        "/explora/<string:type_slug>/rate/<int:item_id>",
+        type="http",
+        auth="user",
+        website=True,
+        methods=["POST"],
+        sitemap=False,
+    )
+    def content_rate(self, type_slug, item_id, rating=None, feedback=None, **kw):
+        """Create or update the caller's own rating and go back to the card."""
+        item = self._get_public_item(self._get_content_type(type_slug), item_id)
+        if not item:
+            return request.not_found()
+        value = self._sanitize_int(rating)
+        if not value or not 1 <= value <= 5:
+            return request.redirect(
+                f"{item.website_url}?rating_error=1#{RATING_ANCHOR}"
+            )
+        feedback = (feedback or "").strip()[:RATING_FEEDBACK_MAX_LENGTH]
+        self._save_own_rating(
+            item, {"rating": value, "feedback": feedback, "consumed": True}
+        )
+        return request.redirect(f"{item.website_url}#{RATING_ANCHOR}")
+
+    @http.route(
+        "/explora/<string:type_slug>/rate/<int:item_id>/delete",
+        type="http",
+        auth="user",
+        website=True,
+        methods=["POST"],
+        sitemap=False,
+    )
+    def content_rate_delete(self, type_slug, item_id, **kw):
+        """Remove the caller's own rating (never anyone else's)."""
+        item = self._get_public_item(self._get_content_type(type_slug), item_id)
+        if not item:
+            return request.not_found()
+        self._get_own_rating(item).unlink()
+        return request.redirect(f"{item.website_url}#{RATING_ANCHOR}")
 
     # ------------------------------------------------------------------
     # Legacy URLs: the verticals lived under /memoria-viva and

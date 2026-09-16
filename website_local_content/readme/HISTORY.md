@@ -1,3 +1,27 @@
+## 19.0.2.1.0 (2026-09-16)
+
+Interactive likes and ratings on the public detail page (the legacy
+pages let visitors like and rate from inside the place, not only from
+the card):
+
+- Like button in the information card of the detail page, on the same
+  like route and AJAX code as the card (`<noscript>` form fallback,
+  liked state rendered as a filled, disabled heart). The JS now finds
+  like counters by `data-like-counter-for="<item id>"`, so the card and
+  the detail page share it.
+- Rating form in the rating card for logged-in users: pure CSS radio
+  star picker (1-5) and an optional comment capped at 1000 characters,
+  posted to `/explora/<type>/rate/<id>`; one consumed `rating.rating`
+  per partner per item (create or update), removable through
+  `/explora/<type>/rate/<id>/delete`. Both routes only ever touch the
+  caller's own rating and refuse unpublished or hidden items. Anonymous
+  visitors get a "log in to rate" link back to the rating card; an
+  out-of-range star value comes back with a "choose 1 to 5 stars" alert.
+- Partial unique index `website_local_content_rating_partner_uniq` on
+  `rating_rating (res_id, partner_id)` for this model only (created in
+  `init()` after collapsing existing duplicates to the most recent row);
+  a concurrent duplicate insert falls back to updating the existing row.
+
 ## 19.0.1.8.0 (2026-08-18)
 
 Port of the legacy visual design of the Living Memory and Places of

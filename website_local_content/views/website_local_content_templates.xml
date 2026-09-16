@@ -13,6 +13,7 @@
         <button type="button"
                 class="position-absolute top-0 end-0 m-2 btn btn-light btn-sm rounded-circle shadow-sm wlc-like-btn"
                 t-attf-data-like-url="/explora/{{ content_type.url_slug }}/like/{{ item.id }}"
+                t-att-data-item-id="item.id"
                 t-att-data-csrf="request.csrf_token()"
                 t-att-data-liked="'1' if already_liked else '0'"
                 t-att-aria-pressed="'true' if already_liked else 'false'"
@@ -78,7 +79,7 @@
                                     <i class="fa fa-calendar me-1"/><t t-esc="item.photo_year"/>
                                 </span>
                                 <span class="badge bg-light text-dark">
-                                    <i class="fa fa-heart text-danger me-1"/><span class="wlc-like-count" t-esc="item.like_count"/>
+                                    <i class="fa fa-heart text-danger me-1"/><span class="wlc-like-count" t-att-data-like-counter-for="item.id" t-esc="item.like_count"/>
                                 </span>
                                 <span class="badge bg-light text-dark">
                                     <i class="fa fa-star text-warning me-1"/><t t-esc="'%.1f' % (item.rating_avg or 0)"/>
@@ -500,13 +501,41 @@
                                         <i class="fa fa-calendar me-1"/>
                                         <t t-esc="item.create_date.strftime('%d/%m/%Y') if item.create_date else '-'"/>
                                     </p>
-                                    <p class="mb-0">
-                                        <i class="fa fa-heart text-danger me-1"/>
-                                        <span t-esc="item.like_count"/> likes
-                                    </p>
+                                    <!-- Like control (same route and JS as the card
+                                         button; the <noscript> form replaces it
+                                         when JavaScript is off). -->
+                                    <div id="wlc_like" class="mb-0">
+                                        <button type="button"
+                                                class="btn btn-outline-danger btn-sm wlc-like-btn wlc-like-btn-inline"
+                                                t-attf-data-like-url="/explora/{{ content_type.url_slug }}/like/{{ item.id }}"
+                                                t-att-data-item-id="item.id"
+                                                t-att-data-csrf="request.csrf_token()"
+                                                t-att-data-liked="'1' if already_liked else '0'"
+                                                data-disable-when-liked="1"
+                                                t-att-aria-pressed="'true' if already_liked else 'false'"
+                                                t-att-disabled="'disabled' if already_liked else None"
+                                                aria-label="Like">
+                                            <i t-attf-class="fa {{ 'fa-heart' if already_liked else 'fa-heart-o' }} me-1"/>
+                                            <span t-att-data-like-counter-for="item.id" t-esc="item.like_count"/> likes
+                                        </button>
+                                        <noscript>
+                                            <style>.wlc-like-btn-inline { display: none !important; }</style>
+                                            <form t-attf-action="/explora/{{ content_type.url_slug }}/like/{{ item.id }}"
+                                                  method="post" class="d-inline">
+                                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                                <input type="hidden" name="redirect" t-att-value="item.website_url"/>
+                                                <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                        t-att-disabled="'disabled' if already_liked else None"
+                                                        aria-label="Like">
+                                                    <i t-attf-class="fa {{ 'fa-heart' if already_liked else 'fa-heart-o' }} me-1"/>
+                                                    <span t-esc="item.like_count"/> likes
+                                                </button>
+                                            </form>
+                                        </noscript>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="card border-0 shadow-sm mb-4">
+                            <div id="wlc_rating" class="card border-0 shadow-sm mb-4">
                                 <div class="card-header bg-light">
                                     <h5 class="mb-0"><i class="fa fa-star me-2 text-warning"/>Rating</h5>
                                 </div>
@@ -527,6 +556,61 @@
                                     <p class="text-muted small mb-0">
                                         <t t-esc="item.rating_count or 0"/> ratings
                                     </p>
+                                    <!-- Rating form: logged-in users only, one rating
+                                         per partner (create or update). Pure CSS
+                                         radio star picker, works without JS. -->
+                                    <t t-if="request.env.user._is_public()">
+                                        <hr class="my-3"/>
+                                        <a t-att-href="login_url" class="btn btn-sm btn-outline-primary">
+                                            <i class="fa fa-sign-in me-1"/>Log in to rate
+                                        </a>
+                                    </t>
+                                    <t t-else="">
+                                        <hr class="my-3"/>
+                                        <p t-if="my_rating" class="mb-2 fw-bold wlc-my-rating">
+                                            Your rating: <t t-esc="int(my_rating.rating)"/> ★
+                                        </p>
+                                        <div t-if="rating_error" role="alert"
+                                             class="alert alert-warning py-2 small wlc-rating-error">
+                                            Choose from 1 to 5 stars.
+                                        </div>
+                                        <form t-attf-action="/explora/{{ content_type.url_slug }}/rate/{{ item.id }}"
+                                              method="post" class="wlc-rate-form">
+                                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                            <fieldset class="mb-2">
+                                                <legend class="fs-6 fw-bold mb-1">Rate this content</legend>
+                                                <div class="wlc-star-picker">
+                                                    <t t-foreach="range(5, 0, -1)" t-as="star">
+                                                        <input type="radio" name="rating" required="required"
+                                                               class="visually-hidden"
+                                                               t-att-id="'wlc_star_%s' % star"
+                                                               t-att-value="star"
+                                                               t-att-checked="'checked' if my_rating and int(my_rating.rating) == star else None"/>
+                                                        <label t-att-for="'wlc_star_%s' % star">
+                                                            <span aria-hidden="true">★</span>
+                                                            <span class="visually-hidden"><t t-esc="star"/>/5</span>
+                                                        </label>
+                                                    </t>
+                                                </div>
+                                            </fieldset>
+                                            <textarea name="feedback" rows="3"
+                                                      class="form-control form-control-sm mb-2"
+                                                      t-att-maxlength="rating_feedback_max_length"
+                                                      placeholder="Comment (optional)"
+                                                      t-esc="my_rating.feedback or ''"/>
+                                            <button type="submit" class="btn btn-sm btn-primary">
+                                                <i class="fa fa-paper-plane me-1"/>Submit rating
+                                            </button>
+                                        </form>
+                                        <form t-if="my_rating"
+                                              t-attf-action="/explora/{{ content_type.url_slug }}/rate/{{ item.id }}/delete"
+                                              method="post" class="mt-2">
+                                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="fa fa-trash me-1"/>Remove my rating
+                                            </button>
+                                        </form>
+                                    </t>
                                 </div>
                             </div>
                         </div>
