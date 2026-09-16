@@ -5,8 +5,8 @@ from odoo.exceptions import AccessError
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase
 
-# The nine the retired role implied (19.0.1.0.0) plus the four of the
-# default merchant profile (19.0.2.0.0).
+# The nine the retired role implied (19.0.1.0.0) plus product variants
+# (19.0.2.0.0). Purchase, inventory and invoicing left in 19.0.3.0.0.
 MERCHANT_GROUPS = (
     "base.group_user",
     "base.group_multi_company",
@@ -18,6 +18,9 @@ MERCHANT_GROUPS = (
     "company_certification.group_sustainability_user",
     "mass_mailing.group_mass_mailing_user",
     "partner_reviews.group_partner_reviews_user",
+)
+# The ERP opt-in: never implied, ticked per user by an administrator.
+ERP_GROUPS = (
     "purchase.group_purchase_user",
     "stock.group_stock_user",
     "account.group_account_invoice",
@@ -37,9 +40,17 @@ VISIBLE_ROOT_MENUS = (
     "training_menu.menu_training_root",
     "mass_mailing.mass_mailing_menu_root",
     "crm.crm_menu_root",
+)
+ERP_ROOT_MENUS = (
     "purchase.menu_purchase_root",
     "stock.menu_stock_root",
     "account.menu_finance",
+)
+LINK_TRACKER_MENUS = (
+    "utm.menu_link_tracker_root",
+    "link_tracker.link_tracker_menu_main",
+    "mass_mailing.link_tracker_menu_mass_mailing",
+    "website_links.menu_link_tracker",
 )
 VISIBLE_INNER_MENUS = (
     "website_sale.menu_ecommerce",
@@ -56,7 +67,7 @@ HIDDEN_MENUS = (
     "board.menu_board_my_dash",
     "merchant_group.menu_merchant_dashboard_root",
     "base.menu_management",
-)
+) + ERP_ROOT_MENUS + LINK_TRACKER_MENUS
 
 
 @tagged("post_install", "-at_install")
@@ -163,6 +174,61 @@ class TestMerchantGroup(TransactionCase):
             with self.subTest(xmlid=xmlid):
                 self.assertNotIn(self._menu(xmlid).id, visible)
 
+    def test_the_erp_is_not_part_of_the_gesture(self):
+        for xmlid in ERP_GROUPS:
+            with self.subTest(xmlid=xmlid):
+                self.assertNotIn(
+                    self.env.ref(xmlid), self.merchant_group.all_implied_ids
+                )
+                self.assertFalse(self.merchant.has_group(xmlid))
+
+    def test_debug_mode_does_not_reveal_the_link_tracker(self):
+        """Core gates the link tracker root on group_no_one."""
+        self.merchant.write({"group_ids": [(4, self.env.ref("base.group_no_one").id)]})
+        visible = self._visible_ids(self.merchant)
+        for xmlid in LINK_TRACKER_MENUS:
+            with self.subTest(xmlid=xmlid):
+                self.assertNotIn(self._menu(xmlid).id, visible)
+
+    def test_ticking_the_erp_groups_shows_the_erp_apps(self):
+        self.merchant.write(
+            {"group_ids": [(4, self.env.ref(xmlid).id) for xmlid in ERP_GROUPS]}
+        )
+        visible = self._visible_ids(self.merchant)
+        for xmlid in ERP_ROOT_MENUS:
+            with self.subTest(xmlid=xmlid):
+                self.assertIn(self._menu(xmlid).id, visible)
+
+    def test_ticking_the_link_tracker_shows_its_menus(self):
+        link_tracker = self.env.ref("merchant_group.group_link_tracker")
+        self.assertFalse(link_tracker.privilege_id)
+        self.assertNotIn(
+            link_tracker, self.env.ref("base.default_user_group").all_implied_ids
+        )
+        self.merchant.write({"group_ids": [(4, link_tracker.id)]})
+        visible = self._visible_ids(self.merchant)
+        for xmlid in LINK_TRACKER_MENUS:
+            with self.subTest(xmlid=xmlid):
+                self.assertIn(self._menu(xmlid).id, visible)
+
+    def test_an_administrator_sees_the_link_tracker_and_the_erp(self):
+        # Email Marketing, where one entry hangs, is an app of its own.
+        admin = self.env["res.users"].create(
+            {
+                "name": "Merchant Group Admin",
+                "login": "merchant_group_admin",
+                "group_ids": [
+                    (6, 0, [self.env.ref("base.group_system").id]),
+                    (4, self.env.ref("mass_mailing.group_mass_mailing_user").id),
+                    *[(4, self.env.ref(xmlid).id) for xmlid in ERP_GROUPS],
+                ],
+            }
+        )
+        visible = self._visible_ids(admin)
+        for xmlid in LINK_TRACKER_MENUS + ERP_ROOT_MENUS:
+            with self.subTest(xmlid=xmlid):
+                self.assertIn(self._menu(xmlid).id, visible)
+
     def test_the_gates_are_owned_in_replace_form(self):
         """A `-u crm` re-adds the salesman through Command.link; the gate
         written here must already be exactly what core intends."""
@@ -180,6 +246,11 @@ class TestMerchantGroup(TransactionCase):
         self.assertEqual(
             self.env.ref("sale_loyalty.menu_gift_ewallet_type_config").group_ids,
             manager | self.merchant_group,
+        )
+        self.assertEqual(
+            self.env.ref("utm.menu_link_tracker_root").group_ids,
+            self.env.ref("base.group_system")
+            | self.env.ref("merchant_group.group_link_tracker"),
         )
 
     def test_ticking_the_dashboard_shows_only_my_dashboard(self):

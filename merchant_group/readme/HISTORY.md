@@ -1,3 +1,14 @@
+## 19.0.3.0.0 (2026-09-16)
+
+- **No ERP by default.** Comercios no longer implies purchase user,
+  inventory user nor invoicing: Purchase, Inventory and Invoicing leave the
+  merchants' app menu at the update (users holding those groups directly
+  keep them). They are an opt-in, ticked per user.
+- **Link tracker hidden platform-wide.** New opt-in checkbox *Link
+  Tracker*; the four link tracker menus (the app and its child, Email
+  Marketing ▸ Configuration and Website ▸ Site ▸ This page) are gated on
+  it plus administrators, so debug mode no longer reveals them.
+
 ## 19.0.2.1.0 (2026-09-15)
 
 * Gift cards and eWallets open to merchants: both menus (Sales > Products
