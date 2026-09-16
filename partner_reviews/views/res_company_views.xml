@@ -24,6 +24,10 @@
     <record id="view_company_form_microsite_reviews" model="ir.ui.view">
         <field name="name">res.company.form.microsite.reviews</field>
         <field name="model">res.company</field>
+        <!-- Applied after the other pages appended to this notebook
+             (company_facilities), so the section order does not depend on
+             the install order. -->
+        <field name="priority">99</field>
         <field name="inherit_id"
                ref="partner_microsite_manager.view_company_form_microsite"/>
         <field name="arch" type="xml">
