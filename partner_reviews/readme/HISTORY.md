@@ -1,3 +1,9 @@
+# 19.0.2.2.1 (2026-09-16)
+
+- The *Reviews* page comes after *Facilities and services* in both the
+  content editor and the company form's Microsite notebook, whatever the
+  install order (the two views get priority 99).
+
 # 19.0.2.2.0 (2026-09-16)
 
 - Merchants switch their own reviews page on and off from the content

@@ -9,6 +9,10 @@
     <record id="view_microsite_content_editor_form_reviews" model="ir.ui.view">
         <field name="name">microsite.content.editor.form.reviews</field>
         <field name="model">microsite.content.editor</field>
+        <!-- Applied after the other pages appended to this notebook
+             (company_facilities), so the section order does not depend on
+             the install order. -->
+        <field name="priority">99</field>
         <field name="inherit_id"
                ref="partner_microsite_manager.view_microsite_content_editor_form"/>
         <field name="arch" type="xml">
