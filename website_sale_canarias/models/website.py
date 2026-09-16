@@ -187,13 +187,17 @@ class Website(models.Model):
         """
         if not category_ids:
             return set()
-        rows = self.env["ir.attachment"].sudo()._read_group(
-            [
-                ("res_model", "=", "product.public.category"),
-                ("res_field", "=", "cover_image"),
-                ("res_id", "in", category_ids),
-            ],
-            groupby=["res_id"],
+        rows = (
+            self.env["ir.attachment"]
+            .sudo()
+            ._read_group(
+                [
+                    ("res_model", "=", "product.public.category"),
+                    ("res_field", "=", "cover_image"),
+                    ("res_id", "in", category_ids),
+                ],
+                groupby=["res_id"],
+            )
         )
         return {res_id for (res_id,) in rows}
 
@@ -244,22 +248,35 @@ class Website(models.Model):
         covered_ids = self._wsc_categories_with_cover(all_ids)
         tiles = []
         for node in tree:
-            cover = self._wsc_category_cover(
-                node["categories"], covered_ids=covered_ids
-            )
-            if not cover:
-                continue
-            tiles.append(
-                {
-                    "id": node["id"],
-                    "name": node["name"],
-                    # The URL id stays the group's stable representative
-                    # even when the cover photo came from another member.
-                    "category": node["categories"].sorted("id")[0],
-                    "image_url": self.image_url(cover, "cover_image", "400x400"),
-                }
-            )
+            tile = self._wsc_category_tile(node, covered_ids)
+            if tile:
+                tiles.append(tile)
         return tiles
+
+    def _wsc_category_tile(self, node, covered_ids):
+        """The tile dict for one top-level node, or ``None`` when nothing
+        curates it.
+
+        The single place a node becomes a tile, so a module that knows
+        another source of curation (``website_sale_merchant_categories``:
+        a per-site image a merchant set for a shared category) can decide
+        the picture before the shared ``cover_image`` is consulted, and
+        still fall through to it. ``covered_ids`` is the render pass's
+        already-queried set of category ids that carry a cover attachment
+        (see ``_wsc_categories_with_cover``).
+        """
+        self.ensure_one()
+        cover = self._wsc_category_cover(node["categories"], covered_ids=covered_ids)
+        if not cover:
+            return None
+        return {
+            "id": node["id"],
+            "name": node["name"],
+            # The URL id stays the group's stable representative even when
+            # the cover photo came from another member.
+            "category": node["categories"].sorted("id")[0],
+            "image_url": self.image_url(cover, "cover_image", "400x400"),
+        }
 
     def _wsc_selected_category_path(self, category, tree=None):
         """Where ``category`` sits in the two-level tree: ``(top_id, sub_id)``.
