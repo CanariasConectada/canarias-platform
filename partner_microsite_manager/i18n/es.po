@@ -677,7 +677,6 @@ msgstr "Demasiadas franjas horarias para %(day)s: máximo %(limit)s por día (ma
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_name
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "Trade name"
 msgstr "Nombre comercial"
@@ -995,3 +994,8 @@ msgstr "<i class=\"fa fa-globe me-1\" title=\"Dirección\" role=\"img\" aria-lab
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "https://www.example.com"
 msgstr "https://www.ejemplo.com"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "Name on the microsite"
+msgstr "Nombre en el microsite"
