@@ -1,3 +1,17 @@
+## 19.0.2.9.2 (2026-09-16)
+
+* Contacts > shop contact > Microsite (client report 2026-09-16: merchants
+  could not edit from there, and the fields were not laid out as on the
+  website side). A user who cannot write companies now gets the page content
+  editor of that shop, through the website's own ownership guard: another
+  shop's contact is refused. Administrators still get the company form.
+* The Microsite page of the company form mirrors the content editor: Cover,
+  Practical information, About the shop, Social networks (and Facilities and
+  services with `company_facilities`), same field order and labels. The
+  publication controls sit at the end of Cover. The social links shown there
+  are what the footer prints (website first, company as fallback) and saving
+  writes both, as the editor does.
+
 ## 19.0.2.9.1 (2026-09-16)
 
 * A click on a row of "My shops" crashed with "action.views is undefined":

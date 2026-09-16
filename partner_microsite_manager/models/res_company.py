@@ -151,6 +151,36 @@ class ResCompany(models.Model):
         string="Public Phone 2",
         help="Second phone shown on the microsite, below the first one.",
     )
+    # What the footer prints for each network: the website's link first,
+    # the company's as the fallback (``microsite_corporate_footer``). The
+    # company form shows these rather than the bare ``social_*`` fields, which
+    # a website value would silently override; saving writes both sides,
+    # exactly as the merchant's content editor does.
+    microsite_social_facebook = fields.Char(
+        string="Microsite Facebook",
+        compute="_compute_microsite_social",
+        inverse="_inverse_microsite_social",
+    )
+    microsite_social_instagram = fields.Char(
+        string="Microsite Instagram",
+        compute="_compute_microsite_social",
+        inverse="_inverse_microsite_social",
+    )
+    microsite_social_twitter = fields.Char(
+        string="Microsite X/Twitter",
+        compute="_compute_microsite_social",
+        inverse="_inverse_microsite_social",
+    )
+    microsite_social_youtube = fields.Char(
+        string="Microsite YouTube",
+        compute="_compute_microsite_social",
+        inverse="_inverse_microsite_social",
+    )
+    microsite_social_linkedin = fields.Char(
+        string="Microsite LinkedIn",
+        compute="_compute_microsite_social",
+        inverse="_inverse_microsite_social",
+    )
     microsite_homepage_page_id = fields.Many2one(
         "website.page",
         string="Microsite Homepage",
@@ -158,6 +188,38 @@ class ResCompany(models.Model):
         copy=False,
         help="Homepage published by the 'Publish Homepage' action.",
     )
+
+    _MICROSITE_SOCIAL_FIELDS = (
+        "social_facebook",
+        "social_instagram",
+        "social_twitter",
+        "social_youtube",
+        "social_linkedin",
+    )
+
+    @api.depends(
+        *_MICROSITE_SOCIAL_FIELDS,
+        *(f"website_id.{name}" for name in _MICROSITE_SOCIAL_FIELDS),
+    )
+    def _compute_microsite_social(self):
+        for company in self:
+            website = company.website_id
+            for name in self._MICROSITE_SOCIAL_FIELDS:
+                company[f"microsite_{name}"] = (
+                    (website and website[name]) or company[name] or False
+                )
+
+    def _inverse_microsite_social(self):
+        for company in self:
+            values = {
+                name: company[f"microsite_{name}"] or False
+                for name in self._MICROSITE_SOCIAL_FIELDS
+            }
+            company.write(values)
+            # The website side wins in the footer, so an emptied value has
+            # to reach it too, or the old link keeps rendering.
+            if company.website_id:
+                company.website_id.write(values)
 
     @api.depends("website_id")
     def _compute_has_microsite(self):
@@ -418,9 +480,7 @@ class ResCompany(models.Model):
             # Every page at "/" of the site, not the first one: a website
             # bootstraps a "Home" of its own on creation, and the imported
             # legacy homepage sits next to it as a second record.
-            pages = Page.search(
-                [("website_id", "in", websites.ids), ("url", "=", "/")]
-            )
+            pages = Page.search([("website_id", "in", websites.ids), ("url", "=", "/")])
             # lang=None: the base (en_US) arch is what gets rewritten; the
             # translated copies re-map their unchanged terms.
             for view in pages.view_id.with_context(lang=None):
@@ -590,8 +650,8 @@ class ResCompany(models.Model):
         """
         if companies is None:
             companies = self._get_own_microsite_companies()
-        websites = self.env["website"].sudo().search(
-            [("company_id", "in", companies.ids)]
+        websites = (
+            self.env["website"].sudo().search([("company_id", "in", companies.ids)])
         )
         return {
             "type": "ir.actions.act_window",
