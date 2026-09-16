@@ -330,3 +330,41 @@ class TestMicrositeRender(TransactionCase):
         html = self._render_homepage_content()
         self.assertIn('data-name="Subvenciones"', html)
 
+
+    # ------------------------------------------------------------------
+    # The shop's own website: globe first in the footer, host in the contact block
+    # ------------------------------------------------------------------
+
+    def test_the_own_website_leads_the_footer_row(self):
+        self._clear_socials()
+        # A full URL on purpose: written straight to the model, core's
+        # ``res.partner._clean_website`` would store a bare host as
+        # ``http://``; the editor is what adds ``https://`` for merchants.
+        self.company.website = "https://www.abinformatica.es"
+        self.company.social_instagram = "https://instagram.com/rendershop"
+        links = self.website._pmm_footer_links()
+        self.assertEqual(
+            [(link["icon"], link["href"], link["title"]) for link in links],
+            [
+                ("fa-globe", "https://www.abinformatica.es", "www.abinformatica.es"),
+                ("fa-instagram", "https://instagram.com/rendershop", "Instagram"),
+            ],
+        )
+        self.assertEqual(
+            len(self.website._pmm_footer_social_links()), 1,
+            "the networks alone stay what they were",
+        )
+
+    def test_no_own_website_means_no_globe(self):
+        self._clear_socials()
+        self.company.website = False
+        self.assertEqual(self.website._pmm_footer_links(), [])
+        html = self._render_homepage_content()
+        self.assertNotIn("fa-globe", html)
+
+    def test_the_contact_block_links_the_host_of_the_own_website(self):
+        self.company.website = "https://www.abinformatica.es/tienda"
+        html = self._render_homepage_content()
+        self.assertIn('href="https://www.abinformatica.es/tienda"', html)
+        self.assertIn(">www.abinformatica.es<", html)
+        self.assertIn("fa-globe", html)

@@ -3,9 +3,10 @@
 
 from lxml import etree
 
-from odoo.exceptions import AccessError, UserError
+from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase, new_test_user
+from odoo.tools.translate import code_translations
 
 
 @tagged("post_install", "-at_install")
@@ -341,3 +342,75 @@ class TestMicrositeContentEditor(TransactionCase):
         self.assertEqual(
             menu.parent_id, self.env.ref("website.menu_website_configuration")
         )
+
+    # ------------------------------------------------------------------
+    # The shop's own website (client request 2026-09-16)
+    # ------------------------------------------------------------------
+
+    def test_the_own_website_opens_with_the_companys_value(self):
+        self.shop.sudo().website = "https://www.abinformatica.es"
+        values = self._editor().default_get(["company_website"])
+        self.assertEqual(values["company_website"], "https://www.abinformatica.es")
+
+    def test_saving_the_own_website_adds_the_missing_scheme(self):
+        """Merchants type the host; the page needs an absolute URL."""
+        editor = self._editor().create({"company_website": "  www.abinformatica.es "})
+        editor.action_save()
+        self.assertEqual(self.shop.website, "https://www.abinformatica.es")
+        self.assertEqual(
+            self.shop.website_id._pmm_own_website_link(),
+            {
+                "href": "https://www.abinformatica.es",
+                "title": "www.abinformatica.es",
+                "icon": "fa-globe",
+            },
+        )
+
+    def test_a_full_url_is_stored_as_typed(self):
+        editor = self._editor().create({"company_website": "http://abinformatica.es/tienda"})
+        editor.action_save()
+        self.assertEqual(self.shop.website, "http://abinformatica.es/tienda")
+
+    def test_a_link_that_is_not_a_website_is_refused(self):
+        """The value lands in a public href: only http(s) gets through."""
+        self.shop.sudo().website = "https://www.kept.example"
+        for bad in ("javascript:alert(1)", "ftp://files.example", "mailto:a@b.c", "https://"):
+            editor = self._editor().create({"company_website": bad})
+            with self.assertRaises(ValidationError, msg=bad):
+                editor.action_save()
+        self.assertEqual(self.shop.website, "https://www.kept.example")
+
+    def test_clearing_the_own_website_clears_it(self):
+        self.shop.sudo().website = "https://www.abinformatica.es"
+        editor = self._editor().create({"company_website": "   "})
+        editor.action_save()
+        self.assertFalse(self.shop.website)
+        self.assertIsNone(self.shop.website_id._pmm_own_website_link())
+
+    # ------------------------------------------------------------------
+    # The dialog title speaks the merchant's language
+    # ------------------------------------------------------------------
+
+    def test_the_dialog_title_is_translated_for_a_spanish_merchant(self):
+        """Reported 2026-09-16: the dialog opened as "Page content" in Spanish.
+
+        Odoo 19 takes a Python term from the ``.po`` only when its block
+        carries the ``#. odoo-python`` comment; the ``code:`` reference
+        alone is not enough. Both halves are asserted: the term is loaded
+        from ``es.po``, and the action built through the same server action
+        the menu runs carries it.
+        """
+        terms = code_translations.get_python_translations(
+            "partner_microsite_manager", "es_ES"
+        )
+        self.assertEqual(terms.get("Page content"), "Contenido de la página")
+        self.env["res.lang"]._activate_lang("es_ES")
+        self.solo_merchant.lang = "es_ES"
+        action = (
+            self.env.ref("partner_microsite_manager.action_own_microsite_content")
+            .with_user(self.solo_merchant)
+            .with_context(lang="es_ES", allowed_company_ids=self.shop.ids)
+            .run()
+        )
+        self.assertEqual(action["res_model"], "microsite.content.editor")
+        self.assertEqual(action["name"], "Contenido de la página")

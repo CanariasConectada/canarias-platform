@@ -27,15 +27,17 @@
                 >
                     <footer class="bg-black text-light py-4">
                         <div class="container">
-                            <!-- Social networks. Website value first, owning
+                            <!-- The shop's own site first (globe, see
+                                 website._pmm_own_website_link), then the
+                                 social networks: website value first, owning
                                  company's value as fallback per network (see
                                  website._pmm_footer_social_links): merchants
                                  fill the links on the company form, and those
                                  values must not sit there invisible. Nothing
-                                 renders when both sides are empty. -->
+                                 renders when everything is empty. -->
                             <t
                                 t-set="pmm_social_links"
-                                t-value="website._pmm_footer_social_links()"
+                                t-value="website._pmm_footer_links()"
                             />
                             <div
                                 t-if="pmm_social_links"
@@ -47,6 +49,7 @@
                                         t-as="pmm_link"
                                         t-att-href="pmm_link['href']"
                                         target="_blank"
+                                        rel="noopener"
                                         class="link-light"
                                         t-att-title="pmm_link['title']"
                                         t-att-aria-label="pmm_link['title']"

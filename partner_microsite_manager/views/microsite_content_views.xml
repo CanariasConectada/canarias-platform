@@ -101,6 +101,8 @@
                             </p>
                             <group>
                                 <group>
+                                    <field name="company_website" widget="url"
+                                           placeholder="https://www.example.com"/>
                                     <field name="social_facebook"
                                            placeholder="https://www.facebook.com/..."/>
                                     <field name="social_instagram"

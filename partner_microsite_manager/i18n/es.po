@@ -415,6 +415,7 @@ msgid "Our story: heading"
 msgstr "Nuestra historia: título"
 
 #. module: partner_microsite_manager
+#. odoo-python
 #: model:ir.actions.act_window,name:partner_microsite_manager.action_own_microsite_content
 #: model:ir.ui.menu,name:partner_microsite_manager.menu_own_microsite_content
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
@@ -611,6 +612,12 @@ msgid ""
 msgstr "La URL del mapa debe ser una dirección https://; no se permiten enlaces «%(scheme)s:»."
 
 #. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/wizards/microsite_content_editor.py:0
+msgid "The website must be an http:// or https:// address, for example https://www.example.com."
+msgstr "El sitio web debe ser una dirección http:// o https://, por ejemplo https://www.ejemplo.com."
+
+#. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 msgid ""
 "This replaces the current homepage of the company website with the microsite"
@@ -654,6 +661,7 @@ msgstr "Martes"
 
 #. module: partner_microsite_manager
 #: model:ir.model,name:partner_microsite_manager.model_website
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__company_website
 msgid "Website"
 msgstr "Sitio web"
 
@@ -704,6 +712,11 @@ msgid ""
 "Your account is not linked to a shop with its own site, so there is no page "
 "content to edit."
 msgstr "Tu cuenta no está vinculada a un comercio con sitio propio, así que no hay contenido de página que editar."
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_microsite_content_editor__company_website
+msgid "Your shop's own site outside this platform, shown with a globe icon next to the social links."
+msgstr "El sitio web propio de tu comercio fuera de esta plataforma, mostrado con un icono de globo junto a las redes sociales."
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
@@ -760,6 +773,7 @@ msgid "Closed"
 msgstr "Cerrado"
 
 #. module: partner_microsite_manager
+#. odoo-python
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.website_view_list_merchant
 #: model:ir.actions.server,name:partner_microsite_manager.action_own_websites
 #: model:ir.ui.menu,name:partner_microsite_manager.menu_own_websites
@@ -773,18 +787,21 @@ msgid "Content"
 msgstr "Contenido"
 
 #. module: partner_microsite_manager
+#. odoo-python
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.website_view_list_merchant
 #: code:addons/partner_microsite_manager/models/website.py:0
 msgid "Pages"
 msgstr "Páginas"
 
 #. module: partner_microsite_manager
+#. odoo-python
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.website_view_list_merchant
 #: code:addons/partner_microsite_manager/models/website.py:0
 msgid "Orders"
 msgstr "Pedidos"
 
 #. module: partner_microsite_manager
+#. odoo-python
 #: code:addons/partner_microsite_manager/models/website.py:0
 msgid "That website does not belong to your shop."
 msgstr "Ese sitio web no pertenece a tu comercio."
@@ -929,3 +946,8 @@ msgstr "Gestionas más de una tienda. Elige de cuál quieres editar el contenido
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_company_picker_form
 msgid "<i class=\"fa fa-globe me-1\" title=\"Address\" role=\"img\" aria-label=\"Address\"/>"
 msgstr "<i class=\"fa fa-globe me-1\" title=\"Dirección\" role=\"img\" aria-label=\"Dirección\"/>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "https://www.example.com"
+msgstr "https://www.ejemplo.com"
