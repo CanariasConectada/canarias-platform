@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+     Two models, one shape each time: a merchant writes only what belongs to
+     the site of one of their own companies, and the platform's own people
+     (administrators, and the website designers `zca_platform` makes of its
+     staff) get everything back through a second, permissive rule. Rules of
+     the groups a user belongs to are OR-ed, and every new user is born a
+     merchant (`base.default_user_group` implies Comercios), so without the
+     companion rules an administrator who also holds Comercios would have
+     been confined to a shop they do not have.
+
+     `is_marketplace = False` on both: `zone_company_ownership` puts the ZONE
+     company in a merchant's allowed list, and the zone's site is a
+     marketplace that is nobody's shop.
+
+     Read is untouched on both models: a merchant files their products under
+     the shared categories, and the shop page reads tiles with sudo. -->
+<odoo>
+
+    <!-- ============================================================
+         website.category.tile: the per-site image of a category
+         ============================================================ -->
+    <record id="rule_website_category_tile_merchant_own_site" model="ir.rule">
+        <field name="name">Merchants curate the tiles of their own shops</field>
+        <field name="model_id" ref="model_website_category_tile"/>
+        <field name="groups" eval="[(4, ref('merchant_group.group_merchant'))]"/>
+        <field name="domain_force">[('website_id.company_id', 'in', company_ids), ('website_id.is_marketplace', '=', False)]</field>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <record id="rule_website_category_tile_platform_all" model="ir.rule">
+        <field name="name">The platform curates every shop's tiles</field>
+        <field name="model_id" ref="model_website_category_tile"/>
+        <field name="groups" eval="[(4, ref('base.group_system')), (4, ref('website.group_website_designer'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- ============================================================
+         product.public.category: a merchant's OWN categories
+         ============================================================
+         A shared category has no `website_id`, so `website_id.company_id`
+         is empty and the domain refuses it: the 402 shared categories stay
+         read-only for every merchant, whatever the ACL row of this module
+         says. A category pinned to another shop's site fails the same test.
+         The create guard in models/product_public_category.py makes sure
+         what a merchant creates passes this rule instead of failing it. -->
+    <record id="rule_product_public_category_merchant_own_site" model="ir.rule">
+        <field name="name">Merchants edit only the categories of their own sites</field>
+        <field name="model_id" ref="website_sale.model_product_public_category"/>
+        <field name="groups" eval="[(4, ref('merchant_group.group_merchant'))]"/>
+        <field name="domain_force">[('website_id.company_id', 'in', company_ids), ('website_id.is_marketplace', '=', False)]</field>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <record id="rule_product_public_category_platform_all" model="ir.rule">
+        <field name="name">The platform edits every category</field>
+        <field name="model_id" ref="website_sale.model_product_public_category"/>
+        <field name="groups" eval="[(4, ref('base.group_system')), (4, ref('website.group_website_designer'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+</odoo>

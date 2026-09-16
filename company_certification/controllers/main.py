@@ -58,8 +58,32 @@ class CompanyCertificationController(http.Controller):
                 "level_counts": self._count_by_level(holders),
                 "level": level,
                 "base_url": "/certification/%s" % cert_type.code,
+                "seals": self._get_published_seals(),
             },
         )
+
+    def _get_published_seals(self):
+        """Every published vertical, for the two-seal block closing the page.
+
+        The legacy pages ended on a pair of cards — Sostenibilidad and Silver
+        Economy — whichever of the two the visitor was reading, so the page's
+        own seal is listed too. Plain dicts for the same reason as the
+        holders: the template must not get a recordset it can walk.
+        """
+        seals = (
+            request.env["certification.type"]
+            .sudo()
+            .search([("landing_published", "=", True)])
+        )
+        return [
+            {
+                "code": seal.code,
+                "title": seal.website_title or seal.name,
+                "description": seal.website_description,
+                "has_badge": bool(seal.badge_image),
+            }
+            for seal in seals
+        ]
 
     def _get_certified_companies(self, cert_type):
         """The companies currently holding this seal, ready for the template.
@@ -138,16 +162,32 @@ class CompanyCertificationController(http.Controller):
         258 KB base64 blob in the HTML of every microsite homepage — repeated
         on each page view, never cached and never shared between shops.
         """
+        return self._serve_public_image(code, "badge_image")
+
+    @http.route(
+        "/certification/<string:code>/landing_image",
+        type="http",
+        auth="public",
+        website=True,
+        sitemap=False,
+    )
+    def certification_landing_image(self, code, **kwargs):
+        """Serve the hero picture of a published vertical's landing page.
+
+        Same reasoning as the badge: a route exposing exactly one field, so
+        visitors never need read access on ``certification.type``.
+        """
+        return self._serve_public_image(code, "landing_image")
+
+    def _serve_public_image(self, code, field_name):
         cert_type = self._get_certification_type(code)
         if (
             not cert_type
             or not cert_type.landing_published
-            or not cert_type.badge_image
+            or not cert_type[field_name]
         ):
             return request.not_found()
-        stream = request.env["ir.binary"]._get_image_stream_from(
-            cert_type, "badge_image"
-        )
+        stream = request.env["ir.binary"]._get_image_stream_from(cert_type, field_name)
         # Public + a day of cache: the seal changes about never, and it is the
         # same bytes for every shop holding it.
         stream.public = True

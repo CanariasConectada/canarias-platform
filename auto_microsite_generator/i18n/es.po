@@ -30,7 +30,7 @@ msgstr "Tienda"
 #. odoo-python
 #: code:addons/auto_microsite_generator/models/res_company.py:0
 msgid "Directory"
-msgstr "Comercios"
+msgstr "Comercio"
 
 #. module: auto_microsite_generator
 #: model_terms:ir.ui.view,arch_db:auto_microsite_generator.default_homepage_content

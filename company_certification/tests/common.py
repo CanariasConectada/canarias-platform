@@ -65,7 +65,6 @@ class CertificationCase(TransactionCase):
                     "title": "Question %s" % index,
                     "question_type": "simple_choice",
                     "sequence": index + 1,
-                    "comments_allowed": True,
                     "comments_message": "Advice %s" % index,
                     "suggested_answer_ids": [
                         (0, 0, {"value": "No", "answer_score": 0}),

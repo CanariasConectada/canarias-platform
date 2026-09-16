@@ -6,7 +6,7 @@ from odoo import fields
 from odoo.tests import HttpCase, TransactionCase, tagged
 
 CC_LOGO = "/website_login_branding/static/src/img/canarias_conectada_logo.webp"
-ZCA_LOGO = "/website_login_branding/static/src/img/zca_logo.webp"
+FUNDING_STRIP = "/website_login_branding/static/src/img/subvenciones.png"
 
 
 @tagged("post_install", "-at_install")
@@ -15,7 +15,10 @@ class TestLoginBranding(HttpCase):
 
     def _assert_branding(self, body):
         self.assertIn(CC_LOGO, body, "Canarias Conectada logo missing")
-        self.assertIn(ZCA_LOGO, body, "ZCA logo missing")
+        self.assertIn(FUNDING_STRIP, body, "funding strip missing")
+        self.assertIn("o_cc_login_subvention_logo", body, "funding strip class missing")
+        self.assertIn("FEDER Canarias 2021-2027", body, "FEDER legend missing")
+        self.assertIn("NextGenerationEU", body, "NextGenerationEU legend missing")
 
     def test_login_page_has_logos(self):
         response = self.url_open("/web/login")
@@ -23,11 +26,23 @@ class TestLoginBranding(HttpCase):
         self._assert_branding(response.text)
 
     def test_login_page_guest_button_targets_controller(self):
-        # The guest button must point at the new controller, never at the old
-        # anonymous "/" link.
+        # The guest button must point at a mutating POST controller, never at
+        # the old anonymous "/" link. NOT asserted on the specific "/guest/
+        # enter" URL: `discuss_community`, when installed, overrides this
+        # very form to post to its own "/community/guest" instead (see
+        # discuss_community.login_guest_uses_community_door) so that a guest
+        # from /login gets the same account as one from /community. This
+        # module must not know that override exists or start failing when it
+        # runs -- the button's PRESENCE and shape are its contract, not which
+        # controller answers it.
         response = self.url_open("/web/login")
         self.assertEqual(response.status_code, 200)
-        self.assertIn("/guest/enter", response.text, "guest button not wired")
+        self.assertIn("o_cc_guest_btn", response.text, "guest button not wired")
+        self.assertIn(
+            'method="post"',
+            response.text,
+            "guest button must submit through POST, never a plain link",
+        )
 
     def test_signup_page_has_logos(self):
         # Public signup can be disabled per database, in which case the

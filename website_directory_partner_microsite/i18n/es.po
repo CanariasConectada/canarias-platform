@@ -1,0 +1,46 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* website_directory_partner_microsite
+#
+# Generated from the module's own .pot so every `#:` reference line survives.
+# See scratchpad/refresh_po.py for why that matters.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: Canarias Conectada\n"
+"Language-Team: \n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+
+#. module: website_directory_partner_microsite
+#: model:ir.model.fields,field_description:website_directory_partner_microsite.field_microsite_content_editor__directory_category_id
+msgid "Category in the directory"
+msgstr "Categoría en el directorio"
+
+#. module: website_directory_partner_microsite
+#: model:ir.model.fields,field_description:website_directory_partner_microsite.field_microsite_content_editor__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: website_directory_partner_microsite
+#: model:ir.model.fields,help:website_directory_partner_microsite.field_microsite_content_editor__directory_category_id
+msgid ""
+"How your shop is filed in the business directory at /comercio. Leave it "
+"empty to be listed without a category."
+msgstr "Cómo aparece clasificado tu comercio en el directorio de /comercio. Déjalo vacío para salir sin categoría."
+
+#. module: website_directory_partner_microsite
+#: model:ir.model.fields,field_description:website_directory_partner_microsite.field_microsite_content_editor__id
+msgid "ID"
+msgstr ""
+
+#. module: website_directory_partner_microsite
+#: model:ir.model,name:website_directory_partner_microsite.model_microsite_content_editor
+msgid "Page content of my shop"
+msgstr ""

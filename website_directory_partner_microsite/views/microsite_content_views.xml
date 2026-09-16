@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- Above the tabs, next to the trade name: how the shop is filed in the
+         directory is part of who it is, not of what its homepage says. -->
+    <record id="view_microsite_content_editor_form_directory" model="ir.ui.view">
+        <field name="name">microsite.content.editor.form.directory</field>
+        <field name="model">microsite.content.editor</field>
+        <field name="inherit_id"
+               ref="partner_microsite_manager.view_microsite_content_editor_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="before">
+                <group>
+                    <field name="directory_category_id"
+                           options="{'no_create': True, 'no_open': True}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

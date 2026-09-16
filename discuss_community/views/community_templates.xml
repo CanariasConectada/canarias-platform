@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!--
+        The anonymous face of /community: two doors, nothing else.
+
+        Reuses website_login_branding's card classes (o_cc_login_wrap /
+        o_cc_login_card / o_cc_guest_btn) on purpose: its stylesheet ships in
+        web.assets_frontend platform-wide, so this page inherits the exact
+        branded card of the auth pages without one line of new CSS.
+
+        Source strings are English; Spanish lives in i18n/es.po like every
+        translatable term of the platform.
+    -->
+    <template id="community_landing" name="Community Landing">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <div class="o_cc_login_wrap d-flex justify-content-center py-5">
+                    <div class="o_cc_login_card card border-0 shadow-sm">
+                        <div class="card-body p-4 p-sm-5 text-center">
+                            <h1 class="h4 mb-3">Join the community</h1>
+                            <!-- Single-line text nodes on purpose: the msgid
+                                 of a template term is its verbatim text, and
+                                 a reflowed paragraph would silently orphan
+                                 the es.po entry. -->
+                            <p class="text-muted mb-4">Chat with your neighbourhood: no forms, no waiting.</p>
+                            <!--
+                                A portal session (merchant, portal guest) is
+                                shown the card, not the doors: /community/guest
+                                refuses to mint or swap under an authenticated
+                                session and /web/signup would fight the login,
+                                so both doors would be dead buttons. The one
+                                move that works is logging out first; core's
+                                /web/session/logout takes a redirect and lands
+                                the visitor back here, anonymous, doors open.
+                            -->
+                            <t t-if="portal_session">
+                                <p class="text-muted mb-4 o_cc_portal_note">Your current account is not a community account. Log out first, then come back in as a guest or create a community account.</p>
+                                <a
+                                    href="/web/session/logout?redirect=/community"
+                                    class="btn btn-primary w-100"
+                                >Log out and continue</a>
+                            </t>
+                            <!--
+                                POST on purpose: the button mints (or reuses)
+                                an account, and a mutating route must never be
+                                a link a prefetcher can follow. The framework
+                                validates the csrf token server-side.
+                            -->
+                            <form t-if="not portal_session" action="/community/guest" method="post">
+                                <input
+                                    type="hidden"
+                                    name="csrf_token"
+                                    t-att-value="request.csrf_token()"
+                                />
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary w-100 o_cc_guest_btn"
+                                >Enter as guest</button>
+                            </form>
+                            <a
+                                t-if="not portal_session"
+                                href="/web/signup"
+                                class="btn btn-outline-secondary w-100 mt-2"
+                            >Create my account</a>
+                            <p t-if="not portal_session" class="text-muted small mt-3 mb-0">With an account you keep your name and your conversations on every visit.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!--
+        Asked for on 2026-08-20: "los que inician sesión como invitado en
+        '/login' [deben] entrar igual que como si entraran en comunidad".
+
+        Before this, /login's guest button posted to website_login_branding's
+        own /guest/enter, which mints a PORTAL account (no backend access) —
+        a different shape and a different population from the INTERNAL
+        community guest /community/guest mints (see the long rationale on
+        each controller). Two doors, two kinds of guest, was the bug: the
+        same "Entrar como invitado" wording promised the same thing and
+        delivered different accounts depending on which page carried it.
+
+        Repointing the /login form's action is enough: the button's copy,
+        CSRF token and `redirect` passthrough are already identical to
+        /community's own form (both descend from the same branded card), so
+        the visitor's browser lands in the exact flow /community/guest
+        documents, including its default target, the Discuss backend.
+    -->
+    <template id="login_guest_uses_community_door"
+              inherit_id="website_login_branding.login_layout_branding"
+              name="Login guest button: same door as Comunidad">
+        <xpath expr="//form[@action='/guest/enter']" position="attributes">
+            <attribute name="action">/community/guest</attribute>
+        </xpath>
+    </template>
+
+</odoo>

@@ -63,6 +63,10 @@ class TestLocalContentRating(TransactionCase):
         self.assertEqual(reviews[0].feedback, "Beautiful place")
 
     def test_rating_author_name_visitor_fallback(self):
+        # The fallback resolves against the ambient language, Spanish on
+        # this database since the language rollout. Pinned to keep the
+        # expectation literal.
+        self.env.user.lang = "en_US"
         anonymous = self._create_rating(4)
         named = self._create_rating(5, partner=self.partner)
         item_model = self.env["website.local.content.item"]

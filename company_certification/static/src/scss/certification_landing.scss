@@ -22,13 +22,30 @@ $cc-gold: #d4a017;
 $cc-silver: #8e8e8e;
 $cc-bronze: #cd7f32;
 
+// One accent per vertical. The legacy pages painted Sostenibilidad green and
+// Silver Economy blue with classes of their own (`sust-green`, `silver-blue`)
+// that died with those modules; the accent now hangs off the code the
+// template stamps on the wrapper, so the bodies carry no colour at all.
+$cc-accent-sustainability: #198754;
+$cc-accent-silver: $cc-primary;
+
 .o_cc_landing {
+    --cc-accent: #{$cc-primary};
+
+    &[data-certification-code="sustainability"] {
+        --cc-accent: #{$cc-accent-sustainability};
+    }
+
+    &[data-certification-code="silver"] {
+        --cc-accent: #{$cc-accent-silver};
+    }
 
     // ---- Hero -----------------------------------------------------------
     .o_cc_landing_hero {
         background: linear-gradient(135deg, $cc-primary 0%, $cc-primary-dark 100%);
         color: #fff;
         padding: 4.5rem 0;
+        position: relative;
 
         .o_cc_landing_hero__title {
             color: #fff;
@@ -44,15 +61,46 @@ $cc-bronze: #cd7f32;
             width: auto;
             filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.25));
         }
+
+        // With a picture (inline `background-image` set by the template): the
+        // same box as the microsite hero -- a tall band on a desktop, the
+        // picture's own 16:9 proportion on a phone, where `cover` on a box
+        // taller than wide would keep only the middle third of the photo.
+        &--image {
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 50vh;
+            display: flex;
+            align-items: center;
+
+            // Dark veil so the white title reads over any photograph.
+            &::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(
+                    180deg,
+                    rgba(0, 0, 0, 0.35) 0%,
+                    rgba(0, 0, 0, 0.6) 100%
+                );
+            }
+
+            > .container {
+                position: relative;
+                width: 100%;
+            }
+        }
     }
 
     // ---- Content sections ----------------------------------------------
     .o_cc_landing_section__title {
-        color: $cc-primary;
+        color: var(--cc-accent);
         font-weight: 600;
     }
 
-    .o_cc_landing_materials {
+    .o_cc_landing_materials,
+    .o_cc_landing_seals {
         background-color: $cc-bg-light;
     }
 
@@ -61,8 +109,131 @@ $cc-bronze: #cd7f32;
         line-height: 1.7;
 
         h1, h2, h3, h4, h5 {
-            color: $cc-primary;
+            color: var(--cc-accent);
             font-weight: 600;
+        }
+
+        // ---- ODS icon grid (Sostenibilidad body) ------------------------
+        // Ported from the retired sustainability module: 17 icons that sit
+        // in two rows on a desktop and stay tappable on a phone. Each item
+        // is a link opening its goal's modal.
+        .sust-ods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 1rem;
+            padding: 1rem 0;
+        }
+
+        .sust-ods-item {
+            display: block;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            text-align: center;
+
+            &:hover,
+            &:focus-visible {
+                transform: scale(1.08);
+            }
+
+            img {
+                width: 100%;
+                max-width: 110px;
+                height: auto;
+                border-radius: 0.5rem;
+            }
+        }
+
+        .sust-ods-modal-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: none;
+
+            img,
+            .modal-ods-icon {
+                width: 48px;
+                height: 48px;
+                object-fit: contain;
+            }
+
+            h5 {
+                margin: 0;
+                font-weight: 600;
+                color: inherit;
+            }
+        }
+
+        // ---- Carousel ----------------------------------------------------
+        // Bootstrap styles indicators through `[data-bs-target]`, which the
+        // sanitizer strips from the body; the surviving links get the same
+        // bars here. The interaction script drives them.
+        .carousel-indicators a {
+            box-sizing: content-box;
+            flex: 0 1 auto;
+            width: 30px;
+            height: 3px;
+            padding: 0;
+            margin: 0 3px;
+            text-indent: -999px;
+            cursor: pointer;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 0;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            opacity: 0.5;
+            transition: opacity 0.6s ease;
+
+            &.active {
+                opacity: 1;
+            }
+        }
+
+        .carousel-dark .carousel-indicators a {
+            background-color: #000;
+        }
+
+        .sust-carousel-caption {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 0.5rem;
+            padding: 1rem;
+
+            h5 {
+                color: #fff;
+            }
+
+            p {
+                color: rgba(255, 255, 255, 0.9);
+                margin-bottom: 0;
+            }
+        }
+
+        // ---- Picture + text blocks (the ex-accordion sections) ----------
+        // The legacy layout classes lost their stylesheet with the modules;
+        // without this the picture and the text stack as two full-width
+        // blocks.
+        .sust-accordion-layout,
+        .silver-accordion-layout {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            align-items: flex-start;
+
+            .sust-accordion-image,
+            .silver-accordion-image {
+                flex: 1 1 260px;
+                max-width: 420px;
+
+                img {
+                    border-radius: $cc-radius;
+                }
+            }
+
+            .sust-accordion-content,
+            .silver-accordion-content {
+                flex: 2 1 320px;
+            }
         }
     }
 
@@ -85,7 +256,7 @@ $cc-bronze: #cd7f32;
         }
 
         .o_cc_landing_card__title {
-            color: $cc-primary;
+            color: var(--cc-accent);
         }
 
         .o_cc_landing_card__dl {
@@ -149,7 +320,7 @@ $cc-bronze: #cd7f32;
         }
 
         .o_cc_holder_card__name {
-            color: $cc-primary;
+            color: var(--cc-accent);
         }
     }
 
@@ -164,6 +335,28 @@ $cc-bronze: #cd7f32;
 
         &--bronze {
             color: $cc-bronze;
+        }
+    }
+
+    // ---- The platform's seals (page footer) -----------------------------
+    .o_cc_seal_card {
+        border-radius: $cc-radius;
+        color: inherit;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+        &:hover,
+        &:focus-visible {
+            transform: translateY(-5px);
+            box-shadow: $cc-shadow;
+        }
+
+        .o_cc_seal_card__img {
+            max-height: 160px;
+            width: auto;
+        }
+
+        .o_cc_seal_card__title {
+            color: $cc-primary;
         }
     }
 }
@@ -194,7 +387,7 @@ $cc-bronze: #cd7f32;
 }
 
 // ---- Responsive ---------------------------------------------------------
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
     .o_cc_landing .o_cc_landing_hero {
         padding: 3rem 0;
 
@@ -204,6 +397,29 @@ $cc-bronze: #cd7f32;
 
         .o_cc_landing_hero__lead {
             font-size: 1rem;
+        }
+
+        .o_cc_landing_hero__badge {
+            max-height: 120px;
+        }
+
+        &--image {
+            min-height: 0;
+            aspect-ratio: 16 / 9;
+            padding: 1.25rem 0;
+        }
+    }
+}
+
+@media (max-width: 575.98px) {
+    .o_cc_landing .o_cc_landing_richtext {
+        .sust-ods-grid {
+            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .sust-ods-item img {
+            max-width: 80px;
         }
     }
 }

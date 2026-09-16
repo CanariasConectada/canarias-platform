@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+     Reported on 2026-09-14: "quitar lo de gift card y regalo a todas las
+     tiendas, aparecen sin mi consentimiento". None of it is ours - it is
+     what Odoo's own shop offers out of the box - and a merchant on this
+     platform issues no coupons and no gift cards, so the box only ever
+     told their customer to look for a code that does not exist.
+
+     Every view below is an EXTENSION of a core template, which is what
+     makes deactivating them the supported switch rather than a patch (core
+     labels `reduction_code` itself "Deactivatable through the website
+     editor"). Re-enabling the lot is ticking `active` back on, or
+     uninstalling this module. -->
+<odoo>
+    <!-- The promo/coupon row under the cart and checkout totals. -->
+    <record id="website_sale.reduction_code" model="ir.ui.view">
+        <field name="active" eval="False"/>
+    </record>
+
+    <!-- The gift-card half of that row, its placeholder, the "gift card
+         used" line in the cart summary and the gift-card block on the
+         confirmation page. Loaded only when website_sale_loyalty is
+         installed, which is the case here and need not be a dependency:
+         a missing xmlid would abort the install. -->
+    <function model="ir.ui.view" name="write">
+        <function model="ir.ui.view" name="search" eval="[[
+            ('key', 'in', [
+                'website_sale_loyalty.modify_code_form',
+                'website_sale_loyalty.reduction_coupon_code',
+                'website_sale_loyalty.cart_summary_inherit_website_gift_card_sale',
+                'website_sale_loyalty.website_sale_purchased_gift_card',
+                'website_sale_loyalty.sale_coupon_result',
+            ]),
+            ('active', '=', True),
+        ]]"/>
+        <value eval="{'active': False}"/>
+    </function>
+
+    <!-- The mobile cart drawer links to the cart with the words themselves,
+         outside any deactivatable block. -->
+    <template id="checkout_layout_without_coupon_link"
+              inherit_id="website_sale.checkout_layout"
+              name="Checkout layout without the coupon link">
+        <xpath expr="//a[@href='/shop/cart'][contains(@class, 'btn-link')]"
+               position="replace"/>
+    </template>
+</odoo>

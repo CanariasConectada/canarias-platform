@@ -11,7 +11,10 @@
 
     .o_cc_login_card {
         width: 100%;
-        max-width: 420px;
+        // 420 -> 580 on 2026-09-15: the funding strip at the foot is 962x220
+        // and must show at its full 120px (client's request), which takes
+        // 525px of width plus the strip's 2 x 1.5rem padding.
+        max-width: 580px;
         border-radius: 1rem;
         overflow: hidden;
         background-color: var(--o-cc-card-bg, #ffffff);
@@ -19,11 +22,19 @@
 
     .o_cc_login_brand_logo {
         // The brand mark is the first thing that identifies the card, so it
-        // carries more weight than the subvention strip at the foot (64px).
-        // Raised from 128px on 2026-08-14: the card is 420px wide, and at 160
-        // the mark reads as the subject of the card rather than a header on
-        // top of it, with room to spare on the narrowest phone.
-        max-height: 160px;
+        // carries more weight than the funding strip at the foot (120px).
+        // 128 -> 160 on 2026-08-14, 160 -> 208 on 2026-08-15, both because the
+        // mark still read as a header sitting on top of the card rather than
+        // as its subject.
+        //
+        // 208 is the ceiling, not a preference. The logo is square (344x344),
+        // `img-fluid` caps its width at 100% of the content box, and that box
+        // is 420 - 2*3rem = 324px on sm+ but only ~312px on a 360px phone,
+        // where `p-4` applies instead. Past ~300 the width becomes the binding
+        // constraint and raising this number stops doing anything at all --
+        // which is exactly why the 128 -> 160 bump was invisible on the wide
+        // wordmark variant.
+        max-height: 208px;
         width: auto;
     }
 
@@ -80,9 +91,15 @@
     }
 
     .o_cc_login_subvention_logo {
-        max-height: 64px;
+        // 64 -> 120 on 2026-09-15 (client request: the combined FEDER +
+        // NextGenerationEU strip at 120px wherever it appears). The image
+        // is 962x220, so 120px high means ~525px wide; inside this card
+        // (420px minus the strip's 1.5rem side padding) `img-fluid` caps
+        // the width first and the height lands nearer 85px. Full opacity:
+        // the strip now carries legal legends as text, not just emblems.
+        max-height: 120px;
         width: auto;
-        opacity: 0.9;
+        opacity: 1;
     }
 }
 

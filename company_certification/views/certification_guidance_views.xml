@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+     What a seal holder needs BEFORE and AROUND an evaluation: the
+     instructions of the questionnaire and the online course of the seal.
+     The instructions already existed on the survey, but the only backend
+     surface for them was the seal's own configuration form, which is
+     manager-only. Asked for on 2026-09-14: "habilitar Instrucciones y
+     Learning en la pestana de certificaciones".
+
+     Read-only everywhere: this is a reading room, not a second editor.
+
+     The course lives on the portal website, one per seal, and the
+     Formación menu links there (2026-09-15). The material list this file
+     used to show under Formación was a download table nobody asked for
+     once the courses existed; the material itself stays on the seal's
+     landing page. -->
+<odoo>
+    <record id="certification_type_view_guidance_list" model="ir.ui.view">
+        <field name="name">certification.type.guidance.list</field>
+        <field name="model">certification.type</field>
+        <field name="arch" type="xml">
+            <list create="false" delete="false" edit="false">
+                <field name="sequence" column_invisible="1"/>
+                <field name="name"/>
+                <field name="website_title" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="certification_type_view_guidance_form" model="ir.ui.view">
+        <field name="name">certification.type.guidance.form</field>
+        <field name="model">certification.type</field>
+        <field name="arch" type="xml">
+            <form create="false" delete="false" edit="false">
+                <sheet>
+                    <field name="badge_image" widget="image" class="oe_avatar"/>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <notebook>
+                        <page string="Instructions" name="instructions">
+                            <field name="instructions_html" readonly="1"/>
+                        </page>
+                        <page string="When you finish" name="closing">
+                            <field name="closing_html" readonly="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_certification_instructions" model="ir.actions.act_window">
+        <field name="name">Instrucciones</field>
+        <field name="res_model">certification.type</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'create': False, 'edit': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Todavía no hay sellos publicados</p>
+            <p>Aquí se leen las instrucciones de cada evaluación.</p>
+        </field>
+    </record>
+
+    <record id="action_certification_instructions_list_view" model="ir.actions.act_window.view">
+        <field name="sequence">1</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="certification_type_view_guidance_list"/>
+        <field name="act_window_id" ref="action_certification_instructions"/>
+    </record>
+
+    <record id="action_certification_instructions_form_view" model="ir.actions.act_window.view">
+        <field name="sequence">2</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="certification_type_view_guidance_form"/>
+        <field name="act_window_id" ref="action_certification_instructions"/>
+    </record>
+
+    <!-- Both sit between "New Evaluation" (15) and the manager-only
+         configuration entries (20, 30), and neither names a group: a menu
+         without one inherits the visibility of Certificaciones, which is
+         exactly the audience asked for - seal holders and administrators. -->
+    <menuitem id="menu_certification_instructions"
+              name="Instrucciones"
+              parent="menu_certification_root"
+              action="action_certification_instructions"
+              sequence="16"/>
+
+    <!-- One entry per seal, each opening the seal's online course. The
+         link is data (``certification.type.training_url``), read at click
+         time by a server action, so moving a course never touches code.
+         Same tab, not a new one: Odoo opens a "new" act_url with
+         window.open AFTER the action round-trip, which browsers treat as a
+         popup and block until the user allows it (reported 2026-09-10 for
+         the training_menu module). Odoo 19 lets a user run a code action
+         only if they can WRITE its model - or if they belong to one of the
+         action's groups, which is the check that applies here: every seal
+         holder is a certification user, and the code only reads. -->
+    <record id="action_training_silver" model="ir.actions.server">
+        <field name="name">Silver Economy course</field>
+        <field name="model_id" ref="model_certification_type"/>
+        <field name="state">code</field>
+        <field name="group_ids" eval="[(4, ref('company_certification.group_certification_user'))]"/>
+        <field name="code">
+cert = model.search([("code", "=", "silver")], limit=1)
+action = {
+    "type": "ir.actions.act_url",
+    "url": cert.training_url or "https://canariasconectada.es/slides",
+    "target": "self",
+}
+        </field>
+    </record>
+
+    <record id="action_training_sustainability" model="ir.actions.server">
+        <field name="name">Sostenibilidad course</field>
+        <field name="model_id" ref="model_certification_type"/>
+        <field name="state">code</field>
+        <field name="group_ids" eval="[(4, ref('company_certification.group_certification_user'))]"/>
+        <field name="code">
+cert = model.search([("code", "=", "sustainability")], limit=1)
+action = {
+    "type": "ir.actions.act_url",
+    "url": cert.training_url or "https://canariasconectada.es/slides",
+    "target": "self",
+}
+        </field>
+    </record>
+
+    <menuitem id="menu_certification_training"
+              name="Formación"
+              parent="menu_certification_root"
+              sequence="17"/>
+
+    <menuitem id="menu_certification_training_silver"
+              name="Silver Economy"
+              parent="menu_certification_training"
+              action="action_training_silver"
+              sequence="10"/>
+
+    <menuitem id="menu_certification_training_sustainability"
+              name="Sostenibilidad"
+              parent="menu_certification_training"
+              action="action_training_sustainability"
+              sequence="20"/>
+</odoo>

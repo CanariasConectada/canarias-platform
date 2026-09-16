@@ -15,9 +15,25 @@
          variant id, so the gate is simply too strict for a marketplace that
          compares whole products, not variants of one.
 
-         We reuse core's button (same ``o_add_compare`` hook the comparison
-         interaction listens on) and only change two things: it always renders,
-         and it carries a modern look. -->
+         ``o_add_compare`` IS carried this time, on purpose (2026-08-21):
+         the visitor asked to keep the shop grid on core's own one-by-one
+         flow (click a card, it joins the comparison, the bottom bar picks
+         it up) and reserve the scoped picker (category + "which shop")
+         for the product page alone, where the question of WHAT to compare
+         against actually needs asking. ``o_wscc_compare_btn`` stays for the
+         legible/always-visible skin; ``o_add_compare`` is what makes core's
+         OWN ``ProductComparison`` interaction own the click, exactly the
+         way it owns its own button, disable-after-add included, which is
+         no longer a problem now that this button does not ALSO have to stay
+         clickable to reopen a picker. -->
+    <!-- NO ``aria-label`` on these buttons, on purpose: they already carry
+         visible text, and Odoo's arch translation only substitutes the FIRST
+         occurrence of a source string within one view. With an
+         ``aria-label`` repeating the same words as the visible ``<span>``,
+         the attribute translated and the span the visitor actually reads
+         stayed in English. Reported 2026-08-21. A redundant aria-label on a
+         button that already has visible text is unnecessary for
+         accessibility anyway. -->
     <!-- The Canarias aggregated shop hides the whole add-to-cart button row
          (the cart lives on each merchant's own site), and core injects its
          compare button INTO that row — so on our shop it never rendered.
@@ -27,21 +43,20 @@
     <template
         id="card_compare_button"
         inherit_id="website_sale.products_item"
-        name="Comparar en la tarjeta del shop (Canarias)"
+        name="Compare button on the shop card (Canarias)"
     >
         <xpath expr="//*[hasclass('o_wsale_products_item_title')]" position="after">
             <div t-if="product.product_variant_id" class="o_wscc_compare_wrap mt-1">
                 <button
                     type="button"
-                    class="btn o_add_compare o_wscc_compare_btn o_wscc_compare_btn_sm"
-                    title="Comparar con otros productos"
-                    aria-label="Comparar"
+                    class="btn o_wscc_compare_btn o_wscc_compare_btn_sm o_add_compare"
+                    title="Compare with other products"
+                    data-action="o_comparelist"
                     t-att-data-product-template-id="product.id"
                     t-att-data-product-product-id="product.product_variant_id.id"
-                    data-action="o_comparelist"
                 >
                     <span class="fa fa-exchange fa-fw o_not-animable"/>
-                    <span class="o_label small ms-1">Comparar</span>
+                    <span class="o_label small ms-1">Compare</span>
                 </button>
             </div>
         </xpath>
@@ -56,22 +71,147 @@
     <template
         id="ajax_card_compare"
         inherit_id="website_sale_canarias.shop_grid_ajax"
-        name="Comparar en la grilla AJAX (Canarias)"
+        name="Compare button on the AJAX grid (Canarias)"
     >
         <xpath expr="//div[hasclass('o_wsale_product_price')]" position="after">
             <button
                 t-if="product.product_variant_id"
                 type="button"
-                class="btn btn-sm o_add_compare o_wscc_compare_btn o_wscc_compare_btn_sm mt-1"
-                title="Comparar con otros productos"
-                aria-label="Comparar"
+                class="btn btn-sm o_wscc_compare_btn o_wscc_compare_btn_sm mt-1 o_add_compare"
+                title="Compare with other products"
+                data-action="o_comparelist"
                 t-att-data-product-template-id="product.id"
                 t-att-data-product-product-id="product.product_variant_id.id"
-                data-action="o_comparelist"
             >
                 <span class="fa fa-exchange fa-fw o_not-animable"/>
-                <span class="o_label small ms-1">Comparar</span>
+                <span class="o_label small ms-1">Compare</span>
             </button>
+        </xpath>
+    </template>
+
+    <!-- ================================================================
+         Compare from the product page itself
+         ================================================================
+         Where the question is actually asked. Core puts its own button in
+         `#product_option_block` and only renders it when the product has
+         variant attributes, which on this catalogue is almost never; and the
+         aggregated shop hides that whole row anyway.
+
+         Anchored right under the price, because a price comparator is what
+         this is: the visitor is looking at a number and wants to know
+         whether it is a good one. -->
+    <template
+        id="product_page_compare_button"
+        inherit_id="website_sale.product"
+        name="Compare prices on the product page (Canarias)"
+    >
+        <xpath expr="//div[hasclass('o_wsale_product_details_content_section_price')]"
+               position="after">
+            <div t-if="product.product_variant_id" class="o_wscc_compare_wrap mb-4">
+                <button
+                    type="button"
+                    class="btn btn-outline-primary o_wscc_compare_btn o_wscc_compare_btn_picker"
+                    title="Compare this price with other products"
+                    t-att-data-product-template-id="product.id"
+                    t-att-data-product-product-id="product.product_variant_id.id"
+                >
+                    <span class="fa fa-exchange fa-fw o_not-animable"/>
+                    <span class="o_label ms-1">Compare prices</span>
+                </button>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- ================================================================
+         The picker
+         ================================================================
+         Rendered once per page, next to the shop, and driven by the
+         `wscc:open` event the product page's own `o_wscc_compare_btn_picker`
+         button dispatches (the shop-grid cards join the comparison directly
+         through core's own `o_add_compare` now; only the product page still
+         asks "compare against what"). One modal for the whole grid rather
+         than one per card: a thousand-product zone shop would otherwise ship
+         a thousand copies of this markup. -->
+    <template id="comparison_modal" inherit_id="website.layout"
+              name="Comparison picker modal (Canarias)">
+        <xpath expr="//div[@id='wrapwrap']" position="inside">
+            <div class="modal fade o_wscc_compare_modal" id="o_wscc_compare_modal"
+                 tabindex="-1" aria-hidden="true"
+                 aria-labelledby="o_wscc_compare_modal_title">
+                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="o_wscc_compare_modal_title">
+                                Compare prices
+                            </h5>
+                            <button type="button" class="btn-close"
+                                    data-bs-dismiss="modal" aria-label="Close"/>
+                        </div>
+                        <div class="modal-body">
+                            <p class="text-muted small">Choose which products to compare with. First the scope, then the category.</p>
+                            <!-- Server-side search: the candidate pool is
+                                 capped at 120, so a client-side filter could
+                                 never reach what the cap already cut off. -->
+                            <div class="input-group input-group-sm mb-3 o_wscc_modal_search">
+                                <span class="input-group-text">
+                                    <span class="fa fa-search" role="presentation"/>
+                                </span>
+                                <input type="search"
+                                       class="form-control o_wscc_modal_search_input"
+                                       placeholder="Search products by name"
+                                       aria-label="Search products by name"/>
+                            </div>
+                            <!-- The four scopes. Rendered by the client from
+                                 what the server says is available here: a
+                                 product in no neighbourhood offers neither
+                                 "my zone" nor "outside my zone". A tab that
+                                 comes back empty is worse than one that is
+                                 not offered.
+
+                                 `d-flex flex-wrap gap-2`, not `btn-group`:
+                                 a button group merges its members' borders
+                                 into one connected strip, which reads fine
+                                 on a single row but turned into a cramped,
+                                 gapless block once a fourth scope ("Only at
+                                 ...") pushed onto its own row underneath —
+                                 reported 2026-08-21 ("corrige los
+                                 paddings"). Independent chips with a real
+                                 gap between them wrap cleanly at any width. -->
+                            <div class="o_wscc_modal_scopes d-flex flex-wrap gap-2 mb-3"
+                                 role="group" aria-label="Comparison scope"/>
+                            <div class="o_wscc_modal_zones mb-3 d-none">
+                                <label class="form-label small text-muted mb-1"
+                                       for="o_wscc_zone_select">Which zone?</label>
+                                <select class="form-select form-select-sm"
+                                        id="o_wscc_zone_select"/>
+                            </div>
+                            <div class="o_wscc_modal_chips mb-3"/>
+                            <div class="o_wscc_modal_list"/>
+                            <div class="o_wscc_modal_truncated d-none small text-muted mt-2">
+                                Showing <span class="o_wscc_modal_shown">0</span> of <span class="o_wscc_modal_total">0</span> products. Search to find the rest.
+                            </div>
+                            <div class="o_wscc_modal_empty d-none text-muted text-center py-4">
+                                No products in this category to compare.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <span class="me-auto small text-muted">
+                                Selected: <span class="o_wscc_modal_count">0</span> of 4
+                            </span>
+                            <button type="button" class="btn btn-secondary"
+                                    data-bs-dismiss="modal">Close</button>
+                            <!-- Enabled by the client once at least two
+                                 products are ticked; the href is rebuilt from
+                                 the comparison cookie on every change, the
+                                 same URL core's bottom bar builds. -->
+                            <a href="#" class="btn btn-primary disabled o_wscc_modal_go"
+                               aria-disabled="true" tabindex="-1">
+                                View comparison
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </xpath>
     </template>
 

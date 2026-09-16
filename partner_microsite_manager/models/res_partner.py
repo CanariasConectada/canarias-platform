@@ -2,6 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 from odoo import _, fields, models
+from odoo.exceptions import AccessError
 
 
 class ResPartner(models.Model):
@@ -33,13 +34,28 @@ class ResPartner(models.Model):
             partner.has_microsite = bool(partner.microsite_company_id)
 
     def action_open_microsite_company(self):
-        """Open the company form (Microsite tab) of this contact."""
+        """Open the microsite content of this contact's shop.
+
+        Whoever may write companies (administrators) gets the company form,
+        whose Microsite page mirrors the content editor. Everybody else --
+        the merchants, who read companies but write none -- used to land on
+        that same form read-only (client report 2026-09-16). They get the
+        content editor instead, through the website's own action, so the
+        ownership guard applies: another shop's contact is refused with
+        ``AccessError``, never answered with that shop's editor.
+        """
         self.ensure_one()
+        company = self.sudo().microsite_company_id
+        if not self.env["res.company"].has_access("write"):
+            if not company:
+                raise AccessError(_("This contact has no microsite."))
+            return company.website_id.with_env(self.env).action_microsite_content()
         return {
             "type": "ir.actions.act_window",
             "name": _("Microsite"),
             "res_model": "res.company",
-            "res_id": self.microsite_company_id.id,
+            "res_id": company.id,
             "view_mode": "form",
+            "views": [(False, "form")],
             "target": "current",
         }

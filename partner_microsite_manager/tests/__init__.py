@@ -1,6 +1,16 @@
 from . import (
+    test_content_editor,
+    test_core_menu_gating,
+    test_legal_pages,
+    test_logo_follows_company,
+    test_merchant_server_actions,
     test_microsite_company,
+    test_microsite_company_picker,
+    test_microsite_hero,
     test_microsite_render,
     test_microsite_settings,
     test_opening_hours,
+    test_opening_slots,
+    test_partner_microsite_button,
+    test_view_scoping,
 )
