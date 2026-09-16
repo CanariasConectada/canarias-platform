@@ -1,3 +1,14 @@
+# 19.0.2.2.0 (2026-09-16)
+
+- Merchants switch their own reviews page on and off from the content
+  editor (*Website > Page content*), in a new *Reviews* tab that also shows
+  the average rating, the number of published reviews and a link to the
+  page (client request). The value goes through the editor's whitelist and
+  ownership check; the company write keeps adding or removing the *Reviews*
+  entry of the shop's website menu. Depends on `partner_microsite_manager`.
+- On the company form the switch moved from next to the website field to a
+  *Reviews* page of the Microsite notebook, mirroring the editor.
+
 # 19.0.2.0.0 (2026-07-06)
 
 Full OCA-style reform of the legacy module. Breaking changes:

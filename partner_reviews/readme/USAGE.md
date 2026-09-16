@@ -1,6 +1,7 @@
-1. Open *Settings > Companies*, pick the merchant company and enable
-   **Enable Reviews Page**. If the company already has a website, a
-   *Reviews* entry is added to its main menu automatically.
+1. The merchant opens *Website > Page content*, tab *Reviews*, and enables
+   the reviews page (administrators: *Settings > Companies*, Microsite page,
+   *Reviews* section). If the company has a website, a *Reviews* entry is
+   added to its main menu automatically, and removed when disabled.
 2. Customers visit `/resenas` on the merchant website, log in and submit
    their star rating with an optional comment.
 3. Reviews containing a forbidden word (menu *Reviews > Forbidden Words*)

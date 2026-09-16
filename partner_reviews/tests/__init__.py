@@ -1,1 +1,6 @@
-from . import test_review_moderation, test_review_stats, test_review_website
+from . import (
+    test_review_moderation,
+    test_review_stats,
+    test_review_website,
+    test_reviews_toggle,
+)
