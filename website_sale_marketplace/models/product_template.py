@@ -209,6 +209,8 @@ class ProductTemplate(models.Model):
         # (confirmed 2026-08-11: a Guanarteme product surfaced in
         # Tamaraceite). It also risked the delivery-carrier recompute the
         # backfill batches around.
+        if self.env.context.get("wsm_skip_marketplace_link"):
+            return products
         companies = self.env["website"]._portal_marketplace_companies()
         if companies:
             # Only write on the products actually missing a marketplace
