@@ -38,6 +38,13 @@ class TestMerchantCategories(HttpCase):
     def setUpClass(cls):
         super().setUpClass()
         Category = cls.env["product.public.category"]
+        # A database with demo data (the CI) ships eCommerce categories that
+        # carry a cover image and would tile on every shop; production has
+        # none. Start from production's state so each test sets exactly the
+        # covers it asserts about.
+        Category.with_context(active_test=False).search(
+            [("cover_image", "!=", False)]
+        ).write({"cover_image": False})
         # Shared: no website, the way the 402 migrated categories are.
         cls.shared = Category.create({"name": "Portátiles"})
         cls.shop_a, cls.site_a = cls._shop("WSMC Alfa SL", SITE_A)
