@@ -83,7 +83,14 @@ class ProductPublicCategory(models.Model):
             for vals in vals_list:
                 self._wsmc_pin_website(vals)
                 self._wsmc_check_parent(vals, vals["website_id"])
-        return super().create(vals_list)
+        categories = super().create(vals_list)
+        # An own category shows on its shop's "Shop categories" screen at
+        # once, wherever it was created from.
+        for website in categories.website_id:
+            website._wsmc_ensure_category_rows(
+                categories.filtered(lambda c, w=website: c.website_id == w)
+            )
+        return categories
 
     def write(self, vals):
         if self._wsmc_is_restricted_merchant() and (
