@@ -2,8 +2,16 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 import re
+from unittest.mock import patch
+
+import psycopg2
 
 from odoo.tests import HttpCase, new_test_user, tagged
+from odoo.tools import mute_logger, sql
+
+from odoo.addons.website_local_content.models.local_content_item import (
+    RATING_PARTNER_UNIQUE_INDEX,
+)
 
 from .common import create_taxonomy, make_test_image
 
@@ -155,8 +163,11 @@ class TestDetailLikeRating(HttpCase):
     def test_invalid_rating_value_is_ignored(self):
         self.authenticate("wlc_rater_a", "wlc_rater_a")
         for value in ("0", "6", "abc", ""):
-            self._rate(rating=value)
+            response = self._rate(rating=value)
+            self.assertIn("rating_error=1", response.url)
+            self.assertIn("wlc-rating-error", response.text)
         self.assertFalse(self._ratings())
+        self.assertNotIn("wlc-rating-error", self._get_page(self.detail_url))
 
     def test_user_only_acts_on_own_rating(self):
         self.authenticate("wlc_rater_a", "wlc_rater_a")
@@ -188,3 +199,71 @@ class TestDetailLikeRating(HttpCase):
         )
         self.assertEqual(response.status_code, 404)
         self.assertFalse(self._ratings())
+
+    # --- Database guarantee ----------------------------------------------------
+    def test_unique_index_exists(self):
+        self.assertTrue(sql.index_exists(self.env.cr, RATING_PARTNER_UNIQUE_INDEX))
+
+    def test_duplicate_create_leaves_one_row(self):
+        """A second raw create for the same partner hits the index; the
+        controller helper falls back to updating the existing row."""
+        vals = {
+            "res_model_id": self.env["ir.model"]._get_id(self.item._name),
+            "res_id": self.item.id,
+            "partner_id": self.rater.partner_id.id,
+            "rating": 3,
+            "consumed": True,
+        }
+        Rating = self.env["rating.rating"].sudo()
+        Rating.create(vals)
+        with self.assertRaises(psycopg2.IntegrityError), mute_logger("odoo.sql_db"):
+            with self.env.cr.savepoint():
+                Rating.create(dict(vals, rating=5))
+        self.assertEqual(len(self._ratings(self.rater.partner_id)), 1)
+        # Ratings without partner stay unconstrained.
+        Rating.create(dict(vals, partner_id=False))
+        Rating.create(dict(vals, partner_id=False))
+        self.assertEqual(len(self._ratings()), 3)
+
+    def test_controller_create_race_falls_back_to_update(self):
+        """Simulate the race: another request already inserted the row, but
+        this one looked before that. The insert hits the unique index and
+        the request still ends with one updated row."""
+        from odoo.addons.website_local_content.controllers.main import (
+            WebsiteLocalContent,
+        )
+
+        self.authenticate("wlc_rater_a", "wlc_rater_a")
+        # Token first: rendering the page also looks up the own rating.
+        csrf = self._csrf()
+        self.env["rating.rating"].sudo().create(
+            {
+                "res_model_id": self.env["ir.model"]._get_id(self.item._name),
+                "res_id": self.item.id,
+                "partner_id": self.rater.partner_id.id,
+                "rating": 1,
+                "consumed": True,
+            }
+        )
+        self.env.flush_all()
+        original = WebsiteLocalContent._get_own_rating
+        calls = []
+
+        def stale_first_lookup(controller, item):
+            calls.append(1)
+            if len(calls) == 1:
+                return item.env["rating.rating"].browse()
+            return original(controller, item)
+
+        with (
+            patch.object(WebsiteLocalContent, "_get_own_rating", stale_first_lookup),
+            mute_logger("odoo.sql_db"),
+        ):
+            response = self.url_open(
+                self.rate_url, data={"csrf_token": csrf, "rating": "4"}
+            )
+        self.assertEqual(response.status_code, 200)
+        self.assertGreaterEqual(len(calls), 2)
+        rating = self._ratings(self.rater.partner_id)
+        self.assertEqual(len(rating), 1)
+        self.assertEqual(rating.rating, 4)

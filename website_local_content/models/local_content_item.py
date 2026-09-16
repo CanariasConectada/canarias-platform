@@ -8,8 +8,13 @@ from urllib.parse import urlsplit
 
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
+from odoo.tools import SQL, sql
 
 from odoo.addons.rating.models import rating_data
+
+# Partial unique index: one rating per partner per item, scoped to this
+# model only so core ratings of other models are never constrained.
+RATING_PARTNER_UNIQUE_INDEX = "website_local_content_rating_partner_uniq"
 
 MIN_PHOTO_YEAR = 1840  # First photographs of the Canary Islands era.
 # Only these schemes may reach an ``href``. Anything else (``javascript:``,
@@ -326,6 +331,43 @@ class LocalContentItem(models.Model):
             ("consumed", "=", True),
             ("rating", ">=", rating_data.RATING_LIMIT_MIN),
         ]
+
+    def init(self):
+        """Guarantee one rating per partner per item at the database level.
+
+        Existing duplicates (migrated legacy ratings) are collapsed first,
+        keeping the most recent row of each (item, partner) pair. Ratings
+        without a partner are left untouched.
+        """
+        super().init()
+        cr = self.env.cr
+        if sql.index_exists(cr, RATING_PARTNER_UNIQUE_INDEX):
+            return
+        cr.execute(
+            SQL(
+                """
+                DELETE FROM rating_rating AS older
+                 USING rating_rating AS newer
+                 WHERE older.res_model = %(model)s
+                   AND newer.res_model = %(model)s
+                   AND older.partner_id IS NOT NULL
+                   AND older.res_id = newer.res_id
+                   AND older.partner_id = newer.partner_id
+                   AND (older.write_date, older.id) < (newer.write_date, newer.id)
+                """,
+                model=self._name,
+            )
+        )
+        sql.create_index(
+            cr,
+            RATING_PARTNER_UNIQUE_INDEX,
+            "rating_rating",
+            ["res_id", "partner_id"],
+            where=cr.mogrify(
+                "res_model = %s AND partner_id IS NOT NULL", [self._name]
+            ).decode(),
+            unique=True,
+        )
 
     @api.depends("rating_ids.rating", "rating_ids.consumed")
     def _compute_rating_stats(self):

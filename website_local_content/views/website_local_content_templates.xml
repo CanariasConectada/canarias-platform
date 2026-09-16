@@ -570,6 +570,10 @@
                                         <p t-if="my_rating" class="mb-2 fw-bold wlc-my-rating">
                                             Your rating: <t t-esc="int(my_rating.rating)"/> ★
                                         </p>
+                                        <div t-if="rating_error" role="alert"
+                                             class="alert alert-warning py-2 small wlc-rating-error">
+                                            Choose from 1 to 5 stars.
+                                        </div>
                                         <form t-attf-action="/explora/{{ content_type.url_slug }}/rate/{{ item.id }}"
                                               method="post" class="wlc-rate-form">
                                             <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>

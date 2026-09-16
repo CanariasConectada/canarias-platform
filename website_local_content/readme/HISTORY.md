@@ -15,7 +15,12 @@ the card):
   per partner per item (create or update), removable through
   `/explora/<type>/rate/<id>/delete`. Both routes only ever touch the
   caller's own rating and refuse unpublished or hidden items. Anonymous
-  visitors get a "log in to rate" link back to the rating card.
+  visitors get a "log in to rate" link back to the rating card; an
+  out-of-range star value comes back with a "choose 1 to 5 stars" alert.
+- Partial unique index `website_local_content_rating_partner_uniq` on
+  `rating_rating (res_id, partner_id)` for this model only (created in
+  `init()` after collapsing existing duplicates to the most recent row);
+  a concurrent duplicate insert falls back to updating the existing row.
 
 ## 19.0.1.8.0 (2026-08-18)
 

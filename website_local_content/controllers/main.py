@@ -4,6 +4,8 @@
 import uuid
 from urllib.parse import urlencode, urlsplit
 
+import psycopg2
+
 from odoo import http
 from odoo.fields import Domain
 from odoo.http import request
@@ -221,6 +223,37 @@ class WebsiteLocalContent(http.Controller):
             limit=1,
         )
 
+    def _save_own_rating(self, item, vals):
+        """Create or update the current user's rating of ``item``.
+
+        The partial unique index on (res_id, partner_id) makes a concurrent
+        duplicate create fail; the savepoint keeps the transaction usable
+        and the losing request updates the row the winner created.
+        """
+        own_rating = self._get_own_rating(item)
+        if own_rating:
+            own_rating.write(vals)
+            return own_rating
+        try:
+            with request.env.cr.savepoint():
+                return (
+                    request.env["rating.rating"]
+                    .sudo()
+                    .create(
+                        dict(
+                            vals,
+                            res_model_id=request.env["ir.model"]._get_id(item._name),
+                            res_id=item.id,
+                            partner_id=request.env.user.partner_id.id,
+                            rated_partner_id=False,
+                        )
+                    )
+                )
+        except psycopg2.IntegrityError:
+            own_rating = self._get_own_rating(item)
+            own_rating.write(vals)
+            return own_rating
+
     def _is_safe_local_path(self, url):
         """Whether ``url`` is a same-site absolute path, safe to redirect to.
 
@@ -395,6 +428,7 @@ class WebsiteLocalContent(http.Controller):
                 "reviews": item.get_public_ratings(),
                 "already_liked": item.has_session_liked(session_key),
                 "my_rating": self._get_own_rating(item),
+                "rating_error": bool(kw.get("rating_error")),
                 "login_url": "/web/login?"
                 + urlencode({"redirect": f"{item.website_url}#{RATING_ANCHOR}"}),
                 "rating_feedback_max_length": RATING_FEEDBACK_MAX_LENGTH,
@@ -523,22 +557,14 @@ class WebsiteLocalContent(http.Controller):
         if not item:
             return request.not_found()
         value = self._sanitize_int(rating)
-        if value and 1 <= value <= 5:
-            feedback = (feedback or "").strip()[:RATING_FEEDBACK_MAX_LENGTH]
-            vals = {"rating": value, "feedback": feedback, "consumed": True}
-            own_rating = self._get_own_rating(item)
-            if own_rating:
-                own_rating.write(vals)
-            else:
-                request.env["rating.rating"].sudo().create(
-                    dict(
-                        vals,
-                        res_model_id=request.env["ir.model"]._get_id(item._name),
-                        res_id=item.id,
-                        partner_id=request.env.user.partner_id.id,
-                        rated_partner_id=False,
-                    )
-                )
+        if not value or not 1 <= value <= 5:
+            return request.redirect(
+                f"{item.website_url}?rating_error=1#{RATING_ANCHOR}"
+            )
+        feedback = (feedback or "").strip()[:RATING_FEEDBACK_MAX_LENGTH]
+        self._save_own_rating(
+            item, {"rating": value, "feedback": feedback, "consumed": True}
+        )
         return request.redirect(f"{item.website_url}#{RATING_ANCHOR}")
 
     @http.route(

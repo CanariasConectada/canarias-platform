@@ -1265,3 +1265,8 @@ msgstr "<i class=\"fa fa-paper-plane me-1\"/>Enviar valoración"
 #: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
 msgid "<i class=\"fa fa-trash me-1\"/>Remove my rating"
 msgstr "<i class=\"fa fa-trash me-1\"/>Quitar mi valoración"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "Choose from 1 to 5 stars."
+msgstr "Elige de 1 a 5 estrellas."
