@@ -339,21 +339,25 @@ class TestMerchantCategories(HttpCase):
         self.assertIn(own_a, choices, "own, even without a product yet")
         self.assertNotIn(only_b, choices)
 
-    def test_the_own_categories_screen_shows_only_theirs(self):
-        tiles = self._tiles(self.merchant_a).with_context(
-            wsmc_website_id=self.site_a.id
-        )
-        action = tiles.action_own_categories()
-        self.assertEqual(action["res_model"], "product.public.category")
-        self.assertEqual(action["domain"], [("website_id", "=", self.site_a.id)])
-        self.assertEqual(
-            tiles.action_new_own_category()["context"]["default_website_id"],
-            self.site_a.id,
+    def test_the_list_is_the_only_screen_of_the_shops_categories(self):
+        """No "Own categories" button any more (2026-09-16): renaming and
+        deleting happen on the rows themselves."""
+        arch = self.env["website.category.tile"].get_view(
+            self.env.ref(
+                "website_sale_merchant_categories.website_category_tile_view_list"
+            ).id,
+            "list",
+        )["arch"]
+        self.assertNotIn("action_own_categories", arch)
+        self.assertIn("action_new_own_category", arch)
+        self.assertIn("action_delete_own_category", arch)
+        self.assertFalse(
+            hasattr(self.env["website.category.tile"], "action_own_categories")
         )
         with self.assertRaises(AccessError):
             self._tiles(self.merchant_a).with_context(
                 wsmc_website_id=self.site_b.id
-            ).action_own_categories()
+            ).action_new_own_category()
 
     def test_an_administrator_sees_every_shops_tiles(self):
         """Platform staff with no shop of their own get every shop's tiles
@@ -370,8 +374,8 @@ class TestMerchantCategories(HttpCase):
         self.assertEqual(action["res_model"], "website.category.tile")
         self.assertNotIn("domain", action)
         self.assertEqual(action["context"]["group_by"], "website_id")
-        wide = self._tiles(admin).action_own_categories()
-        self.assertEqual(wide["domain"], [("website_id", "!=", False)])
+        new = self._tiles(admin).action_new_own_category()
+        self.assertEqual(new["res_model"], "product.public.category")
         self.assertEqual(
             self.env["website.category.tile"].action_open_shop_categories()[
                 "res_model"
@@ -449,21 +453,67 @@ class TestMerchantCategories(HttpCase):
         self.assertIn(spare, kept, "it carries an image")
         self.assertNotIn(other, kept, "empty and unused")
 
+    def _row(self, website, category):
+        return self._rows(website).filtered(lambda r: r.category_id == category)
+
     def test_the_new_own_category_button_adds_its_row(self):
         tiles = self._tiles(self.merchant_a).with_context(
             wsmc_website_id=self.site_a.id
         )
-        action = tiles.action_new_own_category()
-        own = (
-            self._categories(self.merchant_a)
-            .with_context(**action["context"])
-            .create({"name": "Fuentes y volcanes"})
-        )
-        row = self._rows(self.site_a).filtered(lambda r: r.category_id == own)
+        before = self._rows(self.site_a)
+        self.assertTrue(tiles.action_new_own_category())
+        row = self._rows(self.site_a) - before
+        self.assertEqual(len(row), 1)
         self.assertEqual(row.category_type, "own")
-        self.assertFalse(
-            self._rows(self.site_b).filtered(lambda r: r.category_id == own)
-        )
+        self.assertEqual(row.category_id.website_id, self.site_a)
+        self.assertFalse(self._rows(self.site_b) & row)
+
+    def test_renaming_an_own_row_renames_the_category(self):
+        own = self._categories(self.merchant_a).create({"name": "Fuentes"})
+        row = self._row(self.site_a, own).with_user(self.merchant_a)
+        row.category_name = "Fuentes y volcanes"
+        self.assertEqual(own.name, "Fuentes y volcanes")
+        self.assertEqual(row.category_name, "Fuentes y volcanes")
+        with self.assertRaises(UserError):
+            row.category_name = " "
+        self.assertEqual(own.name, "Fuentes y volcanes")
+
+    def test_a_shared_row_cannot_be_renamed(self):
+        self._tiles(self.merchant_a).action_open_shop_categories()
+        row = self._row(self.site_a, self.shared).with_user(self.merchant_a)
+        self.assertEqual(row.category_type, "shared")
+        with self.assertRaises(AccessError):
+            row.category_name = "Mis portátiles"
+        self.assertEqual(self.shared.name, "Portátiles")
+
+    def test_another_shops_own_row_cannot_be_renamed(self):
+        own_b = self._categories(self.merchant_b).create({"name": "Solo Beta"})
+        row = self._row(self.site_b, own_b).with_user(self.merchant_a)
+        with self.assertRaises(AccessError):
+            row.category_name = "Ahora de Alfa"
+        self.assertEqual(own_b.name, "Solo Beta")
+
+    def test_the_delete_button_removes_an_own_category_and_its_row(self):
+        own = self._categories(self.merchant_a).create({"name": "Fuentes"})
+        self.product_a.public_categ_ids = [(4, own.id)]
+        row = self._row(self.site_a, own)
+        row.with_user(self.merchant_a).action_delete_own_category()
+        self.assertFalse(own.exists())
+        self.assertFalse(row.exists())
+        self.assertEqual(self.product_a.public_categ_ids, self.shared)
+
+    def test_the_delete_button_refuses_shared_and_foreign_categories(self):
+        self._tiles(self.merchant_a).action_open_shop_categories()
+        shared_row = self._row(self.site_a, self.shared)
+        with self.assertRaises(AccessError):
+            shared_row.with_user(self.merchant_a).action_delete_own_category()
+        self.assertTrue(self.shared.exists())
+        own_b = self._categories(self.merchant_b).create({"name": "Solo Beta"})
+        foreign_row = self._row(self.site_b, own_b)
+        with self.assertRaises(AccessError):
+            foreign_row.with_user(self.merchant_a).action_delete_own_category()
+        self.assertTrue(own_b.exists())
+        self.assertTrue(foreign_row.exists())
 
     def test_an_image_on_an_own_rows_tile_shows_once_a_product_carries_it(self):
         own = self._categories(self.merchant_a).create({"name": "Fuentes y volcanes"})

@@ -9,5 +9,5 @@ Two mechanisms, both scoped to the merchant's site:
   to the shared `cover_image` everywhere else.
 - **Own categories.** A merchant may create `product.public.category`
   records pinned to their own website (`website_id` is forced on the
-  server), and edit or delete only those. The shared categories stay
-  read-only for them.
+  server), and rename or delete only those, from their rows in the same
+  "Shop categories" list. The shared categories stay read-only for them.

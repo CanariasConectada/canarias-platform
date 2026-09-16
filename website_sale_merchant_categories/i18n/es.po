@@ -26,6 +26,25 @@ msgstr ""
 
 #. module: website_sale_merchant_categories
 #. odoo-python
+#: code:addons/website_sale_merchant_categories/models/website_category_tile.py:0
+msgid ""
+"%(category)s is a shared category: it cannot be deleted from your shop."
+msgstr ""
+"%(category)s es una categoría compartida: no puede eliminarse desde tu "
+"tienda."
+
+#. module: website_sale_merchant_categories
+#. odoo-python
+#: code:addons/website_sale_merchant_categories/models/website_category_tile.py:0
+msgid ""
+"%(category)s is a shared category: only its image and label can change in "
+"your shop."
+msgstr ""
+"%(category)s es una categoría compartida: en tu tienda solo pueden cambiar "
+"su imagen y su etiqueta."
+
+#. module: website_sale_merchant_categories
+#. odoo-python
 #: code:addons/website_sale_merchant_categories/models/product_public_category.py:0
 msgid ""
 "%(parent)s is not one of your own categories. Your categories can only hang "
@@ -33,6 +52,12 @@ msgid ""
 msgstr ""
 "%(parent)s no es una de tus categorías propias. Tus categorías solo pueden "
 "colgar de una categoría de tu propia tienda, o de ninguna."
+
+#. module: website_sale_merchant_categories
+#. odoo-python
+#: code:addons/website_sale_merchant_categories/models/website_category_tile.py:0
+msgid "A category needs a name."
+msgstr "Una categoría necesita un nombre."
 
 #. module: website_sale_merchant_categories
 #. odoo-python
@@ -74,7 +99,6 @@ msgstr "Categoría"
 #. module: website_sale_merchant_categories
 #: model:ir.model.fields,field_description:website_sale_merchant_categories.field_website_category_tile__category_name
 #: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.product_public_category_view_form_merchant
-#: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.product_public_category_view_list_merchant
 msgid "Category name"
 msgstr "Nombre de la categoría"
 
@@ -94,6 +118,18 @@ msgid "Created on"
 msgstr "Creado el"
 
 #. module: website_sale_merchant_categories
+#: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.website_category_tile_view_list
+msgid "Delete category"
+msgstr "Eliminar categoría"
+
+#. module: website_sale_merchant_categories
+#: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.website_category_tile_view_list
+msgid ""
+"Delete this category? The products that use it will no longer have it."
+msgstr ""
+"¿Eliminar esta categoría? Los productos que la usan dejarán de tenerla."
+
+#. module: website_sale_merchant_categories
 #: model:ir.model.fields,field_description:website_sale_merchant_categories.field_product_public_category__display_name
 #: model:ir.model.fields,field_description:website_sale_merchant_categories.field_website__display_name
 #: model:ir.model.fields,field_description:website_sale_merchant_categories.field_website_category_tile__display_name
@@ -110,7 +146,6 @@ msgstr "ID"
 #. module: website_sale_merchant_categories
 #: model:ir.model.fields,field_description:website_sale_merchant_categories.field_website_category_tile__image
 #: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.product_public_category_view_form_merchant
-#: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.product_public_category_view_list_merchant
 msgid "Image for my shop"
 msgstr "Imagen para mi tienda"
 
@@ -128,6 +163,17 @@ msgstr "Última actualización por"
 #: model:ir.model.fields,field_description:website_sale_merchant_categories.field_website_category_tile__write_date
 msgid "Last Updated on"
 msgstr "Última actualización el"
+
+#. module: website_sale_merchant_categories
+#: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.website_category_tile_view_list
+msgid "Name"
+msgstr "Nombre"
+
+#. module: website_sale_merchant_categories
+#. odoo-python
+#: code:addons/website_sale_merchant_categories/models/website_category_tile.py:0
+msgid "New category"
+msgstr "Nueva categoría"
 
 #. module: website_sale_merchant_categories
 #. odoo-python
@@ -157,14 +203,6 @@ msgid "Optional. Replaces the category name on the tile of your shop only."
 msgstr ""
 "Opcional. Sustituye el nombre de la categoría solo en el mosaico de tu "
 "tienda."
-
-#. module: website_sale_merchant_categories
-#. odoo-python
-#: code:addons/website_sale_merchant_categories/models/website_category_tile.py:0
-#: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.product_public_category_view_list_merchant
-#: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.website_category_tile_view_list
-msgid "Own categories"
-msgstr "Categorías propias"
 
 #. module: website_sale_merchant_categories
 #: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.product_public_category_view_form_merchant
@@ -204,7 +242,6 @@ msgstr "Compartida"
 #. module: website_sale_merchant_categories
 #: model:ir.model.fields,field_description:website_sale_merchant_categories.field_website_category_tile__website_id
 #: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.product_public_category_view_form_merchant
-#: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.product_public_category_view_list_merchant
 msgid "Shop"
 msgstr "Tienda"
 
