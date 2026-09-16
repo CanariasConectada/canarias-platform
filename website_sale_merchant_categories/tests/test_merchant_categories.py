@@ -378,3 +378,15 @@ class TestMerchantCategories(HttpCase):
             ],
             "website",
         )
+
+    def test_the_shared_categories_screen_is_not_offered_to_merchants(self):
+        """A merchant reaches "Shop categories", never the shared screen
+        whose save they are not allowed to do (2026-09-16)."""
+        Menu = self.env["ir.ui.menu"]
+        shared = self.env.ref("website_sale.menu_catalog_categories")
+        mine = self.env.ref("website_sale_merchant_categories.menu_shop_categories")
+        visible = Menu.with_user(self.merchant_a)._visible_menu_ids()
+        self.assertNotIn(shared.id, visible)
+        self.assertIn(mine.id, visible)
+        admin = self.env.ref("base.user_admin")
+        self.assertIn(shared.id, Menu.with_user(admin)._visible_menu_ids())

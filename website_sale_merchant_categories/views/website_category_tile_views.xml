@@ -72,6 +72,21 @@
         <field name="code">action = model.action_open_shop_categories()</field>
     </record>
 
+    <!-- The shared eCommerce categories screen (Website > eCommerce >
+         Products > eCommerce Categories) ships with no gate, so a merchant
+         landed on a form of a category shared by every shop, changed its
+         cover and got "Error de acceso" on save (2026-09-16). Merchants curate
+         their shop in "Shop categories"; the shared screen stays with the
+         people who may edit shared categories. Owned in replace form so a
+         core update cannot reopen it. -->
+    <record id="website_sale.menu_catalog_categories" model="ir.ui.menu">
+        <field name="group_ids" eval="[(6, 0, [
+            ref('base.group_system'),
+            ref('website.group_website_designer'),
+            ref('sales_team.group_sale_manager'),
+        ])]"/>
+    </record>
+
     <!-- Website > Configuration, next to "My shops" and "Page content",
          which is where a merchant already works on their site. -->
     <menuitem id="menu_shop_categories"
