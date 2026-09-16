@@ -818,7 +818,7 @@ msgstr "Cerrado"
 #: model:ir.ui.menu,name:partner_microsite_manager.menu_own_websites
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 msgid "My shops"
-msgstr "Mis tiendas"
+msgstr "Mis sitios"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.website_view_list_merchant
@@ -965,7 +965,7 @@ msgstr "Filas del editor de contenido de la página: solo su autor"
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_company_picker__company_ids
 msgid "Your shops"
-msgstr "Tus tiendas"
+msgstr "Tus sitios"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_company_picker__selected_company_id
