@@ -177,12 +177,12 @@
                 <field name="company_id" optional="show"/>
                 <field name="domain" widget="url" string="Address"/>
                 <field name="merchant_can_open_orders" column_invisible="1"/>
-                <field name="merchant_can_open_pages" column_invisible="1"/>
                 <button name="action_microsite_content" type="object"
                         string="Content" icon="fa-pencil-square-o"/>
-                <button name="action_microsite_pages" type="object"
-                        string="Pages" icon="fa-file-text-o"
-                        invisible="not merchant_can_open_pages"/>
+                <!-- No "Pages" button: the client removed it from the
+                     merchant's list on 2026-09-16 (page content is edited
+                     through "Content"). The server method stays for
+                     administrators' use from code. -->
                 <button name="action_microsite_orders" type="object"
                         string="Orders" icon="fa-shopping-cart"
                         invisible="not merchant_can_open_orders"/>
