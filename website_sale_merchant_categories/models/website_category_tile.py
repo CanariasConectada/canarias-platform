@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 from odoo import _, api, fields, models
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import AccessError, UserError, ValidationError
 
 
 class WebsiteCategoryTile(models.Model):
@@ -59,15 +59,18 @@ class WebsiteCategoryTile(models.Model):
         help="Own: a category of your shop alone. Shared: a platform category "
         "other shops use too; only its image and label change in your shop.",
     )
-    # Stored for the order above only, spelled in the shop's own language
-    # (a stored related field of a translated name would be right in one
-    # language alone). Read-only on purpose: an own category is renamed from
-    # the "Own categories" screen, and a shared one is not the merchant's to
-    # rename at all.
+    # Stored for the order above, spelled in the shop's own language (a
+    # stored related field of a translated name would be right in one
+    # language alone). Editable on own rows: this list is the only screen
+    # of the shop's categories, so an own category is renamed here, and the
+    # inverse writes through the caller's own access. A shared category is
+    # not the merchant's to rename: read-only in the view, refused below.
     category_name = fields.Char(
         string="Category name",
         compute="_compute_category_name",
+        inverse="_inverse_category_name",
         store=True,
+        readonly=False,
     )
     # The categories a row of THIS shop may point at: the ones its products
     # carry, plus the shop's own. Non-stored, so the many2one's domain in the
@@ -104,6 +107,38 @@ class WebsiteCategoryTile(models.Model):
                 tile.category_id.with_context(lang=lang) if lang else tile.category_id
             )
             tile.category_name = category.name
+
+    def _inverse_category_name(self):
+        """Rename the own category of the row, as the caller.
+
+        Not ``sudo``: the record rules and guards of
+        ``product.public.category`` decide, exactly as on any other write,
+        so a row of another shop's category fails there too. The name is
+        written in the shop's language, the one the column shows; the
+        English source follows while it still carries the same text, so a
+        category never translated keeps one name everywhere.
+        """
+        for tile in self:
+            if tile.category_id.website_id != tile.website_id or not tile.website_id:
+                raise AccessError(
+                    _(
+                        "%(category)s is a shared category: only its image and "
+                        "label can change in your shop.",
+                        category=tile.category_id.display_name,
+                    )
+                )
+            name = (tile.category_name or "").strip()
+            if not name:
+                raise UserError(_("A category needs a name."))
+            lang = tile.website_id.default_lang_id.code or "en_US"
+            category = tile.category_id
+            source = category.with_context(lang="en_US").name
+            shown = category.with_context(lang=lang).name
+            if name == shown:
+                continue
+            category.with_context(lang=lang).write({"name": name})
+            if lang != "en_US" and source == shown:
+                category.with_context(lang="en_US").write({"name": name})
 
     @api.constrains("website_id", "category_id")
     def _check_category_belongs_here(self):
@@ -199,8 +234,19 @@ class WebsiteCategoryTile(models.Model):
         raise UserError(_("Open this screen from the Shop categories menu."))
 
     def action_new_own_category(self):
-        """The form of a category that will belong to this shop alone."""
+        """Add an own category to this shop, as a new row of this very list.
+
+        It is created with a placeholder name the merchant overwrites in the
+        row; the create hook of ``product.public.category`` adds the row, and
+        a non-action result makes the list reload. An administrator's grouped
+        list has no shop to create it on, so they get the category form.
+        """
         website = self._wsmc_website_from_context()
+        if website:
+            self.env["product.public.category"].create(
+                {"name": _("New category"), "website_id": website.id}
+            )
+            return True
         return {
             "type": "ir.actions.act_window",
             "name": _("New own category"),
@@ -216,38 +262,25 @@ class WebsiteCategoryTile(models.Model):
                 )
             ],
             "target": "new",
-            "context": {"default_website_id": website.id} if website else {},
         }
 
-    def action_own_categories(self):
-        """Every category that belongs to this shop alone."""
-        website = self._wsmc_website_from_context()
-        return {
-            "type": "ir.actions.act_window",
-            "name": _("Own categories"),
-            "res_model": "product.public.category",
-            "view_mode": "list,form",
-            "views": [
-                (
-                    self.env.ref(
-                        "website_sale_merchant_categories."
-                        "product_public_category_view_list_merchant"
-                    ).id,
-                    "list",
-                ),
-                (
-                    self.env.ref(
-                        "website_sale_merchant_categories."
-                        "product_public_category_view_form_merchant"
-                    ).id,
-                    "form",
-                ),
-            ],
-            "domain": (
-                [("website_id", "=", website.id)]
-                if website
-                else [("website_id", "!=", False)]
-            ),
-            "context": {"default_website_id": website.id} if website else {},
-            "target": "current",
-        }
+    def action_delete_own_category(self):
+        """Delete the own category of the row; its row goes with it.
+
+        Unlinked as the caller, so the record rules refuse another shop's
+        category; a shared one is refused here first, whoever asks, because
+        this screen is about one shop and a shared category belongs to all.
+        The row disappears through ``ondelete="cascade"``.
+        """
+        self.check_access("unlink")
+        for tile in self:
+            if tile.category_id.website_id != tile.website_id or not tile.website_id:
+                raise AccessError(
+                    _(
+                        "%(category)s is a shared category: it cannot be "
+                        "deleted from your shop.",
+                        category=tile.category_id.display_name,
+                    )
+                )
+        self.category_id.unlink()
+        return True

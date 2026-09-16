@@ -1,3 +1,10 @@
+## 19.0.1.2.0 (2026-09-16)
+
+* "Shop categories" is the only screen of the shop's categories: the "Own
+  categories" button and its list are gone. Own rows are renamed in the
+  "Name" column and deleted with a trash button on the row; shared rows are
+  neither. "New own category" adds the category as a new row directly.
+
 ## 19.0.1.1.0 (2026-09-16)
 
 * "Shop categories" lists every category of the shop at once: the shop's
