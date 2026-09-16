@@ -2,11 +2,13 @@
    License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). */
 
 /**
- * AJAX like button of the public content cards.
+ * AJAX like button of the public content cards and detail page.
  *
  * Posts to the same server route as the <noscript> form fallback (CSRF
  * token included), then updates the heart icon and the like counter in
- * place instead of reloading the page. The server deduplicates likes per
+ * place instead of reloading the page. Counters are found by their
+ * `data-like-counter-for="<item id>"` attribute anywhere in the page, so
+ * the card and the detail page share this code. The server deduplicates likes per
  * visitor session, so a repeated click is harmless.
  */
 (function () {
@@ -36,13 +38,18 @@
                     icon.classList.remove("fa-heart-o");
                     icon.classList.add("fa-heart");
                 }
-                var card = button.closest(".wlc-card");
-                var counter = card && card.querySelector(".wlc-like-count");
-                if (counter) {
-                    counter.textContent = String(
-                        (parseInt(counter.textContent, 10) || 0) + 1
-                    );
+                if (button.dataset.disableWhenLiked === "1") {
+                    button.disabled = true;
                 }
+                document
+                    .querySelectorAll(
+                        '[data-like-counter-for="' + button.dataset.itemId + '"]'
+                    )
+                    .forEach(function (counter) {
+                        counter.textContent = String(
+                            (parseInt(counter.textContent, 10) || 0) + 1
+                        );
+                    });
             })
             .finally(function () {
                 delete button.dataset.busy;

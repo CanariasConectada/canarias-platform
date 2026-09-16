@@ -1141,6 +1141,7 @@ msgid "ratings"
 msgstr "valoraciones"
 
 #. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
 #: model_terms:ir.ui.view,arch_db:website_local_content.content_like_button
 msgid "Like"
 msgstr "Me gusta"
@@ -1234,3 +1235,33 @@ msgstr "<option value=\"\">Todas las actividades</option>"
 #: model_terms:ir.ui.view,arch_db:website_local_content.content_index
 msgid "<option value=\"\">All decades</option>"
 msgstr "<option value=\"\">Todas las décadas</option>"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "<i class=\"fa fa-sign-in me-1\"/>Log in to rate"
+msgstr "<i class=\"fa fa-sign-in me-1\"/>Inicia sesión para valorar"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "Your rating:"
+msgstr "Tu valoración:"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "Rate this content"
+msgstr "Valora este contenido"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "Comment (optional)"
+msgstr "Comentario (opcional)"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "<i class=\"fa fa-paper-plane me-1\"/>Submit rating"
+msgstr "<i class=\"fa fa-paper-plane me-1\"/>Enviar valoración"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "<i class=\"fa fa-trash me-1\"/>Remove my rating"
+msgstr "<i class=\"fa fa-trash me-1\"/>Quitar mi valoración"

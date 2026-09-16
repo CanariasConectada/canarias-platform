@@ -69,6 +69,13 @@
     z-index: 10;
 }
 
+/* Like button of the detail page: sized by its label, not a circle. */
+.wlc-like-btn.wlc-like-btn-inline {
+    width: auto;
+    height: auto;
+    padding: 0.25rem 0.75rem;
+}
+
 .wlc-like-noscript {
     z-index: 10;
 }
@@ -104,4 +111,32 @@
 
 .wlc-rating-stars .wlc-rating-star.filled {
     color: #f5b301;
+}
+
+/* Interactive star picker (radio inputs, no JS). The inputs come in DOM
+   order 5..1 and the row is reversed, so "the checked/hovered star and
+   every sibling after it" paints that star and all the lower ones. */
+.wlc-star-picker {
+    display: inline-flex;
+    flex-direction: row-reverse;
+    justify-content: center;
+}
+
+.wlc-star-picker label {
+    color: #d5d5d5;
+    cursor: pointer;
+    font-size: 2rem;
+    line-height: 1;
+    padding: 0 0.1rem;
+}
+
+.wlc-star-picker input:checked ~ label,
+.wlc-star-picker label:hover,
+.wlc-star-picker label:hover ~ label {
+    color: #f5b301;
+}
+
+.wlc-star-picker input:focus-visible + label {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
 }
