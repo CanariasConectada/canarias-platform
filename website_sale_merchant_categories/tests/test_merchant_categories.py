@@ -390,3 +390,101 @@ class TestMerchantCategories(HttpCase):
         self.assertIn(mine.id, visible)
         admin = self.env.ref("base.user_admin")
         self.assertIn(shared.id, Menu.with_user(admin)._visible_menu_ids())
+
+    # ------------------------------------------------------------------
+    # The screen lists every category of the shop (2026-09-16)
+    # ------------------------------------------------------------------
+
+    def _rows(self, website):
+        return self.env["website.category.tile"].search(
+            [("website_id", "=", website.id)]
+        )
+
+    def test_opening_the_screen_lists_own_and_shared_categories(self):
+        """ "¿Por qué si creé ítems no se listan las categorías propias?":
+        own categories without products and the shared categories of the
+        shop's products, published or not, each get a row; nothing of
+        another shop does."""
+        unpublished = self.env["product.public.category"].create(
+            {"name": "WSMC Borrador"}
+        )
+        draft = self._product("WSMC Borrador Alfa", self.shop_a, unpublished)
+        draft.is_published = False
+        only_b = self.env["product.public.category"].create({"name": "Solo en Beta"})
+        self.product_b.public_categ_ids = [(4, only_b.id)]
+        own_b = self._categories(self.merchant_b).create({"name": "Propia Beta"})
+        own_a = self._categories(self.merchant_a).create({"name": "Portátiles"})
+        # Production's own categories predate the rows: start without any.
+        self._rows(self.site_a).unlink()
+
+        self._tiles(self.merchant_a).action_open_shop_categories()
+        rows = self._rows(self.site_a)
+        self.assertEqual(
+            [(r.category_id.id, r.category_type) for r in rows],
+            [
+                (own_a.id, "own"),
+                (self.shared.id, "shared"),
+                (unpublished.id, "shared"),
+            ],
+            "own first, then shared, alphabetical",
+        )
+        self.assertNotIn(only_b, rows.category_id)
+        self.assertNotIn(own_b, rows.category_id)
+
+        self._tiles(self.merchant_a).action_open_shop_categories()
+        self.assertEqual(self._rows(self.site_a), rows, "opening twice adds nothing")
+
+    def test_a_curated_row_survives_its_category_leaving_the_shop(self):
+        spare = self.env["product.public.category"].create({"name": "WSMC Suelta"})
+        other = self.env["product.public.category"].create({"name": "WSMC Otra"})
+        self.product_a.public_categ_ids = [(4, spare.id), (4, other.id)]
+        self.site_a.with_user(self.merchant_a).action_microsite_categories()
+        rows = self._rows(self.site_a)
+        rows.filtered(lambda r: r.category_id == spare).with_user(
+            self.merchant_a
+        ).image = TINY_PNG
+        self.product_a.public_categ_ids = [(6, 0, self.shared.ids)]
+        self.site_a.with_user(self.merchant_a).action_microsite_categories()
+        kept = self._rows(self.site_a).category_id
+        self.assertIn(spare, kept, "it carries an image")
+        self.assertNotIn(other, kept, "empty and unused")
+
+    def test_the_new_own_category_button_adds_its_row(self):
+        tiles = self._tiles(self.merchant_a).with_context(
+            wsmc_website_id=self.site_a.id
+        )
+        action = tiles.action_new_own_category()
+        own = (
+            self._categories(self.merchant_a)
+            .with_context(**action["context"])
+            .create({"name": "Fuentes y volcanes"})
+        )
+        row = self._rows(self.site_a).filtered(lambda r: r.category_id == own)
+        self.assertEqual(row.category_type, "own")
+        self.assertFalse(
+            self._rows(self.site_b).filtered(lambda r: r.category_id == own)
+        )
+
+    def test_an_image_on_an_own_rows_tile_shows_once_a_product_carries_it(self):
+        own = self._categories(self.merchant_a).create({"name": "Fuentes y volcanes"})
+        row = self._rows(self.site_a).filtered(lambda r: r.category_id == own)
+        row.with_user(self.merchant_a).image = TINY_PNG
+        url = "/web/image/website.category.tile/%s/image" % row.id
+        self.assertNotIn(url, self._shop_page(SITE_A), "no product yet")
+        self.product_a.public_categ_ids = [(4, own.id)]
+        self.assertIn(url, self._shop_page(SITE_A))
+        self.assertNotIn(url, self._shop_page(SITE_B))
+
+    def test_another_merchant_cannot_see_or_edit_these_rows(self):
+        self._tiles(self.merchant_a).action_open_shop_categories()
+        rows = self._rows(self.site_a)
+        self.assertTrue(rows)
+        action = self._tiles(self.merchant_b).action_open_shop_categories()
+        self.assertFalse(
+            self._tiles(self.merchant_b).search(action["domain"]) & rows,
+            "their screen lists their shop only",
+        )
+        with self.assertRaises(AccessError):
+            rows.with_user(self.merchant_b).write({"image": TINY_PNG})
+        with self.assertRaises(AccessError):
+            self.site_a.with_user(self.merchant_b)._wsmc_sync_category_rows()

@@ -45,6 +45,18 @@ msgstr ""
 "moverse a otro sitio ni convertirse en compartida."
 
 #. module: website_sale_merchant_categories
+#. odoo-python
+#: code:addons/website_sale_merchant_categories/models/website_category_tile.py:0
+msgid ""
+"All the categories of your shop are listed here: your own and the shared "
+"ones your products use. Upload an image to show it at the top of your shop. "
+"A category only appears if it has published products."
+msgstr ""
+"Aquí aparecen todas las categorías de tu tienda: las tuyas y las compartidas "
+"que usan tus productos. Sube una imagen para que aparezca arriba en tu "
+"tienda. Una categoría solo se muestra si tiene productos publicados."
+
+#. module: website_sale_merchant_categories
 #: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.website_view_list_merchant_categories
 msgid "Categories"
 msgstr "Categorías"
@@ -60,6 +72,7 @@ msgid "Category"
 msgstr "Categoría"
 
 #. module: website_sale_merchant_categories
+#: model:ir.model.fields,field_description:website_sale_merchant_categories.field_website_category_tile__category_name
 #: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.product_public_category_view_form_merchant
 #: model_terms:ir.ui.view,arch_db:website_sale_merchant_categories.product_public_category_view_list_merchant
 msgid "Category name"
@@ -159,14 +172,34 @@ msgid "Own category"
 msgstr "Categoría propia"
 
 #. module: website_sale_merchant_categories
+#: model:ir.model.fields.selection,name:website_sale_merchant_categories.selection__website_category_tile__category_type__own
+msgid "Own"
+msgstr "Propia"
+
+#. module: website_sale_merchant_categories
 #: model:ir.model.fields,help:website_sale_merchant_categories.field_product_public_category__website_id
 msgid "Restrict to a specific website."
 msgstr "Restringir a un sitio web específico."
 
 #. module: website_sale_merchant_categories
+#: model:ir.model.fields,help:website_sale_merchant_categories.field_website_category_tile__category_type
+msgid ""
+"Own: a category of your shop alone. Shared: a platform category other shops "
+"use too; only its image and label change in your shop."
+msgstr ""
+"Propia: una categoría solo de tu tienda. Compartida: una categoría de la "
+"plataforma que usan también otros comercios; en tu tienda solo cambian su "
+"imagen y su etiqueta."
+
+#. module: website_sale_merchant_categories
 #: model:ir.model.fields,field_description:website_sale_merchant_categories.field_website_category_tile__sequence
 msgid "Sequence"
 msgstr "Secuencia"
+
+#. module: website_sale_merchant_categories
+#: model:ir.model.fields.selection,name:website_sale_merchant_categories.selection__website_category_tile__category_type__shared
+msgid "Shared"
+msgstr "Compartida"
 
 #. module: website_sale_merchant_categories
 #: model:ir.model.fields,field_description:website_sale_merchant_categories.field_website_category_tile__website_id
@@ -213,6 +246,11 @@ msgstr ""
 #: model:ir.model.constraint,message:website_sale_merchant_categories.constraint_website_category_tile_website_category_unique
 msgid "This shop already has a tile for that category."
 msgstr "Esta tienda ya tiene un mosaico para esa categoría."
+
+#. module: website_sale_merchant_categories
+#: model:ir.model.fields,field_description:website_sale_merchant_categories.field_website_category_tile__category_type
+msgid "Type"
+msgstr "Tipo"
 
 #. module: website_sale_merchant_categories
 #: model:ir.model,name:website_sale_merchant_categories.model_website

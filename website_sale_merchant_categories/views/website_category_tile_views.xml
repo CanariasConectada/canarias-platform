@@ -3,9 +3,12 @@
      License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
 <odoo>
 
-    <!-- The merchant's screen: one row per category tile of THEIR shop.
-         Editable in place: pick a category the shop's products carry,
-         drop an image, because that is the whole job. The two header
+    <!-- The merchant's screen: one row per category of THEIR shop, own
+         first, then the shared ones their products use. The rows are kept
+         in step by `website._wsmc_sync_category_rows` when the screen is
+         opened, so the merchant only drops an image, because that is the
+         whole job. A saved row keeps its category: the category is what the
+         row is about, and names are edited in "Own categories". The two header
          buttons lead to the categories that belong to this shop alone;
          both re-read the shop from the action context and assert
          ownership on the server (see `_wsmc_website_from_context`). -->
@@ -13,7 +16,7 @@
         <field name="name">website.category.tile.list</field>
         <field name="model">website.category.tile</field>
         <field name="arch" type="xml">
-            <list string="Shop categories" editable="bottom" default_order="sequence, id">
+            <list string="Shop categories" editable="bottom">
                 <header>
                     <button name="action_new_own_category" type="object"
                             string="New own category" display="always"
@@ -22,12 +25,13 @@
                             string="Own categories" display="always"
                             class="btn-secondary"/>
                 </header>
-                <field name="sequence" widget="handle"/>
                 <field name="website_id" column_invisible="not context.get('group_by')"/>
                 <field name="allowed_category_ids" column_invisible="1"/>
                 <field name="category_id"
                        domain="[('id', 'in', allowed_category_ids)]"
+                       readonly="id"
                        options="{'no_create': True, 'no_open': True}"/>
+                <field name="category_type"/>
                 <field name="image" widget="image" options="{'size': [80, 80]}"/>
                 <field name="name" optional="show"/>
             </list>
@@ -46,7 +50,9 @@
                             <field name="allowed_category_ids" invisible="1"/>
                             <field name="category_id"
                                    domain="[('id', 'in', allowed_category_ids)]"
+                                   readonly="id"
                                    options="{'no_create': True, 'no_open': True}"/>
+                            <field name="category_type"/>
                             <field name="name"/>
                             <field name="sequence"/>
                         </group>

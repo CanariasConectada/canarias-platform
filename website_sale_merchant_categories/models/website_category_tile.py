@@ -20,7 +20,9 @@ class WebsiteCategoryTile(models.Model):
 
     _name = "website.category.tile"
     _description = "Category tile of a shop"
-    _order = "sequence, id"
+    # Own categories first, then the shared ones, each block alphabetical:
+    # the order the merchant reads their shop in.
+    _order = "category_type, category_name, id"
 
     website_id = fields.Many2one(
         comodel_name="website",
@@ -49,6 +51,24 @@ class WebsiteCategoryTile(models.Model):
         help="Optional. Replaces the category name on the tile of your shop only.",
     )
     sequence = fields.Integer(default=10)
+    category_type = fields.Selection(
+        selection=[("own", "Own"), ("shared", "Shared")],
+        string="Type",
+        compute="_compute_category_type",
+        store=True,
+        help="Own: a category of your shop alone. Shared: a platform category "
+        "other shops use too; only its image and label change in your shop.",
+    )
+    # Stored for the order above only, spelled in the shop's own language
+    # (a stored related field of a translated name would be right in one
+    # language alone). Read-only on purpose: an own category is renamed from
+    # the "Own categories" screen, and a shared one is not the merchant's to
+    # rename at all.
+    category_name = fields.Char(
+        string="Category name",
+        compute="_compute_category_name",
+        store=True,
+    )
     # The categories a row of THIS shop may point at: the ones its products
     # carry, plus the shop's own. Non-stored, so the many2one's domain in the
     # list follows the shop without a hardcoded id anywhere.
@@ -70,6 +90,20 @@ class WebsiteCategoryTile(models.Model):
             tile.allowed_category_ids = (
                 website._wsmc_shop_category_choices() if website else False
             )
+
+    @api.depends("category_id.website_id")
+    def _compute_category_type(self):
+        for tile in self:
+            tile.category_type = "own" if tile.category_id.website_id else "shared"
+
+    @api.depends("category_id.name", "website_id.default_lang_id")
+    def _compute_category_name(self):
+        for tile in self:
+            lang = tile.website_id.default_lang_id.code
+            category = (
+                tile.category_id.with_context(lang=lang) if lang else tile.category_id
+            )
+            tile.category_name = category.name
 
     @api.constrains("website_id", "category_id")
     def _check_category_belongs_here(self):
@@ -98,6 +132,13 @@ class WebsiteCategoryTile(models.Model):
             "res_model": self._name,
             "view_mode": "list,form",
             "domain": [("website_id", "=", website.id)],
+            "help": "<p>%s</p>"
+            % _(
+                "All the categories of your shop are listed here: your own "
+                "and the shared ones your products use. Upload an image to "
+                "show it at the top of your shop. A category only appears if "
+                "it has published products."
+            ),
             "context": {
                 "default_website_id": website.id,
                 "wsmc_website_id": website.id,
@@ -121,6 +162,7 @@ class WebsiteCategoryTile(models.Model):
             return Company._action_open_own_websites(candidates)
         company = candidates or Company._get_own_microsite_company()
         if company:
+            company.website_id._wsmc_sync_category_rows()
             return self._action_for_website(company.website_id)
         if self.env.user.has_group("base.group_erp_manager"):
             return {
@@ -201,9 +243,11 @@ class WebsiteCategoryTile(models.Model):
                     "form",
                 ),
             ],
-            "domain": [("website_id", "=", website.id)]
-            if website
-            else [("website_id", "!=", False)],
+            "domain": (
+                [("website_id", "=", website.id)]
+                if website
+                else [("website_id", "!=", False)]
+            ),
             "context": {"default_website_id": website.id} if website else {},
             "target": "current",
         }
