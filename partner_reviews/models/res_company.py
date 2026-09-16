@@ -31,6 +31,11 @@ class ResCompany(models.Model):
         compute="_compute_review_stats",
         digits=(3, 1),
     )
+    reviews_page_url = fields.Char(
+        string="Reviews Page",
+        compute="_compute_reviews_page_url",
+        help="Public address of the reviews page on this company's website.",
+    )
 
     # ------------------------------------------------------------------
     # Review helpers
@@ -60,6 +65,14 @@ class ResCompany(models.Model):
             count, avg = stats.get(company.id, (0, 0.0))
             company.review_count = count
             company.review_avg = avg or 0.0
+
+    @api.depends("website_id")
+    def _compute_reviews_page_url(self):
+        for company in self:
+            website = company.sudo().website_id
+            company.reviews_page_url = (
+                website.get_base_url() + REVIEWS_PAGE_URL if website else False
+            )
 
     def _get_review_distribution(self):
         """Number of public reviews per star value: ``{1: n, ..., 5: n}``."""
