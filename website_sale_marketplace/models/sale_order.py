@@ -106,6 +106,11 @@ class SaleOrder(models.Model):
         """
         if self.env.uid != SUPERUSER_ID and self.env.user._is_internal():
             return super()._action_confirm()
+        # Partner visibility by company comes from partner_multi_company,
+        # which this module does not depend on: without it there is nothing
+        # to widen.
+        if "company_ids" not in self.env["res.partner"]._fields:
+            return super()._action_confirm()
         for order in self.filtered("website_id"):
             company = order.company_id
             partners = (

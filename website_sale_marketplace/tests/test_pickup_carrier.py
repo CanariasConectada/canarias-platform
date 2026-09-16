@@ -110,3 +110,18 @@ class TestShopPickupCarrier(TransactionCase):
         )
         methods = order.with_context(website_id=website.id)._get_delivery_methods()
         self.assertIn(carrier, methods)
+
+    def test_marketplace_backfill_leaves_pickup_products_alone(self):
+        """Marking a website as marketplace must not link the portal company
+        to a carrier's service product (the carrier would leave its shop's
+        warehouse company, CI 2026-09-16)."""
+        company, _website = self._shop("Pickup Shop Backfill")
+        carrier = self._carriers(company)
+        tmpl = carrier.product_id.product_tmpl_id
+        companies_before = tmpl.company_ids
+        portal_company, portal = self._shop("Pickup Portal Probe")
+        portal.write({"is_marketplace": True})
+        self.env.flush_all()
+        self.assertNotIn(portal_company, tmpl.company_ids)
+        self.assertEqual(tmpl.company_ids, companies_before)
+        self.assertEqual(carrier.company_id, company)
