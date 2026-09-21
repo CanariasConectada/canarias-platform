@@ -816,23 +816,30 @@ class ResCompany(models.Model):
     # Directory entry: the portal's and the zones', not a merchant's
     # ------------------------------------------------------------------
     @api.model
-    def _marketplace_website_ids(self):
-        """The ids of the aggregated shops (the portal and the zones), from SQL.
+    def _marketplace_sites(self):
+        """``(website ids, company ids)`` of the aggregated shops, from SQL.
+
+        The aggregated shops are the portal and the zones. Their COMPANIES
+        are returned as well because a platform company may own a second,
+        plain website: production has the Admin Portal (website 198) on the
+        company of the portal (website 1), and only the company ties it to
+        the platform structurally.
 
         ``is_marketplace`` belongs to ``website_sale_marketplace``, which is
         not a dependency and is not in the registry yet while this module's
         post-migration runs; the column is there whatever the load order is.
-        Empty when the column does not exist.
+        Two empty sets when the column does not exist.
         """
         self.env.cr.execute(
             "SELECT 1 FROM information_schema.columns "
             "WHERE table_name = 'website' AND column_name = 'is_marketplace'"
         )
         if not self.env.cr.fetchone():
-            return []
+            return set(), set()
         self.env["website"].flush_model()
-        self.env.cr.execute("SELECT id FROM website WHERE is_marketplace")
-        return [row[0] for row in self.env.cr.fetchall()]
+        self.env.cr.execute("SELECT id, company_id FROM website WHERE is_marketplace")
+        rows = self.env.cr.fetchall()
+        return {row[0] for row in rows}, {row[1] for row in rows if row[1]}
 
     @api.model
     def _remove_microsite_directory_menus(self, websites=None, zone_companies=None):
@@ -840,12 +847,21 @@ class ResCompany(models.Model):
 
         The portal and the zone sites keep theirs, and the route itself is
         untouched everywhere. A site is spared when ANY of these holds, so
-        no single wrong datum can strip the portal or a zone:
+        no single wrong datum can strip a platform site:
 
-        * its company stands for a zone (``zone_companies``);
-        * its company is one :meth:`_microsite_is_protected` would never
-          give a microsite to (the platform company, the zone companies);
-        * it is an aggregated shop (``is_marketplace``).
+        * ``zone_company`` -- its company stands for a zone
+          (``zone_companies``);
+        * ``marketplace_site`` -- it is an aggregated shop
+          (``is_marketplace``);
+        * ``marketplace_company`` -- its company owns an aggregated shop,
+          whatever this very site is: the structural tie of a platform
+          company's second website (the Admin Portal), independent of names;
+        * ``protected_name`` -- its company is one
+          :meth:`_microsite_is_protected` would never give a microsite to.
+          Free text, so the weakest of the four, and it errs on the safe
+          side: a merchant whose name happens to contain a protected
+          pattern keeps an entry nobody minds, while the opposite mistake
+          would strip the portal.
 
         On a merchant site only the generated shape goes: url exactly
         ``/comercio``, direct child of the site's root menu, no children.
@@ -856,18 +872,23 @@ class ResCompany(models.Model):
         ``unlink`` takes the ``ir.model.data`` rows of the migrated ones
         (``canarias_mig.menu_*``) with it.
 
-        Idempotent. Returns the counts for the caller to log. Refuses to
-        run -- nothing deleted, a warning -- when no zone company is known,
-        for the reason :meth:`_remove_local_guide_dropdowns` gives, and
-        takes ``zone_companies`` from the migration for the same one: the
-        ORM cannot see ``zone_company_key`` while a post-migration runs.
+        Idempotent. Returns a report for the caller to log::
+
+            {
+                "deleted": [website_id, ...],          # one per entry
+                "spared": [(website_id, company_id, company_name,
+                            [reason, ...]), ...],      # one per site
+                "kept": [(website_id, company_id, company_name,
+                          menu_id, reason), ...],      # one per entry
+            }
+
+        Refuses to run -- nothing deleted, a warning -- when no zone company
+        is known, for the reason :meth:`_remove_local_guide_dropdowns`
+        gives, and takes ``zone_companies`` from the migration for the same
+        one: the ORM cannot see ``zone_company_key`` while a post-migration
+        runs.
         """
-        counts = {
-            "deleted": 0,
-            "spared_platform_site": 0,
-            "skipped_not_top_level": 0,
-            "skipped_has_children": 0,
-        }
+        report = {"deleted": [], "spared": [], "kept": []}
         if zone_companies is None:
             zone_companies = self._zone_companies_or_none()
         if not zone_companies:
@@ -877,10 +898,10 @@ class ResCompany(models.Model):
                 "%s menu entry in place.",
                 DIRECTORY_MENU_URL,
             )
-            return counts
+            return report
         if websites is None:
             websites = self.env["website"].sudo().search([])
-        marketplace_ids = set(self._marketplace_website_ids())
+        marketplace_ids, marketplace_company_ids = self._marketplace_sites()
         Menu = self.env["website.menu"].sudo()
         for website in websites:
             entries = Menu.search(
@@ -889,32 +910,26 @@ class ResCompany(models.Model):
             if not entries:
                 continue
             company = website.company_id.sudo()
-            if (
-                company in zone_companies
-                or company._microsite_is_protected()
-                or website.id in marketplace_ids
-            ):
-                counts["spared_platform_site"] += len(entries)
+            site = (website.id, company.id, company.name)
+            guards = (
+                ("zone_company", company in zone_companies),
+                ("marketplace_site", website.id in marketplace_ids),
+                ("marketplace_company", company.id in marketplace_company_ids),
+                ("protected_name", company._microsite_is_protected()),
+            )
+            reasons = [reason for reason, holds in guards if holds]
+            if reasons:
+                report["spared"].append((*site, reasons))
                 continue
             for entry in entries:
                 if not entry.parent_id or entry.parent_id.parent_id:
-                    reason = "skipped_not_top_level"
+                    report["kept"].append((*site, entry.id, "not_top_level"))
                 elif entry.child_id:
-                    reason = "skipped_has_children"
+                    report["kept"].append((*site, entry.id, "has_children"))
                 else:
                     entry.unlink()
-                    counts["deleted"] += 1
-                    continue
-                counts[reason] += 1
-                _logger.info(
-                    "Website %s (%s): %s menu %s kept (%s).",
-                    website.id,
-                    website.name,
-                    DIRECTORY_MENU_URL,
-                    entry.id,
-                    reason,
-                )
-        return counts
+                    report["deleted"].append(website.id)
+        return report
 
     def _prune_stock_menus(self, Menu, website):
         """Remove the stock Events/Courses entries from a NEW website.

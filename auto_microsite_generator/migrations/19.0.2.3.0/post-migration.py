@@ -17,8 +17,15 @@ platform company's Admin Portal (198).
 The zone companies are read straight from the column, for the reason the
 19.0.2.2.0 script spells out: ``zone_company_ownership`` is not in the
 registry yet while this runs, and the ORM would answer "no zones anywhere".
-The model method adds two guards of its own (the protected company names and
-``is_marketplace``) so no single wrong datum can strip the portal or a zone.
+The model method adds guards of its own so no single wrong datum can strip a
+platform site: the site is an aggregated shop (``is_marketplace``), its
+company OWNS one (the structural tie of the Admin Portal to the portal's
+company, whatever either is called), or its company name is protected.
+
+Being a one-off on production, the run is logged so it can be diffed against
+what is expected there (207 deleted; 1, 12, 13, 14 and 198 spared): the
+totals, one line per spared site with the guards that held, one line per
+entry kept for a reason, and the ids of the sites that lost the entry.
 
 19.0.2.1.0 restored this very entry on the sites that missed it. It only
 runs on a database coming from before 19.0.2.1.0, and then BEFORE this
@@ -53,15 +60,37 @@ def migrate(cr, version):
 
     env = api.Environment(cr, SUPERUSER_ID, {})
     zone_companies = env["res.company"].browse(_zone_company_ids(cr))
-    counts = env["res.company"]._remove_microsite_directory_menus(
+    report = env["res.company"]._remove_microsite_directory_menus(
         zone_companies=zone_companies
     )
     _logger.info(
         "auto_microsite_generator: /comercio menu entry deleted from %s "
-        "merchant microsites; %s kept on platform sites (portal, zones), "
-        "%s kept because not top-level, %s kept because they have children.",
-        counts["deleted"],
-        counts["spared_platform_site"],
-        counts["skipped_not_top_level"],
-        counts["skipped_has_children"],
+        "merchant microsites; %s platform sites spared (portal, zones and "
+        "their companies' other sites), %s entries kept for a reason.",
+        len(report["deleted"]),
+        len(report["spared"]),
+        len(report["kept"]),
+    )
+    for website_id, company_id, company_name, reasons in report["spared"]:
+        _logger.info(
+            "auto_microsite_generator: /comercio SPARED on website %s "
+            "(company %s, %s): %s.",
+            website_id,
+            company_id,
+            company_name,
+            ", ".join(reasons),
+        )
+    for website_id, company_id, company_name, menu_id, reason in report["kept"]:
+        _logger.info(
+            "auto_microsite_generator: /comercio KEPT on website %s "
+            "(company %s, %s), menu %s: %s.",
+            website_id,
+            company_id,
+            company_name,
+            menu_id,
+            reason,
+        )
+    _logger.info(
+        "auto_microsite_generator: /comercio deleted on website ids: %s",
+        sorted(report["deleted"]),
     )
