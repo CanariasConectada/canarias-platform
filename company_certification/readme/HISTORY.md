@@ -20,8 +20,15 @@
   `partner_microsite_manager.microsite_homepage_content` get the block from
   that template (`partner_microsite_manager` 19.0.2.10.0); with an older
   `partner_microsite_manager` they keep the layout-level section.
+- The layout-level check reads the arch in the language being rendered, so
+  a language that lost the call (builder save) falls back to the layout
+  section instead of losing its seals.
 - Known limit: a merchant saving the homepage in the website builder may
-  flatten the `t-call` into static HTML.
+  flatten the `t-call` into static HTML, freezing a seal that may later
+  expire. Detection hook: `website._cc_flattened_seals_homepages()` returns
+  the homepages whose arch carries the rendered section (`o_cc_seals`)
+  without the call; the post-migration logs them at WARNING and it can be
+  run from a shell. Nothing is repaired automatically.
 
 ## 19.0.2.8.0 (2026-09-15)
 

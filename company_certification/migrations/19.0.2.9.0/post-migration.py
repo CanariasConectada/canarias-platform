@@ -18,3 +18,12 @@ def migrate(cr, version):
     env = api.Environment(cr, SUPERUSER_ID, {})
     counts = env["website"]._cc_place_seals_in_homepage()
     _logger.info("Certification seals placed in merchant homepages: %s", counts)
+    flattened = env["website"]._cc_flattened_seals_homepages()
+    if flattened:
+        _logger.warning(
+            "Certification seals frozen as static HTML (builder save) on "
+            "homepage views %s of websites %s: an expired seal would stay "
+            "visible there.",
+            flattened.view_id.ids,
+            flattened.website_id.ids,
+        )

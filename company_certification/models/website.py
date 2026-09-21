@@ -33,10 +33,18 @@ CONTACT_SECTION_NAMES = ("Formulario", "Formulario Contacto")
 
 # The opening tag of a contact section. Attribute values are matched as
 # quoted strings so a ``>`` inside a ``style`` cannot end the tag early.
+# Deliberately the same names and pattern as ``CONTACT_SECTION_NAMES`` /
+# ``CONTACT_SECTION_RE`` in ``company_facilities/models/website.py``: both
+# modules anchor on this section and neither depends on the other, so the
+# constant is duplicated. Change one, change the other.
 CONTACT_SECTION_RE = re.compile(
     r"<section(?:\s+[\w:.-]+(?:\s*=\s*(?:\"[^\"]*\"|'[^']*'))?)*?"
     r"\s+data-name\s*=\s*\"(?:%s)\"" % "|".join(map(re.escape, CONTACT_SECTION_NAMES))
 )
+
+# Class of the rendered section. Found in an arch WITHOUT the call marker, it
+# means the builder saved the rendered block as static HTML (flattened).
+SEALS_SECTION_CLASS = "o_cc_seals"
 
 INSERTED = "inserted"
 ALREADY_THERE = "already_there"
@@ -107,10 +115,14 @@ class Website(models.Model):
         The layout-level section stays silent on such a page, so the seals
         never show twice. Cheap on purpose, the layout calls this once per
         homepage view: it reads ``arch_db`` of the page's own view, a row the
-        ORM has already fetched to render the page. Read with ``lang=None``
-        (the ``en_US`` base value): the marker lives in a ``t-call``
-        attribute, which ``xml_translate`` never translates, and
-        ``_cc_place_seals_in_homepage`` writes it in every language at once.
+        ORM has already fetched to render the page.
+
+        Read in the language being rendered (``arch_db`` falls back to the
+        ``en_US`` base when that language has no value of its own), not in
+        the base language: ``_cc_place_seals_in_homepage`` writes the call in
+        every language at once, but a later builder save touches one language
+        only. A page whose current language lost the call gets the layout
+        fallback instead of silently losing its seals.
         """
         view = None
         name = getattr(main_object, "_name", None)
@@ -120,12 +132,49 @@ class Website(models.Model):
             view = main_object.sudo()
         if not view:
             return False
-        arch = view.with_context(lang=None).arch_db or ""
+        arch = view.with_context(lang=self.env.lang or None).arch_db or ""
         if SEALS_CALL_MARKER in arch:
             return True
         return (
             DYNAMIC_HOMEPAGE_MARKER in arch and self._cc_dynamic_homepage_places_seals()
         )
+
+    def _cc_flattened_seals_homepages(self):
+        """Homepages where the seals block was frozen into static HTML.
+
+        A merchant saving the homepage in the website builder may replace the
+        ``t-call`` with the HTML it rendered at that moment: the seal then
+        stays on the page after it expires. Detection only, nothing is
+        repaired: a language key of the arch carrying the rendered section
+        (``o_cc_seals``) without the call marker is a flattened one.
+
+        Scope: the ``/`` pages of ``self`` (every website when empty).
+        Returns the ``website.page`` recordset. Callable from a shell::
+
+            env["website"]._cc_flattened_seals_homepages().mapped("website_id.name")
+        """
+        websites = self or self.search([])
+        pages = (
+            self.env["website.page"]
+            .sudo()
+            .search([("url", "=", "/"), ("website_id", "in", websites.ids)])
+        )
+        pages.view_id.flush_recordset(["arch_db"])
+        flattened = pages.browse()
+        cr = self.env.cr
+        for page in pages:
+            cr.execute(
+                "SELECT arch_db FROM ir_ui_view WHERE id = %s", (page.view_id.id,)
+            )
+            row = cr.fetchone()
+            archs = (row and row[0]) or {}
+            if any(
+                SEALS_SECTION_CLASS in (arch or "")
+                and SEALS_CALL_MARKER not in (arch or "")
+                for arch in archs.values()
+            ):
+                flattened |= page
+        return flattened
 
     def _cc_place_seals_in_homepage(self):
         """Call the seals block before the contact section of homepages.

@@ -8,10 +8,14 @@ after the funding strip; merchant homepages now call the block themselves and
 the layout-level section is only the fallback for every other homepage.
 """
 import json
+from unittest.mock import patch
+
+from lxml import etree
 
 from odoo.tests import HttpCase, tagged
 
-from ..models.website import SEALS_CALL_MARKER
+from ..models import website as website_module
+from ..models.website import SEALS_CALL_MARKER, SEALS_SNIPPET
 from .common import CertificationCase
 
 HOST = "cc-seals-test.example"
@@ -221,19 +225,83 @@ class TestSealsHomepageOrder(CertificationCase, HttpCase):
         )
 
     def test_portal_and_zone_websites_are_left_alone(self):
-        found = False
-        for website_id in (1, 12, 13, 14):
-            website = self.env["website"].browse(website_id).exists()
-            if not website:
-                continue
-            found = True
-            page = self._homepage(website, "ccskip%s" % website_id)
-            before = self._archs(page.view_id)
-            self.env["website"]._cc_place_seals_in_homepage()
-            website._cc_place_seals_in_homepage()
-            self.assertEqual(self._archs(page.view_id), before, website_id)
-        if not found:
-            self.skipTest("no portal or zone website in this database")
+        """The excluded websites are never edited; their neighbours are.
+
+        The real ids (1, 12, 13, 14) only exist on the platform's databases,
+        so the constant is pointed at a website this test owns: the safety
+        invariant is asserted on every database, never skipped.
+        """
+        excluded = self.env["website"].create(
+            {"name": "CC excluded", "domain": "cc-seals-excluded.example"}
+        )
+        page = self._homepage(excluded, "ccexcluded")
+        before = self._archs(page.view_id)
+        with patch.object(website_module, "NON_MERCHANT_WEBSITE_IDS", (excluded.id,)):
+            counts = (excluded | self.website)._cc_place_seals_in_homepage()
+            alone = excluded._cc_place_seals_in_homepage()
+        self.assertEqual(self._archs(page.view_id), before)
+        self.assertEqual(counts["updated"], 1)
+        self.assertEqual(sum(alone.values()), 0)
+        for arch in self._archs(self.page.view_id).values():
+            self.assertIn(SEALS_CALL_MARKER, arch)
+
+    def test_the_platform_websites_are_the_excluded_ones(self):
+        self.assertEqual(website_module.NON_MERCHANT_WEBSITE_IDS, (1, 12, 13, 14))
+
+    def test_a_form_nested_in_the_contact_block_gets_one_call_before_the_outer(self):
+        """The shape of websites 130/134/161/162: "Formulario Contacto" holds
+        the "Formulario" section."""
+        nested = (
+            '<section class="s_website_form_info o_cc o_cc2" '
+            'data-snippet="s_website_form_info" data-name="Formulario Contacto">'
+            '<div class="container"><div class="row"><div class="col-lg-6">'
+            '<section class="s_website_form pt8" data-snippet="s_website_form" '
+            'style="a:b" data-name="Formulario"><h4>CC-CONTACT-SECTION</h4></section>'
+            "</div></div></div></section>"
+        )
+        flat = (
+            '<section class="s_website_form pt8" data-snippet="s_website_form" '
+            'style="a:b" data-name="Formulario"><h4>CC-CONTACT-SECTION</h4></section>'
+        )
+        archs = {}
+        for lang, label in (("en_US", "Hello"), ("es_ES", "Hola")):
+            arch = imported_homepage("ccseals", label, FACILITIES_SNIPPET)
+            self.assertIn(flat, arch)
+            archs[lang] = arch.replace(flat, nested)
+        self._set_archs(self.page.view_id, archs)
+        counts = self.website._cc_place_seals_in_homepage()
+        self.assertEqual(counts["updated"], 1)
+        for lang, arch in self._archs(self.page.view_id).items():
+            self.assertEqual(arch.count(SEALS_CALL_MARKER), 1, lang)
+            tree = etree.fromstring("<root>%s</root>" % arch)
+            call = tree.xpath("//t[@t-call='%s']" % SEALS_CALL_MARKER)[0]
+            outer = call.getnext()
+            self.assertEqual(outer.get("data-name"), "Formulario Contacto", lang)
+            self.assertTrue(outer.xpath(".//section[@data-name='Formulario']"), lang)
+            self.assertLess(
+                arch.index(FACILITIES_MARKER), arch.index(SEALS_CALL_MARKER), lang
+            )
+        again = self.website._cc_place_seals_in_homepage()
+        self.assertEqual(again["already_there"], 1)
+
+    # ------------------------------------------------------------------
+    # Flattened by a builder save
+    # ------------------------------------------------------------------
+    def test_a_homepage_with_the_call_is_not_reported_as_flattened(self):
+        self.website._cc_place_seals_in_homepage()
+        self.assertFalse(self.website._cc_flattened_seals_homepages())
+
+    def test_a_flattened_language_is_reported(self):
+        self.website._cc_place_seals_in_homepage()
+        archs = self._archs(self.page.view_id)
+        archs["es_ES"] = archs["es_ES"].replace(
+            SEALS_SNIPPET,
+            '<section class="o_cc o_cc2 pt32 pb32 o_colored_level o_cc_seals" '
+            'data-name="Certification Seals"><p>frozen</p></section>',
+        )
+        self._set_archs(self.page.view_id, archs)
+        self.assertEqual(self.website._cc_flattened_seals_homepages(), self.page)
+        self.assertIn(self.page, self.env["website"]._cc_flattened_seals_homepages())
 
     # ------------------------------------------------------------------
     # The rendered page
@@ -305,6 +373,49 @@ class TestSealsHomepageOrder(CertificationCase, HttpCase):
         self.website._cc_place_seals_in_homepage()
         response = self.url_open("/contactus", headers={"Host": HOST})
         self.assertNotIn(SEALS_SECTION, response.text)
+
+    def test_a_language_that_lost_the_call_falls_back_to_the_layout(self):
+        """The call in en_US but not in de_DE (a builder save in German)."""
+        Lang = self.env["res.lang"]
+        english = Lang._activate_lang("en_US")
+        german = Lang._activate_lang("de_DE")
+        self.website.write(
+            {
+                "language_ids": [(6, 0, (english | german).ids)],
+                "default_lang_id": english.id,
+            }
+        )
+        self._award_seal()
+        self._set_archs(
+            self.page.view_id,
+            {
+                "en_US": imported_homepage("ccseals", "CC-LABEL-EN"),
+                "de_DE": imported_homepage("ccseals", "CC-LABEL-DE"),
+            },
+        )
+        self.website._cc_place_seals_in_homepage()
+        archs = self._archs(self.page.view_id)
+        archs["de_DE"] = archs["de_DE"].replace(SEALS_SNIPPET, "")
+        self.assertNotIn(SEALS_CALL_MARKER, archs["de_DE"])
+        self._set_archs(self.page.view_id, archs)
+
+        response = self.url_open("/%s" % german.url_code, headers={"Host": HOST})
+        self.assertEqual(response.status_code, 200)
+        html = response.text
+        self.assertIn("CC-LABEL-DE", html)
+        self.assertEqual(html.count(SEALS_SECTION), 1)
+        # Through the layout: after the strip, right above the footer.
+        self.assertLess(html.index("CC-FUNDING-STRIP"), html.index(SEALS_SECTION))
+        self.assertLess(html.index(SEALS_SECTION), html.index('id="bottom"'))
+
+        # The German visit left a ``frontend_lang`` cookie in the session,
+        # which would send "/" back to German.
+        self.opener.cookies.clear()
+        html = self._get_home()
+        self.assertIn("CC-LABEL-EN", html)
+        self.assertEqual(html.count(SEALS_SECTION), 1)
+        # Through the page: before the contact section.
+        self.assertLess(html.index(SEALS_SECTION), html.index("CC-CONTACT-SECTION"))
 
     def test_the_dynamic_microsite_homepage_places_the_seals_itself(self):
         """Homepages built by ``partner_microsite_manager`` (new microsites)."""
