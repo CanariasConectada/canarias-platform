@@ -1,3 +1,28 @@
+## 19.0.2.9.0 (2026-09-21)
+
+- A merchant homepage ends facilities, certification seals, contact section,
+  funding strip, footer, in that order (client request). The seals section
+  hung off `website.layout` above `footer#bottom`, so it rendered after the
+  funding strip. It is now a template of its own,
+  `company_certification.certification_block` (takes `cc_company`, renders
+  nothing for a company with no valid seal), and a post-migration inserts a
+  `t-call` to it right before the first contact section (`data-name`
+  "Formulario" or "Formulario Contacto") of every imported homepage, in every
+  language of the arch (`website._cc_place_seals_in_homepage`). That is also
+  right after the `company_facilities` call, which anchors on the same
+  section; neither module depends on the other. The portal and zone websites
+  (1, 12, 13, 14) are left alone; a homepage that is not well-formed XML or
+  has no contact section in some language is skipped whole and logged.
+- The layout-level section stays as the fallback for every other homepage
+  (portal, zone websites, homepages without a contact section) and is silent
+  on a page that calls the block itself (`website._cc_page_places_seals`), so
+  the seals never show twice. Homepages built from
+  `partner_microsite_manager.microsite_homepage_content` get the block from
+  that template (`partner_microsite_manager` 19.0.2.10.0); with an older
+  `partner_microsite_manager` they keep the layout-level section.
+- Known limit: a merchant saving the homepage in the website builder may
+  flatten the `t-call` into static HTML.
+
 ## 19.0.2.8.0 (2026-09-15)
 
 - The public landing pages get their final polish. The seal gains a
