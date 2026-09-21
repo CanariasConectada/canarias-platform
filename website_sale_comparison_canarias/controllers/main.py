@@ -14,20 +14,45 @@ from odoo.addons.website_sale_comparison_canarias.models.website import SCOPE_OT
 CANDIDATE_LIMIT = 120
 
 
-def _clean_ids(value):
-    """Positive ints out of whatever the client sent, anything else dropped.
+# How many ids of a client-sent list are even looked at. The modal never has
+# anywhere near this many chips ticked; an anonymous caller posting a million
+# ids gets the first few read and the rest ignored.
+MAX_CLIENT_IDS = 200
 
-    The endpoint is public: ``category_ids`` may arrive as a string, a dict,
-    a list of lists or a list holding ``True`` (which IS an int in Python).
-    None of that is an error worth answering, it is simply not an id.
+# PostgreSQL's int4, which is what every id column is: anything larger is not
+# an id, and handing it to a query is an "integer out of range" 500.
+_MAX_ID = 2**31 - 1
+
+
+def _is_id(value):
+    return (
+        isinstance(value, int) and not isinstance(value, bool) and 0 < value <= _MAX_ID
+    )
+
+
+def _clean_id(value):
+    """One record id out of whatever the client sent, or 0.
+
+    The endpoint is public, so ``product_template_id`` may be a word, a list
+    or a dict. None of that is an error worth a 500: it is simply no product,
+    and the modal answers as it does when none is given. A string of digits is
+    still taken, as ``int()`` took it before this was made defensive.
+    """
+    if isinstance(value, str) and value.isdecimal() and len(value) <= 10:
+        value = int(value)
+    return value if _is_id(value) else 0
+
+
+def _clean_ids(value):
+    """Record ids out of whatever the client sent, anything else dropped.
+
+    ``category_ids`` may arrive as a string, a dict, a list of lists or a list
+    holding ``True`` (which IS an int in Python). Only the first
+    ``MAX_CLIENT_IDS`` entries are read at all.
     """
     if not isinstance(value, (list, tuple)):
         return []
-    return [
-        item
-        for item in value
-        if isinstance(item, int) and not isinstance(item, bool) and item > 0
-    ]
+    return [item for item in value[:MAX_CLIENT_IDS] if _is_id(item)]
 
 
 class WebsiteSaleComparisonCanarias(http.Controller):
@@ -96,6 +121,18 @@ class WebsiteSaleComparisonCanarias(http.Controller):
         capped: filtering 120 alphabetical rows client-side for "laptops"
         would miss every laptop past the letter C.
 
+        THE CLICKED PRODUCT IS GATED TOO. ``product_template_id`` is just a
+        number in a request anybody can write, and everything here runs as
+        sudo: answering with the name, price, image and category names of
+        whatever id was sent would hand an unpublished product -- or another
+        shop's -- to an anonymous caller. So the product only counts if the
+        site the visitor is ON lists it (``request.website``'s own
+        ``sale_product_domain()``, the same domain that decides whether its
+        page opens there). Not the scope's site: "outside my zone" rightly
+        excludes the clicked product, and would wrongly disown it. A product
+        that does not pass is no product at all -- no ``current``, no same
+        category, the scopes of a bare request.
+
         LANGUAGE IS SET BY HAND. ``http_routing``'s frontend language
         resolution (URL prefix > ``frontend_lang`` cookie > context > site
         default) only runs its redirect/context dance for ``type="http"``
@@ -117,7 +154,7 @@ class WebsiteSaleComparisonCanarias(http.Controller):
         website = website.with_env(request.env)
         Product = request.env["product.template"].sudo()
 
-        current = Product.browse(int(product_template_id or 0)).exists()
+        current = self._visible_product(website, product_template_id)
         scopes = website._comparison_scopes(current)
         available = {entry["key"] for entry in scopes}
         if scope not in available:
@@ -134,7 +171,7 @@ class WebsiteSaleComparisonCanarias(http.Controller):
                 "same_category_ids": [],
                 "products": [],
                 "categories": [],
-                "category_ids": [],
+                "selected_category_ids": [],
                 "scopes": scopes,
                 "scope": scope,
                 "zone": zone or "",
@@ -221,7 +258,9 @@ class WebsiteSaleComparisonCanarias(http.Controller):
                     other_categories.items(), key=lambda kv: kv[1].casefold()
                 )
             ],
-            "category_ids": picked_other,
+            # Not `category_ids`: every product below carries a key of that
+            # name, and it means something else there.
+            "selected_category_ids": picked_other,
             "scopes": scopes,
             "scope": scope,
             "zone": zone or "",
@@ -230,6 +269,25 @@ class WebsiteSaleComparisonCanarias(http.Controller):
             "total": total,
             "limit": CANDIDATE_LIMIT,
         }
+
+    def _visible_product(self, website, product_template_id):
+        """The clicked product, if ``website`` lists it; else an empty set.
+
+        Searched, never browsed: the record only exists for this endpoint if
+        the shop the visitor is standing in would show it to them. In that
+        site's context, for the reason given where the candidates are
+        searched -- `website_sale_marketplace` reads ``website_id`` off it.
+        """
+        Product = request.env["product.template"].sudo()
+        product_id = _clean_id(product_template_id)
+        if not product_id:
+            return Product
+        domain = Domain(website.sudo().sale_product_domain()) & Domain(
+            "id", "=", product_id
+        )
+        found = Product.with_context(website_id=website.id).search(domain, limit=1)
+        # Handed back without that context: it was for the search alone.
+        return Product.browse(found.ids)
 
     def _other_category_facets(self, Product, domain, same_categories):
         """``{id: name}`` of the categories on offer, minus ``same_categories``.

@@ -8,6 +8,7 @@ from odoo.tests import HttpCase, tagged
 
 from odoo.addons.website_sale_comparison_canarias.controllers.main import (
     CANDIDATE_LIMIT,
+    MAX_CLIENT_IDS,
 )
 
 
@@ -106,17 +107,21 @@ class TestCompareCandidates(HttpCase):
                 "public_categ_ids": [(6, 0, (cls.category | cls.second_category).ids)],
             }
         )
-        # One more product than the cap, all sorting BEFORE the needle
+        # More products than the cap, all sorting BEFORE the needle
         # ("Filler" < "Needle" in any collation), so the needle is provably
         # beyond the alphabetical first page whatever else the database holds.
-        cls.env["product.template"].create(
+        # They share a category of their own, so that clicking one of them
+        # leaves a SAME-CATEGORY list that is itself longer than the cap.
+        cls.filler_category = Category.create({"name": "Compare Test Filler Category"})
+        cls.fillers = cls.env["product.template"].create(
             [
                 {
                     "name": "Compare Query Filler %03d" % index,
                     "is_published": True,
                     "list_price": 5.0,
+                    "public_categ_ids": [(6, 0, cls.filler_category.ids)],
                 }
-                for index in range(CANDIDATE_LIMIT + 1)
+                for index in range(CANDIDATE_LIMIT + 2)
             ]
         )
         cls.needle = cls.env["product.template"].create(
@@ -127,7 +132,7 @@ class TestCompareCandidates(HttpCase):
             }
         )
 
-    def _candidates(self, template_id, **params):
+    def _post(self, template_id, **params):
         return self.opener.post(
             self.base_url() + "/shop/compare/candidates",
             json={
@@ -136,7 +141,10 @@ class TestCompareCandidates(HttpCase):
                 "method": "call",
                 "id": 1,
             },
-        ).json()["result"]
+        )
+
+    def _candidates(self, template_id, **params):
+        return self._post(template_id, **params).json()["result"]
 
     def test_a_scope_nobody_offered_falls_back_instead_of_being_obeyed(self):
         """A query string belongs to whoever is holding the address bar."""
@@ -227,6 +235,53 @@ class TestCompareCandidates(HttpCase):
             self.assertEqual(data["total"], 0)
 
     # ------------------------------------------------------------------
+    # The clicked product is a number anybody can type
+    # ------------------------------------------------------------------
+    def test_an_unpublished_product_says_nothing_about_itself(self):
+        """Not its name, price, image, url, nor what it is filed under.
+
+        ``hidden_category`` is worn by this product alone, so its name or id
+        anywhere in the answer could only have come from the product.
+        """
+        response = self._post(self.unpublished.id)
+        data = response.json()["result"]
+        self.assertIsNone(data["current"])
+        self.assertEqual(data["current_category_ids"], [])
+        self.assertEqual(data["same_categories"], [])
+        self.assertEqual(data["same_category_ids"], [])
+        self.assertNotIn(self.hidden_category.id, {c["id"] for c in data["categories"]})
+        self.assertNotIn("Compare Test Unpublished", response.text)
+        self.assertNotIn("Compare Test Hidden Category", response.text)
+        self.assertNotIn("product.template/%s/" % self.unpublished.id, response.text)
+        self.assertNotIn(self.unpublished.website_url, response.text)
+        # It is answered as a request with no product at all: no same
+        # category, so no category filter either.
+        bare = self._candidates(None)
+        self.assertEqual(data["scopes"], bare["scopes"])
+        self.assertEqual(data["scope"], bare["scope"])
+        self.assertEqual(data["total"], bare["total"])
+
+    def test_a_visible_product_still_gets_its_whole_payload(self):
+        data = self._candidates(self.published.id)
+        self.assertEqual(data["current"]["id"], self.published.id)
+        self.assertEqual(data["current"]["name"], "Compare Test Published")
+        self.assertEqual(data["current_category_ids"], [self.category.id])
+
+    def test_a_product_id_that_is_not_an_id_is_no_product(self):
+        """A word, a list or a dict is not worth a 500 on a public route."""
+        bare = self._candidates(None)
+        for garbage in ("abc", "", [1], {"id": 1}, True, -5, 0, 1.5, 2**31, 2**40):
+            payload = self._post(garbage).json()
+            self.assertNotIn("error", payload, garbage)
+            data = payload["result"]
+            self.assertIsNone(data["current"], garbage)
+            self.assertEqual(data["same_categories"], [], garbage)
+            self.assertEqual(data["total"], bare["total"], garbage)
+        # A string of digits is still an id, as it was before.
+        data = self._candidates(str(self.published.id))
+        self.assertEqual(data["current"]["id"], self.published.id)
+
+    # ------------------------------------------------------------------
     # The four steps: same category ticked, the others one click away
     # ------------------------------------------------------------------
     def _names(self, data):
@@ -244,7 +299,7 @@ class TestCompareCandidates(HttpCase):
             [{"id": self.category.id, "name": "Compare Test Category"}],
         )
         self.assertEqual(data["same_category_ids"], [self.category.id])
-        self.assertEqual(data["category_ids"], [])
+        self.assertEqual(data["selected_category_ids"], [])
         self.assertEqual(
             self._names(data),
             {"Compare Test Other", "Compare Test Child", "Compare Test Multi"},
@@ -276,7 +331,7 @@ class TestCompareCandidates(HttpCase):
             self.published.id, category_ids=[self.other_category.id]
         )
         self.assertEqual(data["same_category_ids"], [self.category.id])
-        self.assertEqual(data["category_ids"], [self.other_category.id])
+        self.assertEqual(data["selected_category_ids"], [self.other_category.id])
         self.assertEqual(
             self._names(data),
             {
@@ -337,6 +392,46 @@ class TestCompareCandidates(HttpCase):
         self.assertGreater(data["total"], CANDIDATE_LIMIT)
         self.assertIn(self.category.id, {c["id"] for c in data["categories"]})
 
+    def test_the_total_and_the_cap_are_those_of_the_ticked_category(self):
+        """ "Showing 120 of N" has to be about the list on screen.
+
+        The fillers share a category that holds more than the cap. Clicking
+        one of them must count and truncate THAT category, not the scope.
+        """
+        clicked = self.fillers[0]
+        data = self._candidates(clicked.id)
+        self.assertEqual(data["same_category_ids"], [self.filler_category.id])
+        self.assertEqual(data["total"], len(self.fillers) - 1)
+        self.assertGreater(data["total"], CANDIDATE_LIMIT)
+        self.assertEqual(len(data["products"]), CANDIDATE_LIMIT)
+        for product in data["products"]:
+            self.assertIn(self.filler_category.id, product["category_ids"])
+        whole_scope = self._candidates(clicked.id, same_category_ids=[])
+        self.assertGreater(whole_scope["total"], data["total"])
+
+    def test_only_the_first_ids_of_a_long_list_are_read(self):
+        padding = [2**31 - 1] * MAX_CLIENT_IDS
+        ignored = self._candidates(
+            self.published.id,
+            same_category_ids=[],
+            category_ids=padding + [self.other_category.id],
+            query="Compare Test",
+        )
+        self.assertEqual(ignored["selected_category_ids"], [])
+        read = self._candidates(
+            self.published.id,
+            same_category_ids=[],
+            category_ids=padding[:-1] + [self.other_category.id],
+            query="Compare Test",
+        )
+        self.assertEqual(read["selected_category_ids"], [self.other_category.id])
+        self.assertEqual(self._names(read), {"Compare Test Elsewhere"})
+        # The same cap guards the same-category list.
+        unticked = self._candidates(
+            self.published.id, same_category_ids=padding + [self.category.id]
+        )
+        self.assertEqual(unticked["same_category_ids"], [])
+
     def test_the_same_category_comes_from_the_product_not_from_the_client(self):
         """The client may untick; it may not name a category of its own."""
         data = self._candidates(
@@ -360,7 +455,7 @@ class TestCompareCandidates(HttpCase):
                 category_ids=category_ids,
                 query="Compare Test",
             )
-            self.assertEqual(data["category_ids"], [])
+            self.assertEqual(data["selected_category_ids"], [])
             self.assertNotIn("Compare Test Unpublished", self._names(data))
             self.assertEqual(len(data["products"]), 5)
         # Not a list at all is not "everything unticked": it is the default.
@@ -394,7 +489,7 @@ class TestCompareCandidates(HttpCase):
         for params in forged:
             data = self._candidates(self.published.id, scope="all", **params)
             self.assertEqual(data["scope"], "all")
-            self.assertNotIn(self.hidden_category.id, data["category_ids"])
+            self.assertNotIn(self.hidden_category.id, data["selected_category_ids"])
             self.assertNotIn(self.hidden_category.id, data["same_category_ids"])
             ids = {product["id"] for product in data["products"]}
             self.assertNotIn(self.unpublished.id, ids)
@@ -515,6 +610,54 @@ class TestCompareCandidatesZones(HttpCase):
                 "id": 1,
             },
         ).json()["result"]
+
+    def test_a_product_this_site_does_not_list_says_nothing_about_itself(self):
+        """Published, but somebody else's: not on this website, not here.
+
+        The portal only lists what carries the portal company. A product of
+        a merchant that was never linked to it has a page on that merchant's
+        own site and nowhere else, and asking the portal about it by id must
+        answer exactly as an unpublished one does.
+        """
+        category = self.env["product.public.category"].create(
+            {"name": "Zone HTTP Foreign Category"}
+        )
+        # `wsm_skip_marketplace_link`: creating a product normally links the
+        # portal company to it, which is precisely what makes it listable.
+        foreign = (
+            self.env["product.template"]
+            .with_context(wsm_skip_marketplace_link=True)
+            .create(
+                {
+                    "name": "Zone HTTP Foreign",
+                    "is_published": True,
+                    "list_price": 13.0,
+                    "company_ids": [(6, 0, self.elsewhere_company.ids)],
+                    "public_categ_ids": [(6, 0, category.ids)],
+                }
+            )
+        )
+        self.assertNotIn(self.portal.company_id, foreign.company_ids)
+        response = self.opener.post(
+            self.base_url() + "/shop/compare/candidates",
+            json={
+                "params": {"product_template_id": foreign.id},
+                "jsonrpc": "2.0",
+                "method": "call",
+                "id": 1,
+            },
+        )
+        data = response.json()["result"]
+        self.assertIsNone(data["current"])
+        self.assertEqual(data["current_category_ids"], [])
+        self.assertEqual(data["same_categories"], [])
+        self.assertNotIn("Zone HTTP Foreign", response.text)
+        self.assertNotIn("product.template/%s/" % foreign.id, response.text)
+        # No owner to name either: the scopes are those of a bare request.
+        self.assertNotIn("shop", {scope["key"] for scope in data["scopes"]})
+        # The one next to it, which the portal does list, is untouched.
+        listed = self._candidates(self.clicked.id)
+        self.assertEqual(listed["current"]["name"], "Zone HTTP Clicked")
 
     def test_the_portal_offers_the_products_zone(self):
         data = self._candidates(self.clicked.id, scope="zone")

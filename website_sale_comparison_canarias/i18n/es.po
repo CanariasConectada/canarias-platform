@@ -213,6 +213,11 @@ msgstr ""
 
 #. module: website_sale_comparison_canarias
 #: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid "The products could not be loaded. Please try again."
+msgstr "No se han podido cargar los productos. Inténtalo de nuevo."
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
 msgid "There are no other categories here."
 msgstr "No hay otras categorías aquí."
 

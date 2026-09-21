@@ -16,6 +16,10 @@ const SEARCH_DEBOUNCE_MS = 300;
 // push the product list, which is the point of the modal, off the screen.
 const HELP_OPEN_MEDIA = "(min-width: 768px)";
 
+// Several chips clicked in a row are one question, not several: the chips
+// repaint at once and the list is asked for when the clicking pauses.
+const CHIP_DEBOUNCE_MS = 200;
+
 /**
  * Pick what to compare against, without leaving the shop.
  *
@@ -71,6 +75,12 @@ export class ComparisonModal extends Interaction {
         this.otherEl = this.el.querySelector(".o_wscc_modal_other");
         this.otherCountEl = this.el.querySelector(".o_wscc_modal_other_count");
         this.otherNoneEl = this.el.querySelector(".o_wscc_modal_other_none");
+        this.errorEl = this.el.querySelector(".o_wscc_modal_error");
+        // `debounced` cancels itself on destroy, like the search below.
+        this.loadAfterChips = this.debounced(
+            () => this.load({ keepCategories: true }),
+            CHIP_DEBOUNCE_MS
+        );
         this.countEl = this.el.querySelector(".o_wscc_modal_count");
         this.emptyEl = this.el.querySelector(".o_wscc_modal_empty");
         this.scopesEl = this.el.querySelector(".o_wscc_modal_scopes");
@@ -153,6 +163,7 @@ export class ComparisonModal extends Interaction {
             if (ticket !== this.loadTicket) {
                 return;
             }
+            this.setError(false);
             this.state.products = data.products || [];
             this.state.sameCategories = data.same_categories || [];
             this.state.categories = data.categories || [];
@@ -166,12 +177,36 @@ export class ComparisonModal extends Interaction {
             // applied, which is the product's real categories and the chips
             // this scope really offers, whatever was asked for.
             this.state.sameCategoryIds = data.same_category_ids || [];
-            this.state.activeCategoryIds = data.category_ids || [];
+            this.state.activeCategoryIds = data.selected_category_ids || [];
             this.render();
+        } catch (error) {
+            // A dead network or a 500 must not look like "nothing to
+            // compare". Say so where the list would be, and leave the scopes
+            // and the chips as they are: the next click simply asks again.
+            // (`waitFor` passes a rejection on even after destroy, when
+            // nobody is left to tell.)
+            if (ticket === this.loadTicket && !this.isDestroyed) {
+                console.warn("Could not load the comparison candidates", error);
+                this.state.products = [];
+                this.state.total = 0;
+                this.render();
+                this.setError(true);
+            }
         } finally {
             if (ticket === this.loadTicket) {
                 this.setLoading(false);
             }
+        }
+    }
+
+    setError(failed) {
+        if (this.errorEl) {
+            this.errorEl.classList.toggle("d-none", !failed);
+        }
+        if (failed) {
+            // One message at a time: "could not load" already explains the
+            // empty list.
+            this.emptyEl.classList.add("d-none");
         }
     }
 
@@ -240,7 +275,12 @@ export class ComparisonModal extends Interaction {
         const active = this.state.activeCategoryIds;
         this.otherEl.classList.toggle("d-none", others.length === 0);
         this.otherNoneEl.classList.toggle("d-none", others.length > 0);
-        this.otherCountEl.textContent = others.length;
+        // Null-checked: the count lives inside a translatable sentence, and a
+        // translation that drops the <span> must cost the number, not the
+        // whole modal.
+        if (this.otherCountEl) {
+            this.otherCountEl.textContent = others.length;
+        }
         // A picked category must stay in sight. Never folded from here: that
         // is the visitor's call.
         if (active.length) {
@@ -440,9 +480,10 @@ export class ComparisonModal extends Interaction {
             this.state[key] = ids.includes(id)
                 ? ids.filter((other) => other !== id)
                 : [...ids, id];
-            // Paint the chip at once; the list follows when the server answers.
+            // Paint the chip at once; the list follows when the clicking
+            // pauses and the server answers.
             this.renderCategories();
-            this.load({ keepCategories: true });
+            this.loadAfterChips();
             return;
         }
 

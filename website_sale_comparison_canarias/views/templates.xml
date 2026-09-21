@@ -259,6 +259,10 @@
                                 <div class="o_wscc_modal_truncated d-none small text-muted mt-2">
                                     Showing <span class="o_wscc_modal_shown">0</span> of <span class="o_wscc_modal_total">0</span> products. Search to find the rest.
                                 </div>
+                                <!-- Shown by the client when the request
+                                     itself fails, so a dead network does not
+                                     read as "nothing to compare". -->
+                                <div class="o_wscc_modal_error d-none small text-danger text-center py-3" role="alert">The products could not be loaded. Please try again.</div>
                                 <div class="o_wscc_modal_empty d-none text-muted text-center py-4">
                                     No products in this category to compare.
                                 </div>
