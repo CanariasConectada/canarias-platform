@@ -282,35 +282,83 @@ class TestCertificationLanding(HttpCase):
             }
         )
 
-    def test_the_footer_lists_every_published_seal_the_pages_own_included(self):
+    def _seals_block(self, text):
+        return text[text.index("o_cc_landing_seals") :]
+
+    def test_the_footer_lists_the_other_published_seals_only(self):
+        """The page's own seal is in the hero: a card linking the page to
+        itself was reported as a duplicate by the client."""
         self._add_vertical("other-vertical")
         self._add_vertical("draft-vertical", published=False)
-        published = self.env["certification.type"].search_count(
-            [("landing_published", "=", True)]
+        others = self.env["certification.type"].search_count(
+            [("landing_published", "=", True), ("id", "!=", self.cert_type.id)]
         )
 
         response = self.url_open("/certification/landing-vertical")
 
         self.assertEqual(response.status_code, 200)
-        footer = response.text[response.text.index("o_cc_landing_seals") :]
-        self.assertEqual(footer.count("o_cc_seal_card card"), published)
+        footer = self._seals_block(response.text)
+        self.assertEqual(footer.count("o_cc_seal_card card"), others)
         self.assertIn('certification/other-vertical"', footer)
         self.assertIn("The other-vertical seal", footer)
         self.assertIn("About the other-vertical seal.", footer)
-        self.assertIn('certification/landing-vertical"', footer)
+        self.assertNotIn('certification/landing-vertical"', footer)
         self.assertNotIn("draft-vertical", footer)
 
-    def test_the_footer_follows_the_seal_sequence(self):
-        self._add_vertical("first-vertical").sequence = 1
-        self.cert_type.sequence = 99
+    def test_no_footer_when_no_other_seal_is_published(self):
+        # An empty "other seals" band would be a heading over nothing.
+        self.env["certification.type"].search(
+            [("landing_published", "=", True), ("id", "!=", self.cert_type.id)]
+        ).landing_published = False
 
         response = self.url_open("/certification/landing-vertical")
 
-        footer = response.text[response.text.index("o_cc_landing_seals") :]
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("o_cc_landing_seals", response.text)
+
+    def test_the_footer_follows_the_seal_sequence(self):
+        self._add_vertical("first-vertical").sequence = 1
+        self._add_vertical("last-vertical").sequence = 99
+
+        response = self.url_open("/certification/landing-vertical")
+
+        footer = self._seals_block(response.text)
         self.assertLess(
             footer.index('certification/first-vertical"'),
-            footer.index('certification/landing-vertical"'),
+            footer.index('certification/last-vertical"'),
         )
+
+    # -- what the page must not carry -----------------------------------
+    def _page_content(self, text):
+        """The landing itself, without the website header and footer."""
+        return text[text.index('id="wrap"') : text.index("<footer")]
+
+    def test_a_visitor_gets_no_way_into_the_questionnaire(self):
+        """The questionnaire is for the shops holding the seal's group, who
+        start it from the backend; the public page advertises the seal."""
+        survey = self.env["survey.survey"].create({"title": "Landing questionnaire"})
+        self.cert_type.survey_id = survey
+        self._add_material("Module 1")
+
+        response = self.url_open("/certification/landing-vertical")
+
+        self.assertEqual(response.status_code, 200)
+        page = self._page_content(response.text)
+        self.assertNotIn("/certification/landing-vertical/start", page)
+        self.assertNotIn("/survey/", page)
+        self.assertNotIn("/odoo", page)
+        self.assertNotIn("Landing questionnaire", page)
+
+    def test_the_training_material_is_listed_once(self):
+        self._add_material("Module 1")
+        self._add_material("Module 2")
+
+        response = self.url_open("/certification/landing-vertical")
+
+        page = self._page_content(response.text)
+        self.assertEqual(page.count("o_cc_landing_materials"), 1)
+        self.assertEqual(page.count("Material formativo"), 1)
+        self.assertEqual(page.count("Module 1"), 1)
 
     # -- the download ---------------------------------------------------
     def test_attaching_material_publishes_the_file(self):

@@ -197,12 +197,15 @@
                     </div>
                 </section>
 
-                <!-- The platform's seals, the page's own included: the legacy
-                     pages closed on this pair of cards whichever seal the
-                     visitor was reading about. -->
+                <!-- The way across to the other seals. The page's own seal is
+                     left out: it is already in the hero, and a card linking
+                     the page to itself read as a duplicate. Nothing below this
+                     point sends a visitor to the questionnaire: evaluations
+                     start from the backend Certificaciones menu, for members
+                     of the seal's group only. -->
                 <section t-if="seals" class="o_cc_landing_section o_cc_landing_seals py-5">
                     <div class="container">
-                        <h2 class="o_cc_landing_section__title text-center mb-5">Los sellos de Canarias Conectada</h2>
+                        <h2 class="o_cc_landing_section__title text-center mb-5">Other Canarias Conectada seals</h2>
                         <div class="row g-4 justify-content-center">
                             <div t-foreach="seals" t-as="seal" class="col-12 col-md-6">
                                 <a t-attf-href="/certification/{{ seal['code'] }}"

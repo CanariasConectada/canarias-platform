@@ -1922,6 +1922,11 @@ msgid "Oro"
 msgstr ""
 
 #. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_landing
+msgid "Other Canarias Conectada seals"
+msgstr "Otros sellos de Canarias Conectada"
+
+#. module: company_certification
 #: model:ir.model.fields,field_description:company_certification.field_survey_user_input__manual_certification_level
 msgid "Overridden Level"
 msgstr ""
