@@ -53,7 +53,7 @@ SUBDOMAIN_MODE_AUTO = "auto"
 # file and in the certificate.
 SUBDOMAIN_RE = re.compile(r"^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$")
 
-# Wording of the three standard menu entries in every language the estate
+# Wording of the standard menu entries in every language the estate
 # publishes, taken verbatim from the live microsites (website 217).
 #
 # They are seeded on creation instead of being left to the machine
@@ -63,6 +63,10 @@ SUBDOMAIN_RE = re.compile(r"^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$")
 # also protects them for good: website_auto_translate refuses to overwrite a
 # language that already holds something other than the source string
 # (``_may_overwrite``), so no coupling between the two modules is needed.
+#
+# A microsite is no longer born with the ``/comercio`` entry (19.0.2.3.0),
+# but its wording stays: the 19.0.2.1.0 script imports it to restore the
+# entry on the portal and the zone sites of a database upgraded from before.
 MENU_LABELS = {
     "/": {
         "es_ES": "Inicio",
@@ -161,6 +165,10 @@ LOCAL_GUIDE_CHILDREN = (
 )
 LOCAL_GUIDE_PROBE_URL = LOCAL_GUIDE_CHILDREN[1][1]
 LOCAL_GUIDE_URLS = frozenset(url for _name, url, _sequence in LOCAL_GUIDE_CHILDREN)
+
+# The directory of all shops. Its top-menu entry belongs to the portal and
+# the zone sites; merchant microsites lost theirs in 19.0.2.3.0.
+DIRECTORY_MENU_URL = "/comercio"
 
 # Stock menu entries that core copy_menu_hierarchy copies from the template
 # menus onto every new website. Production does not give them to merchant
@@ -611,6 +619,12 @@ class ResCompany(models.Model):
         Events/Courses entries that core ``copy_menu_hierarchy`` just copied
         onto it are removed (see :data:`STOCK_MENUS_TO_PRUNE`). It is never
         set on an existing website, so navigation someone curated survives.
+
+        There is deliberately no ``/comercio`` entry: a visitor who is
+        inside a shop is not invited out to the directory of all the other
+        shops (client ruling, 2026-09-21). The "Zonas Comerciales" dropdown
+        is the way out. The sequences keep the estate's 10/20/40 so a new
+        microsite orders exactly like the ones 19.0.2.3.0 cleaned.
         """
         self.ensure_one()
         if skip:
@@ -629,7 +643,6 @@ class ResCompany(models.Model):
         items = [
             (_("Home"), "/", 10),
             (_("Shop"), "/shop", 20),
-            (_("Directory"), "/comercio", 30),
         ]
         for label, url, sequence in items:
             exists = Menu.search(
@@ -798,6 +811,110 @@ class ResCompany(models.Model):
             guide.unlink()
             removed += 1
         return removed
+
+    # ------------------------------------------------------------------
+    # Directory entry: the portal's and the zones', not a merchant's
+    # ------------------------------------------------------------------
+    @api.model
+    def _marketplace_website_ids(self):
+        """The ids of the aggregated shops (the portal and the zones), from SQL.
+
+        ``is_marketplace`` belongs to ``website_sale_marketplace``, which is
+        not a dependency and is not in the registry yet while this module's
+        post-migration runs; the column is there whatever the load order is.
+        Empty when the column does not exist.
+        """
+        self.env.cr.execute(
+            "SELECT 1 FROM information_schema.columns "
+            "WHERE table_name = 'website' AND column_name = 'is_marketplace'"
+        )
+        if not self.env.cr.fetchone():
+            return []
+        self.env["website"].flush_model()
+        self.env.cr.execute("SELECT id FROM website WHERE is_marketplace")
+        return [row[0] for row in self.env.cr.fetchall()]
+
+    @api.model
+    def _remove_microsite_directory_menus(self, websites=None, zone_companies=None):
+        """Remove the ``/comercio`` top-menu entry from merchant microsites.
+
+        The portal and the zone sites keep theirs, and the route itself is
+        untouched everywhere. A site is spared when ANY of these holds, so
+        no single wrong datum can strip the portal or a zone:
+
+        * its company stands for a zone (``zone_companies``);
+        * its company is one :meth:`_microsite_is_protected` would never
+          give a microsite to (the platform company, the zone companies);
+        * it is an aggregated shop (``is_marketplace``).
+
+        On a merchant site only the generated shape goes: url exactly
+        ``/comercio``, direct child of the site's root menu, no children.
+        Anything else is somebody's navigation and is left alone, logged.
+        A re-pointed entry no longer has the url and is never even seen;
+        neither is one that gained children through the ORM, whose url core
+        recomputes to ``#`` -- the children guard is for rows written in SQL.
+        ``unlink`` takes the ``ir.model.data`` rows of the migrated ones
+        (``canarias_mig.menu_*``) with it.
+
+        Idempotent. Returns the counts for the caller to log. Refuses to
+        run -- nothing deleted, a warning -- when no zone company is known,
+        for the reason :meth:`_remove_local_guide_dropdowns` gives, and
+        takes ``zone_companies`` from the migration for the same one: the
+        ORM cannot see ``zone_company_key`` while a post-migration runs.
+        """
+        counts = {
+            "deleted": 0,
+            "spared_platform_site": 0,
+            "skipped_not_top_level": 0,
+            "skipped_has_children": 0,
+        }
+        if zone_companies is None:
+            zone_companies = self._zone_companies_or_none()
+        if not zone_companies:
+            _logger.warning(
+                "No zone company is known here (is zone_company_ownership "
+                "installed, with zone_company_key set?): leaving every "
+                "%s menu entry in place.",
+                DIRECTORY_MENU_URL,
+            )
+            return counts
+        if websites is None:
+            websites = self.env["website"].sudo().search([])
+        marketplace_ids = set(self._marketplace_website_ids())
+        Menu = self.env["website.menu"].sudo()
+        for website in websites:
+            entries = Menu.search(
+                [("website_id", "=", website.id), ("url", "=", DIRECTORY_MENU_URL)]
+            )
+            if not entries:
+                continue
+            company = website.company_id.sudo()
+            if (
+                company in zone_companies
+                or company._microsite_is_protected()
+                or website.id in marketplace_ids
+            ):
+                counts["spared_platform_site"] += len(entries)
+                continue
+            for entry in entries:
+                if not entry.parent_id or entry.parent_id.parent_id:
+                    reason = "skipped_not_top_level"
+                elif entry.child_id:
+                    reason = "skipped_has_children"
+                else:
+                    entry.unlink()
+                    counts["deleted"] += 1
+                    continue
+                counts[reason] += 1
+                _logger.info(
+                    "Website %s (%s): %s menu %s kept (%s).",
+                    website.id,
+                    website.name,
+                    DIRECTORY_MENU_URL,
+                    entry.id,
+                    reason,
+                )
+        return counts
 
     def _prune_stock_menus(self, Menu, website):
         """Remove the stock Events/Courses entries from a NEW website.
