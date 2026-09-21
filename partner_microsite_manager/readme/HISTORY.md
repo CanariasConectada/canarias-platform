@@ -1,3 +1,12 @@
+## 19.0.2.10.0 (2026-09-21)
+
+* The dynamic microsite homepage shows the certification seals between the
+  facilities and the contact section (client request: facilities, seals,
+  contact, funding strip, footer). The block belongs to
+  `company_certification` (19.0.2.9.0) and is looked up at render time
+  (`website._pmm_certification_block_template`), so this module still depends
+  only on `website`; without that module nothing is rendered.
+
 ## 19.0.2.9.3 (2026-09-16)
 
 * "Mis sitios" no longer shows the "Páginas" button (client request).

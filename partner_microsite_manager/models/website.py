@@ -171,6 +171,21 @@ class Website(models.Model):
         own = self._pmm_own_website_link()
         return ([own] if own else []) + self._pmm_footer_social_links()
 
+    def _pmm_certification_block_template(self):
+        """Template of the certification seals block, or ``False``.
+
+        The microsite homepage shows the seals a shop holds between its
+        facilities and its contact section. The block belongs to
+        ``company_certification``; it is looked up rather than called by
+        name so this module keeps depending only on ``website``, and an
+        installation whose ``company_certification`` predates the block
+        renders nothing here instead of failing.
+        """
+        template = "company_certification.certification_block"
+        if self.env.ref(template, raise_if_not_found=False):
+            return template
+        return False
+
     def _pmm_footer_certifications(self):
         """Certification badges to show in the microsite footer.
 
