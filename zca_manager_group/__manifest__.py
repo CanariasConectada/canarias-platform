@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "ZCA Manager Group",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.1.0",
     "category": "Tools",
     "summary": "One group that makes a user the manager of a commercial zone",
     "author": "Canarias Conectada",
@@ -20,10 +20,13 @@
         # defaults to.
         "website_event",
         "mass_mailing",
-        # ``res.company.zone_company_key`` (which company IS a zone) and,
-        # through ``res_company_zone``, ``commercial_zone`` (which zone a
-        # shop belongs to). The partner ownership sync of this module is
-        # what makes the zone's contacts visible without a rule here.
+        # ``commercial_zone`` (which zone a shop belongs to), read by the
+        # company record rule, and the ``group_commercial_zone`` search
+        # filter the Companies action switches on by default.
+        "res_company_zone",
+        # ``res.company.zone_company_key`` (which company IS a zone). The
+        # partner ownership sync of this module is what makes the zone's
+        # contacts visible without a rule here.
         "zone_company_ownership",
         # The zone chat channel the manager is seated in.
         "discuss_channel_zone",

@@ -1,8 +1,12 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+from ast import literal_eval
+
+from lxml import etree
+
 from odoo.exceptions import AccessError, ValidationError
-from odoo.tests import tagged
+from odoo.tests import Form, tagged
 from odoo.tests.common import TransactionCase
 
 MANAGER_GROUPS = (
@@ -21,6 +25,18 @@ FORBIDDEN_GROUPS = (
     "purchase.group_purchase_user",
     "account.group_account_invoice",
     "merchant_group.group_merchant",
+)
+
+# The columns an administrator gets on Settings > Companies, in the
+# client's words: trade name, company name, commercial zone, contact,
+# category, branches.
+COMPANY_LIST_COLUMNS = (
+    "comercial",
+    "name",
+    "commercial_zone",
+    "partner_id",
+    "category_id",
+    "child_ids",
 )
 
 VISIBLE_ROOT_MENUS = (
@@ -208,6 +224,98 @@ class TestZcaManagerGroup(TransactionCase):
         self.assertEqual(menu.parent_id, self.env.ref("contacts.menu_contacts"))
         self.assertEqual(menu.group_ids, self.group)
         self.assertEqual(menu.action.res_model, "res.company")
+
+    def test_the_companies_entry_opens_grouped_by_commercial_zone(self):
+        action = self.env.ref("zca_manager_group.action_zone_companies")
+        context = literal_eval(action.context)
+        self.assertEqual(context.get("search_default_group_commercial_zone"), 1)
+        # Still a read-only door.
+        for flag in ("create", "edit", "delete"):
+            with self.subTest(flag=flag):
+                self.assertIs(context.get(flag), False)
+        # No view of its own: the list and the search view are the ones
+        # an administrator gets on Settings > Companies.
+        self.assertFalse(action.view_id)
+        self.assertFalse(action.search_view_id)
+        # A search default naming a filter the search view does not carry
+        # is dropped in silence by the web client, so the filter must be
+        # in the search view the MANAGER is served.
+        views = self._as(self.manager_a, "res.company").get_views([(False, "search")])
+        search = etree.fromstring(views["views"]["search"]["arch"])
+        (group_by,) = search.xpath("//filter[@name='group_commercial_zone']")
+        self.assertEqual(
+            literal_eval(group_by.get("context")), {"group_by": "commercial_zone"}
+        )
+
+    def _company_list_specification(self, user):
+        """What the web client asks of each row: every field of the list
+        view ``user`` is served, relational ones by display name."""
+        Company = self._as(user, "res.company")
+        views = Company.get_views([(False, "list")])
+        arch = etree.fromstring(views["views"]["list"]["arch"])
+        specification = {}
+        for node in arch.xpath("//field"):
+            name = node.get("name")
+            relational = Company._fields[name].relational
+            specification[name] = {"fields": {"display_name": {}}} if relational else {}
+        return specification
+
+    def test_a_manager_gets_the_administrator_columns(self):
+        specification = self._company_list_specification(self.manager_a)
+        for column in COMPANY_LIST_COLUMNS:
+            with self.subTest(column=column):
+                self.assertIn(column, specification)
+        # Same list as the administrator: no column is gated by a group.
+        self.assertEqual(
+            list(specification),
+            list(self._company_list_specification(self.env.ref("base.user_admin"))),
+        )
+
+    def test_a_manager_groups_the_companies_of_their_zone_only(self):
+        Company = self._as(self.manager_a, "res.company")
+        seen = Company.search([])
+        result = Company.web_read_group([], ["commercial_zone"], ["__count"])
+        counts = {
+            group["commercial_zone"]: group["__count"] for group in result["groups"]
+        }
+        # Their zone, plus the zone company itself under whatever zone it
+        # is filed in (the global one on production). Nothing else.
+        self.assertEqual(
+            set(counts), {"guanarteme", self.zone_a.sudo().commercial_zone}
+        )
+        self.assertNotIn("tamaraceite", counts)
+        self.assertEqual(sum(counts.values()), len(seen))
+        self.assertEqual(
+            counts["guanarteme"],
+            len(seen.filtered(lambda c: c.commercial_zone == "guanarteme")),
+        )
+        # Unfolding each group reads every column of every row.
+        specification = self._company_list_specification(self.manager_a)
+        unfolded = self.env["res.company"]
+        for group in result["groups"]:
+            rows = Company.web_search_read(group["__extra_domain"], specification)
+            self.assertEqual(rows["length"], group["__count"])
+            unfolded |= Company.browse([row["id"] for row in rows["records"]])
+        self.assertEqual(unfolded, seen)
+        self.assertIn(self.shop_a, unfolded)
+        self.assertNotIn(self.shop_b, unfolded)
+        # The other zone is not reachable by asking for it either.
+        other = Company.web_read_group(
+            [("commercial_zone", "=", "tamaraceite")], ["commercial_zone"], ["__count"]
+        )
+        self.assertFalse(other["groups"])
+
+    def test_a_manager_opens_the_form_of_every_company_they_see(self):
+        """Opening a row reads every field of the form, sub-lists included:
+        one field or one sub-model out of the manager's reach and the
+        form is an AccessError instead of a company."""
+        Company = self._as(self.manager_a, "res.company")
+        for company in Company.search([]):
+            with self.subTest(company=company.sudo().name):
+                form = Form(company)
+                self.assertEqual(form.name, company.sudo().name)
+        with self.assertRaises(AccessError):
+            Form(Company.browse(self.shop_b.id))
 
     # -- contacts ----------------------------------------------------------
 

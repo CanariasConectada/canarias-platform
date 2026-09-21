@@ -1,3 +1,13 @@
+## 19.0.1.1.0 (2026-09-21)
+
+- The *Companies* entry under Contacts opens grouped by **Commercial zone**,
+  the way an administrator looks at Settings ▸ Companies: trade name,
+  company name, commercial zone, contact, category and branches, with only
+  the manager's zone in it. The group-by is the `res_company_zone` search
+  filter switched on by default, so `res_company_zone` is now a direct
+  dependency. No view of its own and no access widened: the list, the
+  search view and the form are the administrator's, read only.
+
 ## 19.0.1.0.0 (2026-09-15)
 
 - First version: the **ZCA Manager** group (contacts, events, email

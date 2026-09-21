@@ -12,7 +12,8 @@ company**. A manager is a user whose company is the zone company and whose
 only allowed company is that one. From there:
 
 - **Companies**: a *Companies* entry under Contacts lists the zone company
-  and every shop of that zone (`commercial_zone`), read only.
+  and every shop of that zone (`commercial_zone`), read only. It opens
+  grouped by commercial zone, with the columns of Settings ▸ Companies.
 - **Contacts**: only the contacts of the zone. Nothing to add here:
   `zone_company_ownership` already puts the zone company on every contact
   of the zone's shops, and core's multi-company rules do the rest. A contact
