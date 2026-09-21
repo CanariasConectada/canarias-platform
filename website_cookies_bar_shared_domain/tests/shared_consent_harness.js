@@ -266,6 +266,8 @@ function runCase(modulePaths, testCase) {
                 return null;
             },
             get: () => cookie.get(step.key || helpers.CONSENT_COOKIE) ?? null,
+            // Core's own reader of the consent (the real http_cookie.js).
+            allowed: () => cookie.isAllowedCookie("optional"),
             setup: () => {
                 const bar = new CookiesBar(BAR_ELEMENT);
                 bar.setup();

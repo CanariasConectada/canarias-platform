@@ -32,6 +32,12 @@ to all of them, and so does changing the preference later.
   deliberate: a stale or forged cookie can only ever *narrow* the consent.
   To accept again, the visitor answers the bar, which writes the shared
   cookie directly.
+- Values are read the way core reads them: a well-formed object without the
+  `optional` key is a refusal. If such a refusal has to be written to the
+  shared cookie it is written in core's canonical shape, aged by its own
+  `ts`; if it has no usable `ts` there is nothing honest to derive a
+  lifetime from, so no consent cookie is left at all: optional cookies stay
+  refused and the bar asks again.
 - If the browser refuses the `Domain` cookie, the consent falls back to a
   host-only cookie, which is exactly core's behaviour.
 - The website builder is not affected: the cookies bar interaction does not

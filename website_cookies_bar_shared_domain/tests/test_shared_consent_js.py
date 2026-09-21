@@ -61,6 +61,19 @@ def consent(optional, days_ago):
 ACCEPTED = consent(True, 10)
 REFUSED = consent(False, 3)
 
+# Well-formed objects WITHOUT `optional`: a refusal for core, hence for us.
+IMPLICIT_REFUSAL_TS = NOW - 1 * DAY * 1000
+IMPLICIT_REFUSAL = '{"required": true, "ts": %d}' % IMPLICIT_REFUSAL_TS
+IMPLICIT_REFUSAL_NO_TS = '{"required": true}'
+# ...and what core itself would have written for the dated one.
+CANONICAL_REFUSAL = '{"required": true, "optional": false, "ts": %d}' % (
+    IMPLICIT_REFUSAL_TS
+)
+# The reviewer's repro, verbatim.
+REPRO_SHARED_ACCEPT = '{"required":true,"optional":true,"ts":1600000000000}'
+REPRO_HOST_ONLY = '{"required":true,"ts":1699999900000}'
+REPRO_CANONICAL = '{"required": true, "optional": false, "ts": 1699999900000}'
+
 
 def ttl_left(days_ago):
     return FULL_TTL - days_ago * DAY
@@ -134,8 +147,12 @@ def _cases():
                     [consent(False, 1), consent(False, 30)],
                     ["true", consent(True, 1)],
                     [consent(False, 1), "{not json"],
-                    ["true", "{not json", '"a string"', "null", '{"required": true}'],
+                    ["true", "{not json", '"a string"', "null", "[1]", "12"],
                     [],
+                    [REPRO_SHARED_ACCEPT, REPRO_HOST_ONLY],
+                    [IMPLICIT_REFUSAL_NO_TS, consent(True, 0)],
+                    [IMPLICIT_REFUSAL_NO_TS],
+                    [consent(True, 5), '{"required": true, "optional": "false"}'],
                 )
             ],
         ),
@@ -223,6 +240,42 @@ def _cases():
         _conflict("unparsable_shared", "true", ACCEPTED),
         _conflict("unparsable_host_only", REFUSED, "{not json"),
         _conflict("both_unparsable", "true", "{not json"),
+        # -- an object without `optional` is a refusal, as for core ---------
+        _conflict("repro_implicit_refusal", REPRO_SHARED_ACCEPT, REPRO_HOST_ONLY),
+        _conflict("implicit_refusal_in_shared", IMPLICIT_REFUSAL, consent(True, 0)),
+        _conflict("implicit_refusal_unknown_age", ACCEPTED, IMPLICIT_REFUSAL_NO_TS),
+        _case(
+            "implicit_refusal_alone_shared",
+            [
+                _raw(
+                    OTHER_SHOP_HOST,
+                    IMPLICIT_REFUSAL_NO_TS,
+                    domain=DOMAIN,
+                    max_age=12345,
+                ),
+                {"op": "allowed", "host": SHOP_HOST},
+                _setup(SHOP_HOST),
+                {"op": "allowed", "host": SHOP_HOST},
+            ],
+        ),
+        _case(
+            "implicit_refusal_alone_host_only",
+            [
+                _raw(SHOP_HOST, IMPLICIT_REFUSAL),
+                {"op": "allowed", "host": SHOP_HOST},
+                _setup(SHOP_HOST),
+                {"op": "allowed", "host": SHOP_HOST},
+                _read(PORTAL_HOST),
+            ],
+        ),
+        _case(
+            "implicit_refusal_alone_host_only_unknown_age",
+            [
+                _raw(SHOP_HOST, IMPLICIT_REFUSAL_NO_TS),
+                _setup(SHOP_HOST),
+                {"op": "allowed", "host": SHOP_HOST},
+            ],
+        ),
         _case("promote_nothing", [_setup(SHOP_HOST)]),
         _case("promote_legacy", [_raw(SHOP_HOST, "true"), _setup(SHOP_HOST)]),
         _case(
@@ -389,11 +442,20 @@ class TestSharedConsentJS(BaseCase):
                 # Same answer: the most recent one.
                 consent(True, 1),
                 consent(False, 1),
-                # Unparsable values count as absent.
+                # Values core would discard count as absent.
                 consent(True, 1),
                 consent(False, 1),
                 None,
                 None,
+                # An object without `optional` is a refusal, as for core:
+                # the reviewer's repro, then one of unknown age, then alone.
+                REPRO_HOST_ONLY,
+                IMPLICIT_REFUSAL_NO_TS,
+                IMPLICIT_REFUSAL_NO_TS,
+                # Core's truthiness, deliberately mirrored: the STRING "false"
+                # is an acceptance for core too, so the older one does not
+                # lose to a refusal here; the newest acceptance wins.
+                consent(True, 5),
             ],
         )
 
@@ -510,6 +572,41 @@ class TestSharedConsentJS(BaseCase):
         self.assertEqual(
             self._cookies("both_unparsable"), [_shared("true", max_age=12345)]
         )
+
+    def test_object_without_optional_beats_an_acceptance(self):
+        # The reviewer's repro: no acceptance survives anywhere, and what is
+        # stored is core's canonical refusal, aged by the refusal's own `ts`.
+        age = (NOW - 1699999900000) // 1000
+        self._assert_conflict("repro_implicit_refusal", REPRO_CANONICAL, FULL_TTL - age)
+        # Already in the shared cookie: left as it is, acceptance dropped.
+        self._assert_conflict("implicit_refusal_in_shared", IMPLICIT_REFUSAL, 12345)
+
+    def test_refusal_of_unknown_age_wins_and_leaves_no_cookie(self):
+        # It still beats the acceptance, but there is no `ts` to derive an
+        # honest lifetime from: nothing is left, optional cookies stay refused
+        # (core's default) and the bar asks again.
+        name = "implicit_refusal_unknown_age"
+        self.assertEqual(self._results(name)[2:], [False, "", "", ""])
+        self.assertEqual(self._cookies(name), [])
+
+    def test_object_without_optional_alone_is_a_refusal(self):
+        # Core's own reader (the real http_cookie.js) and the module agree.
+        name = "implicit_refusal_alone_shared"
+        self.assertEqual(self._results(name)[1:], [False, True, False])
+        self.assertEqual(
+            self._cookies(name), [_shared(IMPLICIT_REFUSAL_NO_TS, max_age=12345)]
+        )
+        name = "implicit_refusal_alone_host_only"
+        self.assertEqual(
+            self._results(name)[1:],
+            [False, True, False, "%s=%s" % (COOKIE, CANONICAL_REFUSAL)],
+        )
+        self.assertEqual(
+            self._cookies(name), [_shared(CANONICAL_REFUSAL, max_age=ttl_left(1))]
+        )
+        name = "implicit_refusal_alone_host_only_unknown_age"
+        self.assertEqual(self._results(name)[1:], [False, False])
+        self.assertEqual(self._cookies(name), [])
 
     def test_nothing_to_promote(self):
         self.assertEqual(self._results("promote_nothing"), [False])

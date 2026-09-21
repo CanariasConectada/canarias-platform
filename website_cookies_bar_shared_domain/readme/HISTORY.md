@@ -7,3 +7,5 @@
   lands in the shared cookie with the lifetime its own `ts` leaves it.
 - The parameter also refuses a short list of well-known multi-tenant
   suffixes (`github.io`, `herokuapp.com`...).
+- A stored object without `optional` is a refusal, as it is for core, and
+  takes part in the resolution as such.

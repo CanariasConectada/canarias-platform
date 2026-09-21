@@ -213,3 +213,12 @@ class TestSharedDomain(TransactionCase):
         accepted = '{"required": true, "optional": true, "ts": 1700000000000}'
         self.assertEqual(self._consent_set_cookies(SHOP_HOST, refused), (False, []))
         self.assertEqual(self._consent_set_cookies(SHOP_HOST, accepted), (True, []))
+
+    def test_object_without_optional_is_a_refusal_for_core(self):
+        # The premise of the frontend rule: core reads a well-formed object
+        # lacking `optional` as a refusal, and does not expire it.
+        for value in ('{"required": true}', '{"required": true, "ts": 1700000000000}'):
+            with self.subTest(value=value):
+                self.assertEqual(
+                    self._consent_set_cookies(SHOP_HOST, value), (False, [])
+                )

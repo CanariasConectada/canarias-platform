@@ -136,21 +136,38 @@ export function readAllValues(cookieString, name) {
 }
 
 /**
+ * Read a stored consent the way core does.
+ *
+ * - Not JSON, or JSON that is not a plain object (`"true"` from before 16.0,
+ *   `null`, an array, a string): null. Core discards those and asks again.
+ * - A plain object WITHOUT the `optional` key is a REFUSAL, exactly as core
+ *   reads it (`"optional" in consents ? consents.optional : false`, in
+ *   http_cookie.js and in `ir.http._is_allowed_cookie`). It is flagged
+ *   `implicit`: core never writes that shape, so it is never copied as it is.
+ * - An odd `optional` follows core's truthiness: the STRING "false" is truthy
+ *   for core too, hence an acceptance here. Deliberately not "fixed".
+ *
  * @param {string} raw
- * @returns {{optional: boolean, ts: number}|null} null unless `raw` is a
- *  consent in the current (16.0+) format
+ * @returns {{optional: boolean, ts: number, implicit: boolean}|null} `ts` is 0
+ *  when missing or not a positive finite number
  */
 export function parseConsent(raw) {
+    let consent;
     try {
-        const consent = JSON.parse(raw);
-        if (!consent || typeof consent !== "object" || !("optional" in consent)) {
-            return null;
-        }
-        const ts = Number(consent.ts);
-        return { optional: Boolean(consent.optional), ts: Number.isFinite(ts) && ts > 0 ? ts : 0 };
+        consent = JSON.parse(raw);
     } catch {
         return null;
     }
+    if (!consent || typeof consent !== "object" || Array.isArray(consent)) {
+        return null;
+    }
+    const ts = Number(consent.ts);
+    const implicit = !("optional" in consent);
+    return {
+        optional: implicit ? false : Boolean(consent.optional),
+        ts: Number.isFinite(ts) && ts > 0 ? ts : 0,
+        implicit,
+    };
 }
 
 /**
@@ -170,12 +187,13 @@ export function isConsentValue(raw) {
  *    platform ask for LESS than the visitor allowed, never for more. To accept
  *    again the visitor uses the bar, which writes the shared cookie directly.
  * 2. Same `optional`: the most recent `ts` wins.
- * Unparsable values (legacy `"true"`, garbage) count as absent.
+ * Values core would discard (legacy `"true"`, garbage) count as absent; an
+ * object without `optional` is a refusal (see `parseConsent`).
  *
  * @param {string[]} values
- * @returns {string|null} the winning raw value, null when none is usable
+ * @returns {{raw: string, consent: ReturnType<typeof parseConsent>}|null}
  */
-export function resolveConsent(values) {
+function pickWinner(values) {
     let winner = null;
     for (const raw of values) {
         const consent = parseConsent(raw);
@@ -190,6 +208,16 @@ export function resolveConsent(values) {
             winner = { raw, consent };
         }
     }
+    return winner;
+}
+
+/**
+ * @param {string[]} values
+ * @returns {string|null} the winning raw value (see `pickWinner`), null when
+ *  none is usable
+ */
+export function resolveConsent(values) {
+    const winner = pickWinner(values);
     return winner && winner.raw;
 }
 
@@ -252,14 +280,19 @@ export function writeSharedConsent(jar, { value, ttl, domain, secure }) {
 
 /**
  * Seconds a consent given at `ts` still has to live, so that moving it never
- * renews it.
+ * renews it. An unknown age (no `ts`, or one in the future) gets the full
+ * lifetime: consents written before core added `ts` must survive the move.
  */
-function remainingTtl(raw, fullTtl, now) {
-    const { ts } = parseConsent(raw);
+function remainingTtl(ts, fullTtl, now) {
     if (!ts || ts > now) {
         return fullTtl;
     }
     return fullTtl - Math.floor((now - ts) / 1000);
+}
+
+/** A refusal in the exact shape core writes. */
+function canonicalRefusal(ts) {
+    return `{"required": true, "optional": false, "ts": ${ts}}`;
 }
 
 /**
@@ -271,13 +304,22 @@ function remainingTtl(raw, fullTtl, now) {
  * different values.
  *
  * The steps do not depend on knowing which value is the host-only one:
- * 1. decide the winner on the values (`resolveConsent`);
+ * 1. decide the winner on the values (`pickWinner`);
  * 2. expire the host-only cookie;
  * 3. whatever is still readable is the shared cookie. If it already holds the
  *    winner it is left untouched (its lifetime included); otherwise the winner
  *    is written there with the lifetime ITS OWN `ts` leaves it, never more.
  * With no usable value (legacy pre-16.0, garbage, expired) nothing is written:
  * core discards such a consent and asks again anyway.
+ *
+ * A winning IMPLICIT refusal (an object without `optional`) that has to be
+ * written is never copied as it is: core does not write that shape.
+ * - Its age is known: it is written as core's canonical refusal, same `ts`.
+ * - Its age is unknown (no usable `ts`): it still wins, so no acceptance
+ *   survives this page view, but there is nothing honest to derive a lifetime
+ *   from. The shortest sensible one is chosen: NO consent cookie is left at
+ *   all, so optional cookies stay refused (core's default without a cookie)
+ *   and the bar asks again, which yields a well-formed, dated answer.
  *
  * @param {{cookie: string}} jar
  * @param {Object} params
@@ -289,6 +331,8 @@ function remainingTtl(raw, fullTtl, now) {
  *  "shared": only the shared cookie existed. "shared-wins": a conflict, and
  *  the shared cookie already held the winner. "promoted": the winner had to be
  *  written on the shared domain. "host-only": the browser refused that.
+ *  "dropped": no consent cookie is left. "ignored": only an unusable shared
+ *  value is left, which is core's to clean up.
  */
 export function promoteHostOnlyConsent(
     jar,
@@ -298,7 +342,7 @@ export function promoteHostOnlyConsent(
     if (!before.length) {
         return "none";
     }
-    const winner = resolveConsent(before);
+    const winner = pickWinner(before);
     expireHostOnly(jar);
     const shared = readAllValues(jar.cookie, CONSENT_COOKIE);
     if (winner === null) {
@@ -306,14 +350,21 @@ export function promoteHostOnlyConsent(
         // goes through the patched `set`; the server expires it too).
         return shared.length ? "ignored" : "dropped";
     }
-    if (shared.length === 1 && shared[0] === winner) {
+    if (shared.length === 1 && shared[0] === winner.raw) {
         return before.length > 1 ? "shared-wins" : "shared";
     }
-    const ttlLeft = remainingTtl(winner, ttl, now);
-    if (ttlLeft <= 0) {
+    const { implicit, ts } = winner.consent;
+    const ageIsKnown = ts > 0 && ts <= now;
+    const ttlLeft = remainingTtl(ts, ttl, now);
+    if (ttlLeft <= 0 || (implicit && !ageIsKnown)) {
         writeSharedConsent(jar, { value: "kill", ttl: 0, domain, secure });
         return "dropped";
     }
-    const written = writeSharedConsent(jar, { value: winner, ttl: ttlLeft, domain, secure });
+    const written = writeSharedConsent(jar, {
+        value: implicit ? canonicalRefusal(ts) : winner.raw,
+        ttl: ttlLeft,
+        domain,
+        secure,
+    });
     return written === "shared" ? "promoted" : "host-only";
 }
