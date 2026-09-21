@@ -16,6 +16,13 @@
   the accent of its vertical, whatever Bootstrap colour utility the legacy
   markup carries; the white cards of a body lose their 3rem padding on
   phones.
+- The link triggers of a body (accordion, "read more", carousel arrows and
+  indicators, modal close) answer Space like the buttons they stand in for,
+  and get back the `role`, `aria-expanded`, `aria-controls` and labels the
+  sanitizer strips, kept in step as panels open and close. The decisions of
+  the script live in an import-free `landing_body_logic.js`, executed in
+  `node` by the test suite; the DOM wiring in `landing_body.js` is not
+  covered by automated tests.
 - Tests pin what the public page must not carry: no link into the
   questionnaire (merchants start it from *Certificaciones > Nueva
   evaluación* in the backend), and the training material listed once.

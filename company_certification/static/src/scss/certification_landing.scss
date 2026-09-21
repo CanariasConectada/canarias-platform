@@ -111,8 +111,14 @@ $cc-accent-silver: $cc-primary;
         // One heading colour per page. `!important` because the legacy
         // bodies carry Bootstrap colour utilities (`text-body-emphasis`,
         // `text-success`) that are `!important` themselves and left a page
-        // of green or blue titles with black ones in between.
-        h1, h2, h3, h4, h5, h6 {
+        // of green or blue titles with black ones in between. Scoped to the
+        // heading element: a heading that is itself a button or a badge is
+        // skipped, and what sits inside one (a link, `a.btn`, `.badge`) sets
+        // its own colour and never inherits this one. Both halves sit in
+        // `:where()`, which weighs nothing: the rule stays two classes heavy,
+        // enough to beat a utility and light enough for the modal and
+        // caption headings below to override it.
+        :where(h1, h2, h3, h4, h5, h6):where(:not(.btn):not(.badge)) {
             color: var(--cc-accent) !important;
             font-weight: 600;
         }

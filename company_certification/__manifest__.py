@@ -43,6 +43,9 @@
     "assets": {
         "web.assets_frontend": [
             "company_certification/static/src/scss/certification_landing.scss",
+            # Import-free decision helpers first: the interaction imports them,
+            # and tests/test_landing_body_js.py runs this exact file in node.
+            "company_certification/static/src/interactions/landing_body_logic.js",
             "company_certification/static/src/interactions/landing_body.js",
         ],
     },
