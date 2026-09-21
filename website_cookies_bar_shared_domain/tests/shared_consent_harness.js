@@ -1,9 +1,19 @@
 /* Copyright 2026 Canarias Conectada
  * License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
  *
- * Runs the SHIPPED `static/src/js/shared_consent_cookie.js` in `node:vm`
- * against an emulated browser cookie store, so the helpers are judged by what
- * a browser would end up storing and not by the strings they build.
+ * Runs the SHIPPED frontend code of this module in `node:vm` against an
+ * emulated browser cookie store, so it is judged by what a browser would end
+ * up storing and not by the strings it builds.
+ *
+ * What is real: `shared_consent_cookie.js`, `consent_cookie_patches.js`, and
+ * core's own `@web/core/utils/patch`, `@web/core/browser/cookie` and
+ * `@website/js/http_cookie` (the `website` patch of `cookie.set`), all loaded
+ * from the addons path through a tiny ES-module loader. A typo in
+ * `session.cookies_bar_shared_domain`, a wrong hostname read or a patch that
+ * only works in one load order therefore fails here.
+ * What is fake: `@web/session` (one key), `document`/`window.location`, and
+ * `CookiesBar`, reduced to what `Popup.setup()` decides from the cookie (the
+ * real class imports the whole website frontend).
  *
  * What the store models (RFC 6265 section 5.3, the parts that matter here):
  *   - a cookie without `Domain` is host-only: only the exact host reads it;
@@ -18,7 +28,7 @@
  * reading of the RFC: on the bare domain a host-only cookie and a `Domain`
  * cookie are then the SAME cookie and overwrite each other.
  *
- * Usage:  node shared_consent_harness.js <shared_consent_cookie.js> <input.json>
+ * Usage:  node shared_consent_harness.js <input.json>
  * stdout: a single JSON object. The assertions all live in Python.
  */
 "use strict";
@@ -26,27 +36,94 @@
 const fs = require("fs");
 const vm = require("vm");
 
-const PROBE = `
-globalThis.__api = {
-    CONSENT_COOKIE,
-    DEFAULT_TTL,
-    normalizeSharedDomain,
-    sharedDomainForHost,
-    readAllValues,
-    isConsentValue,
-    buildConsentCookie,
-    writeSharedConsent,
-    promoteHostOnlyConsent,
-};
-`;
+const HELPERS = "@website_cookies_bar_shared_domain/js/shared_consent_cookie";
+const PATCHES = "@website_cookies_bar_shared_domain/js/consent_cookie_patches";
+const WEBSITE_COOKIE_PATCH = "@website/js/http_cookie";
+const DEFAULT_LOAD_ORDER = [WEBSITE_COOKIE_PATCH, PATCHES];
 
-function loadApi(sourcePath) {
-    // The file has no imports; dropping the `export` keyword is all it takes
-    // to evaluate it as a classic script.
-    const source = fs.readFileSync(sourcePath, "utf8").replace(/^export\s+/gm, "");
-    const context = vm.createContext({ JSON, Number, Math, Date, Boolean, Set });
-    vm.runInContext(source + PROBE, context, { filename: sourcePath });
-    return context.__api;
+/**
+ * ES module -> function body. Only the two forms these files use are
+ * understood (`import { a, b as c } from "x";` and `export <declaration>`);
+ * anything else is left in place and is a SyntaxError, reported loudly.
+ */
+function transform(source) {
+    const exported = [];
+    const body = source
+        .replace(
+            /^import\s*\{([^}]*)\}\s*from\s*"([^"]+)";?/gm,
+            (_match, names, specifier) =>
+                `const {${names.replace(/\bas\b/g, ":")}} = __require(${JSON.stringify(specifier)});`
+        )
+        .replace(
+            /^export\s+((?:async\s+)?function\*?|const|let|class)\s+([A-Za-z_$][\w$]*)/gm,
+            (_match, kind, name) => {
+                exported.push(name);
+                return `${kind} ${name}`;
+            }
+        );
+    return `(function (__require, __exports) {"use strict";\n${body}\nObject.assign(__exports, {${exported.join(
+        ", "
+    )}});\n})`;
+}
+
+/** One realm per test case: fresh globals, fresh modules, fresh patches. */
+function createRealm(modulePaths, page, testCase) {
+    const context = vm.createContext({
+        document: {
+            get cookie() {
+                return page.jar.cookie;
+            },
+            set cookie(value) {
+                page.jar.cookie = value;
+            },
+            // `isAllowedCookie` takes this element as "the bar is enabled".
+            getElementById: (id) => (id === "cookies-consent-essential" ? {} : null),
+        },
+        window: {
+            get location() {
+                return { hostname: page.host, protocol: page.protocol };
+            },
+        },
+    });
+    if (testCase.now) {
+        vm.runInContext(`Date.now = () => ${Number(testCase.now)};`, context);
+    }
+    const fakes = {
+        "@web/session": () => ({ session: testCase.session || {} }),
+        "@website/interactions/cookies/cookies_bar": () => {
+            const { cookie } = require_("@web/core/browser/cookie");
+            class CookiesBar {
+                constructor(el) {
+                    this.el = el;
+                }
+                setup() {
+                    // What `Popup.setup()` derives from the cookie.
+                    this.popupAlreadyShown = !!cookie.get(this.el.id);
+                }
+            }
+            return { CookiesBar };
+        },
+    };
+    const loaded = new Map();
+    function require_(specifier) {
+        if (!loaded.has(specifier)) {
+            const exports = {};
+            loaded.set(specifier, exports);
+            if (fakes[specifier]) {
+                Object.assign(exports, fakes[specifier]());
+            } else if (modulePaths[specifier]) {
+                const filename = modulePaths[specifier];
+                const factory = vm.runInContext(transform(fs.readFileSync(filename, "utf8")), context, {
+                    filename,
+                });
+                factory(require_, exports);
+            } else {
+                throw new Error(`the harness does not know the module ${specifier}`);
+            }
+        }
+        return loaded.get(specifier);
+    }
+    return require_;
 }
 
 function domainMatches(host, domain) {
@@ -144,62 +221,79 @@ class CookieStore {
     }
 }
 
-function runCase(api, testCase) {
+const BAR_ELEMENT = {
+    id: "website_cookies_bar",
+    querySelector: (selector) =>
+        selector === ".modal" ? { dataset: { consentsDuration: "999" } } : null,
+};
+
+function runCase(modulePaths, testCase) {
     const store = new CookieStore(testCase);
+    const page = { host: "", protocol: "https:", jar: null };
+    const require_ = createRealm(modulePaths, page, testCase);
+    for (const specifier of testCase.loadOrder || DEFAULT_LOAD_ORDER) {
+        require_(specifier);
+    }
+    const { cookie } = require_("@web/core/browser/cookie");
+    const { CookiesBar } = require_("@website/interactions/cookies/cookies_bar");
+    const helpers = require_(HELPERS);
     const results = [];
     for (const step of testCase.steps) {
-        const secureOrigin = step.protocol !== "http:";
-        const jar = store.jar(step.host, secureOrigin);
-        if (step.op === "raw") {
+        page.host = step.host || "";
+        page.protocol = step.protocol || "https:";
+        page.jar = store.jar(page.host, page.protocol === "https:");
+        const helperParams = {
+            domain: step.domain,
+            secure: page.protocol === "https:",
+            ttl: step.ttl,
+            now: step.now,
+            value: step.value,
+        };
+        const ops = {
             // A cookie exactly as something else (core, another host) wrote it.
-            jar.cookie = step.cookie;
-            results.push(null);
-        } else if (step.op === "guard") {
-            results.push(api.sharedDomainForHost(step.host, step.configured));
-        } else if (step.op === "normalize") {
-            results.push(api.normalizeSharedDomain(step.value));
-        } else if (step.op === "read") {
-            results.push(jar.cookie);
-        } else if (step.op === "write" || step.op === "promote") {
-            // What consent_cookie_patches.js does: guard first, helper second.
-            const domain = api.sharedDomainForHost(step.host, step.configured);
-            if (!domain) {
-                results.push("guarded");
-            } else if (step.op === "write") {
-                results.push(
-                    api.writeSharedConsent(jar, {
-                        value: step.value,
-                        ttl: step.ttl,
-                        domain,
-                        secure: secureOrigin,
-                    })
-                );
-            } else {
-                results.push(
-                    api.promoteHostOnlyConsent(jar, {
-                        domain,
-                        secure: secureOrigin,
-                        ttl: step.ttl,
-                        now: step.now,
-                    })
-                );
-            }
-        } else {
+            raw: () => {
+                page.jar.cookie = step.cookie;
+                return null;
+            },
+            read: () => page.jar.cookie,
+            // Through the shipped patches, as the website frontend does.
+            set: () => {
+                cookie.set(step.key || helpers.CONSENT_COOKIE, step.value, step.ttl, step.type);
+                return null;
+            },
+            delete: () => {
+                cookie.delete(step.key || helpers.CONSENT_COOKIE);
+                return null;
+            },
+            get: () => cookie.get(step.key || helpers.CONSENT_COOKIE) ?? null,
+            setup: () => {
+                const bar = new CookiesBar(BAR_ELEMENT);
+                bar.setup();
+                return bar.popupAlreadyShown;
+            },
+            // The pure helpers, for what only their return value tells.
+            guard: () => helpers.sharedDomainForHost(step.host, step.configured),
+            normalize: () => helpers.normalizeSharedDomain(step.value),
+            resolve: () => helpers.resolveConsent(step.values),
+            promoteHelper: () => helpers.promoteHostOnlyConsent(page.jar, helperParams),
+            writeHelper: () => helpers.writeSharedConsent(page.jar, helperParams),
+        };
+        if (!ops[step.op]) {
             throw new Error(`unknown op ${step.op}`);
         }
+        results.push(ops[step.op]());
     }
-    return { name: testCase.name, results, cookies: store.dump() };
+    const { CONSENT_COOKIE, DEFAULT_TTL } = helpers;
+    return { results, cookies: store.dump(), constants: { CONSENT_COOKIE, DEFAULT_TTL } };
 }
 
 function main() {
-    const [sourcePath, inputPath] = process.argv.slice(2);
-    const input = JSON.parse(fs.readFileSync(inputPath, "utf8"));
-    const api = loadApi(sourcePath);
+    const input = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
     const cases = {};
     for (const testCase of input.cases) {
-        cases[testCase.name] = runCase(api, testCase);
+        cases[testCase.name] = runCase(input.modules, testCase);
     }
-    return { constants: { cookie: api.CONSENT_COOKIE, defaultTtl: api.DEFAULT_TTL }, cases };
+    return { cases };
 }
 
 try {

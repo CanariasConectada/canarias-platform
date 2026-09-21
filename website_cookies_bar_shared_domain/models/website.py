@@ -36,6 +36,28 @@ _PUBLIC_SECOND_LEVEL_LABELS = frozenset(
     }
 )
 
+# Well-known multi-tenant suffixes that do not have the country-code shape
+# above: anyone can get a host below them. Exact matches only, so a domain
+# registered UNDER one of them ("myshop.github.io") stays valid. Same caveat:
+# a convenience for the administrator, not the Public Suffix List.
+_PUBLIC_SUFFIX_DENYLIST = frozenset(
+    {
+        "amazonaws.com",
+        "azurewebsites.net",
+        "blogspot.com",
+        "cloudfront.net",
+        "firebaseapp.com",
+        "github.io",
+        "gitlab.io",
+        "herokuapp.com",
+        "netlify.app",
+        "odoo.com",
+        "pages.dev",
+        "vercel.app",
+        "web.app",
+    }
+)
+
 
 def normalize_shared_domain(value):
     """Return the registrable domain held by ``value``, or ``""`` if invalid.
@@ -47,7 +69,8 @@ def normalize_shared_domain(value):
 
     Rejected (``""``): anything carrying a scheme, a path, a port, userinfo or
     blanks; a single label (``es``, ``localhost``); an IP address; a
-    public-suffix-like pair such as ``co.uk`` or ``com.es``.
+    public-suffix-like pair such as ``co.uk`` or ``com.es``; a well-known
+    multi-tenant suffix such as ``github.io``.
     """
     domain = (value or "").strip().lower()
     if domain.startswith("."):
@@ -71,6 +94,8 @@ def normalize_shared_domain(value):
         and len(labels[1]) == 2
         and labels[0] in _PUBLIC_SECOND_LEVEL_LABELS
     ):
+        return ""
+    if domain in _PUBLIC_SUFFIX_DENYLIST:
         return ""
     return domain
 

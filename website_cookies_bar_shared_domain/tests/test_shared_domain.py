@@ -31,6 +31,11 @@ NORMALIZE_TABLE = [
     ("co.uk", ""),
     ("com.es", ""),
     ("gob.es", ""),
+    ("github.io", ""),
+    ("Blogspot.com", ""),
+    (".vercel.app", ""),
+    ("odoo.com", ""),
+    ("mishop.github.io", "mishop.github.io"),
     ("127.0.0.1", ""),
     ("[::1]", ""),
     ("https://canariasconectada.es", ""),
@@ -106,7 +111,13 @@ class TestSharedDomain(TransactionCase):
                 self.assertEqual(shared_domain_for_host(SHOP_HOST, configured), "")
 
     def test_parameter_constraint_refuses_an_invalid_domain(self):
-        for value in ("es", "co.uk", "https://canariasconectada.es", "10.0.0.1"):
+        for value in (
+            "es",
+            "co.uk",
+            "https://canariasconectada.es",
+            "10.0.0.1",
+            "herokuapp.com",
+        ):
             with self.subTest(value=value), self.assertRaises(ValidationError):
                 self.params.set_param(SHARED_DOMAIN_PARAM, value)
 

@@ -22,8 +22,16 @@ to all of them, and so does changing the preference later.
   read first is an accident of their creation time.
 - Visitors who had already answered on some host are migrated on their next
   page view there: their host-only consent is moved to the shared domain
-  with the lifetime it had left, and the bar is not shown again. If a shared
-  consent already exists, it wins and the host-only one is dropped.
+  with the lifetime it had left, and the bar is not shown again.
+- When a host-only consent and a shared one coexist with different values,
+  the winner is decided on the values, never on where they came from: a
+  **refusal** of the optional cookies beats an acceptance whatever their
+  age, and between two equal answers the most recent `ts` wins. The winner
+  ends up in the shared cookie with the lifetime its own `ts` leaves it
+  (never extended) and the host-only duplicate is expired. The asymmetry is
+  deliberate: a stale or forged cookie can only ever *narrow* the consent.
+  To accept again, the visitor answers the bar, which writes the shared
+  cookie directly.
 - If the browser refuses the `Domain` cookie, the consent falls back to a
   host-only cookie, which is exactly core's behaviour.
 - The website builder is not affected: the cookies bar interaction does not
@@ -33,3 +41,8 @@ to all of them, and so does changing the preference later.
 run by the same operator under one registrable domain and one cookie policy.
 Nothing is sent to any third party, and the cookie holds what it holds in
 core and nothing more: `{required, optional, ts}`.
+
+**Trust model.** A `Domain` cookie can be written by a script running on
+*any* host of that domain. See *Known limitations* in the roadmap before
+enabling this on a platform whose tenants may run scripts you do not
+control.

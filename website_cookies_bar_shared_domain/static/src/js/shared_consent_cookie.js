@@ -39,6 +39,23 @@ const PUBLIC_SECOND_LEVEL_LABELS = new Set([
     "org",
 ]);
 
+// Mirror of `_PUBLIC_SUFFIX_DENYLIST` in models/website.py.
+const PUBLIC_SUFFIX_DENYLIST = new Set([
+    "amazonaws.com",
+    "azurewebsites.net",
+    "blogspot.com",
+    "cloudfront.net",
+    "firebaseapp.com",
+    "github.io",
+    "gitlab.io",
+    "herokuapp.com",
+    "netlify.app",
+    "odoo.com",
+    "pages.dev",
+    "vercel.app",
+    "web.app",
+]);
+
 /**
  * Mirror of `normalize_shared_domain` in models/website.py. The server has
  * already validated the value; validating again costs nothing and keeps a
@@ -70,6 +87,9 @@ export function normalizeSharedDomain(value) {
         labels[1].length === 2 &&
         PUBLIC_SECOND_LEVEL_LABELS.has(labels[0])
     ) {
+        return "";
+    }
+    if (PUBLIC_SUFFIX_DENYLIST.has(domain)) {
         return "";
     }
     return domain;
@@ -117,15 +137,60 @@ export function readAllValues(cookieString, name) {
 
 /**
  * @param {string} raw
+ * @returns {{optional: boolean, ts: number}|null} null unless `raw` is a
+ *  consent in the current (16.0+) format
+ */
+export function parseConsent(raw) {
+    try {
+        const consent = JSON.parse(raw);
+        if (!consent || typeof consent !== "object" || !("optional" in consent)) {
+            return null;
+        }
+        const ts = Number(consent.ts);
+        return { optional: Boolean(consent.optional), ts: Number.isFinite(ts) && ts > 0 ? ts : 0 };
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * @param {string} raw
  * @returns {boolean} whether `raw` is a consent in the current (16.0+) format
  */
 export function isConsentValue(raw) {
-    try {
-        const consent = JSON.parse(raw);
-        return Boolean(consent) && typeof consent === "object" && "optional" in consent;
-    } catch {
-        return false;
+    return parseConsent(raw) !== null;
+}
+
+/**
+ * Which of several stored consents is the visitor's. Decided on the VALUES
+ * alone, because a script cannot know which cookie each one came from.
+ *
+ * 1. A refusal (`optional: false`) beats an acceptance, whatever their source
+ *    or age. Deliberately asymmetric: a stale or forged cookie may make the
+ *    platform ask for LESS than the visitor allowed, never for more. To accept
+ *    again the visitor uses the bar, which writes the shared cookie directly.
+ * 2. Same `optional`: the most recent `ts` wins.
+ * Unparsable values (legacy `"true"`, garbage) count as absent.
+ *
+ * @param {string[]} values
+ * @returns {string|null} the winning raw value, null when none is usable
+ */
+export function resolveConsent(values) {
+    let winner = null;
+    for (const raw of values) {
+        const consent = parseConsent(raw);
+        if (!consent) {
+            continue;
+        }
+        if (
+            !winner ||
+            (winner.consent.optional && !consent.optional) ||
+            (winner.consent.optional === consent.optional && consent.ts > winner.consent.ts)
+        ) {
+            winner = { raw, consent };
+        }
     }
+    return winner && winner.raw;
 }
 
 /**
@@ -186,27 +251,33 @@ export function writeSharedConsent(jar, { value, ttl, domain, secure }) {
 }
 
 /**
- * Seconds a consent given at `consent.ts` still has to live, so promoting it
- * does not silently renew it.
+ * Seconds a consent given at `ts` still has to live, so that moving it never
+ * renews it.
  */
 function remainingTtl(raw, fullTtl, now) {
-    const ts = Number(JSON.parse(raw).ts);
-    if (!Number.isFinite(ts) || ts <= 0 || ts > now) {
+    const { ts } = parseConsent(raw);
+    if (!ts || ts > now) {
         return fullTtl;
     }
     return fullTtl - Math.floor((now - ts) / 1000);
 }
 
 /**
- * Move a consent given before this module (host-only) to the shared domain,
- * and make sure a host-only cookie never shadows the shared one.
+ * Leave exactly one consent behind, on the shared domain: the visitor's.
  *
- * - nothing stored: nothing to do, the bar will ask;
- * - after expiring the host-only cookie something is still there: that is the
- *   shared cookie, and it wins (the host-only one is gone);
- * - nothing is left: the consent was host-only. It is written back on the
- *   shared domain with the time it had left. A legacy (pre-16.0) or expired
- *   value is not written back: core would discard it and ask again anyway.
+ * Runs on every page view of a host inside the shared domain. It moves a
+ * consent given before this module (host-only) to the shared domain, and
+ * settles the case where a host-only cookie and a shared one coexist with
+ * different values.
+ *
+ * The steps do not depend on knowing which value is the host-only one:
+ * 1. decide the winner on the values (`resolveConsent`);
+ * 2. expire the host-only cookie;
+ * 3. whatever is still readable is the shared cookie. If it already holds the
+ *    winner it is left untouched (its lifetime included); otherwise the winner
+ *    is written there with the lifetime ITS OWN `ts` leaves it, never more.
+ * With no usable value (legacy pre-16.0, garbage, expired) nothing is written:
+ * core discards such a consent and asks again anyway.
  *
  * @param {{cookie: string}} jar
  * @param {Object} params
@@ -214,7 +285,10 @@ function remainingTtl(raw, fullTtl, now) {
  * @param {boolean} [params.secure]
  * @param {number} [params.ttl] full lifetime of a consent, in seconds
  * @param {number} [params.now] epoch milliseconds
- * @returns {"none"|"shared"|"shared-wins"|"promoted"|"host-only"|"dropped"}
+ * @returns {"none"|"shared"|"shared-wins"|"promoted"|"host-only"|"dropped"|"ignored"}
+ *  "shared": only the shared cookie existed. "shared-wins": a conflict, and
+ *  the shared cookie already held the winner. "promoted": the winner had to be
+ *  written on the shared domain. "host-only": the browser refused that.
  */
 export function promoteHostOnlyConsent(
     jar,
@@ -224,23 +298,22 @@ export function promoteHostOnlyConsent(
     if (!before.length) {
         return "none";
     }
+    const winner = resolveConsent(before);
     expireHostOnly(jar);
-    if (readAllValues(jar.cookie, CONSENT_COOKIE).length) {
+    const shared = readAllValues(jar.cookie, CONSENT_COOKIE);
+    if (winner === null) {
+        // An unusable shared value is core's to clean up (`cookie.delete`
+        // goes through the patched `set`; the server expires it too).
+        return shared.length ? "ignored" : "dropped";
+    }
+    if (shared.length === 1 && shared[0] === winner) {
         return before.length > 1 ? "shared-wins" : "shared";
     }
-    const hostOnlyValue = before[0];
-    if (!isConsentValue(hostOnlyValue)) {
-        return "dropped";
-    }
-    const ttlLeft = remainingTtl(hostOnlyValue, ttl, now);
+    const ttlLeft = remainingTtl(winner, ttl, now);
     if (ttlLeft <= 0) {
+        writeSharedConsent(jar, { value: "kill", ttl: 0, domain, secure });
         return "dropped";
     }
-    const written = writeSharedConsent(jar, {
-        value: hostOnlyValue,
-        ttl: ttlLeft,
-        domain,
-        secure,
-    });
+    const written = writeSharedConsent(jar, { value: winner, ttl: ttlLeft, domain, secure });
     return written === "shared" ? "promoted" : "host-only";
 }
