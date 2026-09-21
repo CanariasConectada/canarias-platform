@@ -148,25 +148,38 @@
                                     data-bs-dismiss="modal" aria-label="Close"/>
                         </div>
                         <div class="modal-body">
-                            <p class="text-muted small">Choose which products to compare with. First the scope, then the category.</p>
-                            <!-- Server-side search: the candidate pool is
-                                 capped at 120, so a client-side filter could
-                                 never reach what the cap already cut off. -->
-                            <div class="input-group input-group-sm mb-3 o_wscc_modal_search">
-                                <span class="input-group-text">
-                                    <span class="fa fa-search" role="presentation"/>
-                                </span>
-                                <input type="search"
-                                       class="form-control o_wscc_modal_search_input"
-                                       placeholder="Search products by name"
-                                       aria-label="Search products by name"/>
-                            </div>
-                            <!-- The four scopes. Rendered by the client from
-                                 what the server says is available here: a
-                                 product in no neighbourhood offers neither
-                                 "my zone" nor "outside my zone". A tab that
-                                 comes back empty is worse than one that is
-                                 not offered.
+                            <!-- Usage help. The <ol> numbers itself, and the
+                                 section titles below are numbered by a CSS
+                                 counter (see the stylesheet), so both skip
+                                 the "same category" step together when the
+                                 product has no category: the help and the
+                                 layout can never disagree about which step
+                                 is which. The client collapses this on a
+                                 phone, where four lines of help would push
+                                 the product list off the screen.
+
+                                 Every text below sits on ONE line on purpose:
+                                 the translation term is the node's text as
+                                 written, line breaks included. -->
+                            <details class="o_wscc_modal_help mb-3" open="open">
+                                <summary>
+                                    <h6 class="o_wscc_modal_help_title o_wscc_modal_help_title_4">Compare in 4 steps</h6>
+                                    <h6 class="o_wscc_modal_help_title o_wscc_modal_help_title_3 d-none">Compare in 3 steps</h6>
+                                </summary>
+                                <ol class="o_wscc_modal_help_steps small text-muted mb-0 mt-1">
+                                    <li>Scope: choose where to search: in all of Canarias Conectada, in your commercial zone, outside it or only in this shop.</li>
+                                    <li class="o_wscc_modal_help_same">Same category: the category of this product comes ticked so you compare with similar products. Untick it if you do not want to limit yourself to it.</li>
+                                    <li>Other categories: if you want, add other product categories to compare with.</li>
+                                    <li>Products: select up to 4 products and press "View comparison".</li>
+                                </ol>
+                            </details>
+
+                            <!-- STEP 1. The four scopes. Rendered by the
+                                 client from what the server says is available
+                                 here: a product in no neighbourhood offers
+                                 neither "my zone" nor "outside my zone". A
+                                 tab that comes back empty is worse than one
+                                 that is not offered.
 
                                  `d-flex flex-wrap gap-2`, not `btn-group`:
                                  a button group merges its members' borders
@@ -177,22 +190,79 @@
                                  reported 2026-08-21 ("corrige los
                                  paddings"). Independent chips with a real
                                  gap between them wrap cleanly at any width. -->
-                            <div class="o_wscc_modal_scopes d-flex flex-wrap gap-2 mb-3"
-                                 role="group" aria-label="Comparison scope"/>
-                            <div class="o_wscc_modal_zones mb-3 d-none">
-                                <label class="form-label small text-muted mb-1"
-                                       for="o_wscc_zone_select">Which zone?</label>
-                                <select class="form-select form-select-sm"
-                                        id="o_wscc_zone_select"/>
-                            </div>
-                            <div class="o_wscc_modal_chips mb-3"/>
-                            <div class="o_wscc_modal_list"/>
-                            <div class="o_wscc_modal_truncated d-none small text-muted mt-2">
-                                Showing <span class="o_wscc_modal_shown">0</span> of <span class="o_wscc_modal_total">0</span> products. Search to find the rest.
-                            </div>
-                            <div class="o_wscc_modal_empty d-none text-muted text-center py-4">
-                                No products in this category to compare.
-                            </div>
+                            <section class="o_wscc_modal_step o_wscc_modal_step_scope mb-3"
+                                     aria-labelledby="o_wscc_step_scope_title">
+                                <h6 class="o_wscc_modal_step_title"
+                                    id="o_wscc_step_scope_title">Scope</h6>
+                                <div class="o_wscc_modal_scopes d-flex flex-wrap gap-2"
+                                     role="group" aria-label="Comparison scope"/>
+                                <div class="o_wscc_modal_zones mt-2 d-none">
+                                    <label class="form-label small text-muted mb-1"
+                                           for="o_wscc_zone_select">Which zone?</label>
+                                    <select class="form-select form-select-sm"
+                                            id="o_wscc_zone_select"/>
+                                </div>
+                            </section>
+
+                            <!-- STEP 2. The clicked product's own categories,
+                                 ticked on open. Nothing else can be picked
+                                 here (the category is what it is), only
+                                 unticked. Hidden altogether by the client
+                                 when the product has no category. -->
+                            <section class="o_wscc_modal_step o_wscc_modal_step_same mb-3 d-none"
+                                     aria-labelledby="o_wscc_step_same_title">
+                                <h6 class="o_wscc_modal_step_title"
+                                    id="o_wscc_step_same_title">Same category</h6>
+                                <div class="o_wscc_modal_same_chips" role="group"
+                                     aria-labelledby="o_wscc_step_same_title"/>
+                            </section>
+
+                            <!-- STEP 3. Every other category on offer in the
+                                 scope, none picked. Folded by default: on the
+                                 whole platform this is some seventy chips,
+                                 and a wall of restaurants and surf shops is
+                                 not what somebody comparing a laptop came
+                                 for. The client keeps it open while any of
+                                 them is picked. -->
+                            <section class="o_wscc_modal_step o_wscc_modal_step_other mb-3"
+                                     aria-labelledby="o_wscc_step_other_title">
+                                <h6 class="o_wscc_modal_step_title"
+                                    id="o_wscc_step_other_title">Other categories</h6>
+                                <details class="o_wscc_modal_other">
+                                    <summary class="small">Show other categories (<span class="o_wscc_modal_other_count">0</span>)</summary>
+                                    <div class="o_wscc_modal_chips mt-2" role="group"
+                                         aria-labelledby="o_wscc_step_other_title"/>
+                                </details>
+                                <div class="o_wscc_modal_other_none small text-muted d-none">There are no other categories here.</div>
+                            </section>
+
+                            <!-- STEP 4. The candidates. The search box lives
+                                 here because the list is what it filters. -->
+                            <section class="o_wscc_modal_step o_wscc_modal_step_products"
+                                     aria-labelledby="o_wscc_step_products_title">
+                                <h6 class="o_wscc_modal_step_title"
+                                    id="o_wscc_step_products_title">Select the products to compare (maximum 4)</h6>
+                                <!-- Server-side search: the candidate pool is
+                                     capped at 120, so a client-side filter
+                                     could never reach what the cap already
+                                     cut off. -->
+                                <div class="input-group input-group-sm mb-2 o_wscc_modal_search">
+                                    <span class="input-group-text">
+                                        <span class="fa fa-search" role="presentation"/>
+                                    </span>
+                                    <input type="search"
+                                           class="form-control o_wscc_modal_search_input"
+                                           placeholder="Search products by name"
+                                           aria-label="Search products by name"/>
+                                </div>
+                                <div class="o_wscc_modal_list"/>
+                                <div class="o_wscc_modal_truncated d-none small text-muted mt-2">
+                                    Showing <span class="o_wscc_modal_shown">0</span> of <span class="o_wscc_modal_total">0</span> products. Search to find the rest.
+                                </div>
+                                <div class="o_wscc_modal_empty d-none text-muted text-center py-4">
+                                    No products in this category to compare.
+                                </div>
+                            </section>
                         </div>
                         <div class="modal-footer">
                             <span class="me-auto small text-muted">

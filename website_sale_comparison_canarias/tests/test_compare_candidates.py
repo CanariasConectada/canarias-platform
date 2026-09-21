@@ -3,6 +3,7 @@
 
 from unittest.mock import patch
 
+from odoo.fields import Domain
 from odoo.tests import HttpCase, tagged
 
 from odoo.addons.website_sale_comparison_canarias.controllers.main import (
@@ -38,9 +39,16 @@ class TestCompareCandidates(HttpCase):
                 )
             )
             cls.website.is_marketplace = True
-        cls.category = cls.env["product.public.category"].create(
-            {"name": "Compare Test Category"}
+        Category = cls.env["product.public.category"]
+        cls.category = Category.create({"name": "Compare Test Category"})
+        cls.child_category = Category.create(
+            {"name": "Compare Test Child Category", "parent_id": cls.category.id}
         )
+        cls.other_category = Category.create({"name": "Compare Test Other Category"})
+        cls.second_category = Category.create({"name": "Compare Test Second Category"})
+        # Only ever worn by the unpublished product: a category nobody may
+        # see a product of, so it must never become a chip nor a filter.
+        cls.hidden_category = Category.create({"name": "Compare Test Hidden Category"})
         cls.published = cls.env["product.template"].create(
             {
                 "name": "Compare Test Published",
@@ -57,8 +65,46 @@ class TestCompareCandidates(HttpCase):
                 "public_categ_ids": [(6, 0, cls.category.ids)],
             }
         )
+        # In the clicked product's own category on purpose: the default
+        # filter must not be what keeps it out.
         cls.unpublished = cls.env["product.template"].create(
-            {"name": "Compare Test Unpublished", "is_published": False}
+            {
+                "name": "Compare Test Unpublished",
+                "is_published": False,
+                "public_categ_ids": [(6, 0, (cls.category | cls.hidden_category).ids)],
+            }
+        )
+        cls.in_child = cls.env["product.template"].create(
+            {
+                "name": "Compare Test Child",
+                "is_published": True,
+                "list_price": 30.0,
+                "public_categ_ids": [(6, 0, cls.child_category.ids)],
+            }
+        )
+        cls.elsewhere = cls.env["product.template"].create(
+            {
+                "name": "Compare Test Elsewhere",
+                "is_published": True,
+                "list_price": 40.0,
+                "public_categ_ids": [(6, 0, cls.other_category.ids)],
+            }
+        )
+        cls.in_second = cls.env["product.template"].create(
+            {
+                "name": "Compare Test Second",
+                "is_published": True,
+                "list_price": 50.0,
+                "public_categ_ids": [(6, 0, cls.second_category.ids)],
+            }
+        )
+        cls.multi = cls.env["product.template"].create(
+            {
+                "name": "Compare Test Multi",
+                "is_published": True,
+                "list_price": 60.0,
+                "public_categ_ids": [(6, 0, (cls.category | cls.second_category).ids)],
+            }
         )
         # One more product than the cap, all sorting BEFORE the needle
         # ("Filler" < "Needle" in any collation), so the needle is provably
@@ -116,13 +162,22 @@ class TestCompareCandidates(HttpCase):
         self.assertIn(self.category.id, data["current_category_ids"])
 
     def test_facets_only_list_categories_that_have_candidates(self):
-        """A filter that returns nothing is worse than no filter."""
-        data = self._candidates(self.published.id)
+        """A filter that returns nothing is worse than no filter.
+
+        Asked with the same category unticked and narrowed by name, so the
+        page holds every candidate of the query and the two sets can be
+        compared exactly. The clicked product's own category is step 2's
+        business and is never repeated among the others.
+        """
+        data = self._candidates(
+            self.published.id, same_category_ids=[], query="Compare Test"
+        )
         offered = {c["id"] for c in data["categories"]}
         with_candidates = set()
         for product in data["products"]:
             with_candidates.update(product["category_ids"])
-        self.assertEqual(offered, with_candidates)
+        self.assertEqual(offered, with_candidates - {self.category.id})
+        self.assertNotIn(self.hidden_category.id, offered)
 
     def test_every_candidate_carries_what_the_modal_draws(self):
         for product in self._candidates(self.published.id)["products"][:5]:
@@ -136,12 +191,17 @@ class TestCompareCandidates(HttpCase):
         can never be on the first page -- and one typed word must still find
         it, because the query is a server-side leaf AND-ed onto the same
         website-derived domain, not a filter over the truncated page.
+
+        The same category is unticked throughout: the fillers and the needle
+        have none, and this is about the cap, not about the categories.
         """
-        without = self._candidates(self.published.id)
+        without = self._candidates(self.published.id, same_category_ids=[])
         self.assertNotIn(
             "Compare Query Needle", [p["name"] for p in without["products"]]
         )
-        with_query = self._candidates(self.published.id, query="Query Needle")
+        with_query = self._candidates(
+            self.published.id, same_category_ids=[], query="Query Needle"
+        )
         self.assertEqual(
             [p["name"] for p in with_query["products"]], ["Compare Query Needle"]
         )
@@ -150,16 +210,195 @@ class TestCompareCandidates(HttpCase):
     def test_the_total_tells_the_truth_about_the_truncation(self):
         """So the modal can say "showing 120 of N" instead of lying by
         omission."""
-        data = self._candidates(self.published.id)
+        data = self._candidates(self.published.id, same_category_ids=[])
         self.assertEqual(len(data["products"]), CANDIDATE_LIMIT)
         self.assertEqual(data["limit"], CANDIDATE_LIMIT)
         self.assertGreater(data["total"], len(data["products"]))
 
     def test_the_query_still_cannot_reach_an_unpublished_product(self):
         """Searching narrows the safe domain; it never widens it."""
-        data = self._candidates(self.published.id, query="Compare Test Unpublished")
-        self.assertEqual(data["products"], [])
-        self.assertEqual(data["total"], 0)
+        for same_category_ids in (None, []):
+            data = self._candidates(
+                self.published.id,
+                query="Compare Test Unpublished",
+                same_category_ids=same_category_ids,
+            )
+            self.assertEqual(data["products"], [])
+            self.assertEqual(data["total"], 0)
+
+    # ------------------------------------------------------------------
+    # The four steps: same category ticked, the others one click away
+    # ------------------------------------------------------------------
+    def _names(self, data):
+        return {product["name"] for product in data["products"]}
+
+    def test_it_opens_on_the_clicked_products_own_category(self):
+        """Somebody looking at a computer is not shown the restaurants.
+
+        No category parameter at all is the modal's first request. Children
+        of the category ride along: "Computers" includes "Laptops".
+        """
+        data = self._candidates(self.published.id)
+        self.assertEqual(
+            data["same_categories"],
+            [{"id": self.category.id, "name": "Compare Test Category"}],
+        )
+        self.assertEqual(data["same_category_ids"], [self.category.id])
+        self.assertEqual(data["category_ids"], [])
+        self.assertEqual(
+            self._names(data),
+            {"Compare Test Other", "Compare Test Child", "Compare Test Multi"},
+        )
+        self.assertEqual(data["total"], 3)
+
+    def test_unticking_the_same_category_with_nothing_else_is_no_filter(self):
+        data = self._candidates(
+            self.published.id, same_category_ids=[], query="Compare Test"
+        )
+        self.assertEqual(data["same_category_ids"], [])
+        self.assertEqual(
+            self._names(data),
+            {
+                "Compare Test Other",
+                "Compare Test Child",
+                "Compare Test Elsewhere",
+                "Compare Test Second",
+                "Compare Test Multi",
+            },
+        )
+        # ... and without the name, it is the whole scope again.
+        unfiltered = self._candidates(self.published.id, same_category_ids=[])
+        self.assertGreater(unfiltered["total"], CANDIDATE_LIMIT)
+
+    def test_another_category_adds_to_the_same_one(self):
+        """Scope AND (same OR others): picking widens within the scope."""
+        data = self._candidates(
+            self.published.id, category_ids=[self.other_category.id]
+        )
+        self.assertEqual(data["same_category_ids"], [self.category.id])
+        self.assertEqual(data["category_ids"], [self.other_category.id])
+        self.assertEqual(
+            self._names(data),
+            {
+                "Compare Test Other",
+                "Compare Test Child",
+                "Compare Test Multi",
+                "Compare Test Elsewhere",
+            },
+        )
+
+    def test_another_category_alone_replaces_the_same_one(self):
+        data = self._candidates(
+            self.published.id,
+            same_category_ids=[],
+            category_ids=[self.other_category.id],
+        )
+        self.assertEqual(self._names(data), {"Compare Test Elsewhere"})
+
+    def test_the_same_category_is_not_repeated_among_the_others(self):
+        data = self._candidates(self.published.id)
+        others = {c["id"] for c in data["categories"]}
+        self.assertNotIn(self.category.id, others)
+        self.assertIn(self.other_category.id, others)
+        # Picking something does not make the rest of the chips go away.
+        picked = self._candidates(
+            self.published.id, category_ids=[self.other_category.id]
+        )
+        self.assertEqual({c["id"] for c in picked["categories"]}, others)
+
+    def test_a_product_in_several_categories_shows_them_all_ticked(self):
+        data = self._candidates(self.multi.id)
+        expected = {self.category.id, self.second_category.id}
+        self.assertEqual({c["id"] for c in data["same_categories"]}, expected)
+        self.assertEqual(set(data["same_category_ids"]), expected)
+        self.assertFalse(expected & {c["id"] for c in data["categories"]})
+        self.assertEqual(
+            self._names(data),
+            {
+                "Compare Test Published",
+                "Compare Test Other",
+                "Compare Test Child",
+                "Compare Test Second",
+            },
+        )
+        # Each of them unticks on its own.
+        only_second = self._candidates(
+            self.multi.id, same_category_ids=[self.second_category.id]
+        )
+        self.assertEqual(only_second["same_category_ids"], [self.second_category.id])
+        self.assertEqual(self._names(only_second), {"Compare Test Second"})
+
+    def test_a_product_with_no_category_has_no_same_category_step(self):
+        data = self._candidates(self.needle.id)
+        self.assertEqual(data["same_categories"], [])
+        self.assertEqual(data["same_category_ids"], [])
+        self.assertEqual(data["current_category_ids"], [])
+        # No category, no filter: what the modal did before it had steps.
+        self.assertGreater(data["total"], CANDIDATE_LIMIT)
+        self.assertIn(self.category.id, {c["id"] for c in data["categories"]})
+
+    def test_the_same_category_comes_from_the_product_not_from_the_client(self):
+        """The client may untick; it may not name a category of its own."""
+        data = self._candidates(
+            self.published.id,
+            same_category_ids=[self.other_category.id, self.hidden_category.id],
+            query="Compare Test",
+        )
+        self.assertEqual(data["same_category_ids"], [])
+        self.assertEqual(
+            data["same_categories"],
+            [{"id": self.category.id, "name": "Compare Test Category"}],
+        )
+        self.assertNotIn("Compare Test Unpublished", self._names(data))
+
+    def test_garbage_category_ids_are_ignored(self):
+        garbage = ["7", None, True, -3, 0, 1.5, [self.other_category.id], {"id": 1}]
+        for category_ids in (garbage, "1 OR 1=1", {"a": 1}, 42):
+            data = self._candidates(
+                self.published.id,
+                same_category_ids=[],
+                category_ids=category_ids,
+                query="Compare Test",
+            )
+            self.assertEqual(data["category_ids"], [])
+            self.assertNotIn("Compare Test Unpublished", self._names(data))
+            self.assertEqual(len(data["products"]), 5)
+        # Not a list at all is not "everything unticked": it is the default.
+        data = self._candidates(self.published.id, same_category_ids="garbage")
+        self.assertEqual(data["same_category_ids"], [self.category.id])
+
+    def test_a_forged_category_never_reaches_outside_the_shop_domain(self):
+        """A category that is no chip here is no filter here.
+
+        ``hidden_category`` holds one product, unpublished. Naming it -- on
+        its own, next to a real one, as "same" -- must never bring that
+        product in, and whatever does come back is inside the answering
+        website's own ``sale_product_domain()``.
+        """
+        portal = self.website._comparison_portal_website()
+        allowed = set(
+            self.env["product.template"]
+            .with_context(website_id=portal.id)
+            .search(Domain(portal.sale_product_domain()))
+            .ids
+        )
+        forged = [
+            {"category_ids": [self.hidden_category.id]},
+            {"category_ids": [self.hidden_category.id], "same_category_ids": []},
+            {
+                "category_ids": [self.hidden_category.id, self.other_category.id],
+                "same_category_ids": [self.hidden_category.id],
+            },
+            {"category_ids": [2**40], "same_category_ids": [2**40]},
+        ]
+        for params in forged:
+            data = self._candidates(self.published.id, scope="all", **params)
+            self.assertEqual(data["scope"], "all")
+            self.assertNotIn(self.hidden_category.id, data["category_ids"])
+            self.assertNotIn(self.hidden_category.id, data["same_category_ids"])
+            ids = {product["id"] for product in data["products"]}
+            self.assertNotIn(self.unpublished.id, ids)
+            self.assertLessEqual(ids, allowed)
 
 
 @tagged("post_install", "-at_install")
@@ -289,9 +528,9 @@ class TestCompareCandidatesZones(HttpCase):
         sorts far beyond it."""
         names = [
             p["name"]
-            for p in self._candidates(
-                self.clicked.id, scope="zone", query="Zone HTTP"
-            )["products"]
+            for p in self._candidates(self.clicked.id, scope="zone", query="Zone HTTP")[
+                "products"
+            ]
         ]
         self.assertIn("Zone HTTP Same Zone", names)
         self.assertNotIn("Zone HTTP Elsewhere", names)

@@ -5,15 +5,29 @@ from odoo import http
 from odoo.fields import Domain
 from odoo.http import request
 
-from odoo.addons.website_sale_comparison_canarias.models.website import (
-    SCOPE_OTHER_ZONE,
-)
+from odoo.addons.website_sale_comparison_canarias.models.website import SCOPE_OTHER_ZONE
 
 # What the picker will show at most. The comparison table itself caps at four
 # products (``MAX_COMPARISON_PRODUCTS`` in core's utils); this is the size of
 # the pool to choose FROM, kept bounded because the modal renders it all at
 # once and the whole platform holds north of a thousand products.
 CANDIDATE_LIMIT = 120
+
+
+def _clean_ids(value):
+    """Positive ints out of whatever the client sent, anything else dropped.
+
+    The endpoint is public: ``category_ids`` may arrive as a string, a dict,
+    a list of lists or a list holding ``True`` (which IS an int in Python).
+    None of that is an error worth answering, it is simply not an id.
+    """
+    if not isinstance(value, (list, tuple)):
+        return []
+    return [
+        item
+        for item in value
+        if isinstance(item, int) and not isinstance(item, bool) and item > 0
+    ]
 
 
 class WebsiteSaleComparisonCanarias(http.Controller):
@@ -25,7 +39,14 @@ class WebsiteSaleComparisonCanarias(http.Controller):
         readonly=True,
     )
     def compare_candidates(
-        self, product_template_id=None, scope=None, zone=None, query=None, **kwargs
+        self,
+        product_template_id=None,
+        scope=None,
+        zone=None,
+        query=None,
+        same_category_ids=None,
+        category_ids=None,
+        **kwargs,
     ):
         """Products the visitor may compare the given one against.
 
@@ -52,6 +73,28 @@ class WebsiteSaleComparisonCanarias(http.Controller):
         extra leaf is AND-ed on top of the website-derived
         ``sale_product_domain()``, so neither can widen what the resolved
         shop already shows.
+
+        CATEGORIES NARROW TOO, AND THE SERVER OWNS BOTH LISTS. The modal has
+        a "same category" step (the clicked product's own categories, ticked
+        by default) and an "other categories" step (none ticked). The
+        candidates are ``scope AND (ticked same categories OR picked other
+        categories)``; with nothing ticked at all there is no category filter,
+        which is what the modal did before it had steps.
+
+        * The same-category set is read off the PRODUCT here. The client only
+          says which of those it unticked (``same_category_ids``; absent means
+          "all of them", the default on open), and whatever it sends is
+          intersected with the product's real categories. Children ride along
+          (``child_of``): a product filed under "Computers" compares against
+          "Computers / Laptops" as well.
+        * ``category_ids`` is intersected with the facets this very scope
+          offers, so an id that is not a chip on screen is not a filter.
+        * Both end up AND-ed onto the website-derived domain like the query,
+          so a forged id can empty the list but never add a product to it.
+
+        The filter runs here rather than in the browser because the pool is
+        capped: filtering 120 alphabetical rows client-side for "laptops"
+        would miss every laptop past the letter C.
 
         LANGUAGE IS SET BY HAND. ``http_routing``'s frontend language
         resolution (URL prefix > ``frontend_lang`` cookie > context > site
@@ -87,8 +130,11 @@ class WebsiteSaleComparisonCanarias(http.Controller):
             return {
                 "current": None,
                 "current_category_ids": [],
+                "same_categories": [],
+                "same_category_ids": [],
                 "products": [],
                 "categories": [],
+                "category_ids": [],
                 "scopes": scopes,
                 "scope": scope,
                 "zone": zone or "",
@@ -101,9 +147,7 @@ class WebsiteSaleComparisonCanarias(http.Controller):
             # "Outside my commercial zone": the portal's catalogue minus the
             # product's own neighbourhood. Subtracting can only narrow what
             # the portal already shows, so the invariant holds.
-            excluded_company_ids = website._comparison_outside_zone_company_ids(
-                current
-            )
+            excluded_company_ids = website._comparison_outside_zone_company_ids(current)
             if excluded_company_ids:
                 domain &= Domain("company_ids", "not in", excluded_company_ids)
         if current:
@@ -122,27 +166,62 @@ class WebsiteSaleComparisonCanarias(http.Controller):
         # with 83 products instead of the shop's 56 -- the leaf said company 6
         # and the context widened it to the whole neighbourhood.
         Product = Product.with_context(website_id=target.id)
+
+        same_categories = current.public_categ_ids
+        if isinstance(same_category_ids, (list, tuple)):
+            ticked = set(_clean_ids(same_category_ids))
+            checked_same = same_categories.filtered(lambda c: c.id in ticked)
+        else:
+            # Absent (or not even a list): the default, everything ticked.
+            checked_same = same_categories
+
+        # Facets come from the scope BEFORE the category filter -- otherwise
+        # picking one category would make every other chip disappear -- and
+        # from the whole scope rather than the capped page.
+        other_categories = self._other_category_facets(Product, domain, same_categories)
+        picked_other = [
+            category_id
+            for category_id in dict.fromkeys(_clean_ids(category_ids))
+            if category_id in other_categories
+        ]
+
+        category_domains = []
+        if checked_same:
+            category_domains.append(
+                Domain("public_categ_ids", "child_of", checked_same.ids)
+            )
+        if picked_other:
+            category_domains.append(Domain("public_categ_ids", "in", picked_other))
+        if category_domains:
+            # Narrowing only, like the query: AND-ed onto the website-derived
+            # domain, never a domain of its own.
+            domain &= Domain.OR(category_domains)
+
         total = Product.search_count(domain)
         products = Product.search(domain, limit=CANDIDATE_LIMIT, order="name")
 
-        # Facets are built from what is actually on offer, not from the whole
-        # category tree: a filter that returns nothing is worse than no filter.
-        categories = {}
-        for product in products:
-            for category in product.public_categ_ids:
-                categories[category.id] = category.name
-
         return {
             "current": self._serialise(current, target) if current else None,
-            # The categories of the product they clicked, so the modal can open
-            # already narrowed to "things like this one" -- which is what was
-            # asked for -- while leaving every other category one click away.
-            "current_category_ids": current.public_categ_ids.ids if current else [],
+            "current_category_ids": same_categories.ids,
+            # Step 2 of the modal: the categories of the product they clicked,
+            # which is what it opens narrowed to. Always listed, candidates or
+            # not -- the category is what it is -- and `same_category_ids`
+            # says which of them are still ticked.
+            "same_categories": [
+                {"id": category.id, "name": category.name}
+                for category in same_categories
+            ],
+            "same_category_ids": checked_same.ids,
             "products": [self._serialise(product, target) for product in products],
+            # Step 3: every OTHER category on offer in this scope. The ones of
+            # step 2 are never repeated here.
             "categories": [
                 {"id": key, "name": value}
-                for key, value in sorted(categories.items(), key=lambda kv: kv[1])
+                for key, value in sorted(
+                    other_categories.items(), key=lambda kv: kv[1].casefold()
+                )
             ],
+            "category_ids": picked_other,
             "scopes": scopes,
             "scope": scope,
             "zone": zone or "",
@@ -150,6 +229,24 @@ class WebsiteSaleComparisonCanarias(http.Controller):
             # bigger than what the modal renders.
             "total": total,
             "limit": CANDIDATE_LIMIT,
+        }
+
+    def _other_category_facets(self, Product, domain, same_categories):
+        """``{id: name}`` of the categories on offer, minus ``same_categories``.
+
+        Built from what is actually on offer, not from the whole category
+        tree: a filter that returns nothing is worse than no filter. Grouped
+        in SQL over the whole scope, because the page is capped and a facet
+        list read off 120 alphabetical rows would hide most categories.
+        """
+        groups = Product._read_group(
+            domain, groupby=["public_categ_ids"], aggregates=["__count"]
+        )
+        excluded = set(same_categories.ids)
+        return {
+            category.id: category.name
+            for category, _count in groups
+            if category and category.id not in excluded
         }
 
     def _serialise(self, product, website):

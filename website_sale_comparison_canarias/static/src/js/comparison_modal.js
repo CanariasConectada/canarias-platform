@@ -12,6 +12,10 @@ import comparisonUtils from "@website_sale_comparison/js/website_sale_comparison
 // long enough not to fire a request per keystroke.
 const SEARCH_DEBOUNCE_MS = 300;
 
+// Below this the usage help opens folded: four lines of help on a phone would
+// push the product list, which is the point of the modal, off the screen.
+const HELP_OPEN_MEDIA = "(min-width: 768px)";
+
 /**
  * Pick what to compare against, without leaving the shop.
  *
@@ -19,6 +23,13 @@ const SEARCH_DEBOUNCE_MS = 300;
  * asks the visitor to remember what they saw three pages ago. This opens a
  * picker instead, already narrowed to the categories of the product they
  * clicked, and hands the result straight to core's comparison table.
+ *
+ * Four numbered steps, in the order the help at the top explains them: the
+ * scope, the product's own category (ticked on open, can only be unticked),
+ * the other categories (folded, none picked) and the products. The server
+ * applies all three filters; this only says what is ticked and draws what
+ * comes back, because the candidate pool is capped and a client-side filter
+ * would only ever see its first alphabetical page.
  *
  * The compare list itself stays core's: the cookie, the four-product cap and
  * the change event all come from its utils, so the drawer, the table and this
@@ -31,6 +42,12 @@ export class ComparisonModal extends Interaction {
         this.state = {
             templateId: null,
             products: [],
+            // Step 2: the clicked product's own categories, and which of
+            // them are still ticked. `null` asks the server for its default
+            // (all of them), which is how the modal opens.
+            sameCategories: [],
+            sameCategoryIds: null,
+            // Step 3: every other category on offer, and the picked ones.
             categories: [],
             activeCategoryIds: [],
             // The four scopes, as the server says they apply here.
@@ -43,8 +60,17 @@ export class ComparisonModal extends Interaction {
             total: 0,
             loading: false,
         };
+        // Only the latest request may paint: every chip is a round trip now,
+        // and two quick clicks can answer out of order.
+        this.loadTicket = 0;
         this.listEl = this.el.querySelector(".o_wscc_modal_list");
         this.chipsEl = this.el.querySelector(".o_wscc_modal_chips");
+        this.helpEl = this.el.querySelector(".o_wscc_modal_help");
+        this.sameStepEl = this.el.querySelector(".o_wscc_modal_step_same");
+        this.sameChipsEl = this.el.querySelector(".o_wscc_modal_same_chips");
+        this.otherEl = this.el.querySelector(".o_wscc_modal_other");
+        this.otherCountEl = this.el.querySelector(".o_wscc_modal_other_count");
+        this.otherNoneEl = this.el.querySelector(".o_wscc_modal_other_none");
         this.countEl = this.el.querySelector(".o_wscc_modal_count");
         this.emptyEl = this.el.querySelector(".o_wscc_modal_empty");
         this.scopesEl = this.el.querySelector(".o_wscc_modal_scopes");
@@ -83,6 +109,14 @@ export class ComparisonModal extends Interaction {
         if (this.searchEl) {
             this.searchEl.value = "";
         }
+        // Folded again for every product: the other categories are the
+        // exception, not the way in.
+        if (this.otherEl) {
+            this.otherEl.open = false;
+        }
+        if (this.helpEl) {
+            this.helpEl.open = window.matchMedia(HELP_OPEN_MEDIA).matches;
+        }
         await this.load({ keepCategories: false });
     }
 
@@ -94,10 +128,14 @@ export class ComparisonModal extends Interaction {
      * different catalogue, not a wider view of this one, and the price shown
      * has to be the price of the shop being compared against. The search
      * query goes back too, because the candidate pool is capped server-side
-     * and a client filter could never reach past the cap.
+     * and a client filter could never reach past the cap. The categories go
+     * back for the same reason.
+     *
+     * `keepCategories: false` asks for the default again -- the product's own
+     * category ticked, no other one picked.
      */
     async load({ keepCategories }) {
-        const previousCategories = this.state.activeCategoryIds;
+        const ticket = ++this.loadTicket;
         this.setLoading(true);
         try {
             const data = await this.waitFor(
@@ -106,9 +144,17 @@ export class ComparisonModal extends Interaction {
                     scope: this.state.scope,
                     zone: this.state.zone,
                     query: this.state.query,
+                    same_category_ids: keepCategories
+                        ? this.state.sameCategoryIds
+                        : null,
+                    category_ids: keepCategories ? this.state.activeCategoryIds : [],
                 })
             );
+            if (ticket !== this.loadTicket) {
+                return;
+            }
             this.state.products = data.products || [];
+            this.state.sameCategories = data.same_categories || [];
             this.state.categories = data.categories || [];
             this.state.scopes = data.scopes || [];
             this.state.total = data.total || 0;
@@ -116,17 +162,16 @@ export class ComparisonModal extends Interaction {
             // the one asked for is not available here.
             this.state.scope = data.scope || null;
             this.state.zone = data.zone || "";
-            // Open on "things like this one", which is the whole point of the
-            // modal. Only keep the ones that actually have candidates, so the
-            // preselection can never produce an empty list on open.
-            const available = new Set(this.state.categories.map((c) => c.id));
-            const wanted = keepCategories
-                ? previousCategories
-                : data.current_category_ids || [];
-            this.state.activeCategoryIds = wanted.filter((id) => available.has(id));
+            // ... and on the categories: it answers with what it actually
+            // applied, which is the product's real categories and the chips
+            // this scope really offers, whatever was asked for.
+            this.state.sameCategoryIds = data.same_category_ids || [];
+            this.state.activeCategoryIds = data.category_ids || [];
             this.render();
         } finally {
-            this.setLoading(false);
+            if (ticket === this.loadTicket) {
+                this.setLoading(false);
+            }
         }
     }
 
@@ -135,14 +180,89 @@ export class ComparisonModal extends Interaction {
         this.el.classList.toggle("o_wscc_loading", loading);
     }
 
-    visibleProducts() {
-        const active = this.state.activeCategoryIds;
-        if (!active.length) {
-            return this.state.products;
+    /**
+     * A category chip: a toggle button that says so to assistive technology
+     * (`aria-pressed`) and not only through its colour.
+     */
+    renderChip(category, pressed, className) {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = `btn btn-sm o_wscc_modal_chip ${className}`;
+        chip.classList.toggle("active", pressed);
+        chip.setAttribute("aria-pressed", pressed ? "true" : "false");
+        chip.dataset.categoryId = category.id;
+        if (pressed) {
+            const tick = document.createElement("span");
+            tick.className = "fa fa-check me-1";
+            tick.setAttribute("role", "presentation");
+            chip.append(tick);
         }
-        return this.state.products.filter((product) =>
-            product.category_ids.some((id) => active.includes(id))
+        chip.append(category.name);
+        return chip;
+    }
+
+    /**
+     * Steps 2 and 3. A product with no category has no step 2: the section
+     * and its line of help go away together, and the numbering (a CSS counter
+     * on the titles, the <ol> in the help) closes the gap by itself.
+     */
+    renderCategories() {
+        // The chips are rebuilt, so the one that was just toggled from the
+        // keyboard would lose the focus with it; hand it back below.
+        const focused = this.el.contains(document.activeElement)
+            ? document.activeElement.closest(".o_wscc_modal_chip")
+            : null;
+        const focusedId = focused && focused.dataset.categoryId;
+        const same = this.state.sameCategories;
+        const hasSame = same.length > 0;
+        this.sameStepEl.classList.toggle("d-none", !hasSame);
+        for (const el of this.el.querySelectorAll(".o_wscc_modal_help_same")) {
+            el.classList.toggle("d-none", !hasSame);
+        }
+        for (const el of this.el.querySelectorAll(".o_wscc_modal_help_title_4")) {
+            el.classList.toggle("d-none", !hasSame);
+        }
+        for (const el of this.el.querySelectorAll(".o_wscc_modal_help_title_3")) {
+            el.classList.toggle("d-none", hasSame);
+        }
+        const ticked = this.state.sameCategoryIds || [];
+        this.sameChipsEl.replaceChildren(
+            ...same.map((category) =>
+                this.renderChip(
+                    category,
+                    ticked.includes(category.id),
+                    "o_wscc_modal_chip_same"
+                )
+            )
         );
+
+        const others = this.state.categories;
+        const active = this.state.activeCategoryIds;
+        this.otherEl.classList.toggle("d-none", others.length === 0);
+        this.otherNoneEl.classList.toggle("d-none", others.length > 0);
+        this.otherCountEl.textContent = others.length;
+        // A picked category must stay in sight. Never folded from here: that
+        // is the visitor's call.
+        if (active.length) {
+            this.otherEl.open = true;
+        }
+        this.chipsEl.replaceChildren(
+            ...others.map((category) =>
+                this.renderChip(
+                    category,
+                    active.includes(category.id),
+                    "o_wscc_modal_chip_other"
+                )
+            )
+        );
+        if (focusedId) {
+            const again = this.el.querySelector(
+                `.o_wscc_modal_chip[data-category-id="${focusedId}"]`
+            );
+            if (again) {
+                again.focus();
+            }
+        }
     }
 
     renderScopes() {
@@ -187,34 +307,20 @@ export class ComparisonModal extends Interaction {
     render() {
         const comparisonIds = comparisonUtils.getComparisonProductIds();
         const compared = new Set(comparisonIds);
-        const products = this.visibleProducts();
+        // Already filtered by scope, categories and query, server-side.
+        const products = this.state.products;
 
         this.renderScopes();
-
-        this.chipsEl.replaceChildren(
-            ...this.state.categories.map((category) => {
-                const chip = document.createElement("button");
-                chip.type = "button";
-                chip.className = "btn btn-sm o_wscc_modal_chip";
-                chip.classList.toggle(
-                    "active",
-                    this.state.activeCategoryIds.includes(category.id)
-                );
-                chip.dataset.categoryId = category.id;
-                chip.textContent = category.name;
-                return chip;
-            })
-        );
+        this.renderCategories();
 
         this.listEl.replaceChildren(
             ...products.map((product) => this.renderProduct(product, compared))
         );
         this.emptyEl.classList.toggle("d-none", products.length > 0);
 
-        // "Showing 120 of N": the truth about the pool, not about the chip
-        // filter — chips narrow what is on screen, the cap narrows what came
-        // over the wire, and only the second one hides products the visitor
-        // cannot reach without searching.
+        // "Showing 120 of N": N is what the scope and the ticked categories
+        // hold server-side; anything past the cap is only reachable by
+        // searching (or by narrowing the categories).
         const truncated = this.state.total > this.state.products.length;
         this.truncatedEl.classList.toggle("d-none", !truncated);
         if (truncated) {
@@ -326,14 +432,17 @@ export class ComparisonModal extends Interaction {
         const chip = ev.target.closest(".o_wscc_modal_chip");
         if (chip) {
             const id = parseInt(chip.dataset.categoryId, 10);
-            const active = this.state.activeCategoryIds;
-            const at = active.indexOf(id);
-            if (at === -1) {
-                active.push(id);
-            } else {
-                active.splice(at, 1);
-            }
-            this.render();
+            const same = chip.classList.contains("o_wscc_modal_chip_same");
+            const key = same ? "sameCategoryIds" : "activeCategoryIds";
+            const ids = this.state[key] || [];
+            // A new array, never a splice: `null` and the server's own list
+            // both have to survive being toggled.
+            this.state[key] = ids.includes(id)
+                ? ids.filter((other) => other !== id)
+                : [...ids, id];
+            // Paint the chip at once; the list follows when the server answers.
+            this.renderCategories();
+            this.load({ keepCategories: true });
             return;
         }
 
