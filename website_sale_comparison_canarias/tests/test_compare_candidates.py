@@ -684,3 +684,141 @@ class TestCompareCandidatesZones(HttpCase):
         names = [p["name"] for p in data["products"]]
         self.assertNotIn("Zone HTTP Same Zone", names)
         self.assertIn("Zone HTTP Elsewhere", names)
+
+
+@tagged("post_install", "-at_install")
+class TestCompareCandidatesPlainSites(HttpCase):
+    """Two plain merchant microsites, and what one may learn of the other.
+
+    No marketplace anywhere: the clicked-product gate is then core's own
+    ``sale_product_domain()`` -- ``company_id in (False, the site's company)``,
+    which ``base_multi_company`` reads on ``company_ids`` -- searched as sudo.
+    Sudo lifts the record rules, not the domain, and this pins that the
+    domain alone keeps another merchant's published product out.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        # The usual two patches (see TestCompareCandidatesZones): creating a
+        # company trips website_sale_collect where it is installed, and the
+        # marketplace backfill has nothing to do here.
+        carrier_cls = type(cls.env["delivery.carrier"])
+        if hasattr(carrier_cls, "_check_warehouses_have_same_company"):
+            cls.startClassPatcher(
+                patch.object(
+                    carrier_cls,
+                    "_check_warehouses_have_same_company",
+                    lambda self: None,
+                )
+            )
+        cls.startClassPatcher(
+            patch.object(
+                type(cls.env["website"]),
+                "_sync_marketplace_products",
+                lambda self: None,
+            )
+        )
+        # No marketplace at all, so nothing is aggregated anywhere and no
+        # company gets linked to a product behind the fixtures' back.
+        cls.env["website"].sudo().search([("is_marketplace", "=", True)]).write(
+            {"is_marketplace": False}
+        )
+        # `no_microsite_auto`: auto_microsite_generator, where installed,
+        # would give each new company a website of its own; the fixtures
+        # build theirs. `wsm_skip_marketplace_link`: belt and braces on top
+        # of "no marketplace" -- these products belong to ONE company.
+        Company = cls.env["res.company"].with_context(no_microsite_auto=True)
+        Product = cls.env["product.template"].with_context(
+            wsm_skip_marketplace_link=True
+        )
+        cls.company_a = Company.create({"name": "Plain HTTP Shop A"})
+        cls.company_b = Company.create({"name": "Plain HTTP Shop B"})
+        # Site A answers the test server's own address, so the requests below
+        # land on it (a website is picked by the request's host), not on
+        # website 1. `test_the_requests_land_on_site_a` proves it.
+        cls.site_a = cls.env["website"].create(
+            {
+                "name": "Plain HTTP Shop A",
+                "company_id": cls.company_a.id,
+                "domain": cls.base_url(),
+            }
+        )
+        cls.site_b = cls.env["website"].create(
+            {
+                "name": "Plain HTTP Shop B",
+                "company_id": cls.company_b.id,
+                "domain": "https://plain-http-b.example",
+            }
+        )
+        # Stored with no @api.depends: fixtures say so themselves.
+        cls.company_a.website_id = cls.site_a
+        cls.company_b.website_id = cls.site_b
+        category = cls.env["product.public.category"].create(
+            {"name": "Plain HTTP Category"}
+        )
+
+        def product(name, company):
+            return Product.create(
+                {
+                    "name": name,
+                    "is_published": True,
+                    "sale_ok": True,
+                    "list_price": 10.0,
+                    "company_ids": [(6, 0, company.ids)],
+                    "public_categ_ids": [(6, 0, category.ids)],
+                }
+            )
+
+        cls.product_a = product("Plain HTTP Product A", cls.company_a)
+        cls.sibling_a = product("Plain HTTP Sibling A", cls.company_a)
+        cls.product_b = product("Plain HTTP Product B", cls.company_b)
+
+    def _post(self, template_id, **params):
+        return self.opener.post(
+            self.base_url() + "/shop/compare/candidates",
+            json={
+                "params": {"product_template_id": template_id, **params},
+                "jsonrpc": "2.0",
+                "method": "call",
+                "id": 1,
+            },
+        )
+
+    def test_the_requests_land_on_site_a(self):
+        """Only site A lists product A, so only there is it ``current``."""
+        self.assertEqual(self.product_a.company_ids, self.company_a)
+        self.assertEqual(self.product_b.company_ids, self.company_b)
+        data = self._post(self.product_a.id).json()["result"]
+        self.assertEqual(data["current"]["name"], "Plain HTTP Product A")
+        self.assertEqual(data["scope"], "shop")
+        self.assertEqual(
+            [product["name"] for product in data["products"]],
+            ["Plain HTTP Sibling A"],
+        )
+
+    def test_another_merchants_product_says_nothing_about_itself(self):
+        """Published and saleable, but not this shop's: not here."""
+        bare = self._post(None).json()["result"]
+        response = self._post(self.product_b.id)
+        data = response.json()["result"]
+        self.assertEqual(data, bare)
+        self.assertIsNone(data["current"])
+        self.assertEqual(data["same_categories"], [])
+        self.assertNotIn("Plain HTTP Product B", response.text)
+        self.assertNotIn(self.product_b.website_url, response.text)
+        self.assertNotIn("product.template/%s/" % self.product_b.id, response.text)
+        self.assertNotIn("Plain HTTP Shop B", response.text)
+
+    def test_another_merchants_product_is_never_a_candidate(self):
+        for params in (
+            {},
+            {"same_category_ids": []},
+            {"scope": "all"},
+            {"scope": "shop", "query": "Plain HTTP"},
+            {"same_category_ids": [], "query": "Plain HTTP Product B"},
+        ):
+            response = self._post(self.product_a.id, **params)
+            ids = {p["id"] for p in response.json()["result"]["products"]}
+            self.assertNotIn(self.product_b.id, ids, params)
+            self.assertNotIn("Plain HTTP Product B", response.text, params)
