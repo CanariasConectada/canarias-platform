@@ -104,6 +104,18 @@
             </div>
         </section>
 
+        <!-- Certification seals, when ``company_certification`` is
+             installed (asked through the website so neither module depends
+             on the other). Placed right after About on purpose:
+             ``company_facilities`` inserts its block immediately after that
+             section too, which lands it above this call, so the page reads
+             facilities, seals, contact, funding strip. -->
+        <t t-set="pmm_seals_template" t-value="website._pmm_certification_block_template()"/>
+        <t t-if="pmm_seals_template">
+            <t t-set="cc_company" t-value="company"/>
+            <t t-call="{{ pmm_seals_template }}"/>
+        </t>
+
         <!-- Closing banner -->
         <t t-call="partner_microsite_manager.microsite_banner">
             <t t-set="banner_title" t-value="company.microsite_banner_title"/>
