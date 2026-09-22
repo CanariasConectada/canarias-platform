@@ -39,7 +39,7 @@ class RatingRating(models.Model):
         string="Contains Forbidden Words",
         readonly=True,
         help="Set automatically when the customer comment matches an entry "
-        "of the forbidden words list.",
+        "of the shared forbidden words list (Settings > Moderation).",
     )
 
     # One consumed review per customer and merchant. Partial index so the
@@ -104,9 +104,7 @@ class RatingRating(models.Model):
             return
         if self.env.user.has_group(MODERATOR_GROUP):
             return
-        raise AccessError(
-            _("Only review moderators can change the moderation status.")
-        )
+        raise AccessError(_("Only review moderators can change the moderation status."))
 
     # ------------------------------------------------------------------
     # Moderation
@@ -122,11 +120,14 @@ class RatingRating(models.Model):
         """
         if not self:
             return
-        words = self.env["review.forbidden.word"].sudo().search([])
+        # The shared platform list (website_moderation_forbidden_word):
+        # accent- and case-insensitive whole-word matching, readable by
+        # administrators only, hence the sudo.
+        words = self.env["moderation.forbidden.word"].sudo()
         for review in self:
             if review.moderation_status == "rejected":
                 continue
-            flagged = bool(words._match(review.feedback))
+            flagged = words._contains_forbidden(review.feedback)
             # Written through ``sudo``: ``moderation_status`` is a system-managed
             # field (guarded by ``_check_moderation_write_access``); only the
             # moderation engine and explicit moderator actions may set it.
@@ -233,7 +234,9 @@ class RatingRating(models.Model):
         another activity on the moderator's dashboard.
         """
         return bool(
-            self.env["mail.activity"].sudo().search_count(
+            self.env["mail.activity"]
+            .sudo()
+            .search_count(
                 [
                     ("activity_type_id", "=", activity_type_id),
                     ("user_id", "=", user.id),

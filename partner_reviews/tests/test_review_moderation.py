@@ -18,25 +18,25 @@ class TestReviewModeration(PartnerReviewsCase):
         self.assertFalse(review.requires_moderation)
 
     def test_forbidden_word_holds_review(self):
-        self.env["review.forbidden.word"].create({"name": "swindle"})
+        self._add_word("swindle")
         review = self._create_review(self.customer_1, 1, "A total SWINDLE!")
         self.assertEqual(review.moderation_status, "pending")
         self.assertTrue(review.requires_moderation)
 
     def test_archived_word_is_ignored(self):
-        self.env["review.forbidden.word"].create({"name": "meh", "active": False})
+        self._add_word("meh", active=False)
         review = self._create_review(self.customer_1, 3, "It was meh.")
         self.assertEqual(review.moderation_status, "approved")
 
     def test_editing_feedback_reapplies_moderation(self):
-        self.env["review.forbidden.word"].create({"name": "swindle"})
+        self._add_word("swindle")
         review = self._create_review(self.customer_1, 4, "Nice place")
         self.assertEqual(review.moderation_status, "approved")
         review.feedback = "Actually a swindle"
         self.assertEqual(review.moderation_status, "pending")
 
     def test_approve_and_reject_actions(self):
-        self.env["review.forbidden.word"].create({"name": "swindle"})
+        self._add_word("swindle")
         review = self._create_review(self.customer_1, 1, "swindle")
         review.action_approve()
         self.assertEqual(review.moderation_status, "approved")
@@ -55,7 +55,7 @@ class TestReviewModeration(PartnerReviewsCase):
 
     def test_pending_review_notifies_moderators(self):
         moderator = self._create_moderator("pr_moderator")
-        self.env["review.forbidden.word"].create({"name": "swindle"})
+        self._add_word("swindle")
         self._create_review(self.customer_1, 1, "swindle")
         # The activity lands on the merchant's partner because rating.rating
         # is not a mail.thread.
@@ -68,7 +68,7 @@ class TestReviewModeration(PartnerReviewsCase):
         """Re-saving forbidden feedback on an already-pending review must not
         create a second email/activity (DoS guard)."""
         moderator = self._create_moderator("pr_mod_once")
-        self.env["review.forbidden.word"].create({"name": "swindle"})
+        self._add_word("swindle")
         review = self._create_review(self.customer_1, 4, "Nice place")
         self.assertEqual(review.moderation_status, "approved")
         review.feedback = "a swindle for sure"
@@ -89,7 +89,7 @@ class TestReviewModeration(PartnerReviewsCase):
         )
         mod_a = self._create_moderator("pr_mod_a", company=self.company)
         mod_b = self._create_moderator("pr_mod_b", company=company_b)
-        self.env["review.forbidden.word"].create({"name": "swindle"})
+        self._add_word("swindle")
         self._create_review(self.customer_1, 1, "swindle", company=self.company)
         self.assertTrue(
             self._merchant_activities(mod_a),
@@ -103,7 +103,7 @@ class TestReviewModeration(PartnerReviewsCase):
     def test_internal_user_cannot_approve(self):
         """The native ACL lets any employee write rating.rating, but only
         moderators may flip the moderation status."""
-        self.env["review.forbidden.word"].create({"name": "swindle"})
+        self._add_word("swindle")
         review = self._create_review(self.customer_1, 1, "a swindle")
         self.assertEqual(review.moderation_status, "pending")
         internal = self.env["res.users"].create(
@@ -123,11 +123,27 @@ class TestReviewModeration(PartnerReviewsCase):
     def test_forbidden_word_matches_whole_word_only(self):
         """Word-boundary match: a forbidden word inside a legit word must not
         flag, the standalone word must."""
-        self.env["review.forbidden.word"].create({"name": "cialis"})
+        self._add_word("cialis")
         clean = self._create_review(self.customer_1, 5, "Un gran especialista")
         self.assertEqual(clean.moderation_status, "approved")
         flagged = self._create_review(self.customer_2, 1, "Vende cialis barato")
         self.assertEqual(flagged.moderation_status, "pending")
+
+    def test_forbidden_word_folds_case_and_accents(self):
+        """The shared matcher ignores case and accents on both sides, and
+        still only hits whole words."""
+        self._add_word("imbécil")
+        for index, text in enumerate(("IMBÉCIL", "un imbecil", "Imbécil!")):
+            customer = self.env["res.partner"].create({"name": "PR Fold %s" % index})
+            review = self._create_review(customer, 1, text)
+            self.assertEqual(review.moderation_status, "pending", text)
+        clean = self._create_review(self.customer_1, 4, "Sin imbecilidad alguna")
+        self.assertEqual(clean.moderation_status, "approved")
+
+    def test_multi_word_entry(self):
+        self._add_word("hijo de puta")
+        review = self._create_review(self.customer_1, 1, "Eres un HIJO DE PUTA")
+        self.assertEqual(review.moderation_status, "pending")
 
     @mute_logger("odoo.sql_db")
     def test_one_review_per_customer_and_company(self):
@@ -157,7 +173,9 @@ class TestReviewModeration(PartnerReviewsCase):
         self.company.email = "pr.merchant@example.com"
         mails_before = self.env["mail.mail"].sudo().search_count([])
         review = self._create_review_with_context(
-            self.customer_1, 5, "Historic review",
+            self.customer_1,
+            5,
+            "Historic review",
             skip_review_notifications=True,
         )
         self.assertEqual(review.moderation_status, "approved")
@@ -171,16 +189,16 @@ class TestReviewModeration(PartnerReviewsCase):
         """A pending (forbidden-word) review created under the skip context
         must raise neither the moderator email nor the to-do activity."""
         moderator = self._create_moderator("pr_mod_skip")
-        self.env["review.forbidden.word"].create({"name": "swindle"})
+        self._add_word("swindle")
         mails_before = self.env["mail.mail"].sudo().search_count([])
         review = self._create_review_with_context(
-            self.customer_1, 1, "a swindle",
+            self.customer_1,
+            1,
+            "a swindle",
             skip_review_notifications=True,
         )
         self.assertEqual(review.moderation_status, "pending")
-        self.assertEqual(
-            self.env["mail.mail"].sudo().search_count([]), mails_before
-        )
+        self.assertEqual(self.env["mail.mail"].sudo().search_count([]), mails_before)
         self.assertFalse(
             self._merchant_activities(moderator),
             "No moderation activity may be created under the skip context",
@@ -200,7 +218,7 @@ class TestReviewModeration(PartnerReviewsCase):
     def test_non_merchant_ratings_untouched(self):
         """Ratings of other apps must keep the default approved status and
         never enter the merchant moderation flow."""
-        self.env["review.forbidden.word"].create({"name": "swindle"})
+        self._add_word("swindle")
         rating = self.env["rating.rating"].create(
             {
                 "res_model_id": self.env["ir.model"]._get_id("res.partner"),
