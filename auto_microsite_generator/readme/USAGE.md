@@ -33,11 +33,12 @@ This call is idempotent and never overwrites migrated content.
 * the `website` record linked to the company;
 * a homepage at `/`, the rich corporate one when
   `partner_microsite_manager` is installed;
-* the standard top menu — Home, Shop, Directory — **written in every
-  installed language**. The wording is seeded from the estate rather than
-  left to the machine translator: "Comercio" out of context is the noun, not
-  the directory, and engines return Trade/Handel/Commerce for it;
-* the "Zonas Comerciales" dropdown that links the network together;
+* the standard top menu — Home, Shop — **written in every installed
+  language**. The wording is seeded from the estate rather than left to the
+  machine translator, which translates a menu label out of context;
+* the "Zonas Comerciales" dropdown that links the network together, and the
+  only way out of the shop: there is deliberately no `/comercio` (directory)
+  entry on a merchant microsite;
 * the cookies bar, so consent is asked before optional cookies are set;
 * opening copy in the microsite content fields, so the merchant sees a real
   page instead of an empty shell.

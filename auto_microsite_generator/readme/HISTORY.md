@@ -1,3 +1,30 @@
+## 19.0.2.3.0 (2026-09-21)
+
+* **A merchant microsite no longer links the directory from its top menu.**
+  Once a visitor is inside a shop they are not invited out to the list of
+  all the other shops; the "Zonas Comerciales" dropdown is the way out, and
+  Home and Shop stay as they are. A new microsite is born without the
+  `/comercio` entry, and the migration deletes it from the existing ones.
+  The portal and the three zone sites keep theirs, and the `/comercio` route
+  itself answers on every host as before -- only the menu entry goes.
+  A site is spared when its company carries `zone_company_key` (read from
+  the column, as in 19.0.2.2.0), when it is an aggregated shop
+  (`is_marketplace`), or when its company OWNS an aggregated shop -- the
+  structural guard that covers the platform company's Admin Portal (website
+  198, a plain site on the company of the portal) whatever either is
+  called. The generator's protected company names are kept as a last,
+  free-text guard; it errs on the safe side, so a merchant named like a
+  zone would keep its entry. On a merchant site only the generated shape
+  goes: url exactly `/comercio`, direct child of the root menu, no children;
+  anything else is kept. The `canarias_mig.menu_*` external ids of the
+  deleted entries go with them. Idempotent; when no zone company can be
+  told apart nothing is deleted and a warning is logged. The run logs the
+  totals, every spared site with its company and the guards that held,
+  every entry kept for a reason, and the ids of the sites that lost the
+  entry, so the production run can be diffed against the expected 207
+  deleted / 5 spared (1, 12, 13, 14, 198). This supersedes the `/comercio`
+  half of 19.0.2.1.0 on merchant sites.
+
 ## 19.0.2.2.0 (2026-09-07)
 
 * **The "Guía Local" dropdown belongs to the zone sites only.** 19.0.2.1.0

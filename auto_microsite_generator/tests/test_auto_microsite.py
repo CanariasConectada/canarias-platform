@@ -15,6 +15,7 @@ from ..models.res_company import (
     LOCAL_GUIDE_CHILDREN,
     LOCAL_GUIDE_URLS,
     MICROSITE_CONTENT_DEFAULTS,
+    ZONE_MENU_PROBE_URL,
     _normalize_subdomain,
 )
 
@@ -62,10 +63,10 @@ class TestAutoMicrosite(TransactionCase):
         self.assertEqual(page.view_id.key, expected_key)
         self.assertTrue(page.is_published)
 
-        directory = self.env["website.menu"].search(
-            [("website_id", "=", website.id), ("url", "=", "/comercio")]
+        shop = self.env["website.menu"].search(
+            [("website_id", "=", website.id), ("url", "=", "/shop")]
         )
-        self.assertTrue(directory, "The Directory menu entry must be created.")
+        self.assertTrue(shop, "The Shop menu entry must exist.")
 
     def test_new_website_is_born_with_the_corporate_look(self):
         company = self.env["res.company"].create({"name": "Themed Shop"})
@@ -183,7 +184,7 @@ class TestAutoMicrosite(TransactionCase):
         website = company.website_id
         Menu = self.env["website.menu"]
         before = Menu.search_count(
-            [("website_id", "=", website.id), ("url", "=", "/comercio")]
+            [("website_id", "=", website.id), ("url", "=", "/shop")]
         )
         zone_domain = [
             ("website_id", "=", website.id),
@@ -192,7 +193,7 @@ class TestAutoMicrosite(TransactionCase):
         zone_before = Menu.search_count(zone_domain)
         company._auto_generate_microsite()
         after = Menu.search_count(
-            [("website_id", "=", website.id), ("url", "=", "/comercio")]
+            [("website_id", "=", website.id), ("url", "=", "/shop")]
         )
         self.assertEqual(before, 1)
         self.assertEqual(after, 1, "Re-running must not duplicate menu entries.")
@@ -303,11 +304,11 @@ class TestAutoMicrosite(TransactionCase):
         )
 
         self.assertTrue(company._microsite_has_migrated_content(website))
-        # Menu step is skipped, so no /comercio entry is injected.
+        # Menu step is skipped, so no zone dropdown is injected.
         company._auto_generate_microsite()
         self.assertFalse(
             self.env["website.menu"].search_count(
-                [("website_id", "=", website.id), ("url", "=", "/comercio")]
+                [("website_id", "=", website.id), ("url", "=", ZONE_MENU_PROBE_URL)]
             )
         )
 
@@ -529,38 +530,42 @@ class TestAutoMicrosite(TransactionCase):
             "a merchant microsite must not link the verticals at birth",
         )
 
-    def test_menu_labels_are_seeded_in_every_installed_language(self):
-        """ "Comercio" is the directory, not the noun.
+    def _generated_shop_entry(self, company):
+        """The Shop entry as the GENERATOR writes it.
 
-        Left to a machine translator it comes back as Trade/Handel/Commerce,
-        which is exactly what website 221 shipped with. The estate wording is
-        written on creation instead.
+        With ``website_sale`` installed core copies a Shop entry onto the new
+        website and the generator, create-only, leaves it alone; dropping it
+        and running the pass again is what makes the generator write its own.
         """
-        english = self.env["res.lang"]._activate_lang("en_US")
-        if not english:
-            self.skipTest("en_US is not available in this database.")
+        domain = [("website_id", "=", company.website_id.id), ("url", "=", "/shop")]
+        self.env["website.menu"].search(domain).unlink()
+        company._auto_generate_microsite()
+        return self.env["website.menu"].search(domain, limit=1)
+
+    def test_menu_labels_are_seeded_in_every_installed_language(self):
+        """The estate wording is written on creation, not machine translated.
+
+        Left to a translator out of context a menu label comes back as
+        whatever the noun means -- website 221 shipped with Trade for the
+        directory entry microsites carried until 19.0.2.3.0.
+        """
+        french = self.env["res.lang"]._activate_lang("fr_FR")
+        if not french:
+            self.skipTest("fr_FR is not available in this database.")
         company = self.env["res.company"].create({"name": "Labelled Shop"})
-        directory = self.env["website.menu"].search(
-            [("website_id", "=", company.website_id.id), ("url", "=", "/comercio")],
-            limit=1,
-        )
+        shop = self._generated_shop_entry(company)
         self.assertEqual(
-            directory.with_context(lang="en_US").name,
-            "Directory",
-            "The directory entry must read Directory in English, never Trade.",
+            shop.with_context(lang="fr_FR").name,
+            "Boutique",
+            "The Shop entry must carry the estate wording in French.",
         )
 
     def test_seeding_writes_only_languages_that_are_installed(self):
         """Writing a language Odoo does not know raises; it must be skipped."""
         company = self.env["res.company"].create({"name": "Partial Lang Shop"})
-        directory = self.env["website.menu"].search(
-            [("website_id", "=", company.website_id.id), ("url", "=", "/comercio")],
-            limit=1,
-        )
+        shop = self._generated_shop_entry(company)
         self.env.flush_all()
-        self.env.cr.execute(
-            "SELECT name FROM website_menu WHERE id = %s", (directory.id,)
-        )
+        self.env.cr.execute("SELECT name FROM website_menu WHERE id = %s", (shop.id,))
         stored = self.env.cr.fetchone()[0]
         installed = {lang[0] for lang in self.env["res.lang"].get_installed()}
         self.assertTrue(
