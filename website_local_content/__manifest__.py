@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website Local Content",
-    "version": "19.0.2.1.0",
+    "version": "19.0.2.2.0",
     "category": "Website",
     "summary": "Parameterizable local content galleries (places, memories, ...)",
     "author": "MikeColangelo",
@@ -10,19 +10,24 @@
     "license": "AGPL-3",
     "maintainers": ["mikecolangelo"],
     "development_status": "Beta",
+    # ``website_moderation_forbidden_word``: the shared forbidden-word list
+    # that holds rating comments for review (2026-09-22).
     "depends": [
         "rating",
         "website",
+        "website_moderation_forbidden_word",
     ],
     "data": [
         "security/local_content_security.xml",
         "security/ir.model.access.csv",
         "security/local_content_rules.xml",
         "data/local_content_type_data.xml",
+        "data/mail_template_moderation.xml",
         "views/local_content_type_views.xml",
         "views/local_content_category_views.xml",
         "views/local_content_tag_views.xml",
         "views/local_content_item_views.xml",
+        "views/rating_rating_views.xml",
         "views/local_content_menus.xml",
         # After the menus: the picker declares an entry under the root menu
         # and a button on the Items list, so both have to exist first.

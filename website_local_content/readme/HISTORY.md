@@ -1,3 +1,31 @@
+## 19.0.2.2.0 (2026-09-22)
+
+Rating comments go through the shared forbidden-word list
+(`website_moderation_forbidden_word`, client decision 2026-09-22):
+
+- A comment that hits the list publishes its STARS at once (they count in
+  the item's average and total) while its text waits for a local content
+  manager: new `feedback_moderation_status` (`approved` / `pending` /
+  `rejected`) on `rating.rating`, scoped to local content ratings.
+- The public detail page hides a held text from everyone but its author,
+  who sees it with a neutral "Your comment will be published after
+  review." notice (never the matched word). A rejected text is hidden
+  from everyone, the author gets "Your comment was not published."; the
+  text is kept in the database for the audit trail.
+- Editing a comment re-evaluates only when the text changed: re-posting
+  the same comment with other stars keeps the manager's decision and
+  spawns no new notification.
+- Managers get an email (`mail_template_comment_moderation`) and a to-do
+  activity on the author's contact, one open activity per manager and
+  author; without any manager the system administrators are notified.
+  `skip_review_notifications` in the context silences both, like
+  `partner_reviews`.
+- New *Local Content > Comments pending review* menu (list with approve
+  and reject buttons, default filter on pending), mirrored under
+  *Settings > Moderation > Local Content Comments* for administrators.
+  Only local content managers and system administrators may change the
+  status by hand.
+
 ## 19.0.2.1.0 (2026-09-16)
 
 Interactive likes and ratings on the public detail page (the legacy
