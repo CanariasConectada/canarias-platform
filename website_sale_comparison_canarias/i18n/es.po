@@ -83,14 +83,18 @@ msgstr ""
 
 #. module: website_sale_comparison_canarias
 #: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
-msgid "Choose which products to compare with. First the scope, then the category."
-msgstr ""
-"Elige con qué productos comparar. Primero el alcance, después la categoría."
+msgid "Close"
+msgstr "Cerrar"
 
 #. module: website_sale_comparison_canarias
 #: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
-msgid "Close"
-msgstr "Cerrar"
+msgid "Compare in 3 steps"
+msgstr "Compara en 3 pasos"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid "Compare in 4 steps"
+msgstr "Compara en 4 pasos"
 
 #. module: website_sale_comparison_canarias
 #: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
@@ -131,6 +135,20 @@ msgid "Only at %s"
 msgstr "Solo en %s"
 
 #. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid "Other categories"
+msgstr "Otras categorías"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid ""
+"Other categories: if you want, add other product categories to compare "
+"with."
+msgstr ""
+"Otras categorías: si quieres, añade otras categorías de producto con las que "
+"comparar."
+
+#. module: website_sale_comparison_canarias
 #. odoo-python
 #: code:addons/website_sale_comparison_canarias/models/website.py:0
 msgid "Outside my commercial zone"
@@ -138,8 +156,51 @@ msgstr "Fuera de mi zona comercial"
 
 #. module: website_sale_comparison_canarias
 #: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid "Products: select up to 4 products and press \"View comparison\"."
+msgstr "Productos: selecciona hasta 4 productos y pulsa «Ver comparativa»."
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid "Same category"
+msgstr "Misma categoría"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid ""
+"Same category: the category of this product comes ticked so you compare "
+"with similar products. Untick it if you do not want to limit yourself to it."
+msgstr ""
+"Misma categoría: viene marcada la categoría de este producto para comparar "
+"con productos similares. Desmárcala si no quieres limitarte a ella."
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid "Scope"
+msgstr "Alcance"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid ""
+"Scope: choose where to search: in all of Canarias Conectada, in your "
+"commercial zone, outside it or only in this shop."
+msgstr ""
+"Alcance: elige dónde buscar: en toda Canarias Conectada, en tu zona "
+"comercial, fuera de ella o solo en esta tienda."
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
 msgid "Search products by name"
 msgstr "Buscar productos por nombre"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid "Select the products to compare (maximum 4)"
+msgstr "Selecciona los productos a comparar (máximo 4)"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid "Show other categories (<span class=\"o_wscc_modal_other_count\">0</span>)"
+msgstr "Ver otras categorías (<span class=\"o_wscc_modal_other_count\">0</span>)"
 
 #. module: website_sale_comparison_canarias
 #: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
@@ -149,6 +210,16 @@ msgid ""
 msgstr ""
 "Mostrando <span class=\"o_wscc_modal_shown\">0</span> de <span "
 "class=\"o_wscc_modal_total\">0</span> productos. Busca para ver el resto."
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid "The products could not be loaded. Please try again."
+msgstr "No se han podido cargar los productos. Inténtalo de nuevo."
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
+msgid "There are no other categories here."
+msgstr "No hay otras categorías aquí."
 
 #. module: website_sale_comparison_canarias
 #: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
