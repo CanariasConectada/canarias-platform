@@ -58,22 +58,24 @@ class CompanyCertificationController(http.Controller):
                 "level_counts": self._count_by_level(holders),
                 "level": level,
                 "base_url": "/certification/%s" % cert_type.code,
-                "seals": self._get_published_seals(),
+                "seals": self._get_other_published_seals(cert_type),
             },
         )
 
-    def _get_published_seals(self):
-        """Every published vertical, for the two-seal block closing the page.
+    def _get_other_published_seals(self, cert_type):
+        """The other published verticals, for the block closing the page.
 
-        The legacy pages ended on a pair of cards — Sostenibilidad and Silver
-        Economy — whichever of the two the visitor was reading, so the page's
-        own seal is listed too. Plain dicts for the same reason as the
-        holders: the template must not get a recordset it can walk.
+        The legacy pages ended on a pair of cards, Sostenibilidad and Silver
+        Economy, the page's own seal included. That own card linked the page
+        to itself and showed its seal a third time (hero, body, footer), which
+        the client read as a duplicate; only the way across to the other
+        seals is kept. Plain dicts for the same reason as the holders: the
+        template must not get a recordset it can walk.
         """
         seals = (
             request.env["certification.type"]
             .sudo()
-            .search([("landing_published", "=", True)])
+            .search([("landing_published", "=", True), ("id", "!=", cert_type.id)])
         )
         return [
             {

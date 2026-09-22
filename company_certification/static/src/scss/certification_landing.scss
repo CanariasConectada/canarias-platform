@@ -108,19 +108,32 @@ $cc-accent-silver: $cc-primary;
         max-width: 60rem;
         line-height: 1.7;
 
-        h1, h2, h3, h4, h5 {
-            color: var(--cc-accent);
+        // One heading colour per page. `!important` because the legacy
+        // bodies carry Bootstrap colour utilities (`text-body-emphasis`,
+        // `text-success`) that are `!important` themselves and left a page
+        // of green or blue titles with black ones in between. Scoped to the
+        // heading element: a heading that is itself a button or a badge is
+        // skipped, and what sits inside one (a link, `a.btn`, `.badge`) sets
+        // its own colour and never inherits this one. Both halves sit in
+        // `:where()`, which weighs nothing: the rule stays two classes heavy,
+        // enough to beat a utility and light enough for the modal and
+        // caption headings below to override it.
+        :where(h1, h2, h3, h4, h5, h6):where(:not(.btn):not(.badge)) {
+            color: var(--cc-accent) !important;
             font-weight: 600;
         }
 
         // ---- ODS icon grid (Sostenibilidad body) ------------------------
-        // Ported from the retired sustainability module: 17 icons that sit
-        // in two rows on a desktop and stay tappable on a phone. Each item
-        // is a link opening its goal's modal.
+        // The 17 goals as the original page laid them out: small icons in
+        // exactly two rows (9 + 8) from a tablet up. Fixed column counts
+        // rather than auto-fill, which broke them 8 + 8 + 1; `minmax(0, ..)`
+        // lets the columns shrink instead of pushing the page sideways. Each
+        // item is a link opening its goal's modal.
         .sust-ods-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(9, minmax(0, 80px));
+            justify-content: center;
+            gap: 0.75rem;
             padding: 1rem 0;
         }
 
@@ -137,7 +150,6 @@ $cc-accent-silver: $cc-primary;
 
             img {
                 width: 100%;
-                max-width: 110px;
                 height: auto;
                 border-radius: 0.5rem;
             }
@@ -160,7 +172,7 @@ $cc-accent-silver: $cc-primary;
             h5 {
                 margin: 0;
                 font-weight: 600;
-                color: inherit;
+                color: inherit !important;
             }
         }
 
@@ -200,12 +212,31 @@ $cc-accent-silver: $cc-primary;
             padding: 1rem;
 
             h5 {
-                color: #fff;
+                color: #fff !important;
             }
 
             p {
                 color: rgba(255, 255, 255, 0.9);
                 margin-bottom: 0;
+            }
+        }
+
+        // ---- Accordions ---------------------------------------------------
+        // The triggers are links, not buttons (the sanitizer strips
+        // <button>); they keep Bootstrap's look but must not inherit the
+        // heading accent or a link underline.
+        .accordion-header {
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        a.accordion-button {
+            text-decoration: none;
+            font-weight: 600;
+            color: var(--cc-accent);
+
+            &:not(.collapsed) {
+                color: var(--cc-accent);
             }
         }
 
@@ -356,7 +387,7 @@ $cc-accent-silver: $cc-primary;
         }
 
         .o_cc_seal_card__title {
-            color: $cc-primary;
+            color: var(--cc-accent);
         }
     }
 }
@@ -411,15 +442,25 @@ $cc-accent-silver: $cc-primary;
     }
 }
 
-@media (max-width: 575.98px) {
+@media (max-width: 767.98px) {
     .o_cc_landing .o_cc_landing_richtext {
+        // 6 + 6 + 5 on a large phone, 5 + 5 + 5 + 2 on a small one.
         .sust-ods-grid {
-            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            grid-template-columns: repeat(6, minmax(0, 72px));
             gap: 0.5rem;
         }
 
-        .sust-ods-item img {
-            max-width: 80px;
+        // The bodies pad their white cards with Bootstrap's p-5 (3rem), a
+        // third of a phone's width gone to margins.
+        section.p-5,
+        section.p-4 {
+            padding: 1.5rem 1rem !important;
         }
+    }
+}
+
+@media (max-width: 575.98px) {
+    .o_cc_landing .o_cc_landing_richtext .sust-ods-grid {
+        grid-template-columns: repeat(5, minmax(0, 72px));
     }
 }

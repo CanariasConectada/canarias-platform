@@ -1,3 +1,31 @@
+## 19.0.2.9.1 (2026-09-22)
+
+- The block closing a landing page lists the *other* published seals only,
+  under "Otros sellos de Canarias Conectada", and is not rendered when there
+  is none. The page's own card linked the page to itself and showed its seal
+  a third time; the client reported it as a duplicate.
+- The body carousel plays by itself again. `website.carousel_slider` matches
+  every `.carousel`; with `data-bs-interval` stripped by the sanitizer it
+  created the Bootstrap instance paused, and the landing's own interaction
+  got that instance back, so the Sostenibilidad page never left its first
+  slide. The instance is rebuilt (and left still under
+  `prefers-reduced-motion`). Accordions in a body close their other panels
+  again, which `data-bs-parent` did before the sanitizer removed it.
+- The 17 ODS icons sit in exactly two rows (9 + 8) from a tablet up, 6 and 5
+  per row on phones, and never widen the page. Every heading of a body takes
+  the accent of its vertical, whatever Bootstrap colour utility the legacy
+  markup carries; the white cards of a body lose their 3rem padding on
+  phones.
+- The link triggers of a body (accordion, "read more", carousel arrows and
+  indicators, modal close) answer Space like the buttons they stand in for,
+  and get back the `role`, `aria-expanded`, `aria-controls` and labels the
+  sanitizer strips, kept in step as panels open and close. The decisions of
+  the script live in an import-free `landing_body_logic.js`, executed in
+  `node` by the test suite; the DOM wiring in `landing_body.js` is not
+  covered by automated tests.
+- Tests pin what the public page must not carry: no link into the
+  questionnaire (merchants start it from *Certificaciones > Nueva
+  evaluación* in the backend), and the training material listed once.
 ## 19.0.2.9.0 (2026-09-21)
 
 - A merchant homepage ends facilities, certification seals, contact section,

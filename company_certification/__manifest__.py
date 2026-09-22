@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Company Certification",
-    "version": "19.0.2.9.0",
+    "version": "19.0.2.9.1",
     "category": "Marketing/Surveys",
     "summary": "Parameterizable company certification seals built on Survey",
     "author": "MikeColangelo",
@@ -43,6 +43,9 @@
     "assets": {
         "web.assets_frontend": [
             "company_certification/static/src/scss/certification_landing.scss",
+            # Import-free decision helpers first: the interaction imports them,
+            # and tests/test_landing_body_js.py runs this exact file in node.
+            "company_certification/static/src/interactions/landing_body_logic.js",
             "company_certification/static/src/interactions/landing_body.js",
         ],
     },
