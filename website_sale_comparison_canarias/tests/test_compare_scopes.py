@@ -12,10 +12,13 @@ from odoo.addons.website_sale_comparison_canarias.models.website import (
     SCOPE_SHOP,
     SCOPE_ZONE,
 )
+from odoo.addons.website_sale_comparison_canarias.tests.common import (
+    ComparisonEnabledCase,
+)
 
 
 @tagged("post_install", "-at_install")
-class TestCompareScopes(TransactionCase):
+class TestCompareScopes(ComparisonEnabledCase, TransactionCase):
     """Compare against what, exactly.
 
     Asked for on 2026-08-16: a modal on the product page that compares
@@ -208,9 +211,7 @@ class TestCompareScopes(TransactionCase):
         """One click, no zone named: the portal's catalogue minus the
         product's neighbourhood (the subtraction is the controller's)."""
         self.assertEqual(
-            self.shop._comparison_scope_website(
-                SCOPE_OTHER_ZONE, product=self.product
-            ),
+            self.shop._comparison_scope_website(SCOPE_OTHER_ZONE, product=self.product),
             self.portal,
         )
 

@@ -10,10 +10,13 @@ from odoo.addons.website_sale_comparison_canarias.controllers.main import (
     CANDIDATE_LIMIT,
     MAX_CLIENT_IDS,
 )
+from odoo.addons.website_sale_comparison_canarias.tests.common import (
+    ComparisonEnabledCase,
+)
 
 
 @tagged("post_install", "-at_install")
-class TestCompareCandidates(HttpCase):
+class TestCompareCandidates(ComparisonEnabledCase, HttpCase):
     """What the picker is allowed to offer an anonymous visitor.
 
     The endpoint is public, so the interesting assertions are the negative
@@ -497,7 +500,7 @@ class TestCompareCandidates(HttpCase):
 
 
 @tagged("post_install", "-at_install")
-class TestCompareCandidatesZones(HttpCase):
+class TestCompareCandidatesZones(ComparisonEnabledCase, HttpCase):
     """The zone scopes, asked over HTTP the way the portal asks them.
 
     The zone is the PRODUCT's: a Guanarteme product seen on the portal offers
@@ -687,7 +690,7 @@ class TestCompareCandidatesZones(HttpCase):
 
 
 @tagged("post_install", "-at_install")
-class TestCompareCandidatesPlainSites(HttpCase):
+class TestCompareCandidatesPlainSites(ComparisonEnabledCase, HttpCase):
     """Two plain merchant microsites, and what one may learn of the other.
 
     No marketplace anywhere: the clicked-product gate is then core's own

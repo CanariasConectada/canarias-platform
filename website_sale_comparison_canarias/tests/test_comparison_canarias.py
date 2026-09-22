@@ -5,9 +5,13 @@ from unittest.mock import patch
 
 from odoo.tests import HttpCase, tagged
 
+from odoo.addons.website_sale_comparison_canarias.tests.common import (
+    ComparisonEnabledCase,
+)
+
 
 @tagged("post_install", "-at_install")
-class TestComparisonCanarias(HttpCase):
+class TestComparisonCanarias(ComparisonEnabledCase, HttpCase):
     """The compare button must reach products with NO variant attributes —
     the case core hides and this module exists to restore."""
 

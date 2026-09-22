@@ -5,6 +5,9 @@ from odoo import http
 from odoo.fields import Domain
 from odoo.http import request
 
+from odoo.addons.website_sale_comparison.controllers.main import (
+    WebsiteSaleProductComparison,
+)
 from odoo.addons.website_sale_comparison_canarias.models.website import SCOPE_OTHER_ZONE
 
 # What the picker will show at most. The comparison table itself caps at four
@@ -149,6 +152,14 @@ class WebsiteSaleComparisonCanarias(http.Controller):
         reported 2026-08-21/23 ("corrije el idioma").
         """
         website = request.website
+        if not website._wscc_comparison_enabled():
+            # SWITCHED OFF: refused with the empty answer, not an error. With
+            # the switch off no page renders the picker, so nothing legitimate
+            # calls this; a caller that does (a stale tab, a hand-written
+            # request) gets exactly what the modal already knows how to draw
+            # -- no product, no scope, no candidates -- and never a 404 that
+            # would surface as a JSON-RPC error in the browser console.
+            return self._empty_answer(scope=scope or "", zone=zone)
         lang = request.lang.code if hasattr(request, "lang") else request.env.lang
         request.env = request.env(context=dict(request.env.context, lang=lang))
         website = website.with_env(request.env)
@@ -164,20 +175,7 @@ class WebsiteSaleComparisonCanarias(http.Controller):
             scope = website._comparison_default_scope(current)
             target = website._comparison_scope_website(scope, product=current)
         if not target:
-            return {
-                "current": None,
-                "current_category_ids": [],
-                "same_categories": [],
-                "same_category_ids": [],
-                "products": [],
-                "categories": [],
-                "selected_category_ids": [],
-                "scopes": scopes,
-                "scope": scope,
-                "zone": zone or "",
-                "total": 0,
-                "limit": CANDIDATE_LIMIT,
-            }
+            return self._empty_answer(scope=scope, zone=zone, scopes=scopes)
 
         domain = Domain(target.sudo().sale_product_domain())
         if scope == SCOPE_OTHER_ZONE and not zone:
@@ -270,6 +268,29 @@ class WebsiteSaleComparisonCanarias(http.Controller):
             "limit": CANDIDATE_LIMIT,
         }
 
+    @staticmethod
+    def _empty_answer(scope="", zone=None, scopes=None):
+        """The answer with nothing in it, in the shape the modal expects.
+
+        One shape for "no site answers this scope" and for "the comparator is
+        switched off": the modal renders both as an empty list, and keeping a
+        single builder is what guarantees the two never drift apart.
+        """
+        return {
+            "current": None,
+            "current_category_ids": [],
+            "same_categories": [],
+            "same_category_ids": [],
+            "products": [],
+            "categories": [],
+            "selected_category_ids": [],
+            "scopes": scopes or [],
+            "scope": scope,
+            "zone": zone or "",
+            "total": 0,
+            "limit": CANDIDATE_LIMIT,
+        }
+
     def _visible_product(self, website, product_template_id):
         """The clicked product, if ``website`` lists it; else an empty set.
 
@@ -333,3 +354,21 @@ class WebsiteSaleComparisonCanarias(http.Controller):
             "image_url": website.image_url(product, "image_128"),
             "url": product.website_url,
         }
+
+
+class WebsiteSaleProductComparisonSwitch(WebsiteSaleProductComparison):
+    """Core's comparison page, behind the same switch as every button.
+
+    With the comparator off no page links to ``/shop/compare`` any more, but
+    the address is public and bookmarkable: a visitor holding an old link, or
+    a cookie with a comparison list from before the switch was flipped, would
+    otherwise still land on a comparison table the platform no longer offers.
+    Sent to the shop instead, which is where core itself sends an empty
+    comparison.
+    """
+
+    @http.route()
+    def product_compare(self, **post):
+        if not request.website._wscc_comparison_enabled():
+            return request.redirect("/shop")
+        return super().product_compare(**post)
