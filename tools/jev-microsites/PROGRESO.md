@@ -2,7 +2,7 @@
 
 Solo lectura sobre la BD `prod`. Lotes de 10 sites ordenados por id de website. Jev: `typesafe/jev-1.13` vía OpenRouter Decisions API.
 
-Última actualización: 2026-09-22 23:48 UTC  ·  Coste Jev acumulado: 0.00065 USD
+Última actualización: 2026-09-22 23:48 UTC  ·  Coste Jev acumulado: 0.00096 USD
 
 | Lote | Sites | T1 reseñas | T2 sección 1 | T3 imágenes |
 |---|---|---|---|---|
@@ -26,7 +26,7 @@ Solo lectura sobre la BD `prod`. Lotes de 10 sites ordenados por id de website. 
 | 17 | 175-184 | 10 OK / 0 fallan | 7 cand. · 4 cambios · 10 revisión | — |
 | 18 | 185-195 | 10 OK / 0 fallan | 1 cand. · 0 cambios · 2 revisión | — |
 | 19 | 196-206 | 9 OK / 1 fallan | 4 cand. · 4 cambios · 4 revisión | — |
-| 20 | 207-218 | 10 OK / 0 fallan | — | — |
+| 20 | 207-218 | 10 OK / 0 fallan | 7 cand. · 6 cambios · 8 revisión | — |
 | 21 | 221-223 | 2 OK / 0 fallan | — | — |
 
-Sites cubiertos: T1 212/212 · T2 200/212 · T3 0/212
+Sites cubiertos: T1 212/212 · T2 210/212 · T3 0/212
