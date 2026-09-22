@@ -2,7 +2,7 @@
 
 Solo lectura sobre la BD `prod`. Lotes de 10 sites ordenados por id de website. Jev: `typesafe/jev-1.13` vía OpenRouter Decisions API.
 
-Última actualización: 2026-09-22 23:49 UTC  ·  Coste Jev acumulado: 0.00299 USD
+Última actualización: 2026-09-22 23:49 UTC  ·  Coste Jev acumulado: 0.00304 USD
 
 | Lote | Sites | T1 reseñas | T2 sección 1 | T3 imágenes |
 |---|---|---|---|---|
