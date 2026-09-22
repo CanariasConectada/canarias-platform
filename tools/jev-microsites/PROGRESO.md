@@ -21,7 +21,7 @@ Solo lectura sobre la BD `prod`. Lotes de 10 sites ordenados por id de website. 
 | 12 | 123-132 | 10 OK / 0 fallan | 0 cand. · 0 cambios · 0 revisión | — |
 | 13 | 133-142 | 10 OK / 0 fallan | 0 cand. · 0 cambios · 0 revisión | — |
 | 14 | 144-153 | 10 OK / 0 fallan | 0 cand. · 0 cambios · 0 revisión | — |
-| 15 | 154-164 | 10 OK / 0 fallan | — | — |
+| 15 | 154-164 | 10 OK / 0 fallan | 0 cand. · 0 cambios · 0 revisión | — |
 | 16 | 165-174 | 10 OK / 0 fallan | — | — |
 | 17 | 175-184 | 10 OK / 0 fallan | — | — |
 | 18 | 185-195 | 10 OK / 0 fallan | — | — |
@@ -29,4 +29,4 @@ Solo lectura sobre la BD `prod`. Lotes de 10 sites ordenados por id de website. 
 | 20 | 207-218 | 10 OK / 0 fallan | — | — |
 | 21 | 221-223 | 2 OK / 0 fallan | — | — |
 
-Sites cubiertos: T1 212/212 · T2 150/212 · T3 0/212
+Sites cubiertos: T1 212/212 · T2 160/212 · T3 0/212
