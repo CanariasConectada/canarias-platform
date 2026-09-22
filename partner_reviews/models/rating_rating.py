@@ -124,10 +124,12 @@ class RatingRating(models.Model):
         # accent- and case-insensitive whole-word matching, readable by
         # administrators only, hence the sudo.
         words = self.env["moderation.forbidden.word"].sudo()
+        # One search + one compile for the whole batch.
+        pattern = words._get_pattern()
         for review in self:
             if review.moderation_status == "rejected":
                 continue
-            flagged = words._contains_forbidden(review.feedback)
+            flagged = words._contains_forbidden(review.feedback, pattern=pattern)
             # Written through ``sudo``: ``moderation_status`` is a system-managed
             # field (guarded by ``_check_moderation_write_access``); only the
             # moderation engine and explicit moderator actions may set it.

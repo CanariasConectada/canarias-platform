@@ -10,8 +10,11 @@
   and keeps the whole-word rule; multi-word entries keep working.
 - *Reviews > Forbidden Words* stays for review administrators and opens the
   shared list; system administrators also find it under *Settings >
-  Moderation*. Review users no longer read the list (it was never shown to
-  them).
+  Moderation*. Review administrators create, edit and archive entries but
+  cannot delete them (the list is platform-wide). Review users no longer
+  read the list (it was never shown to them).
+- The migration is covered by a test that replays it against a throwaway
+  copy of the old table (`tests/test_migration_forbidden_words.py`).
 
 # 19.0.2.2.1 (2026-09-16)
 

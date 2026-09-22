@@ -145,6 +145,59 @@ class TestReviewModeration(PartnerReviewsCase):
         review = self._create_review(self.customer_1, 1, "Eres un HIJO DE PUTA")
         self.assertEqual(review.moderation_status, "pending")
 
+    def test_reviews_manager_archives_but_cannot_delete_words(self):
+        """The shared list is platform-wide: review administrators maintain
+        it (create, edit, archive) but never delete from it."""
+        manager = self.env["res.users"].create(
+            {
+                "name": "PR Words Manager",
+                "login": "pr_words_manager",
+                "email": "pr.words.manager@example.com",
+                "group_ids": [
+                    (
+                        4,
+                        self.env.ref(
+                            "partner_reviews.group_partner_reviews_manager"
+                        ).id,
+                    )
+                ],
+            }
+        )
+        Word = self.env["moderation.forbidden.word"].with_user(manager)
+        word = Word.create({"name": "prmanagerword"})
+        word.write({"note": "kept for the record"})
+        word.action_archive()
+        self.assertFalse(word.active)
+        with self.assertRaises(AccessError):
+            word.unlink()
+        self.assertTrue(word.exists())
+
+    def test_batch_create_moderates_every_review(self):
+        """Three reviews in one create: one pattern for the batch, each
+        review judged on its own text."""
+        self._add_word("swindle")
+        customers = self.env["res.partner"].create(
+            [{"name": "PR Batch %s" % index} for index in range(3)]
+        )
+        reviews = self.env["rating.rating"].create(
+            [
+                {
+                    "res_model_id": self.company_model_id,
+                    "res_id": self.company.id,
+                    "partner_id": customer.id,
+                    "rating": 3,
+                    "feedback": feedback,
+                    "consumed": True,
+                }
+                for customer, feedback in zip(
+                    customers, ("a SWINDLE", "all good", "swindle again")
+                )
+            ]
+        )
+        self.assertEqual(
+            reviews.mapped("moderation_status"), ["pending", "approved", "pending"]
+        )
+
     @mute_logger("odoo.sql_db")
     def test_one_review_per_customer_and_company(self):
         self._create_review(self.customer_1, 4, "Good")

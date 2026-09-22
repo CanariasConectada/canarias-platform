@@ -24,6 +24,8 @@ from odoo.addons.website_moderation_forbidden_word.models.moderation_forbidden_w
 
 _logger = logging.getLogger(__name__)
 
+# Static identifiers of the removed model, interpolated into the SQL below
+# as-is: they are constants of this file, never user data.
 OLD_TABLE = "review_forbidden_word"
 OLD_MODEL = "review.forbidden.word"
 
