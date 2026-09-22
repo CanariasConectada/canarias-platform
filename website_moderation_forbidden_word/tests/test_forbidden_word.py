@@ -55,6 +55,21 @@ class TestForbiddenWord(TransactionCase):
         with self.assertRaises(ValidationError):
             self._add("   ")
 
+    def test_punctuation_only_word_is_rejected(self):
+        """An entry needs at least one letter or digit once normalized."""
+        for name in ("...", "!!!", "%", "¿?"):
+            with self.assertRaises(ValidationError, msg=name):
+                self._add(name)
+        self._add("100% gratis")  # digits count, punctuation may surround them
+
+    def test_import_reports_the_friendly_duplicate_message(self):
+        """The import path (``load``) surfaces the constraint's message, not a
+        raw psycopg2 error, when a file repeats a word in another spelling."""
+        result = self.Word.load(["name"], [["imbécil"], ["IMBECIL"]])
+        messages = " ".join(m["message"] for m in result["messages"])
+        self.assertIn("already in the forbidden list", messages)
+        self.assertFalse(result["ids"])
+
     # --- Matcher ----------------------------------------------------------
     def test_match_folds_case_and_accents_both_sides(self):
         self._add("imbécil")
@@ -79,6 +94,16 @@ class TestForbiddenWord(TransactionCase):
         self._add("imbécil")
         self.assertFalse(self.Word._contains_forbidden("imbeeecil"))
         self.assertFalse(self.Word._contains_forbidden("imb3cil"))
+
+    def test_plural_forms_need_their_own_entry(self):
+        """Documented limitation: no stemming. ``imbécil`` does not cover
+        ``imbéciles``; inflected forms are listed one by one (the seed does
+        so for the common ones)."""
+        self._add("imbécil")
+        self.assertFalse(self.Word._contains_forbidden("imbéciles"))
+        self.assertFalse(self.Word._contains_forbidden("IMBECILES"))
+        self._add("imbéciles")
+        self.assertTrue(self.Word._contains_forbidden("unos IMBECILES"))
 
     def test_multi_word_entries(self):
         self._add("hijo de puta")
@@ -116,6 +141,29 @@ class TestForbiddenWord(TransactionCase):
     def test_empty_list_matches_nothing(self):
         self.assertFalse(self.Word._contains_forbidden("hijo de puta"))
         self.assertEqual(self.Word._find_matches("hijo de puta"), [])
+        # The empty pattern is a real, never-matching regex (never None), so
+        # batch callers can always pass it down.
+        pattern = self.Word._get_pattern()
+        self.assertIsNotNone(pattern)
+        self.assertFalse(self.Word._contains_forbidden("anything", pattern=pattern))
+
+    def test_precompiled_pattern_can_be_passed_down(self):
+        """Batch callers compute the pattern once and hand it to the matchers;
+        the result must be the same as the on-demand path."""
+        self._add("timo")
+        self._add("hijo de puta")
+        pattern = self.Word._get_pattern()
+        texts = ("Un TIMO", "hijo de puta", "todo bien")
+        expected = [self.Word._contains_forbidden(t) for t in texts]
+        self.assertEqual(expected, [True, True, False])
+        self.assertEqual(
+            [self.Word._contains_forbidden(t, pattern=pattern) for t in texts],
+            expected,
+        )
+        self.assertEqual(
+            self.Word._find_matches("timo y hijo de puta", pattern=pattern),
+            ["hijo de puta", "timo"],
+        )
 
 
 @tagged("post_install", "-at_install")
@@ -124,6 +172,26 @@ class TestForbiddenWordSeed(TransactionCase):
         Word = self.env["moderation.forbidden.word"]
         seeded = Word.search([])
         self.assertGreaterEqual(len(seeded), 300)
+        # Entries with frequent legitimate use ship archived, one toggle away.
+        archived = Word.with_context(active_test=False).search([("active", "=", False)])
+        self.assertEqual(
+            set(archived.mapped("name_normalized")),
+            {
+                "basura",
+                "paja",
+                "timo",
+                "racista",
+                "tonto",
+                "boludo",
+                "boluda",
+                "verga",
+                "tetas",
+            },
+        )
+        self.assertTrue(all(archived.mapped("note")))
+        for still_active in ("cojones", "hostia", "ostia"):
+            self.assertTrue(Word._contains_forbidden(still_active), still_active)
+        self.assertFalse(Word._contains_forbidden("Qué timo de precios"))
         # Every legacy word of both merged lists made it in.
         for legacy in ("hijo de puta", "gilipollas", "estafa", "sudaca", "xxx"):
             self.assertTrue(Word._contains_forbidden(legacy), legacy)

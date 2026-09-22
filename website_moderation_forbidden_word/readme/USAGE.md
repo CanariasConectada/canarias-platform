@@ -10,3 +10,7 @@ hits = words._find_matches(record.comment)  # ["hijo de puta", "timo"]
 
 Never show the visitor which word matched: a neutral "will be published
 after review" notice is enough and gives no hint to work around the list.
+
+The matcher is deliberately simple: whole words, no stemming, no fuzzy
+matching. A consumer that needs `imbéciles` flagged relies on the list
+holding that form, not on the code guessing it.

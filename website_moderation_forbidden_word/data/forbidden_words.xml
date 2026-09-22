@@ -8,7 +8,10 @@
          on whole words (see models/moderation_forbidden_word.py), so one
          spelling per word is enough: 'imbécil' also catches 'IMBECIL'.
          Every entry is reviewable here; administrators archive or extend
-         the list from Settings > Moderation > Forbidden Words. -->
+         the list from Settings > Moderation > Forbidden Words. A few
+         entries with frequent legitimate use ship ARCHIVED (active=False,
+         see their note): they are one toggle away under the Archived
+         filter. -->
 
     <!-- Legacy lists, merged: memoria_viva (49 rows) + partner_reviews
          (22 rows) from the pre-reform production database, deduplicated
@@ -87,6 +90,8 @@
     </record>
     <record id="word_paja" model="moderation.forbidden.word">
         <field name="name">paja</field>
+        <field name="active" eval="False"/>
+        <field name="note">Legacy entry; frequent legitimate use - activate if needed</field>
     </record>
     <record id="word_pendejo" model="moderation.forbidden.word">
         <field name="name">pendejo</field>
@@ -111,6 +116,8 @@
     </record>
     <record id="word_racista" model="moderation.forbidden.word">
         <field name="name">racista</field>
+        <field name="active" eval="False"/>
+        <field name="note">Legacy entry; frequent legitimate use - activate if needed</field>
     </record>
     <record id="word_retrasado" model="moderation.forbidden.word">
         <field name="name">retrasado</field>
@@ -141,6 +148,8 @@
     </record>
     <record id="word_basura" model="moderation.forbidden.word">
         <field name="name">basura</field>
+        <field name="active" eval="False"/>
+        <field name="note">Legacy entry; frequent legitimate use - activate if needed</field>
     </record>
     <record id="word_chingar" model="moderation.forbidden.word">
         <field name="name">chingar</field>
@@ -168,9 +177,13 @@
     </record>
     <record id="word_timo" model="moderation.forbidden.word">
         <field name="name">timo</field>
+        <field name="active" eval="False"/>
+        <field name="note">Legacy entry; frequent legitimate use - activate if needed</field>
     </record>
     <record id="word_tonto" model="moderation.forbidden.word">
         <field name="name">tonto</field>
+        <field name="active" eval="False"/>
+        <field name="note">Legacy entry; frequent legitimate use - activate if needed</field>
     </record>
 
     <!-- Insults, Spain (inflections of the legacy words plus common ones). -->
@@ -335,9 +348,13 @@
     </record>
     <record id="word_boludo" model="moderation.forbidden.word">
         <field name="name">boludo</field>
+        <field name="active" eval="False"/>
+        <field name="note">Frequent legitimate use - activate if needed</field>
     </record>
     <record id="word_boluda" model="moderation.forbidden.word">
         <field name="name">boluda</field>
+        <field name="active" eval="False"/>
+        <field name="note">Frequent legitimate use - activate if needed</field>
     </record>
     <record id="word_boludos" model="moderation.forbidden.word">
         <field name="name">boludos</field>
@@ -413,6 +430,8 @@
     </record>
     <record id="word_verga" model="moderation.forbidden.word">
         <field name="name">verga</field>
+        <field name="active" eval="False"/>
+        <field name="note">Frequent legitimate use - activate if needed</field>
     </record>
     <record id="word_vergas" model="moderation.forbidden.word">
         <field name="name">vergas</field>
@@ -534,6 +553,8 @@
     </record>
     <record id="word_tetas" model="moderation.forbidden.word">
         <field name="name">tetas</field>
+        <field name="active" eval="False"/>
+        <field name="note">Frequent legitimate use - activate if needed</field>
     </record>
     <record id="word_tetona" model="moderation.forbidden.word">
         <field name="name">tetona</field>

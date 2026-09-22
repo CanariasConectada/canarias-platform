@@ -19,7 +19,14 @@ text, so one spelling per word is enough):
 - entries may be whole expressions (`hijo de puta`, `que te den`);
 - repeated letters or symbol substitutions (`imbeeecil`, `imb3cil`) are not
   tolerated, on purpose: a predictable rule is one moderators can reason
-  about.
+  about;
+- there is no stemming either: `imbécil` does not cover `imbéciles`, each
+  plural or inflected form needs its own entry;
+- an entry must contain at least one letter or digit (`...` or `!!!` are
+  rejected).
 
 Uniqueness is enforced on the normalized form, so `cabron` and `cabrón`
 cannot both be listed.
+
+The list is one and platform-wide: a group granted on it by any consuming
+module edits the list every other consumer relies on.

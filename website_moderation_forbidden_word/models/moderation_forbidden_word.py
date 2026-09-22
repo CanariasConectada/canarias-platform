@@ -81,9 +81,16 @@ class ModerationForbiddenWord(models.Model):
 
     @api.constrains("name")
     def _check_name(self):
+        """An entry needs at least one word character once normalized.
+
+        Punctuation-only entries ("...", "!!!") would never anchor on a
+        word boundary and only confuse whoever reads the list.
+        """
         for word in self:
-            if not normalize_text(word.name):
-                raise ValidationError(_("A forbidden word cannot be empty."))
+            if not re.search(r"\w", normalize_text(word.name)):
+                raise ValidationError(
+                    _("A forbidden word must contain at least one letter or digit.")
+                )
 
     # ------------------------------------------------------------------
     # Matcher
@@ -95,13 +102,20 @@ class ModerationForbiddenWord(models.Model):
 
     @api.model
     def _get_pattern(self):
-        """One compiled regex over every active entry, or ``None``.
+        """One compiled regex over every active entry.
 
         Alternatives are sorted longest first so a multi-word entry wins
         over one of its own words, and wrapped in look-arounds instead of
         ``\\b`` so entries starting or ending with a non-word character
         (``100% gratis``, ``www``) still anchor on whole words. ``\\w`` is
-        Unicode-aware, so the enye counts as a letter.
+        Unicode-aware, so the enye counts as a letter. An empty list yields
+        a pattern that never matches, so callers can always pass the result
+        down (``None`` means "not computed yet").
+
+        Intentionally NOT cached (no ``ormcache``): a few hundred entries
+        compile in microseconds, and an uncached pattern can never be stale
+        across workers after an administrator edits the list. Batch callers
+        compute it once and hand it to the matchers instead.
         """
         words = self.sudo().with_context(active_test=True).search([])
         normalized = sorted(
@@ -110,16 +124,21 @@ class ModerationForbiddenWord(models.Model):
             reverse=True,
         )
         if not normalized:
-            return None
+            return re.compile(r"(?!)")
         alternatives = "|".join(re.escape(word) for word in normalized)
         return re.compile(r"(?<!\w)(?:%s)(?!\w)" % alternatives)
 
     @api.model
-    def _find_matches(self, text):
-        """Sorted list of the active entries (``name``) found in ``text``."""
-        pattern = self._get_pattern()
-        if not pattern or not text:
+    def _find_matches(self, text, pattern=None):
+        """Sorted list of the active entries (``name``) found in ``text``.
+
+        ``pattern`` is the result of :meth:`_get_pattern`; batch callers pass
+        it so N texts cost one search and one compile.
+        """
+        if not text:
             return []
+        if pattern is None:
+            pattern = self._get_pattern()
         found = {match.group(0) for match in pattern.finditer(normalize_text(text))}
         if not found:
             return []
@@ -127,7 +146,11 @@ class ModerationForbiddenWord(models.Model):
         return sorted(words.mapped("name"))
 
     @api.model
-    def _contains_forbidden(self, text):
-        """Whether ``text`` contains at least one active forbidden word."""
-        pattern = self._get_pattern()
-        return bool(pattern and text and pattern.search(normalize_text(text)))
+    def _contains_forbidden(self, text, pattern=None):
+        """Whether ``text`` contains at least one active forbidden word
+        (``pattern`` as in :meth:`_find_matches`)."""
+        if not text:
+            return False
+        if pattern is None:
+            pattern = self._get_pattern()
+        return bool(pattern.search(normalize_text(text)))
