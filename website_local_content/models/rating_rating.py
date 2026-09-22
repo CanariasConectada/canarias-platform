@@ -8,6 +8,9 @@ LOCAL_CONTENT_MODEL = "website.local.content.item"
 MODERATOR_GROUP = "website_local_content.group_local_content_manager"
 ADMIN_GROUP = "base.group_system"
 STATUS_FIELD = "feedback_moderation_status"
+# Summary of the moderation to-do (translated at creation, matched back in
+# every installed language when the to-do is closed).
+SUMMARY = "Local content comment pending review"
 
 
 class RatingRating(models.Model):
@@ -111,17 +114,34 @@ class RatingRating(models.Model):
         if not self:
             return
         words = self.env["moderation.forbidden.word"].sudo()
+        # One search + one compile for the whole batch.
+        pattern = words._get_pattern()
         for rating in self:
-            flagged = words._contains_forbidden(rating.feedback)
+            flagged = words._contains_forbidden(rating.feedback, pattern=pattern)
             rating.sudo().write({STATUS_FIELD: "pending" if flagged else "approved"})
 
     def action_approve_feedback(self):
         self.write({STATUS_FIELD: "approved"})
+        self._close_held_comment_activities()
 
     def action_reject_feedback(self):
         """Hide the comment for good; the text is kept for the audit trail
         and the stars keep counting."""
         self.write({STATUS_FIELD: "rejected"})
+        self._close_held_comment_activities()
+
+    def unlink(self):
+        """A deleted rating takes its moderation to-dos with it (the author
+        removing a held comment leaves nothing to review)."""
+        held = self.filtered(
+            lambda r: r._is_local_content_rating()
+            and r.feedback_moderation_status == "pending"
+        )
+        authors = held.partner_id
+        result = super().unlink()
+        for author in authors:
+            self.browse()._close_held_comment_activities_for(author)
+        return result
 
     # ------------------------------------------------------------------
     # Notifications (same pattern as partner_reviews)
@@ -180,6 +200,8 @@ class RatingRating(models.Model):
                 self.env["mail.activity"].sudo().create(
                     {
                         "activity_type_id": activity_type_id,
+                        # Literal kept for the .pot export; SUMMARY matches it
+                        # back when closing (see _held_comment_activity_domain).
                         "summary": _("Local content comment pending review"),
                         "note": _(
                             "The comment of %(author)s on %(item)s contains "
@@ -197,17 +219,57 @@ class RatingRating(models.Model):
                     self.id, email_values={"email_to": user.email}
                 )
 
+    def _held_comment_activity_domain(self, author):
+        """Moderation to-dos of ``author``'s held comments, whatever the
+        language they were written in (the summary is translated with the
+        creating user's language)."""
+        activity_type_id = self.env["ir.model.data"]._xmlid_to_res_id(
+            "mail.mail_activity_data_todo", raise_if_not_found=False
+        )
+        summaries = {SUMMARY}
+        for code in self.env["res.lang"].get_installed():
+            summaries.add(self.with_context(lang=code[0]).env._(SUMMARY))
+        return [
+            ("activity_type_id", "=", activity_type_id),
+            ("res_model", "=", author._name),
+            ("res_id", "=", author.id),
+            ("summary", "in", list(summaries)),
+        ]
+
     def _pending_comment_activity_exists(self, activity_type_id, user, author):
         return bool(
             self.env["mail.activity"]
             .sudo()
             .search_count(
+                self._held_comment_activity_domain(author)
+                + [("user_id", "=", user.id)],
+                limit=1,
+            )
+        )
+
+    def _close_held_comment_activities(self):
+        for author in self.partner_id:
+            self._close_held_comment_activities_for(author)
+
+    def _close_held_comment_activities_for(self, author):
+        """Drop the moderation to-dos of ``author`` once nothing of theirs is
+        held any more (other held comments of the same author keep them)."""
+        if not author:
+            return
+        still_held = (
+            self.env["rating.rating"]
+            .sudo()
+            .search_count(
                 [
-                    ("activity_type_id", "=", activity_type_id),
-                    ("user_id", "=", user.id),
-                    ("res_model", "=", author._name),
-                    ("res_id", "=", author.id),
+                    ("res_model", "=", LOCAL_CONTENT_MODEL),
+                    ("partner_id", "=", author.id),
+                    (STATUS_FIELD, "=", "pending"),
                 ],
                 limit=1,
             )
         )
+        if still_held:
+            return
+        self.env["mail.activity"].sudo().search(
+            self._held_comment_activity_domain(author)
+        ).unlink()

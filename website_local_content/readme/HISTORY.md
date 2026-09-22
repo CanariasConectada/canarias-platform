@@ -25,6 +25,18 @@ Rating comments go through the shared forbidden-word list
   *Settings > Moderation > Local Content Comments* for administrators.
   Only local content managers and system administrators may change the
   status by hand.
+- Held and rejected comments are readable by their author, the local
+  content managers and system administrators only (global record rule
+  `rule_rating_local_content_held_comment`; published comments and the
+  ratings of other models stay as readable as before; the public page
+  reads through sudo).
+- Approving, rejecting or deleting a held rating closes the managers'
+  to-dos once nothing of that author is held any more.
+- The three older test classes that ran at install time now run
+  `post_install`: on a database where `purchase_stock` is installed
+  (production), its NOT NULL `group_rfq` column on `res_partner` breaks
+  partner creation for any module loaded before it, so at-install tests
+  creating users failed regardless of this module's own code.
 
 ## 19.0.2.1.0 (2026-09-16)
 

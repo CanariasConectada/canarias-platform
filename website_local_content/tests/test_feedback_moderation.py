@@ -199,6 +199,80 @@ class TestFeedbackModeration(FeedbackModerationMixin, TransactionCase):
         self._rating(self.author, 1, "swindle")
         self.assertTrue(self._author_activities(admin))
 
+    def test_activities_closed_on_decision_and_delete(self):
+        manager = self._create_manager("wlc_fm_closer")
+        first = self._rating(self.author, 1, "swindle")
+        self.assertEqual(len(self._author_activities(manager)), 1)
+        first.action_approve_feedback()
+        self.assertFalse(self._author_activities(manager), "approve closes the to-do")
+
+        second = self._rating(self.other, 1, "swindle")
+        self.assertEqual(len(self._author_activities(manager, self.other)), 1)
+        second.unlink()
+        self.assertFalse(
+            self._author_activities(manager, self.other), "delete closes the to-do"
+        )
+
+    def test_activity_kept_while_another_comment_is_held(self):
+        manager = self._create_manager("wlc_fm_keeper")
+        _type, other_item = self._make_item("FK")
+        held_a = self._rating(self.author, 1, "swindle")
+        self._rating(self.author, 2, "swindle here too", item=other_item)
+        self.assertEqual(len(self._author_activities(manager)), 1)
+        held_a.action_reject_feedback()
+        self.assertEqual(len(self._author_activities(manager)), 1, "one still held")
+
+    def test_batch_create_moderates_each_rating(self):
+        partners = self.env["res.partner"].create(
+            [{"name": "WLC Batch %s" % index} for index in range(3)]
+        )
+        ratings = self.env["rating.rating"].create(
+            [
+                {
+                    "res_model_id": self.env["ir.model"]._get_id(self.item._name),
+                    "res_id": self.item.id,
+                    "partner_id": partner.id,
+                    "rating": 4,
+                    "feedback": feedback,
+                    "consumed": True,
+                }
+                for partner, feedback in zip(
+                    partners, ("a SWINDLE", "all good", "IMBÉCIL")
+                )
+            ]
+        )
+        self.assertEqual(
+            ratings.mapped("feedback_moderation_status"),
+            ["pending", "approved", "pending"],
+        )
+        self.env.invalidate_all()
+        self.assertEqual(self.item.rating_count, 3)
+
+    def test_held_comment_hidden_from_plain_internal_users(self):
+        """Core grants every employee read on rating.rating; the global rule
+        keeps held and rejected local content comments for managers, admins
+        and their author."""
+        held = self._rating(self.author, 1, "swindle")
+        clean = self._rating(self.other, 5, "Lovely")
+        employee = new_test_user(self.env, login="wlc_fm_reader")
+        Rating = self.env["rating.rating"].with_user(employee)
+        domain = [("res_model", "=", self.item._name), ("res_id", "=", self.item.id)]
+        self.assertEqual(Rating.search(domain), clean)
+        with self.assertRaises(AccessError):
+            Rating.browse(held.id).read(["feedback"])
+        held.action_reject_feedback()
+        self.assertEqual(Rating.search(domain), clean)
+        manager = self._create_manager("wlc_fm_reader_mgr")
+        self.assertEqual(
+            self.env["rating.rating"].with_user(manager).search(domain), held | clean
+        )
+        # The author (an internal user here) reads their own held row.
+        author_user = new_test_user(self.env, login="wlc_fm_reader_author")
+        own = self._rating(author_user.partner_id, 2, "swindle")
+        self.assertIn(
+            own, self.env["rating.rating"].with_user(author_user).search(domain)
+        )
+
     def test_skip_context_silences_notifications(self):
         manager = self._create_manager("wlc_fm_silent")
         mails_before = self.env["mail.mail"].sudo().search_count([])
@@ -301,6 +375,41 @@ class TestFeedbackModerationWebsite(FeedbackModerationMixin, HttpCase):
         # Hidden from the author too (only the edit box still carries it).
         self.assertNotIn("Lovely quiet place", html.split("wlc-rate-form")[0])
         self.assertIn("wlc-feedback-notice", html)
+
+    def test_delete_held_rating(self):
+        manager = new_test_user(
+            self.env,
+            login="wlc_fm_web_manager",
+            groups="base.group_user,website_local_content.group_local_content_manager",
+        )
+        self.authenticate("wlc_fm_author", "wlc_fm_author")
+        self._rate(rating="2", feedback="a swindle")
+        rating = self._rating()
+        self.assertEqual(rating.feedback_moderation_status, "pending")
+        activities = (
+            self.env["mail.activity"]
+            .sudo()
+            .search(
+                [
+                    ("res_model", "=", "res.partner"),
+                    ("res_id", "=", self.author_user.partner_id.id),
+                    ("user_id", "=", manager.id),
+                ]
+            )
+        )
+        self.assertEqual(len(activities), 1)
+        self.env.invalidate_all()
+        self.assertEqual(self.item.rating_count, 1)
+
+        csrf = CSRF_PATTERN.search(self._page()).group(1)
+        response = self.url_open(f"{self.rate_url}/delete", data={"csrf_token": csrf})
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(self._rating())
+        self.env.invalidate_all()
+        self.assertEqual(self.item.rating_count, 0)
+        self.assertAlmostEqual(self.item.rating_avg, 0.0, places=2)
+        self.assertFalse(activities.exists(), "the moderation to-do is closed")
+        self.assertNotIn("wlc-feedback-notice", self._page())
 
     def test_clean_comment_after_approval_needs_no_review(self):
         self.authenticate("wlc_fm_author", "wlc_fm_author")
