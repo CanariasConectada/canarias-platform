@@ -22,11 +22,11 @@ Solo lectura sobre la BD `prod`. Lotes de 10 sites ordenados por id de website. 
 | 13 | 133-142 | 10 OK / 0 fallan | 0 cand. · 0 cambios · 0 revisión | — |
 | 14 | 144-153 | 10 OK / 0 fallan | 0 cand. · 0 cambios · 0 revisión | — |
 | 15 | 154-164 | 10 OK / 0 fallan | 0 cand. · 0 cambios · 0 revisión | — |
-| 16 | 165-174 | 10 OK / 0 fallan | — | — |
+| 16 | 165-174 | 10 OK / 0 fallan | 0 cand. · 0 cambios · 0 revisión | — |
 | 17 | 175-184 | 10 OK / 0 fallan | — | — |
 | 18 | 185-195 | 10 OK / 0 fallan | — | — |
 | 19 | 196-206 | 9 OK / 1 fallan | — | — |
 | 20 | 207-218 | 10 OK / 0 fallan | — | — |
 | 21 | 221-223 | 2 OK / 0 fallan | — | — |
 
-Sites cubiertos: T1 212/212 · T2 160/212 · T3 0/212
+Sites cubiertos: T1 212/212 · T2 170/212 · T3 0/212
