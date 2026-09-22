@@ -33,12 +33,16 @@
         inherit_id="website_sale_comparison.product_add_to_compare"
         name="Core compare button on the product page behind the switch (Canarias)"
     >
-        <!-- Moved inside a ``t-if`` rather than given a new one: core's own
-             condition on the button stays as core wrote it. -->
-        <xpath expr="//button[@data-action='o_comparelist']" position="replace">
-            <t t-if="website and website._wscc_comparison_enabled()">
-                <xpath expr="//button[@data-action='o_comparelist']" position="move"/>
-            </t>
+        <!-- AND-ed onto core's own ``t-if`` (``add`` + ``separator="and"``,
+             the inheritance engine's own way of extending a Python
+             attribute), so core's condition stays exactly as core wrote it.
+             NOT a ``replace`` wrapping a ``position="move"``: the engine only
+             extracts a move that is a DIRECT child of the spec, so a move
+             nested in a ``t-if`` is not honoured and the button would be
+             deleted in both states. -->
+        <xpath expr="//button[@data-action='o_comparelist']" position="attributes">
+            <attribute name="t-if" add="website and website._wscc_comparison_enabled()"
+                       separator="and"/>
         </xpath>
     </template>
 
@@ -175,12 +179,18 @@
          a thousand copies of this markup. -->
     <template id="comparison_modal" inherit_id="website.layout"
               name="Comparison picker modal (Canarias)">
+        <!-- The switch as seen from the browser: ``data-wscc-comparison`` on
+             ``<body>`` only while the comparator is on. Core's own
+             ``ProductComparison`` interaction (the bottom bar) is matched on
+             it — see comparison_switch.js. A new attribute of its own, so
+             nothing core sets on ``<body>`` is touched. -->
+        <xpath expr="//body" position="attributes">
+            <attribute name="t-att-data-wscc-comparison">'1' if website and website._wscc_comparison_enabled() else None</attribute>
+        </xpath>
         <xpath expr="//div[@id='wrapwrap']" position="inside">
             <!-- Rendered ONLY with the switch on: the ``ComparisonModal``
                  interaction selects on this element, so with the comparator
-                 off it is never even instantiated. Its presence is also what
-                 core's own ``ProductComparison`` interaction (the bottom bar)
-                 is keyed on from the browser — see comparison_switch.js. -->
+                 off it is never even instantiated. -->
             <div t-if="website and website._wscc_comparison_enabled()"
                  class="modal fade o_wscc_compare_modal" id="o_wscc_compare_modal"
                  tabindex="-1" aria-hidden="true"

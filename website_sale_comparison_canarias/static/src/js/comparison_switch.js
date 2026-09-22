@@ -17,17 +17,18 @@ import { ProductComparison } from "@website_sale_comparison/interactions/product
  * its link to the comparison page, on every shop page.
  *
  * So the interaction is kept from being instantiated at all when the switch
- * is off, by narrowing the selector it is matched on: the layout renders the
- * picker (`#o_wscc_compare_modal`) only when the switch is on, and that is
- * the switch as seen from the browser. A selector, and not a patched
- * `setup()`, because an interaction that is never matched has no handlers
- * bound and no state half-built; and `:has()` rather than a class on
- * `#wrapwrap`, because the layout's wrapper attributes are core's to write
- * and this file loads after core's interaction (it imports it), before the
- * interaction service reads any selector.
+ * is off, by narrowing the selector it is matched on: the layout puts
+ * `data-wscc-comparison` on `<body>` only while the switch is on (the
+ * `comparison_modal` template), and that is the switch as seen from the
+ * browser. A selector, and not a patched `setup()`, because an interaction
+ * that is never matched has no handlers bound and no state half-built. A
+ * plain attribute selector on purpose: `:has()` would have made the WHOLE
+ * selector invalid on any browser without it, and core's comparator would
+ * then never work there even with the switch on.
  *
- * The AJAX shop grid, the product page and the classic listing all carry
- * `.js_sale` on `#wrap`, a sibling of the picker under `#wrapwrap`, hence
- * the `body:has()` ancestor form.
+ * This module imports core's interaction, so it runs after it and before the
+ * interaction service reads any selector; `querySelectorAll` matches the
+ * `body[...]` ancestor even when the service searches from `#wrapwrap`.
  */
-ProductComparison.selector = "body:has(#o_wscc_compare_modal) .js_sale:not(.o_wsale_comparison_page)";
+ProductComparison.selector =
+    "body[data-wscc-comparison] .js_sale:not(.o_wsale_comparison_page)";

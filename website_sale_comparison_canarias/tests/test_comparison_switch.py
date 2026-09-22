@@ -47,6 +47,44 @@ class TestComparisonSwitch(HttpCase):
                 "list_price": 15.0,
             }
         )
+        # Core's card button also sits behind the website builder's "Compare"
+        # tile option (``website_sale.product_tile_element_visibility``: an
+        # element whose class is not in the design classes is rendered for
+        # editors only), and that option is off by default. Switched on here
+        # so that the card assertions test THIS module's switch and not the
+        # builder's.
+        design = cls.website.shop_opt_products_design_classes or ""
+        if "o_wsale_products_opt_has_comparison" not in design:
+            cls.website.shop_opt_products_design_classes = (
+                design + " o_wsale_products_opt_has_comparison"
+            ).strip()
+        # A product WITH variant attributes: the one case where core renders
+        # its own compare buttons (card and product page) by itself, so the
+        # two core overrides are actually exercised.
+        attribute = cls.env["product.attribute"].create(
+            {
+                "name": "WSCC Switch Size",
+                "value_ids": [(0, 0, {"name": "S"}), (0, 0, {"name": "M"})],
+            }
+        )
+        cls.variants = cls.env["product.template"].create(
+            {
+                "name": "WSCC Switch Variants",
+                "sale_ok": True,
+                "is_published": True,
+                "list_price": 25.0,
+                "attribute_line_ids": [
+                    (
+                        0,
+                        0,
+                        {
+                            "attribute_id": attribute.id,
+                            "value_ids": [(6, 0, attribute.value_ids.ids)],
+                        },
+                    )
+                ],
+            }
+        )
 
     def setUp(self):
         super().setUp()
@@ -131,6 +169,11 @@ class TestComparisonSwitch(HttpCase):
             self.assertNotIn(
                 marker, html, "%s left in %s with the switch off" % (marker, where)
             )
+        self.assertNotIn(
+            "data-wscc-comparison",
+            html,
+            "body marker left in %s with the switch off" % where,
+        )
 
     def test_shop_listing_has_no_compare_control_when_off(self):
         response = self.url_open("/shop?search=WSCC+Switch+Product")
@@ -158,6 +201,107 @@ class TestComparisonSwitch(HttpCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("o_wscc_compare_btn_picker", response.text)
         self.assertIn('id="o_wscc_compare_modal"', response.text)
+
+    # Core's own card button, as core renders it (ours carries more classes,
+    # so this literal matches core's alone) and its product-page button.
+    CORE_CARD_BUTTON = 'class="btn o_add_compare"'
+    CORE_PAGE_BUTTON = "o_add_compare_dyn"
+
+    def test_core_card_button_of_a_variant_product_follows_the_switch(self):
+        self.assertTrue(self.variants.valid_product_template_attribute_line_ids)
+        url = "/shop?search=WSCC+Switch+Variants"
+        response = self.url_open(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("WSCC Switch Variants", response.text)
+        self.assertNotIn(self.CORE_CARD_BUTTON, response.text)
+        self._assert_no_compare_control(response.text, "the variant card")
+        set_comparison_enabled(self.env, True)
+        response = self.url_open(url)
+        self.assertIn(self.CORE_CARD_BUTTON, response.text)
+        self.assertIn("o_wscc_compare_btn", response.text)
+
+    def test_core_product_page_button_of_a_variant_product_follows_the_switch(self):
+        response = self.url_open(self.variants.website_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("WSCC Switch Variants", response.text)
+        self.assertNotIn(self.CORE_PAGE_BUTTON, response.text)
+        self._assert_no_compare_control(response.text, "the variant product page")
+        set_comparison_enabled(self.env, True)
+        response = self.url_open(self.variants.website_url)
+        # Core's button, inside its CTA wrapper, with core's own hook.
+        self.assertIn(self.CORE_PAGE_BUTTON, response.text)
+        self.assertIn('data-action="o_comparelist"', response.text)
+        self.assertIn('id="product_option_block"', response.text)
+        self.assertIn("o_wscc_compare_btn_picker", response.text)
+
+    def test_body_carries_the_marker_only_when_on(self):
+        response = self.url_open("/shop")
+        self.assertNotIn("data-wscc-comparison", response.text)
+        set_comparison_enabled(self.env, True)
+        response = self.url_open("/shop")
+        self.assertIn('data-wscc-comparison="1"', response.text)
+
+    # ------------------------------------------------------------------
+    # The bottom bar, in a real browser
+    # ------------------------------------------------------------------
+    # Core mounts the bar from its ``ProductComparison`` interaction and the
+    # bar draws the ``comparison_product_ids`` cookie, so a cookie holding two
+    # products is what proves whether that interaction ran at all.
+    BAR_READY = 'document.body.getAttribute("is-ready") === "true"'
+    BAR_PRESENT = """
+        (function () {
+            const started = Date.now();
+            const tick = () => {
+                if (document.querySelector(".o_wsale_comparison_bottom_bar")) {
+                    console.log("test successful");
+                } else if (Date.now() - started > 8000) {
+                    console.error("no comparison bottom bar mounted with the switch on");
+                } else {
+                    setTimeout(tick, 100);
+                }
+            };
+            tick();
+        })();
+    """
+    BAR_ABSENT = """
+        setTimeout(() => {
+            if (document.querySelector(".o_wsale_comparison_bottom_bar")) {
+                console.error("comparison bottom bar mounted with the switch off");
+            } else {
+                console.log("test successful");
+            }
+        }, 2000);
+    """
+
+    def _browser_cookies(self):
+        ids = (self.product | self.variants).mapped("product_variant_id").ids
+        return {
+            "comparison_product_ids": "[%s]" % ",".join(str(i) for i in ids),
+            # The site's own default language, so that no language redirect
+            # happens: on a multi-language database the browser's
+            # ``Accept-Language`` would send every URL through ``/xx/``, and
+            # the layout's service-worker registration then fails with a
+            # console error ("script resource is behind a redirect"), which
+            # the browser test counts as a failure of its own.
+            "frontend_lang": self.website.default_lang_id.code,
+        }
+
+    def test_bottom_bar_does_not_mount_when_off(self):
+        self.browser_js(
+            "/shop",
+            self.BAR_ABSENT,
+            ready=self.BAR_READY,
+            cookies=self._browser_cookies(),
+        )
+
+    def test_bottom_bar_mounts_when_on(self):
+        set_comparison_enabled(self.env, True)
+        self.browser_js(
+            "/shop",
+            self.BAR_PRESENT,
+            ready=self.BAR_READY,
+            cookies=self._browser_cookies(),
+        )
 
     def test_comparison_page_is_sent_to_the_shop_when_off(self):
         """Followed to the end rather than read off the first hop: a site

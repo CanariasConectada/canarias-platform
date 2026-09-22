@@ -8,7 +8,8 @@
   deploy. Off means not rendered: the Compare buttons on the cards (classic
   listing and AJAX grid), the Compare prices button and its picker on the
   product page, core's own compare buttons (products with variants), and
-  core's bottom bar (its interaction is keyed on the picker's presence, so
-  it is never instantiated). `/shop/compare/candidates` answers the empty
+  core's bottom bar (its interaction is matched on a `data-wscc-comparison`
+  marker the layout puts on `<body>` only while the switch is on, so it is
+  never instantiated). `/shop/compare/candidates` answers the empty
   shape the picker already draws, and `/shop/compare` redirects to `/shop`.
   Module and data stay installed either way.
