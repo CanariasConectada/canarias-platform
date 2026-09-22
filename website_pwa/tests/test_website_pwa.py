@@ -2,8 +2,11 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 import base64
+import io
 import json
 from unittest.mock import patch
+
+from PIL import Image
 
 from odoo.tests import HttpCase, tagged
 
@@ -69,6 +72,65 @@ class TestWebsitePWA(HttpCase):
     def test_unknown_icon_size_is_not_found(self):
         res = self.url_open("/website_pwa/icon/64.png")
         self.assertEqual(res.status_code, 404)
+
+    def test_the_two_purposes_are_declared_separately(self):
+        """One image cannot honestly be both.
+
+        "any" wants the mark edge to edge; "maskable" promises the launcher a
+        safe zone it may crop down to. Declaring a single edge-to-edge image as
+        "any maskable" -- which this module did until 19.0.2.0.0 -- clipped the
+        corners off the brand mark on every circular launcher.
+        """
+        icons = json.loads(self.url_open("/website_pwa/manifest.webmanifest").text)[
+            "icons"
+        ]
+        by_purpose = {}
+        for icon in icons:
+            by_purpose.setdefault(icon["purpose"], set()).add(icon["src"])
+        self.assertEqual(set(by_purpose), {"any", "maskable"})
+        self.assertEqual({len(srcs) for srcs in by_purpose.values()}, {2})
+        self.assertFalse(
+            by_purpose["any"] & by_purpose["maskable"],
+            "the two purposes must not share a URL, or they share an image",
+        )
+
+    def test_the_maskable_icon_keeps_its_padding(self):
+        """The safe zone has to actually be there.
+
+        A transparent source pasted without its own alpha as the mask would
+        zero the padding straight back out, which looks identical in the
+        manifest and only shows up on the phone.
+        """
+        res = self.url_open("/website_pwa/icon/maskable/192.png")
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers["Content-Type"], "image/png")
+
+        image = Image.open(io.BytesIO(res.content)).convert("RGBA")
+        self.assertEqual(image.size, (192, 192))
+        corner = image.getpixel((2, 2))
+        self.assertEqual(
+            corner[3],
+            255,
+            "the padding must be opaque, or the launcher draws the mark "
+            "straight onto the user's wallpaper",
+        )
+        self.assertEqual(
+            corner[:3],
+            (255, 255, 255),
+            "the padding is the configured background colour",
+        )
+
+    def test_a_broken_background_colour_does_not_break_the_icon(self):
+        """The colour is free text on a settings form.
+
+        A 500 here does not just lose the icon, it loses the install prompt.
+        """
+        self.website.pwa_background_color = "verde"
+
+        res = self.url_open("/website_pwa/icon/maskable/192.png")
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(res.content.startswith(b"\x89PNG"))
 
     def test_service_worker_is_served_from_the_root(self):
         """A service worker can only control pages under its own path, so it

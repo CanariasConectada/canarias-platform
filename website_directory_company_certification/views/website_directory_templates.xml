@@ -34,23 +34,52 @@
     <!-- Sidebar filter card in the extension hook. -->
     <template id="directory_sidebar_certification" inherit_id="website_directory.directory_sidebar_extra">
         <xpath expr="//div[@id='o_wd_sidebar_extra']" position="inside">
-            <div t-if="certification_types" class="card border-0 shadow-sm mb-3">
+            <div t-if="certification_types" class="card border-0 shadow-sm mb-3 o_wdcc_filter">
                 <div class="card-body">
                     <h6 class="card-title fw-bold mb-3">
                         <i class="fa fa-certificate me-2"/>Certifications
                     </h6>
+                    <!-- The selected seal is the directory's shared chip
+                         (`website_directory.directory_filter_chip`), so its
+                         cross is the same control the zone, the category and
+                         the facilities now carry. This card is where that
+                         cross came from: it was the only deselect affordance
+                         a visitor ever noticed (reported 2026-09-05), which
+                         is why the others were made to match it. -->
                     <div class="d-flex flex-column gap-2">
                         <t t-foreach="certification_types" t-as="cert_type">
-                            <a t-attf-href="{{ base_url }}?certification={{ '' if selected_certification == cert_type.code else cert_type.code }}"
-                               t-attf-class="btn btn-sm text-start {{
-                                   'btn-primary' if selected_certification == cert_type.code else 'btn-outline-secondary'
-                               }}">
+                            <t t-if="cert_type.code in selected_certifications"
+                               t-call="website_directory.directory_filter_chip">
+                                <t t-set="remove_url" t-value="certification_urls.get(cert_type.code)"/>
+                                <t t-set="remove_label" t-value="cert_type.name"/>
+                                <t t-set="chip_class" t-value="'btn btn-sm btn-primary text-start d-flex align-items-center justify-content-between'"/>
+                                <t t-esc="cert_type.name"/>
+                            </t>
+                            <a t-else=""
+                               t-att-href="certification_urls.get(cert_type.code)"
+                               class="wd-filter-link btn btn-sm btn-outline-secondary text-start d-flex align-items-center justify-content-between">
                                 <t t-esc="cert_type.name"/>
                             </a>
                         </t>
                     </div>
                 </div>
             </div>
+        </xpath>
+    </template>
+
+    <!-- Top active-filters summary: one chip per ticked seal. -->
+    <template id="directory_active_filters_certification" inherit_id="website_directory.directory_active_filters_extra">
+        <xpath expr="//span[@id='o_wd_active_filters_extra']" position="inside">
+            <t t-foreach="certification_types" t-as="cert_type">
+                <t t-if="cert_type.code in selected_certifications"
+                   t-call="website_directory.directory_filter_chip">
+                    <t t-set="remove_url" t-value="certification_urls.get(cert_type.code)"/>
+                    <t t-set="remove_label" t-value="cert_type.name"/>
+                    <t t-set="chip_class" t-value="'badge bg-primary wd-filter-chip d-inline-flex align-items-center'"/>
+                    <i class="fa fa-certificate me-1"/>
+                    <t t-esc="cert_type.name"/>
+                </t>
+            </t>
         </xpath>
     </template>
 </odoo>

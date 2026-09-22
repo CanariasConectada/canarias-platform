@@ -1,5 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_rating_rating_reviews_moderator,rating.rating reviews moderator,rating.model_rating_rating,group_partner_reviews_moderator,1,1,1,0
 access_rating_rating_reviews_manager,rating.rating reviews manager,rating.model_rating_rating,group_partner_reviews_manager,1,1,1,1
-access_review_forbidden_word_user,review.forbidden.word user,model_review_forbidden_word,group_partner_reviews_user,1,0,0,0
-access_review_forbidden_word_manager,review.forbidden.word manager,model_review_forbidden_word,group_partner_reviews_manager,1,1,1,1
+access_moderation_forbidden_word_reviews_manager,moderation.forbidden.word reviews manager,website_moderation_forbidden_word.model_moderation_forbidden_word,group_partner_reviews_manager,1,1,1,0

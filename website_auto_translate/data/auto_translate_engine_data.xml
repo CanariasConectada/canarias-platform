@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo noupdate="1">
+
+    <!-- The three paid providers ship disabled and keyless on purpose: they
+         are here so switching to one is filling in a key and ticking a box,
+         not a deployment. -->
+
+    <record id="engine_libretranslate" model="auto.translate.engine">
+        <field name="name">LibreTranslate (self-hosted)</field>
+        <field name="engine_type">libretranslate</field>
+        <field name="endpoint_url">http://libretranslate:5000</field>
+        <field name="sequence">10</field>
+        <field name="in_jury" eval="True"/>
+        <field name="active" eval="True"/>
+    </record>
+
+    <record id="engine_google" model="auto.translate.engine">
+        <field name="name">Google Cloud Translation</field>
+        <field name="engine_type">google</field>
+        <field name="sequence">20</field>
+        <field name="active" eval="False"/>
+    </record>
+
+    <record id="engine_deepl" model="auto.translate.engine">
+        <field name="name">DeepL</field>
+        <field name="engine_type">deepl</field>
+        <field name="sequence">30</field>
+        <field name="active" eval="False"/>
+    </record>
+
+    <record id="engine_anthropic" model="auto.translate.engine">
+        <field name="name">Claude (Anthropic)</field>
+        <field name="engine_type">anthropic</field>
+        <field name="model_name">claude-sonnet-5</field>
+        <field name="sequence">40</field>
+        <field name="active" eval="False"/>
+    </record>
+
+
+</odoo>

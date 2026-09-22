@@ -59,10 +59,13 @@
                         </div>
                     </div>
 
-                    <!-- Subvention strip (ZCA), foot of the card. -->
+                    <!-- Funding strip, foot of the card: FEDER Canarias
+                         2021-2027 and NextGenerationEU / PRTR rows with their
+                         legal legends. Same image partner_microsite_manager
+                         ships on every microsite homepage. -->
                     <div class="o_cc_login_subvention text-center px-4 pb-4">
-                        <img src="/website_login_branding/static/src/img/zca_logo.webp"
-                             alt="Zonas Comerciales Abiertas"
+                        <img src="/website_login_branding/static/src/img/subvenciones.png"
+                             alt="Plataforma desarrollada en el marco del proyecto Canarias Conectada, cofinanciado por la Unión Europea a través del Programa FEDER Canarias 2021-2027 — Consejería de Economía, Industria, Comercio y Autónomos del Gobierno de Canarias. Plataforma que integra los resultados del proyecto «Guanarteme en tu mano», financiado por la Unión Europea – NextGenerationEU, en el marco del Plan de Recuperación, Transformación y Resiliencia — Ministerio de Industria, Comercio y Turismo y Gobierno de Canarias."
                              class="o_cc_login_subvention_logo img-fluid"/>
                     </div>
                 </div>

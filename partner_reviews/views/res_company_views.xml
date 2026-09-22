@@ -8,15 +8,41 @@
         <field name="model">res.company</field>
         <field name="inherit_id" ref="base.view_company_form"/>
         <field name="arch" type="xml">
-            <field name="website" position="after">
-                <field name="enable_reviews" widget="boolean_toggle"/>
-                <field name="review_avg" invisible="not enable_reviews"/>
-                <field name="review_count" invisible="not enable_reviews"/>
-            </field>
             <xpath expr="//div[@name='button_box']" position="inside">
                 <button name="action_view_reviews" type="object" class="oe_stat_button" icon="fa-star" invisible="not enable_reviews">
                     <field name="review_count" string="Reviews" widget="statinfo"/>
                 </button>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- The switch sits in the Microsite page, as the merchant's content
+         editor shows it (views/microsite_content_editor_views.xml), so both
+         sides of a support call look at the same section. It used to sit
+         next to the company's website field; a company without a website
+         has no page to publish reviews on anyway. -->
+    <record id="view_company_form_microsite_reviews" model="ir.ui.view">
+        <field name="name">res.company.form.microsite.reviews</field>
+        <field name="model">res.company</field>
+        <!-- Applied after the other pages appended to this notebook
+             (company_facilities), so the section order does not depend on
+             the install order. -->
+        <field name="priority">99</field>
+        <field name="inherit_id"
+               ref="partner_microsite_manager.view_company_form_microsite"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook[@name='microsite_sections']" position="inside">
+                <page string="Reviews" name="reviews">
+                    <group>
+                        <field name="enable_reviews" string="Enable reviews page"
+                               widget="boolean_toggle"/>
+                    </group>
+                    <group invisible="not enable_reviews">
+                        <field name="review_avg" string="Average rating"/>
+                        <field name="review_count" string="Published reviews"/>
+                        <field name="reviews_page_url" widget="url"/>
+                    </group>
+                </page>
             </xpath>
         </field>
     </record>

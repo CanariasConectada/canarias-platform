@@ -1,6 +1,9 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+import re
+
 from odoo import _, api, fields, models
+from odoo.exceptions import ValidationError
 
 # Certification levels shared by every model of this module.
 CERTIFICATION_LEVELS = [
@@ -33,7 +36,8 @@ class CertificationType(models.Model):
     code = fields.Char(
         required=True,
         help="Technical identifier used in website URLs and filters, "
-        "e.g. 'silver' or 'sustainability'.",
+        "e.g. 'silver' or 'sustainability'. Lowercase letters, digits and "
+        "hyphens only.",
     )
     sequence = fields.Integer(default=10)
     active = fields.Boolean(default=True)
@@ -106,8 +110,39 @@ class CertificationType(models.Model):
         help="Body of the public landing page. Plain content, editable "
         "without touching code.",
     )
+    # Bounded to a full-HD frame: the picture is a hero background, and a
+    # merchant-supplied 4000px photograph would be re-sent to every visitor
+    # at a size no screen shows. Smaller pictures are stored as they come.
+    landing_image = fields.Image(
+        max_width=1920,
+        max_height=1080,
+        help="Picture behind the title of the public landing page. Without "
+        "one the page keeps its plain gradient band.",
+    )
+    # The two halves of the guidance a survey carries: what the questionnaire
+    # says before it starts and what it says once it is over. They live on
+    # `survey.survey` (restored from the legacy platform on 2026-09-10), and
+    # the seal is where a merchant looks for them, so the seal reads them
+    # through. Read-only on purpose: the questionnaire is edited from the
+    # survey, not from here, and seal holders only have read access to it.
+    instructions_html = fields.Html(
+        related="survey_id.description",
+        string="Instructions",
+        readonly=True,
+    )
+    closing_html = fields.Html(
+        related="survey_id.description_done",
+        string="Closing note",
+        readonly=True,
+    )
     material_ids = fields.One2many(
         "certification.material", "type_id", string="Training Material"
+    )
+    training_url = fields.Char(
+        string="Training course URL",
+        help="Absolute link to the online course of this seal, published on "
+        "the portal website (e.g. https://canariasconectada.es/slides/...). "
+        "The Formación menu of the Certificaciones app opens it.",
     )
     amenities_title = fields.Char(
         translate=True,
@@ -130,6 +165,19 @@ class CertificationType(models.Model):
     _code_uniq = models.Constraint(
         "unique(code)", "The certification type code must be unique."
     )
+
+    # The code lands in public URLs and, since 19.0.2.8.0, inside the hero's
+    # inline background-image url(): a slug and nothing else, so no value a
+    # manager types can ever break out of that CSS context.
+    _CODE_RE = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
+
+    @api.constrains("code")
+    def _check_code_is_a_slug(self):
+        for record in self:
+            if not self._CODE_RE.match(record.code or ""):
+                raise ValidationError(
+                    _("The code must contain only lowercase letters, digits, hyphens and underscores.")
+                )
 
     @api.model_create_multi
     def create(self, vals_list):

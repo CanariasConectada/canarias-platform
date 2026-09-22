@@ -6,4 +6,5 @@ from . import (
     local_content_subcategory,
     local_content_tag,
     local_content_type,
+    rating_rating,
 )

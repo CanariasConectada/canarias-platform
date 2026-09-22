@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- ================================================================
+         The merchant's own view of their page content
+         ================================================================
+         The fields live on `res.company`, which every internal user can read
+         and only `base.group_erp_manager` can write. Sending a merchant to
+         the company form would have produced a screen that loads and then
+         refuses to save; opening the ACL so that it saves would have handed
+         218 shop owners their own VAT number and chart of accounts.
+
+         So this is a screen of its own that reads the shop in and writes a
+         whitelist back. See wizards/microsite_content_editor.py. -->
+    <record id="view_microsite_content_editor_form" model="ir.ui.view">
+        <field name="name">microsite.content.editor.form</field>
+        <field name="model">microsite.content.editor</field>
+        <field name="arch" type="xml">
+            <form string="Page content">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="microsite_name" string="Trade name"/>
+                        <h1>
+                            <field name="microsite_name"
+                                   placeholder="How your shop is called on its page"/>
+                        </h1>
+                        <field name="company_id" invisible="1"/>
+                        <div class="text-muted" invisible="not website_url">
+                            <i class="fa fa-globe me-1" title="Address" role="img"
+                               aria-label="Address"/><field name="website_url" readonly="1" nolabel="1"/>
+                        </div>
+                    </div>
+                    <notebook>
+                        <page string="Cover" name="cover">
+                            <group>
+                                <group string="Header">
+                                    <field name="microsite_button_text"/>
+                                    <field name="microsite_hero_image" widget="image"/>
+                                </group>
+                                <group string="Banners">
+                                    <field name="microsite_intro_title"/>
+                                    <field name="microsite_intro_image" widget="image"/>
+                                    <field name="microsite_banner_title"/>
+                                    <field name="microsite_banner_image" widget="image"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Practical information" name="practical">
+                            <!-- One row per opening period, typed with the
+                                 clock widget. A day with a morning and an
+                                 afternoon shift is two rows. The line under
+                                 the list is what the page will print,
+                                 generated from the rows. -->
+                            <group string="Opening hours" name="opening_hours">
+                                <p class="text-muted" colspan="2">Add one row per period your shop is open. A day that closes at midday and reopens in the afternoon takes two rows. Leave the list empty to show no hours at all.</p>
+                                <field name="opening_slot_ids" nolabel="1" colspan="2">
+                                    <list editable="bottom">
+                                        <field name="weekday"/>
+                                        <field name="open_time" widget="float_time"/>
+                                        <field name="close_time" widget="float_time"/>
+                                    </list>
+                                </field>
+                                <field name="microsite_opening_hours"
+                                       string="Shown on the page" readonly="1"/>
+                            </group>
+                            <group>
+                                <group>
+                                    <field name="microsite_delivery_info"/>
+                                    <field name="microsite_parking_info"/>
+                                </group>
+                                <group>
+                                    <field name="microsite_phone"/>
+                                    <field name="microsite_phone2"
+                                           invisible="not microsite_phone"/>
+                                    <field name="microsite_map_url"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="About the shop" name="about">
+                            <group>
+                                <group string="Our story">
+                                    <field name="microsite_about_title" nolabel="1"
+                                           placeholder="Heading"/>
+                                    <field name="microsite_about_text" nolabel="1"
+                                           placeholder="Tell your customers who you are"/>
+                                </group>
+                                <group string="What we do">
+                                    <field name="microsite_services_title" nolabel="1"
+                                           placeholder="Heading"/>
+                                    <field name="microsite_services_text" nolabel="1"
+                                           placeholder="Tell your customers what you offer"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Social networks" name="social">
+                            <p class="text-muted">
+                                Shown at the bottom of your page. Leave a
+                                network empty to hide its icon.
+                            </p>
+                            <group>
+                                <group>
+                                    <field name="company_website" widget="url"
+                                           placeholder="https://www.example.com"/>
+                                    <field name="social_facebook"
+                                           placeholder="https://www.facebook.com/..."/>
+                                    <field name="social_instagram"
+                                           placeholder="https://www.instagram.com/..."/>
+                                    <field name="social_twitter"
+                                           placeholder="https://x.com/..."/>
+                                </group>
+                                <group>
+                                    <field name="social_youtube"
+                                           placeholder="https://www.youtube.com/..."/>
+                                    <field name="social_linkedin"
+                                           placeholder="https://www.linkedin.com/company/..."/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <footer>
+                    <button name="action_save" type="object" string="Save"
+                            class="btn-primary"/>
+                    <button string="Discard" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Shown only to an owner of TWO OR MORE real shops, before the editor
+         opens (see `action_open_page_content`). A sole owner never sees
+         this screen: zero extra clicks for the common case. -->
+    <record id="view_microsite_company_picker_form" model="ir.ui.view">
+        <field name="name">microsite.company.picker.form</field>
+        <field name="model">microsite.company.picker</field>
+        <field name="arch" type="xml">
+            <form string="Choose your shop">
+                <sheet>
+                    <p class="text-muted">
+                        You manage more than one shop. Choose which one's
+                        page content you want to edit.
+                    </p>
+                    <field name="company_ids" invisible="1"/>
+                    <field name="selected_company_id" widget="radio"/>
+                    <div class="text-muted"
+                         invisible="not selected_company_website_url">
+                        <i class="fa fa-globe me-1" title="Address" role="img"
+                           aria-label="Address"/>
+                        <field name="selected_company_website_url"
+                               readonly="1" nolabel="1"/>
+                    </div>
+                </sheet>
+                <footer>
+                    <button name="action_open_editor" type="object"
+                            string="Continue" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- The shops themselves, as a list. This is what an owner of several
+         shops now meets instead of the picker modal: a screen they can work
+         from - open the content editor of one, jump to its pages or to its
+         orders - rather than a dialog standing in front of the editor.
+         Read-only: a website is configured elsewhere, this is a hub. -->
+    <record id="website_view_list_merchant" model="ir.ui.view">
+        <field name="name">website.list.merchant</field>
+        <field name="model">website</field>
+        <field name="arch" type="xml">
+            <list create="false" delete="false" edit="false" string="My shops"
+                  js_class="merchant_website_list">
+                <field name="name"/>
+                <field name="company_id" optional="show"/>
+                <field name="domain" widget="url" string="Address"/>
+                <field name="merchant_can_open_orders" column_invisible="1"/>
+                <button name="action_microsite_content" type="object"
+                        string="Content" icon="fa-pencil-square-o"/>
+                <!-- No "Pages" button: the client removed it from the
+                     merchant's list on 2026-09-16 (page content is edited
+                     through "Content"). The server method stays for
+                     administrators' use from code. -->
+                <button name="action_microsite_orders" type="object"
+                        string="Orders" icon="fa-shopping-cart"
+                        invisible="not merchant_can_open_orders"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Odoo 19 lets a user run a code action only when they can WRITE its
+         model, or when they belong to one of the action's groups. A merchant
+         reads companies and writes none, so without a group the click was
+         answered with "Error de acceso" (reported 2026-09-15). Any internal
+         user may run these: the code itself resolves the shops from the
+         account, so nothing more than the caller's own is ever opened. -->
+    <record id="action_own_websites" model="ir.actions.server">
+        <field name="name">My shops</field>
+        <field name="model_id" ref="base.model_res_company"/>
+        <field name="state">code</field>
+        <field name="group_ids" eval="[(6, 0, [ref('base.group_user')])]"/>
+        <field name="code">action = model._action_open_own_websites()</field>
+    </record>
+
+    <menuitem id="menu_own_websites"
+              name="My shops"
+              parent="website.menu_website_configuration"
+              action="action_own_websites"
+              groups="website.group_website_restricted_editor"
+              sequence="3"/>
+
+    <!-- A server action rather than a window action, because the right screen
+         depends on who clicked. The group on the menu is the one the 218
+         merchants hold, and every administrator holds it too; an
+         administrator has no shop of their own and used to be answered with
+         an error dialog. See `action_open_page_content`. -->
+    <record id="action_own_microsite_content" model="ir.actions.server">
+        <field name="name">Page content</field>
+        <field name="model_id" ref="model_microsite_content_editor"/>
+        <field name="state">code</field>
+        <field name="group_ids" eval="[(6, 0, [ref('base.group_user')])]"/>
+        <field name="code">action = model.action_open_page_content()</field>
+    </record>
+
+    <!-- Website › Configuration, which is where a merchant already works.
+         The screen itself resolves the shop from the account, so the menu
+         cannot be used to reach somebody else's page. -->
+    <menuitem id="menu_own_microsite_content"
+              name="Page content"
+              parent="website.menu_website_configuration"
+              action="action_own_microsite_content"
+              groups="website.group_website_restricted_editor"
+              sequence="4"/>
+
+</odoo>

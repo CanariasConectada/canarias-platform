@@ -4,7 +4,7 @@
 {
     "name": "Website Switch Same Domain",
     "summary": "Switch website from the editor without jumping to its domain",
-    "version": "19.0.1.0.0",
+    "version": "19.0.2.0.0",
     "author": "Canarias Conectada",
     "website": "https://github.com/CanariasConectada/canarias-platform",
     "category": "Website",

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="view_company_form_microsite_subdomain" model="ir.ui.view">
+        <field name="name">res.company.form.microsite.subdomain</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <!-- A shop with no microsite is not an error state, it is the
+                 normal state between "the company exists" and "DNS resolves".
+                 Saying so on the form, with the button that ends it, beats
+                 leaving somebody to work out why there is no site. Hidden on
+                 an unsaved record: there is nothing to provision yet. -->
+            <xpath expr="//notebook" position="before">
+                <div
+                    class="alert alert-info mb-3"
+                    role="alert"
+                    invisible="website_id or not id"
+                >
+                    <span>
+                        This shop has no microsite yet. Create the DNS record
+                        first, then publish the site here.
+                    </span>
+                    <button
+                        name="%(auto_microsite_generator.action_microsite_creation_wizard)d"
+                        type="action"
+                        string="Create Microsite"
+                        class="btn-primary btn-sm ms-2"
+                    />
+                </div>
+            </xpath>
+            <xpath
+                expr="//page[@name='general_info']//field[@name='website']"
+                position="after"
+            >
+                <field name="website_id" invisible="1"/>
+                <field
+                    name="microsite_subdomain"
+                    placeholder="e.g. neveri"
+                    readonly="website_id"
+                />
+                <field
+                    name="microsite_address"
+                    widget="url"
+                    invisible="not microsite_address"
+                />
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

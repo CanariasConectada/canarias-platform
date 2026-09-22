@@ -1,3 +1,93 @@
+## 19.0.2.2.0 (2026-09-22)
+
+Rating comments go through the shared forbidden-word list
+(`website_moderation_forbidden_word`, client decision 2026-09-22):
+
+- A comment that hits the list publishes its STARS at once (they count in
+  the item's average and total) while its text waits for a local content
+  manager: new `feedback_moderation_status` (`approved` / `pending` /
+  `rejected`) on `rating.rating`, scoped to local content ratings.
+- The public detail page hides a held text from everyone but its author,
+  who sees it with a neutral "Your comment will be published after
+  review." notice (never the matched word). A rejected text is hidden
+  from everyone, the author gets "Your comment was not published."; the
+  text is kept in the database for the audit trail.
+- Editing a comment re-evaluates only when the text changed: re-posting
+  the same comment with other stars keeps the manager's decision and
+  spawns no new notification.
+- Managers get an email (`mail_template_comment_moderation`) and a to-do
+  activity on the author's contact, one open activity per manager and
+  author; without any manager the system administrators are notified.
+  `skip_review_notifications` in the context silences both, like
+  `partner_reviews`.
+- New *Local Content > Comments pending review* menu (list with approve
+  and reject buttons, default filter on pending), mirrored under
+  *Settings > Moderation > Local Content Comments* for administrators.
+  Only local content managers and system administrators may change the
+  status by hand.
+- Held and rejected comments are readable by their author, the local
+  content managers and system administrators only (global record rule
+  `rule_rating_local_content_held_comment`; published comments and the
+  ratings of other models stay as readable as before; the public page
+  reads through sudo).
+- Approving, rejecting or deleting a held rating closes the managers'
+  to-dos once nothing of that author is held any more.
+- The three older test classes that ran at install time now run
+  `post_install`: on a database where `purchase_stock` is installed
+  (production), its NOT NULL `group_rfq` column on `res_partner` breaks
+  partner creation for any module loaded before it, so at-install tests
+  creating users failed regardless of this module's own code.
+
+## 19.0.2.1.0 (2026-09-16)
+
+Interactive likes and ratings on the public detail page (the legacy
+pages let visitors like and rate from inside the place, not only from
+the card):
+
+- Like button in the information card of the detail page, on the same
+  like route and AJAX code as the card (`<noscript>` form fallback,
+  liked state rendered as a filled, disabled heart). The JS now finds
+  like counters by `data-like-counter-for="<item id>"`, so the card and
+  the detail page share it.
+- Rating form in the rating card for logged-in users: pure CSS radio
+  star picker (1-5) and an optional comment capped at 1000 characters,
+  posted to `/explora/<type>/rate/<id>`; one consumed `rating.rating`
+  per partner per item (create or update), removable through
+  `/explora/<type>/rate/<id>/delete`. Both routes only ever touch the
+  caller's own rating and refuse unpublished or hidden items. Anonymous
+  visitors get a "log in to rate" link back to the rating card; an
+  out-of-range star value comes back with a "choose 1 to 5 stars" alert.
+- Partial unique index `website_local_content_rating_partner_uniq` on
+  `rating_rating (res_id, partner_id)` for this model only (created in
+  `init()` after collapsing existing duplicates to the most recent row);
+  a concurrent duplicate insert falls back to updating the existing row.
+
+## 19.0.1.8.0 (2026-08-18)
+
+Port of the legacy visual design of the Living Memory and Places of
+Interest pages (design parity only, no comments/maps/submission form):
+
+- Index: full-bleed photo hero (`hero_image` / `hero_subtitle` on the
+  content type, seeded with the legacy artwork) with the search box inside
+  it; sidebar filters rebuilt as stacked cards with auto-submit selects
+  (category with counts, decades, emoji sort labels, 12/24/48 page size),
+  total badge, active-search badge and a "Remove filters" button; results
+  header bar with count and active-filter chips.
+- Cards: legacy layout (220px photo, hover lift + zoom, bottom gradient
+  overlay with year/likes/rating badges, category badge over the image)
+  and a floating AJAX like button (vanilla JS `fetch` against the existing
+  like route, CSRF included, `<noscript>` form fallback).
+- Pager: legacy hand-built pagination (every page number, chevrons, query
+  string preserved, anchored to `#entries_grid`) plus a page caption.
+- Detail: legacy two-column layout — main card (image, title, badges,
+  story, location, opening hours), gallery card, read-only reviews;
+  sidebar with back button, information card and read-only rating card.
+- New `?limit=` parameter whitelisted to 12/24/48; "best rated" sort; grid
+  images served as `image_512` and the detail image as `image_1024`.
+- New `sponsor_logo` / `sponsor_name` on the content type, rendered as a
+  centered band at the bottom of every page of the type; seeded with the
+  Gobierno de Canarias logo on Living Memory only (grant acknowledgement).
+
 ## 19.0.1.5.0 (2026-07-28)
 
 Read-only display of the legacy ratings, restoring parity with the old

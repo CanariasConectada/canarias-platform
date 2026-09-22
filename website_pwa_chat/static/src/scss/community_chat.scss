@@ -70,3 +70,132 @@
         font-size: 1.15rem;
     }
 }
+
+// The floating button. Deliberately a link that looks like a button rather
+// than a widget: nothing to load, nothing to connect to, and nothing that can
+// report itself unavailable. It replaces Odoo's live chat bubble, which with
+// no operator connected only ever said "try again later".
+//
+// Sits above the page but below Bootstrap's modal (1055) and offcanvas
+// backdrop, so it never floats over a dialog the visitor is reading.
+.o_cc_chat_fab {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 1030;
+    // The URL lives in data-href, so without this an anchor that is no
+    // longer a link loses its pointer cursor.
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1rem;
+    border-radius: 2rem;
+    background: #714b67;
+    color: #fff;
+    text-decoration: none;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.25);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+    &:hover,
+    &:focus-visible {
+        color: #fff;
+        // The theme's a:hover underline outranks the base rule on hover, so
+        // the reset has to be restated here.
+        text-decoration: none;
+        box-shadow: 0 0.35rem 1rem rgba(0, 0, 0, 0.32);
+        transform: translateY(-1px);
+    }
+
+    // Keyboard users get a visible ring; the shadow alone is not a focus
+    // indicator.
+    &:focus-visible {
+        outline: 2px solid #fff;
+        outline-offset: 2px;
+    }
+
+    // On a phone the label costs more room than it earns, and the icon plus
+    // the accessible name carry the meaning on their own.
+    .o_cc_chat_fab_text {
+        display: none;
+
+        @include media-breakpoint-up(sm) {
+            display: inline;
+        }
+    }
+}
+
+// With the mobile menu open, get out of the way entirely. The header
+// offcanvas is neutralised by the theme (`position: static; z-index: auto`),
+// so no stacking order can put it above a fixed button: the button has to
+// leave. `:has()` because the offcanvas and the button live in different
+// branches of the DOM. `.showing` too: Bootstrap spends the 0.3s slide in
+// that class before `.show` lands, and the fab must not hover over the
+// panel while it opens. The second selector is the JS fallback -- the
+// interaction toggles it on show/hidden offcanvas events -- so browsers
+// without `:has()` hide the fab all the same.
+#wrapwrap:has([id^="top_menu_collapse"]:is(.show, .showing)) .o_cc_chat_fab_zone,
+.o_cc_chat_fab_zone.o_cc_chat_fab_zone_hidden {
+    display: none;
+}
+
+// The window the button opens: a frame onto the support page itself, floated
+// over whatever the visitor was reading. Sized so the button underneath stays
+// visible and keeps working as the way to close it.
+.o_cc_chat_window {
+    position: fixed;
+    right: 1rem;
+    bottom: 4.5rem;
+    z-index: 1030;
+    display: flex;
+    flex-direction: column;
+    // Wrapped in calc() so the whole expression reaches the browser as CSS.
+    // Bare min() is intercepted by Odoo's Sass compiler, whose own min()
+    // cannot take a calc() argument and fails the ENTIRE frontend bundle.
+    width: calc(min(24rem, 100vw - 2rem));
+    // The vh line is the fallback for browsers without dvh; the dvh line
+    // wins where it is understood and tracks the real visible viewport
+    // under mobile browser chrome.
+    height: calc(min(34rem, 100vh - 6.5rem));
+    height: calc(min(34rem, 100dvh - 6.5rem));
+    overflow: hidden;
+    border-radius: 1rem;
+    background: #fff;
+    box-shadow: 0 0.75rem 2.5rem rgba(0, 0, 0, 0.28);
+}
+
+.o_cc_chat_window_head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1rem;
+    background: #714b67;
+    color: #fff;
+}
+
+// A bare .btn-close is a ~24px square: too small a target for a thumb.
+// 2.75rem matches .o_cc_chat_support_icon; only the hit area grows -- the
+// glyph is a centred background-image and keeps its size. The negative
+// block margin keeps the header at its former height.
+.o_cc_chat_window_close {
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    margin-block: -0.5rem;
+    margin-inline-end: -0.5rem;
+    background-position: center;
+    flex: 0 0 auto;
+}
+
+.o_cc_chat_window_frame {
+    flex: 1 1 auto;
+    width: 100%;
+    border: 0;
+}
+
+// The page as it renders INSIDE the window. Header and footer are already
+// gone (`no_header`/`no_footer`); what is left is a container whose desktop
+// paddings were designed for a full page, not a 24rem box.
+.o_cc_chat_framed {
+    padding: 1rem !important;
+}

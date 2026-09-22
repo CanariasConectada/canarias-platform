@@ -38,20 +38,28 @@ export class CommunityChat extends Interaction {
     static selector = ".o_cc_chat";
 
     setup() {
-        this.channelId = parseInt(this.el.dataset.channelId, 10);
+        // NaN or 0 when the page has no conversation yet, which is the normal
+        // state of the support page before the visitor's first message.
+        this.channelId = parseInt(this.el.dataset.channelId, 10) || 0;
+        this.isSupport = this.el.dataset.support === "1";
         this.messagesEl = this.el.querySelector(".o_cc_chat_messages");
         this.pendingZoneEl = this.el.querySelector(".o_cc_chat_pending_zone");
         this.inputEl = this.el.querySelector(".o_cc_chat_input");
         this.errorEl = this.el.querySelector(".o_cc_chat_error");
         this.lastMessageId = this.readLastMessageId();
         this.isSending = false;
+        this.listening = false;
     }
 
     start() {
-        if (!this.channelId) {
+        // A community page always has its channel; the support page may not
+        // have one yet, and its composer is exactly what opens it.
+        if (!this.channelId && !this.isSupport) {
             return;
         }
-        this.listen();
+        if (this.channelId) {
+            this.listen();
+        }
         this.addListener(this.el, "submit", (event) => {
             event.preventDefault();
             this.send();
@@ -64,7 +72,21 @@ export class CommunityChat extends Interaction {
                 this.send();
             }
         });
+        // The floating window's idle-close (support_window.js) needs to know
+        // the visitor typed something, and this page is what the window
+        // frames -- often cross-subdomain, where the parent cannot read a
+        // single keystroke of a document it does not own. `postMessage`
+        // is the one channel that crosses that boundary by design, so it
+        // is the only reliable way to say "someone is here" regardless of
+        // which of the platform's 218 hosts is doing the framing.
+        this.addListener(this.inputEl, "input", () => this.notifyParentActivity());
         this.scrollToBottom();
+    }
+
+    notifyParentActivity() {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({type: "o_cc_chat_activity"}, "*");
+        }
     }
 
     /**
@@ -82,6 +104,10 @@ export class CommunityChat extends Interaction {
      * so a forged id in the DOM subscribes to nothing.
      */
     listen() {
+        if (this.listening) {
+            return;
+        }
+        this.listening = true;
         const bus = this.services.bus_service;
         this.onNewMessage = (payload) => {
             if (payload.id === this.channelId) {
@@ -130,9 +156,26 @@ export class CommunityChat extends Interaction {
             return;
         }
         this.isSending = true;
+        this.notifyParentActivity();
         this.hideError();
         let result = null;
         try {
+            if (!this.channelId) {
+                // The support conversation is opened by the first message,
+                // not by the page: this is that moment. Subscribing right
+                // after, so the answer arrives live like anywhere else.
+                const opened = await this.waitFor(
+                    rpc("/website_pwa_chat/support/open", {})
+                );
+                if (!opened || !opened.channel_id) {
+                    throw new Error(
+                        _t("No hemos podido abrir la conversación. Inténtalo otra vez.")
+                    );
+                }
+                this.channelId = opened.channel_id;
+                this.el.dataset.channelId = String(this.channelId);
+                this.listen();
+            }
             result = await this.waitFor(
                 rpc("/mail/message/post", {
                     thread_model: "discuss.channel",

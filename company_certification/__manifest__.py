@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Company Certification",
-    "version": "19.0.2.1.0",
+    "version": "19.0.2.9.1",
     "category": "Marketing/Surveys",
     "summary": "Parameterizable company certification seals built on Survey",
     "author": "MikeColangelo",
@@ -18,7 +18,14 @@
     "data": [
         "security/company_certification_security.xml",
         "security/ir.model.access.csv",
+        # The menu the picker hangs off is declared here, and the evaluations
+        # list carries a button pointing at the picker's action, so the
+        # wizard has to be loaded between the two.
         "views/certification_type_views.xml",
+        "wizards/certification_evaluation_start_views.xml",
+        # After the menus and the start wizard: it hangs two more entries
+        # off the same root and sits between them in sequence.
+        "views/certification_guidance_views.xml",
         "views/res_company_views.xml",
         "views/survey_survey_views.xml",
         "views/survey_user_input_views.xml",
@@ -36,6 +43,10 @@
     "assets": {
         "web.assets_frontend": [
             "company_certification/static/src/scss/certification_landing.scss",
+            # Import-free decision helpers first: the interaction imports them,
+            # and tests/test_landing_body_js.py runs this exact file in node.
+            "company_certification/static/src/interactions/landing_body_logic.js",
+            "company_certification/static/src/interactions/landing_body.js",
         ],
     },
     "installable": True,
