@@ -1,6 +1,7 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import re
 from urllib.parse import urlsplit
 
 from odoo.tests import HttpCase, tagged
@@ -66,7 +67,7 @@ class TestFundingFooter(HttpCase):
             if earlier in page:
                 self.assertLess(page.index(earlier), strip, earlier)
         tail = page[strip:]
-        tail = tail[tail.index("</div>") + len("</div>"):]
+        tail = tail[tail.index("</div>") + len("</div>") :]
         self.assertEqual(tail.lstrip()[: len("</footer>")], "</footer>")
 
     # -- present ---------------------------------------------------------------
@@ -86,6 +87,56 @@ class TestFundingFooter(HttpCase):
             }
         )
         self._assert_strip_count(self._get(product.website_url), 1)
+
+    def test_a_plain_page_closes_with_the_strip_inside_the_footer(self):
+        """Asked for on 2026-09-22: the strip is part of the footer, not a
+        band hanging under it.
+
+        A page of its own (no marker in its arch, not the homepage), so the
+        assertion is about the layout and nothing else: exactly one strip,
+        and it sits between the opening tag of ``footer#bottom`` and the
+        closing tag of that same footer -- the LAST ``</footer>`` of the
+        page, since the themed sites nest their own ``<footer>`` inside the
+        editable area. The login page, whose auth card carries the strip,
+        stays without a second one.
+        """
+        page = self._page_with("<p>Nothing about funding here.</p>")
+        response = self._get(page.url)
+        self._assert_strip_count(response, 1)
+        html = response.text
+        strip = html.index(FOOTER_CLASS)
+        self.assertLess(html.index('<footer id="bottom"'), strip)
+        self.assertLess(strip, html.rindex("</footer>"))
+        self._assert_strip_is_the_last_thing_in_the_footer(html)
+        login = self._get("/web/login")
+        self.assertEqual(login.status_code, 200)
+        self.assertNotIn(FOOTER_CLASS, login.text)
+
+    def test_the_band_is_styled_as_the_footer_s_last_row(self):
+        """The rules that make it read as part of the footer, from the served
+        bundle: a colour of its own, a hairline on top, no margin, and an
+        image that fills the width up to 1100px and no further."""
+        css = self._stylesheet(self._get("/shop"))
+        rule = re.search(r"\.o_cc_funding_footer\s*\{([^}]*)\}", css)
+        self.assertTrue(rule, "the band has to have a rule of its own")
+        band = re.sub(r"\s+", "", rule.group(1))
+        for declaration in ("margin:0", "background-color:#fff", "border-top:1pxsolid"):
+            self.assertIn(declaration, band)
+        image = re.search(r"\.o_cc_funding_strip_img\s*\{([^}]*)\}", css)
+        self.assertTrue(image, "the image has to have a rule of its own")
+        image = re.sub(r"\s+", "", image.group(1))
+        for declaration in ("width:100%", "max-width:1100px", "height:auto"):
+            self.assertIn(declaration, image)
+
+    def _stylesheet(self, response):
+        self.assertEqual(response.status_code, 200)
+        match = re.search(
+            r'href="(/web/assets/[^"]*web\.assets_frontend[^"]*\.css)"', response.text
+        )
+        self.assertTrue(match, "the page has to load a frontend stylesheet")
+        bundle = self.url_open(match.group(1))
+        self.assertEqual(bundle.status_code, 200)
+        return bundle.text
 
     def test_the_directory_closes_with_the_strip(self):
         if not self._installed("website_directory"):

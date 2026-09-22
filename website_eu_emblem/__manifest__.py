@@ -4,7 +4,7 @@
 {
     "name": "Website EU Emblem",
     "summary": "EU emblem in every header and the FEDER / NextGenerationEU funding strip in every footer",
-    "version": "19.0.1.4.0",
+    "version": "19.0.1.5.0",
     "author": "Canarias Conectada",
     "website": "https://github.com/CanariasConectada/canarias-platform",
     "category": "Website",
@@ -17,6 +17,7 @@
     "assets": {
         "web.assets_frontend": [
             "website_eu_emblem/static/src/css/eu_emblem.css",
+            "website_eu_emblem/static/src/scss/funding_footer.scss",
         ],
     },
     "installable": True,
