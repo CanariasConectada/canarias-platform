@@ -1,0 +1,1074 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo noupdate="1">
+
+    <!-- Initial forbidden-word list, shared by merchant reviews and local
+         content comments. Matching folds case and accents and is anchored
+         on whole words (see models/moderation_forbidden_word.py), so one
+         spelling per word is enough: 'imbécil' also catches 'IMBECIL'.
+         Every entry is reviewable here; administrators archive or extend
+         the list from Settings > Moderation > Forbidden Words. -->
+
+    <!-- Legacy lists, merged: memoria_viva (49 rows) + partner_reviews
+         (22 rows) from the pre-reform production database, deduplicated
+         by accent folding (cabron/cabrón, jodete/jódete...). Kept verbatim
+         as a client decision (2026-09-22), including the broad everyday
+         words (asco, odio, paja, tonto, basura, racista): a hit only holds
+         the comment for review, it never rejects it. -->
+    <record id="word_asco" model="moderation.forbidden.word">
+        <field name="name">asco</field>
+    </record>
+    <record id="word_bastardo" model="moderation.forbidden.word">
+        <field name="name">bastardo</field>
+    </record>
+    <record id="word_cabron" model="moderation.forbidden.word">
+        <field name="name">cabrón</field>
+    </record>
+    <record id="word_capullo" model="moderation.forbidden.word">
+        <field name="name">capullo</field>
+    </record>
+    <record id="word_das_asco" model="moderation.forbidden.word">
+        <field name="name">das asco</field>
+    </record>
+    <record id="word_escort" model="moderation.forbidden.word">
+        <field name="name">escort</field>
+    </record>
+    <record id="word_estupido" model="moderation.forbidden.word">
+        <field name="name">estúpido</field>
+    </record>
+    <record id="word_feminazi" model="moderation.forbidden.word">
+        <field name="name">feminazi</field>
+    </record>
+    <record id="word_follando" model="moderation.forbidden.word">
+        <field name="name">follando</field>
+    </record>
+    <record id="word_follar" model="moderation.forbidden.word">
+        <field name="name">follar</field>
+    </record>
+    <record id="word_gilipollas" model="moderation.forbidden.word">
+        <field name="name">gilipollas</field>
+    </record>
+    <record id="word_idiota" model="moderation.forbidden.word">
+        <field name="name">idiota</field>
+    </record>
+    <record id="word_imbecil" model="moderation.forbidden.word">
+        <field name="name">imbécil</field>
+    </record>
+    <record id="word_joder" model="moderation.forbidden.word">
+        <field name="name">joder</field>
+    </record>
+    <record id="word_jodete" model="moderation.forbidden.word">
+        <field name="name">jódete</field>
+    </record>
+    <record id="word_maricon" model="moderation.forbidden.word">
+        <field name="name">maricón</field>
+    </record>
+    <record id="word_masturbacion" model="moderation.forbidden.word">
+        <field name="name">masturbación</field>
+    </record>
+    <record id="word_masturbar" model="moderation.forbidden.word">
+        <field name="name">masturbar</field>
+    </record>
+    <record id="word_mierda" model="moderation.forbidden.word">
+        <field name="name">mierda</field>
+    </record>
+    <record id="word_nazi" model="moderation.forbidden.word">
+        <field name="name">nazi</field>
+    </record>
+    <record id="word_negro_de_mierda" model="moderation.forbidden.word">
+        <field name="name">negro de mierda</field>
+    </record>
+    <record id="word_odio" model="moderation.forbidden.word">
+        <field name="name">odio</field>
+    </record>
+    <record id="word_orgia" model="moderation.forbidden.word">
+        <field name="name">orgía</field>
+    </record>
+    <record id="word_paja" model="moderation.forbidden.word">
+        <field name="name">paja</field>
+    </record>
+    <record id="word_pendejo" model="moderation.forbidden.word">
+        <field name="name">pendejo</field>
+    </record>
+    <record id="word_porno" model="moderation.forbidden.word">
+        <field name="name">porno</field>
+    </record>
+    <record id="word_prostituta" model="moderation.forbidden.word">
+        <field name="name">prostituta</field>
+    </record>
+    <record id="word_puta" model="moderation.forbidden.word">
+        <field name="name">puta</field>
+    </record>
+    <record id="word_puticlub" model="moderation.forbidden.word">
+        <field name="name">puticlub</field>
+    </record>
+    <record id="word_puto" model="moderation.forbidden.word">
+        <field name="name">puto</field>
+    </record>
+    <record id="word_que_te_jodan" model="moderation.forbidden.word">
+        <field name="name">que te jodan</field>
+    </record>
+    <record id="word_racista" model="moderation.forbidden.word">
+        <field name="name">racista</field>
+    </record>
+    <record id="word_retrasado" model="moderation.forbidden.word">
+        <field name="name">retrasado</field>
+    </record>
+    <record id="word_sexo_gratis" model="moderation.forbidden.word">
+        <field name="name">sexo gratis</field>
+    </record>
+    <record id="word_subnormal" model="moderation.forbidden.word">
+        <field name="name">subnormal</field>
+    </record>
+    <record id="word_sudaca" model="moderation.forbidden.word">
+        <field name="name">sudaca</field>
+    </record>
+    <record id="word_te_odio" model="moderation.forbidden.word">
+        <field name="name">te odio</field>
+    </record>
+    <record id="word_vete_a_la_mierda" model="moderation.forbidden.word">
+        <field name="name">vete a la mierda</field>
+    </record>
+    <record id="word_viagra" model="moderation.forbidden.word">
+        <field name="name">viagra</field>
+    </record>
+    <record id="word_xxx" model="moderation.forbidden.word">
+        <field name="name">xxx</field>
+    </record>
+    <record id="word_zorra" model="moderation.forbidden.word">
+        <field name="name">zorra</field>
+    </record>
+    <record id="word_basura" model="moderation.forbidden.word">
+        <field name="name">basura</field>
+    </record>
+    <record id="word_chingar" model="moderation.forbidden.word">
+        <field name="name">chingar</field>
+    </record>
+    <record id="word_cono" model="moderation.forbidden.word">
+        <field name="name">coño</field>
+    </record>
+    <record id="word_estafa" model="moderation.forbidden.word">
+        <field name="name">estafa</field>
+    </record>
+    <record id="word_fraude" model="moderation.forbidden.word">
+        <field name="name">fraude</field>
+    </record>
+    <record id="word_hijo_de_puta" model="moderation.forbidden.word">
+        <field name="name">hijo de puta</field>
+    </record>
+    <record id="word_hostia" model="moderation.forbidden.word">
+        <field name="name">hostia</field>
+    </record>
+    <record id="word_polla" model="moderation.forbidden.word">
+        <field name="name">polla</field>
+    </record>
+    <record id="word_spam" model="moderation.forbidden.word">
+        <field name="name">spam</field>
+    </record>
+    <record id="word_timo" model="moderation.forbidden.word">
+        <field name="name">timo</field>
+    </record>
+    <record id="word_tonto" model="moderation.forbidden.word">
+        <field name="name">tonto</field>
+    </record>
+
+    <!-- Insults, Spain (inflections of the legacy words plus common ones). -->
+    <record id="word_gilipolla" model="moderation.forbidden.word">
+        <field name="name">gilipolla</field>
+    </record>
+    <record id="word_gilipollez" model="moderation.forbidden.word">
+        <field name="name">gilipollez</field>
+    </record>
+    <record id="word_imbeciles" model="moderation.forbidden.word">
+        <field name="name">imbéciles</field>
+    </record>
+    <record id="word_idiotas" model="moderation.forbidden.word">
+        <field name="name">idiotas</field>
+    </record>
+    <record id="word_estupida" model="moderation.forbidden.word">
+        <field name="name">estúpida</field>
+    </record>
+    <record id="word_estupidos" model="moderation.forbidden.word">
+        <field name="name">estúpidos</field>
+    </record>
+    <record id="word_estupidas" model="moderation.forbidden.word">
+        <field name="name">estúpidas</field>
+    </record>
+    <record id="word_subnormales" model="moderation.forbidden.word">
+        <field name="name">subnormales</field>
+    </record>
+    <record id="word_retrasada" model="moderation.forbidden.word">
+        <field name="name">retrasada</field>
+    </record>
+    <record id="word_retrasados" model="moderation.forbidden.word">
+        <field name="name">retrasados</field>
+    </record>
+    <record id="word_mongolo" model="moderation.forbidden.word">
+        <field name="name">mongolo</field>
+    </record>
+    <record id="word_mongola" model="moderation.forbidden.word">
+        <field name="name">mongola</field>
+    </record>
+    <record id="word_mongolico" model="moderation.forbidden.word">
+        <field name="name">mongólico</field>
+    </record>
+    <record id="word_tarado" model="moderation.forbidden.word">
+        <field name="name">tarado</field>
+    </record>
+    <record id="word_tarada" model="moderation.forbidden.word">
+        <field name="name">tarada</field>
+    </record>
+    <record id="word_tarados" model="moderation.forbidden.word">
+        <field name="name">tarados</field>
+    </record>
+    <record id="word_cretino" model="moderation.forbidden.word">
+        <field name="name">cretino</field>
+    </record>
+    <record id="word_cretina" model="moderation.forbidden.word">
+        <field name="name">cretina</field>
+    </record>
+    <record id="word_cretinos" model="moderation.forbidden.word">
+        <field name="name">cretinos</field>
+    </record>
+    <record id="word_cabrona" model="moderation.forbidden.word">
+        <field name="name">cabrona</field>
+    </record>
+    <record id="word_cabrones" model="moderation.forbidden.word">
+        <field name="name">cabrones</field>
+    </record>
+    <record id="word_cabronazo" model="moderation.forbidden.word">
+        <field name="name">cabronazo</field>
+    </record>
+    <record id="word_capullos" model="moderation.forbidden.word">
+        <field name="name">capullos</field>
+    </record>
+    <record id="word_capulla" model="moderation.forbidden.word">
+        <field name="name">capulla</field>
+    </record>
+    <record id="word_mamon" model="moderation.forbidden.word">
+        <field name="name">mamón</field>
+    </record>
+    <record id="word_mamona" model="moderation.forbidden.word">
+        <field name="name">mamona</field>
+    </record>
+    <record id="word_mamones" model="moderation.forbidden.word">
+        <field name="name">mamones</field>
+    </record>
+    <record id="word_mamarracho" model="moderation.forbidden.word">
+        <field name="name">mamarracho</field>
+    </record>
+    <record id="word_mamarracha" model="moderation.forbidden.word">
+        <field name="name">mamarracha</field>
+    </record>
+    <record id="word_malnacido" model="moderation.forbidden.word">
+        <field name="name">malnacido</field>
+    </record>
+    <record id="word_malnacida" model="moderation.forbidden.word">
+        <field name="name">malnacida</field>
+    </record>
+    <record id="word_malparido" model="moderation.forbidden.word">
+        <field name="name">malparido</field>
+    </record>
+    <record id="word_malparida" model="moderation.forbidden.word">
+        <field name="name">malparida</field>
+    </record>
+    <record id="word_sinverguenza" model="moderation.forbidden.word">
+        <field name="name">sinvergüenza</field>
+    </record>
+    <record id="word_sinverguenzas" model="moderation.forbidden.word">
+        <field name="name">sinvergüenzas</field>
+    </record>
+    <record id="word_lameculos" model="moderation.forbidden.word">
+        <field name="name">lameculos</field>
+    </record>
+    <record id="word_chupapollas" model="moderation.forbidden.word">
+        <field name="name">chupapollas</field>
+    </record>
+    <record id="word_comemierda" model="moderation.forbidden.word">
+        <field name="name">comemierda</field>
+    </record>
+    <record id="word_comemierdas" model="moderation.forbidden.word">
+        <field name="name">comemierdas</field>
+    </record>
+    <record id="word_bastarda" model="moderation.forbidden.word">
+        <field name="name">bastarda</field>
+    </record>
+    <record id="word_bastardos" model="moderation.forbidden.word">
+        <field name="name">bastardos</field>
+    </record>
+    <record id="word_hijaputa" model="moderation.forbidden.word">
+        <field name="name">hijaputa</field>
+    </record>
+    <record id="word_hijoputa" model="moderation.forbidden.word">
+        <field name="name">hijoputa</field>
+    </record>
+    <record id="word_hijo_de_perra" model="moderation.forbidden.word">
+        <field name="name">hijo de perra</field>
+    </record>
+    <record id="word_hija_de_perra" model="moderation.forbidden.word">
+        <field name="name">hija de perra</field>
+    </record>
+    <record id="word_hijos_de_perra" model="moderation.forbidden.word">
+        <field name="name">hijos de perra</field>
+    </record>
+    <record id="word_cara_de_culo" model="moderation.forbidden.word">
+        <field name="name">cara de culo</field>
+    </record>
+    <record id="word_caraculo" model="moderation.forbidden.word">
+        <field name="name">caraculo</field>
+    </record>
+
+    <!-- Insults, Latin American variants (Argentina, Chile, Colombia, Mexico,
+         Peru, Venezuela...). -->
+    <record id="word_pendeja" model="moderation.forbidden.word">
+        <field name="name">pendeja</field>
+    </record>
+    <record id="word_pendejos" model="moderation.forbidden.word">
+        <field name="name">pendejos</field>
+    </record>
+    <record id="word_pendejas" model="moderation.forbidden.word">
+        <field name="name">pendejas</field>
+    </record>
+    <record id="word_pendejada" model="moderation.forbidden.word">
+        <field name="name">pendejada</field>
+    </record>
+    <record id="word_boludo" model="moderation.forbidden.word">
+        <field name="name">boludo</field>
+    </record>
+    <record id="word_boluda" model="moderation.forbidden.word">
+        <field name="name">boluda</field>
+    </record>
+    <record id="word_boludos" model="moderation.forbidden.word">
+        <field name="name">boludos</field>
+    </record>
+    <record id="word_boludas" model="moderation.forbidden.word">
+        <field name="name">boludas</field>
+    </record>
+    <record id="word_pelotudo" model="moderation.forbidden.word">
+        <field name="name">pelotudo</field>
+    </record>
+    <record id="word_pelotuda" model="moderation.forbidden.word">
+        <field name="name">pelotuda</field>
+    </record>
+    <record id="word_pelotudos" model="moderation.forbidden.word">
+        <field name="name">pelotudos</field>
+    </record>
+    <record id="word_conchudo" model="moderation.forbidden.word">
+        <field name="name">conchudo</field>
+    </record>
+    <record id="word_conchuda" model="moderation.forbidden.word">
+        <field name="name">conchuda</field>
+    </record>
+    <record id="word_concha_de_tu_madre" model="moderation.forbidden.word">
+        <field name="name">concha de tu madre</field>
+    </record>
+    <record id="word_conchatumadre" model="moderation.forbidden.word">
+        <field name="name">conchatumadre</field>
+    </record>
+    <record id="word_conchesumadre" model="moderation.forbidden.word">
+        <field name="name">conchesumadre</field>
+    </record>
+    <record id="word_andate_a_cagar" model="moderation.forbidden.word">
+        <field name="name">andate a cagar</field>
+    </record>
+    <record id="word_huevon" model="moderation.forbidden.word">
+        <field name="name">huevón</field>
+    </record>
+    <record id="word_huevona" model="moderation.forbidden.word">
+        <field name="name">huevona</field>
+    </record>
+    <record id="word_huevones" model="moderation.forbidden.word">
+        <field name="name">huevones</field>
+    </record>
+    <record id="word_weon" model="moderation.forbidden.word">
+        <field name="name">weón</field>
+    </record>
+    <record id="word_culiao" model="moderation.forbidden.word">
+        <field name="name">culiao</field>
+    </record>
+    <record id="word_culiado" model="moderation.forbidden.word">
+        <field name="name">culiado</field>
+    </record>
+    <record id="word_culero" model="moderation.forbidden.word">
+        <field name="name">culero</field>
+    </record>
+    <record id="word_culera" model="moderation.forbidden.word">
+        <field name="name">culera</field>
+    </record>
+    <record id="word_culeros" model="moderation.forbidden.word">
+        <field name="name">culeros</field>
+    </record>
+    <record id="word_chinga" model="moderation.forbidden.word">
+        <field name="name">chinga</field>
+    </record>
+    <record id="word_chingada" model="moderation.forbidden.word">
+        <field name="name">chingada</field>
+    </record>
+    <record id="word_chingado" model="moderation.forbidden.word">
+        <field name="name">chingado</field>
+    </record>
+    <record id="word_chingatumadre" model="moderation.forbidden.word">
+        <field name="name">chingatumadre</field>
+    </record>
+    <record id="word_verga" model="moderation.forbidden.word">
+        <field name="name">verga</field>
+    </record>
+    <record id="word_vergas" model="moderation.forbidden.word">
+        <field name="name">vergas</field>
+    </record>
+    <record id="word_valeverga" model="moderation.forbidden.word">
+        <field name="name">valeverga</field>
+    </record>
+    <record id="word_no_mames" model="moderation.forbidden.word">
+        <field name="name">no mames</field>
+    </record>
+    <record id="word_mamada" model="moderation.forbidden.word">
+        <field name="name">mamada</field>
+    </record>
+    <record id="word_mamadas" model="moderation.forbidden.word">
+        <field name="name">mamadas</field>
+    </record>
+    <record id="word_cagon" model="moderation.forbidden.word">
+        <field name="name">cagón</field>
+    </record>
+    <record id="word_cagona" model="moderation.forbidden.word">
+        <field name="name">cagona</field>
+    </record>
+    <record id="word_pajero" model="moderation.forbidden.word">
+        <field name="name">pajero</field>
+    </record>
+    <record id="word_pajera" model="moderation.forbidden.word">
+        <field name="name">pajera</field>
+    </record>
+    <record id="word_pajeros" model="moderation.forbidden.word">
+        <field name="name">pajeros</field>
+    </record>
+    <record id="word_marico" model="moderation.forbidden.word">
+        <field name="name">marico</field>
+    </record>
+    <record id="word_maricos" model="moderation.forbidden.word">
+        <field name="name">maricos</field>
+    </record>
+    <record id="word_joto" model="moderation.forbidden.word">
+        <field name="name">joto</field>
+    </record>
+    <record id="word_jotos" model="moderation.forbidden.word">
+        <field name="name">jotos</field>
+    </record>
+    <record id="word_carajo" model="moderation.forbidden.word">
+        <field name="name">carajo</field>
+    </record>
+    <record id="word_carajos" model="moderation.forbidden.word">
+        <field name="name">carajos</field>
+    </record>
+    <record id="word_mamaguevo" model="moderation.forbidden.word">
+        <field name="name">mamagüevo</field>
+    </record>
+
+    <!-- Profanity and explicit sexual content. Everyday homographs were left
+         out on purpose: chochos (lupin beans in the Canaries), polvo, culo,
+         huevos, cono (no accent folding of the ñ, see the model). -->
+    <record id="word_putas" model="moderation.forbidden.word">
+        <field name="name">putas</field>
+    </record>
+    <record id="word_putos" model="moderation.forbidden.word">
+        <field name="name">putos</field>
+    </record>
+    <record id="word_putita" model="moderation.forbidden.word">
+        <field name="name">putita</field>
+    </record>
+    <record id="word_putito" model="moderation.forbidden.word">
+        <field name="name">putito</field>
+    </record>
+    <record id="word_puton" model="moderation.forbidden.word">
+        <field name="name">putón</field>
+    </record>
+    <record id="word_putero" model="moderation.forbidden.word">
+        <field name="name">putero</field>
+    </record>
+    <record id="word_putada" model="moderation.forbidden.word">
+        <field name="name">putada</field>
+    </record>
+    <record id="word_zorras" model="moderation.forbidden.word">
+        <field name="name">zorras</field>
+    </record>
+    <record id="word_zorron" model="moderation.forbidden.word">
+        <field name="name">zorrón</field>
+    </record>
+    <record id="word_furcia" model="moderation.forbidden.word">
+        <field name="name">furcia</field>
+    </record>
+    <record id="word_ramera" model="moderation.forbidden.word">
+        <field name="name">ramera</field>
+    </record>
+    <record id="word_rameras" model="moderation.forbidden.word">
+        <field name="name">rameras</field>
+    </record>
+    <record id="word_prostitutas" model="moderation.forbidden.word">
+        <field name="name">prostitutas</field>
+    </record>
+    <record id="word_prostibulo" model="moderation.forbidden.word">
+        <field name="name">prostíbulo</field>
+    </record>
+    <record id="word_cojones" model="moderation.forbidden.word">
+        <field name="name">cojones</field>
+    </record>
+    <record id="word_hostias" model="moderation.forbidden.word">
+        <field name="name">hostias</field>
+    </record>
+    <record id="word_ostia" model="moderation.forbidden.word">
+        <field name="name">ostia</field>
+    </record>
+    <record id="word_ostias" model="moderation.forbidden.word">
+        <field name="name">ostias</field>
+    </record>
+    <record id="word_mierdas" model="moderation.forbidden.word">
+        <field name="name">mierdas</field>
+    </record>
+    <record id="word_pollas" model="moderation.forbidden.word">
+        <field name="name">pollas</field>
+    </record>
+    <record id="word_pollon" model="moderation.forbidden.word">
+        <field name="name">pollón</field>
+    </record>
+    <record id="word_tetas" model="moderation.forbidden.word">
+        <field name="name">tetas</field>
+    </record>
+    <record id="word_tetona" model="moderation.forbidden.word">
+        <field name="name">tetona</field>
+    </record>
+    <record id="word_tetonas" model="moderation.forbidden.word">
+        <field name="name">tetonas</field>
+    </record>
+    <record id="word_follada" model="moderation.forbidden.word">
+        <field name="name">follada</field>
+    </record>
+    <record id="word_folladas" model="moderation.forbidden.word">
+        <field name="name">folladas</field>
+    </record>
+    <record id="word_follame" model="moderation.forbidden.word">
+        <field name="name">fóllame</field>
+    </record>
+    <record id="word_folladora" model="moderation.forbidden.word">
+        <field name="name">folladora</field>
+    </record>
+    <record id="word_folleteo" model="moderation.forbidden.word">
+        <field name="name">folleteo</field>
+    </record>
+    <record id="word_echar_un_polvo" model="moderation.forbidden.word">
+        <field name="name">echar un polvo</field>
+    </record>
+    <record id="word_chupamela" model="moderation.forbidden.word">
+        <field name="name">chúpamela</field>
+    </record>
+    <record id="word_masturbarse" model="moderation.forbidden.word">
+        <field name="name">masturbarse</field>
+    </record>
+    <record id="word_masturbandose" model="moderation.forbidden.word">
+        <field name="name">masturbándose</field>
+    </record>
+    <record id="word_pajearse" model="moderation.forbidden.word">
+        <field name="name">pajearse</field>
+    </record>
+    <record id="word_pajillero" model="moderation.forbidden.word">
+        <field name="name">pajillero</field>
+    </record>
+    <record id="word_pajillera" model="moderation.forbidden.word">
+        <field name="name">pajillera</field>
+    </record>
+    <record id="word_orgasmo" model="moderation.forbidden.word">
+        <field name="name">orgasmo</field>
+    </record>
+    <record id="word_orgasmos" model="moderation.forbidden.word">
+        <field name="name">orgasmos</field>
+    </record>
+    <record id="word_orgias" model="moderation.forbidden.word">
+        <field name="name">orgías</field>
+    </record>
+    <record id="word_pornografia" model="moderation.forbidden.word">
+        <field name="name">pornografía</field>
+    </record>
+    <record id="word_pornografico" model="moderation.forbidden.word">
+        <field name="name">pornográfico</field>
+    </record>
+    <record id="word_pornografica" model="moderation.forbidden.word">
+        <field name="name">pornográfica</field>
+    </record>
+    <record id="word_sexo_anal" model="moderation.forbidden.word">
+        <field name="name">sexo anal</field>
+    </record>
+    <record id="word_sexo_oral" model="moderation.forbidden.word">
+        <field name="name">sexo oral</field>
+    </record>
+    <record id="word_sexo_explicito" model="moderation.forbidden.word">
+        <field name="name">sexo explícito</field>
+    </record>
+    <record id="word_sexo_duro" model="moderation.forbidden.word">
+        <field name="name">sexo duro</field>
+    </record>
+    <record id="word_me_cago_en" model="moderation.forbidden.word">
+        <field name="name">me cago en</field>
+    </record>
+    <record id="word_que_te_den" model="moderation.forbidden.word">
+        <field name="name">que te den</field>
+    </record>
+    <record id="word_que_te_follen" model="moderation.forbidden.word">
+        <field name="name">que te follen</field>
+    </record>
+    <record id="word_que_os_follen" model="moderation.forbidden.word">
+        <field name="name">que os follen</field>
+    </record>
+    <record id="word_que_os_jodan" model="moderation.forbidden.word">
+        <field name="name">que os jodan</field>
+    </record>
+    <record id="word_tomar_por_culo" model="moderation.forbidden.word">
+        <field name="name">tomar por culo</field>
+    </record>
+    <record id="word_jodeos" model="moderation.forbidden.word">
+        <field name="name">jodeos</field>
+    </record>
+    <record id="word_cabronada" model="moderation.forbidden.word">
+        <field name="name">cabronada</field>
+    </record>
+
+    <!-- Hate speech and slurs (origin, ethnicity, sexual orientation, gender
+         identity, disability). Historical terms that appear in living-memory
+         stories (moro, gitano, negro alone) are NOT listed; only their
+         slur forms and the 'X de mierda' compounds already covered by
+         'mierda'. -->
+    <record id="word_sudacas" model="moderation.forbidden.word">
+        <field name="name">sudacas</field>
+    </record>
+    <record id="word_sudaka" model="moderation.forbidden.word">
+        <field name="name">sudaka</field>
+    </record>
+    <record id="word_sudakas" model="moderation.forbidden.word">
+        <field name="name">sudakas</field>
+    </record>
+    <record id="word_panchito" model="moderation.forbidden.word">
+        <field name="name">panchito</field>
+    </record>
+    <record id="word_panchitos" model="moderation.forbidden.word">
+        <field name="name">panchitos</field>
+    </record>
+    <record id="word_panchita" model="moderation.forbidden.word">
+        <field name="name">panchita</field>
+    </record>
+    <record id="word_negrata" model="moderation.forbidden.word">
+        <field name="name">negrata</field>
+    </record>
+    <record id="word_negratas" model="moderation.forbidden.word">
+        <field name="name">negratas</field>
+    </record>
+    <record id="word_moromierda" model="moderation.forbidden.word">
+        <field name="name">moromierda</field>
+    </record>
+    <record id="word_maricones" model="moderation.forbidden.word">
+        <field name="name">maricones</field>
+    </record>
+    <record id="word_marica" model="moderation.forbidden.word">
+        <field name="name">marica</field>
+    </record>
+    <record id="word_maricas" model="moderation.forbidden.word">
+        <field name="name">maricas</field>
+    </record>
+    <record id="word_mariconazo" model="moderation.forbidden.word">
+        <field name="name">mariconazo</field>
+    </record>
+    <record id="word_mariconada" model="moderation.forbidden.word">
+        <field name="name">mariconada</field>
+    </record>
+    <record id="word_maricona" model="moderation.forbidden.word">
+        <field name="name">maricona</field>
+    </record>
+    <record id="word_bollera" model="moderation.forbidden.word">
+        <field name="name">bollera</field>
+    </record>
+    <record id="word_bolleras" model="moderation.forbidden.word">
+        <field name="name">bolleras</field>
+    </record>
+    <record id="word_tortillera" model="moderation.forbidden.word">
+        <field name="name">tortillera</field>
+    </record>
+    <record id="word_tortilleras" model="moderation.forbidden.word">
+        <field name="name">tortilleras</field>
+    </record>
+    <record id="word_travelo" model="moderation.forbidden.word">
+        <field name="name">travelo</field>
+    </record>
+    <record id="word_travelos" model="moderation.forbidden.word">
+        <field name="name">travelos</field>
+    </record>
+    <record id="word_sarasa" model="moderation.forbidden.word">
+        <field name="name">sarasa</field>
+    </record>
+    <record id="word_julandron" model="moderation.forbidden.word">
+        <field name="name">julandrón</field>
+    </record>
+    <record id="word_julandrones" model="moderation.forbidden.word">
+        <field name="name">julandrones</field>
+    </record>
+    <record id="word_machorra" model="moderation.forbidden.word">
+        <field name="name">machorra</field>
+    </record>
+    <record id="word_marimacho" model="moderation.forbidden.word">
+        <field name="name">marimacho</field>
+    </record>
+    <record id="word_sidoso" model="moderation.forbidden.word">
+        <field name="name">sidoso</field>
+    </record>
+    <record id="word_sidosa" model="moderation.forbidden.word">
+        <field name="name">sidosa</field>
+    </record>
+    <record id="word_feminazis" model="moderation.forbidden.word">
+        <field name="name">feminazis</field>
+    </record>
+    <record id="word_nazis" model="moderation.forbidden.word">
+        <field name="name">nazis</field>
+    </record>
+    <record id="word_heil_hitler" model="moderation.forbidden.word">
+        <field name="name">heil hitler</field>
+    </record>
+    <record id="word_sieg_heil" model="moderation.forbidden.word">
+        <field name="name">sieg heil</field>
+    </record>
+    <record id="word_escoria_humana" model="moderation.forbidden.word">
+        <field name="name">escoria humana</field>
+    </record>
+    <record id="word_subhumano" model="moderation.forbidden.word">
+        <field name="name">subhumano</field>
+    </record>
+    <record id="word_subhumanos" model="moderation.forbidden.word">
+        <field name="name">subhumanos</field>
+    </record>
+    <record id="word_raza_inferior" model="moderation.forbidden.word">
+        <field name="name">raza inferior</field>
+    </record>
+
+    <!-- Threats, harassment and serious accusations. -->
+    <record id="word_te_voy_a_matar" model="moderation.forbidden.word">
+        <field name="name">te voy a matar</field>
+    </record>
+    <record id="word_os_voy_a_matar" model="moderation.forbidden.word">
+        <field name="name">os voy a matar</field>
+    </record>
+    <record id="word_te_mato" model="moderation.forbidden.word">
+        <field name="name">te mato</field>
+    </record>
+    <record id="word_te_voy_a_reventar" model="moderation.forbidden.word">
+        <field name="name">te voy a reventar</field>
+    </record>
+    <record id="word_te_reviento" model="moderation.forbidden.word">
+        <field name="name">te reviento</field>
+    </record>
+    <record id="word_te_voy_a_partir_la_cara" model="moderation.forbidden.word">
+        <field name="name">te voy a partir la cara</field>
+    </record>
+    <record id="word_te_parto_la_cara" model="moderation.forbidden.word">
+        <field name="name">te parto la cara</field>
+    </record>
+    <record id="word_te_voy_a_romper_la_cara" model="moderation.forbidden.word">
+        <field name="name">te voy a romper la cara</field>
+    </record>
+    <record id="word_te_rompo_la_cara" model="moderation.forbidden.word">
+        <field name="name">te rompo la cara</field>
+    </record>
+    <record id="word_muerete" model="moderation.forbidden.word">
+        <field name="name">muérete</field>
+    </record>
+    <record id="word_ojala_te_mueras" model="moderation.forbidden.word">
+        <field name="name">ojalá te mueras</field>
+    </record>
+    <record id="word_ojala_se_mueran" model="moderation.forbidden.word">
+        <field name="name">ojalá se mueran</field>
+    </record>
+    <record id="word_ojala_os_murais" model="moderation.forbidden.word">
+        <field name="name">ojalá os muráis</field>
+    </record>
+    <record id="word_que_te_mueras" model="moderation.forbidden.word">
+        <field name="name">que te mueras</field>
+    </record>
+    <record id="word_que_se_muera" model="moderation.forbidden.word">
+        <field name="name">que se muera</field>
+    </record>
+    <record id="word_que_se_mueran" model="moderation.forbidden.word">
+        <field name="name">que se mueran</field>
+    </record>
+    <record id="word_voy_a_quemar" model="moderation.forbidden.word">
+        <field name="name">voy a quemar</field>
+    </record>
+    <record id="word_te_voy_a_encontrar" model="moderation.forbidden.word">
+        <field name="name">te voy a encontrar</field>
+    </record>
+    <record id="word_se_donde_vives" model="moderation.forbidden.word">
+        <field name="name">sé dónde vives</field>
+    </record>
+    <record id="word_me_las_vas_a_pagar" model="moderation.forbidden.word">
+        <field name="name">me las vas a pagar</field>
+    </record>
+    <record id="word_te_voy_a_dar_una_paliza" model="moderation.forbidden.word">
+        <field name="name">te voy a dar una paliza</field>
+    </record>
+    <record id="word_te_voy_a_pegar" model="moderation.forbidden.word">
+        <field name="name">te voy a pegar</field>
+    </record>
+    <record id="word_te_pego_un_tiro" model="moderation.forbidden.word">
+        <field name="name">te pego un tiro</field>
+    </record>
+    <record id="word_un_tiro_en_la_cabeza" model="moderation.forbidden.word">
+        <field name="name">un tiro en la cabeza</field>
+    </record>
+    <record id="word_violador" model="moderation.forbidden.word">
+        <field name="name">violador</field>
+    </record>
+    <record id="word_violadores" model="moderation.forbidden.word">
+        <field name="name">violadores</field>
+    </record>
+    <record id="word_pederasta" model="moderation.forbidden.word">
+        <field name="name">pederasta</field>
+    </record>
+    <record id="word_pedofilo" model="moderation.forbidden.word">
+        <field name="name">pedófilo</field>
+    </record>
+    <record id="word_ladron" model="moderation.forbidden.word">
+        <field name="name">ladrón</field>
+    </record>
+    <record id="word_ladrona" model="moderation.forbidden.word">
+        <field name="name">ladrona</field>
+    </record>
+    <record id="word_ladrones" model="moderation.forbidden.word">
+        <field name="name">ladrones</field>
+    </record>
+
+    <!-- Spam, scams and unsolicited advertising (links, get-rich-quick, adult
+         services, pharmacy spam). 'http', 'https' and 'www' hold any comment
+         carrying a link. 'casino' alone is not listed: the old town casinos
+         are living-memory places. -->
+    <record id="word_estafador" model="moderation.forbidden.word">
+        <field name="name">estafador</field>
+    </record>
+    <record id="word_estafadora" model="moderation.forbidden.word">
+        <field name="name">estafadora</field>
+    </record>
+    <record id="word_estafadores" model="moderation.forbidden.word">
+        <field name="name">estafadores</field>
+    </record>
+    <record id="word_timador" model="moderation.forbidden.word">
+        <field name="name">timador</field>
+    </record>
+    <record id="word_timadora" model="moderation.forbidden.word">
+        <field name="name">timadora</field>
+    </record>
+    <record id="word_timadores" model="moderation.forbidden.word">
+        <field name="name">timadores</field>
+    </record>
+    <record id="word_fraudulento" model="moderation.forbidden.word">
+        <field name="name">fraudulento</field>
+    </record>
+    <record id="word_fraudulenta" model="moderation.forbidden.word">
+        <field name="name">fraudulenta</field>
+    </record>
+    <record id="word_dinero_facil" model="moderation.forbidden.word">
+        <field name="name">dinero fácil</field>
+    </record>
+    <record id="word_dinero_rapido" model="moderation.forbidden.word">
+        <field name="name">dinero rápido</field>
+    </record>
+    <record id="word_gana_dinero" model="moderation.forbidden.word">
+        <field name="name">gana dinero</field>
+    </record>
+    <record id="word_ganar_dinero" model="moderation.forbidden.word">
+        <field name="name">ganar dinero</field>
+    </record>
+    <record id="word_trabaja_desde_casa" model="moderation.forbidden.word">
+        <field name="name">trabaja desde casa</field>
+    </record>
+    <record id="word_trabajo_desde_casa" model="moderation.forbidden.word">
+        <field name="name">trabajo desde casa</field>
+    </record>
+    <record id="word_clic_aqui" model="moderation.forbidden.word">
+        <field name="name">clic aquí</field>
+    </record>
+    <record id="word_click_aqui" model="moderation.forbidden.word">
+        <field name="name">click aquí</field>
+    </record>
+    <record id="word_pincha_aqui" model="moderation.forbidden.word">
+        <field name="name">pincha aquí</field>
+    </record>
+    <record id="word_visita_mi_web" model="moderation.forbidden.word">
+        <field name="name">visita mi web</field>
+    </record>
+    <record id="word_visita_mi_pagina" model="moderation.forbidden.word">
+        <field name="name">visita mi página</field>
+    </record>
+    <record id="word_visita_nuestra_web" model="moderation.forbidden.word">
+        <field name="name">visita nuestra web</field>
+    </record>
+    <record id="word_compra_ahora" model="moderation.forbidden.word">
+        <field name="name">compra ahora</field>
+    </record>
+    <record id="word_compre_ahora" model="moderation.forbidden.word">
+        <field name="name">compre ahora</field>
+    </record>
+    <record id="word_llama_ahora" model="moderation.forbidden.word">
+        <field name="name">llama ahora</field>
+    </record>
+    <record id="word_llame_ahora" model="moderation.forbidden.word">
+        <field name="name">llame ahora</field>
+    </record>
+    <record id="word_oferta_limitada" model="moderation.forbidden.word">
+        <field name="name">oferta limitada</field>
+    </record>
+    <record id="word_100_gratis" model="moderation.forbidden.word">
+        <field name="name">100% gratis</field>
+    </record>
+    <record id="word_totalmente_gratis" model="moderation.forbidden.word">
+        <field name="name">totalmente gratis</field>
+    </record>
+    <record id="word_ha_ganado_un_premio" model="moderation.forbidden.word">
+        <field name="name">ha ganado un premio</field>
+    </record>
+    <record id="word_premio_garantizado" model="moderation.forbidden.word">
+        <field name="name">premio garantizado</field>
+    </record>
+    <record id="word_inversion_garantizada" model="moderation.forbidden.word">
+        <field name="name">inversión garantizada</field>
+    </record>
+    <record id="word_beneficio_garantizado" model="moderation.forbidden.word">
+        <field name="name">beneficio garantizado</field>
+    </record>
+    <record id="word_rentabilidad_garantizada" model="moderation.forbidden.word">
+        <field name="name">rentabilidad garantizada</field>
+    </record>
+    <record id="word_ganancias_garantizadas" model="moderation.forbidden.word">
+        <field name="name">ganancias garantizadas</field>
+    </record>
+    <record id="word_multinivel" model="moderation.forbidden.word">
+        <field name="name">multinivel</field>
+    </record>
+    <record id="word_piramidal" model="moderation.forbidden.word">
+        <field name="name">piramidal</field>
+    </record>
+    <record id="word_bitcoin" model="moderation.forbidden.word">
+        <field name="name">bitcoin</field>
+    </record>
+    <record id="word_bitcoins" model="moderation.forbidden.word">
+        <field name="name">bitcoins</field>
+    </record>
+    <record id="word_criptomoneda" model="moderation.forbidden.word">
+        <field name="name">criptomoneda</field>
+    </record>
+    <record id="word_criptomonedas" model="moderation.forbidden.word">
+        <field name="name">criptomonedas</field>
+    </record>
+    <record id="word_forex" model="moderation.forbidden.word">
+        <field name="name">forex</field>
+    </record>
+    <record id="word_casino_online" model="moderation.forbidden.word">
+        <field name="name">casino online</field>
+    </record>
+    <record id="word_apuestas_online" model="moderation.forbidden.word">
+        <field name="name">apuestas online</field>
+    </record>
+    <record id="word_apuestas_deportivas" model="moderation.forbidden.word">
+        <field name="name">apuestas deportivas</field>
+    </record>
+    <record id="word_poker_online" model="moderation.forbidden.word">
+        <field name="name">póker online</field>
+    </record>
+    <record id="word_cialis" model="moderation.forbidden.word">
+        <field name="name">cialis</field>
+    </record>
+    <record id="word_levitra" model="moderation.forbidden.word">
+        <field name="name">levitra</field>
+    </record>
+    <record id="word_sildenafil" model="moderation.forbidden.word">
+        <field name="name">sildenafil</field>
+    </record>
+    <record id="word_tadalafil" model="moderation.forbidden.word">
+        <field name="name">tadalafil</field>
+    </record>
+    <record id="word_pastillas_para_adelgazar" model="moderation.forbidden.word">
+        <field name="name">pastillas para adelgazar</field>
+    </record>
+    <record id="word_adelgaza_rapido" model="moderation.forbidden.word">
+        <field name="name">adelgaza rápido</field>
+    </record>
+    <record id="word_pierde_peso" model="moderation.forbidden.word">
+        <field name="name">pierde peso</field>
+    </record>
+    <record id="word_prestamo_rapido" model="moderation.forbidden.word">
+        <field name="name">préstamo rápido</field>
+    </record>
+    <record id="word_prestamos_rapidos" model="moderation.forbidden.word">
+        <field name="name">préstamos rápidos</field>
+    </record>
+    <record id="word_credito_rapido" model="moderation.forbidden.word">
+        <field name="name">crédito rápido</field>
+    </record>
+    <record id="word_creditos_rapidos" model="moderation.forbidden.word">
+        <field name="name">créditos rápidos</field>
+    </record>
+    <record id="word_dinero_urgente" model="moderation.forbidden.word">
+        <field name="name">dinero urgente</field>
+    </record>
+    <record id="word_onlyfans" model="moderation.forbidden.word">
+        <field name="name">onlyfans</field>
+    </record>
+    <record id="word_webcam" model="moderation.forbidden.word">
+        <field name="name">webcam</field>
+    </record>
+    <record id="word_webcams" model="moderation.forbidden.word">
+        <field name="name">webcams</field>
+    </record>
+    <record id="word_camgirl" model="moderation.forbidden.word">
+        <field name="name">camgirl</field>
+    </record>
+    <record id="word_cam_girl" model="moderation.forbidden.word">
+        <field name="name">cam girl</field>
+    </record>
+    <record id="word_chicas_calientes" model="moderation.forbidden.word">
+        <field name="name">chicas calientes</field>
+    </record>
+    <record id="word_contactos_sexuales" model="moderation.forbidden.word">
+        <field name="name">contactos sexuales</field>
+    </record>
+    <record id="word_citas_sexuales" model="moderation.forbidden.word">
+        <field name="name">citas sexuales</field>
+    </record>
+    <record id="word_ligar_gratis" model="moderation.forbidden.word">
+        <field name="name">ligar gratis</field>
+    </record>
+    <record id="word_sms_premium" model="moderation.forbidden.word">
+        <field name="name">sms premium</field>
+    </record>
+    <record id="word_numero_premium" model="moderation.forbidden.word">
+        <field name="name">número premium</field>
+    </record>
+    <record id="word_compra_seguidores" model="moderation.forbidden.word">
+        <field name="name">compra seguidores</field>
+    </record>
+    <record id="word_seguidores_gratis" model="moderation.forbidden.word">
+        <field name="name">seguidores gratis</field>
+    </record>
+    <record id="word_likes_gratis" model="moderation.forbidden.word">
+        <field name="name">likes gratis</field>
+    </record>
+    <record id="word_tarjetas_clonadas" model="moderation.forbidden.word">
+        <field name="name">tarjetas clonadas</field>
+    </record>
+    <record id="word_clonar_tarjetas" model="moderation.forbidden.word">
+        <field name="name">clonar tarjetas</field>
+    </record>
+    <record id="word_http" model="moderation.forbidden.word">
+        <field name="name">http</field>
+    </record>
+    <record id="word_https" model="moderation.forbidden.word">
+        <field name="name">https</field>
+    </record>
+    <record id="word_www" model="moderation.forbidden.word">
+        <field name="name">www</field>
+    </record>
+
+</odoo>
