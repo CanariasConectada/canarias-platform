@@ -4,6 +4,49 @@
 <odoo>
 
     <!-- ================================================================
+         THE SWITCH
+         ================================================================
+         Every compare control on the platform sits behind
+         ``website._wscc_comparison_enabled()`` (models/website.py), a
+         platform-wide ``ir.config_parameter`` the admin flips from Website >
+         Configuration > Settings > "Price comparator". Off (the shipped
+         default) means NOT RENDERED: no button, no picker, no bottom bar, no
+         empty wrapper left behind — not hidden with CSS. The two templates
+         right below put core's OWN buttons behind the same condition, so
+         that a product WITH variants (the one case where core renders its
+         button by itself) does not keep a way in either. -->
+    <template
+        id="core_card_compare_switch"
+        inherit_id="website_sale_comparison.add_to_compare"
+        name="Core compare button on the card behind the switch (Canarias)"
+    >
+        <!-- Forcing ``isCompareAvailable`` off, rather than touching the
+             button, keeps core's own alignment placeholder in place. -->
+        <xpath expr="//t[@t-set='isCompareAvailable']" position="after">
+            <t t-if="not (website and website._wscc_comparison_enabled())"
+               t-set="isCompareAvailable" t-value="False"/>
+        </xpath>
+    </template>
+
+    <template
+        id="core_product_page_compare_switch"
+        inherit_id="website_sale_comparison.product_add_to_compare"
+        name="Core compare button on the product page behind the switch (Canarias)"
+    >
+        <!-- AND-ed onto core's own ``t-if`` (``add`` + ``separator="and"``,
+             the inheritance engine's own way of extending a Python
+             attribute), so core's condition stays exactly as core wrote it.
+             NOT a ``replace`` wrapping a ``position="move"``: the engine only
+             extracts a move that is a DIRECT child of the spec, so a move
+             nested in a ``t-if`` is not honoured and the button would be
+             deleted in both states. -->
+        <xpath expr="//button[@data-action='o_comparelist']" position="attributes">
+            <attribute name="t-if" add="website and website._wscc_comparison_enabled()"
+                       separator="and"/>
+        </xpath>
+    </template>
+
+    <!-- ================================================================
          Make "compare" available on EVERY product, modern styling
          ================================================================
          Core's compare button (website_sale_comparison.add_to_compare) only
@@ -46,7 +89,8 @@
         name="Compare button on the shop card (Canarias)"
     >
         <xpath expr="//*[hasclass('o_wsale_products_item_title')]" position="after">
-            <div t-if="product.product_variant_id" class="o_wscc_compare_wrap mt-1">
+            <div t-if="website and website._wscc_comparison_enabled() and product.product_variant_id"
+                 class="o_wscc_compare_wrap mt-1">
                 <button
                     type="button"
                     class="btn o_wscc_compare_btn o_wscc_compare_btn_sm o_add_compare"
@@ -75,7 +119,7 @@
     >
         <xpath expr="//div[hasclass('o_wsale_product_price')]" position="after">
             <button
-                t-if="product.product_variant_id"
+                t-if="website and website._wscc_comparison_enabled() and product.product_variant_id"
                 type="button"
                 class="btn btn-sm o_wscc_compare_btn o_wscc_compare_btn_sm mt-1 o_add_compare"
                 title="Compare with other products"
@@ -107,7 +151,8 @@
     >
         <xpath expr="//div[hasclass('o_wsale_product_details_content_section_price')]"
                position="after">
-            <div t-if="product.product_variant_id" class="o_wscc_compare_wrap mb-4">
+            <div t-if="website and website._wscc_comparison_enabled() and product.product_variant_id"
+                 class="o_wscc_compare_wrap mb-4">
                 <button
                     type="button"
                     class="btn btn-outline-primary o_wscc_compare_btn o_wscc_compare_btn_picker"
@@ -134,8 +179,20 @@
          a thousand copies of this markup. -->
     <template id="comparison_modal" inherit_id="website.layout"
               name="Comparison picker modal (Canarias)">
+        <!-- The switch as seen from the browser: ``data-wscc-comparison`` on
+             ``<body>`` only while the comparator is on. Core's own
+             ``ProductComparison`` interaction (the bottom bar) is matched on
+             it — see comparison_switch.js. A new attribute of its own, so
+             nothing core sets on ``<body>`` is touched. -->
+        <xpath expr="//body" position="attributes">
+            <attribute name="t-att-data-wscc-comparison">'1' if website and website._wscc_comparison_enabled() else None</attribute>
+        </xpath>
         <xpath expr="//div[@id='wrapwrap']" position="inside">
-            <div class="modal fade o_wscc_compare_modal" id="o_wscc_compare_modal"
+            <!-- Rendered ONLY with the switch on: the ``ComparisonModal``
+                 interaction selects on this element, so with the comparator
+                 off it is never even instantiated. -->
+            <div t-if="website and website._wscc_comparison_enabled()"
+                 class="modal fade o_wscc_compare_modal" id="o_wscc_compare_modal"
                  tabindex="-1" aria-hidden="true"
                  aria-labelledby="o_wscc_compare_modal_title">
                 <div class="modal-dialog modal-lg modal-dialog-scrollable">

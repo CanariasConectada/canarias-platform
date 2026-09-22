@@ -230,3 +230,29 @@ msgstr "Ver comparativa"
 #: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.comparison_modal
 msgid "Which zone?"
 msgstr "¿Con qué zona?"
+
+#. module: website_sale_comparison_canarias
+#: model:ir.model.fields,field_description:website_sale_comparison_canarias.field_res_config_settings__wscc_comparison_enabled
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.res_config_settings_view_form_comparison
+msgid "Price Comparator"
+msgstr "Comparador de precios"
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.res_config_settings_view_form_comparison
+msgid "Price comparator"
+msgstr "Comparador de precios"
+
+#. module: website_sale_comparison_canarias
+#: model:ir.model.fields,help:website_sale_comparison_canarias.field_res_config_settings__wscc_comparison_enabled
+msgid "Show the price comparator on every shop: the Compare buttons on the product cards, the Compare prices button and its picker on the product page, and the comparison bar. When disabled the comparator is not rendered anywhere and its data endpoint answers empty; nothing is uninstalled, so it can be switched back on at any time."
+msgstr "Muestra el comparador de precios en todas las tiendas: los botones Comparar de las tarjetas de producto, el botón Comparar precios y su selector en la página de producto, y la barra de comparación. Si está desactivado, el comparador no se muestra en ningún sitio y su punto de datos responde vacío; no se desinstala nada, por lo que puede volver a activarse en cualquier momento."
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.res_config_settings_view_form_comparison
+msgid "Show the comparator on the shop listings and product pages of every website. When off, no Compare button, picker or comparison bar is rendered anywhere."
+msgstr "Muestra el comparador en los listados de la tienda y en las páginas de producto de todos los sitios web. Si está desactivado, no se muestra ningún botón Comparar, selector ni barra de comparación."
+
+#. module: website_sale_comparison_canarias
+#: model_terms:ir.ui.view,arch_db:website_sale_comparison_canarias.res_config_settings_view_form_comparison
+msgid "This setting is common to all websites."
+msgstr "Este ajuste es común a todos los sitios web."

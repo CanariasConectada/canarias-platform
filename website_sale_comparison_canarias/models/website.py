@@ -2,6 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 from odoo import _, models
+from odoo.tools import str2bool
 
 # The four questions a visitor asks in front of a price, in the order they
 # ask them. The keys travel in the query string and in the markup, so they
@@ -11,9 +12,36 @@ SCOPE_ZONE = "zone"
 SCOPE_OTHER_ZONE = "other_zone"
 SCOPE_SHOP = "shop"
 
+# The platform-wide switch. The comparator stays installed with all its data
+# either way; this only decides whether a visitor gets to see it. Shipped as
+# ``False`` (data/ir_config_parameter.xml) and flipped from Website >
+# Configuration > Settings > "Price comparator", or by writing the parameter.
+PARAM_ENABLED = "website_sale_comparison_canarias.enabled"
+
 
 class Website(models.Model):
     _inherit = "website"
+
+    # ------------------------------------------------------------------
+    # The switch
+    # ------------------------------------------------------------------
+    def _wscc_comparison_enabled(self):
+        """Whether the price comparator is switched on for the platform.
+
+        The ONE place the switch is read. Every template (``t-if``), the
+        candidates endpoint and the comparison page all ask this, so turning
+        the comparator off means no compare control is rendered anywhere, not
+        merely hidden. Read live off ``ir.config_parameter`` (which is
+        ORM-cached and invalidated on write), so flipping the setting needs
+        no restart and no deploy.
+
+        The parameter holds the text a Boolean setting writes (``"True"`` /
+        ``"False"``), and ``"False"`` is a truthy string: hence ``str2bool``
+        rather than a bare truth test. Absent or unreadable means off, which
+        is the shipped default.
+        """
+        raw = self.env["ir.config_parameter"].sudo().get_param(PARAM_ENABLED) or ""
+        return str2bool(raw.strip(), default=False)
 
     # ------------------------------------------------------------------
     # Which site answers which scope
@@ -120,10 +148,7 @@ class Website(models.Model):
         if "commercial_zone" not in self.env["res.company"]._fields:
             return []
         return (
-            self.env["res.company"]
-            .sudo()
-            .search([("commercial_zone", "=", zone)])
-            .ids
+            self.env["res.company"].sudo().search([("commercial_zone", "=", zone)]).ids
         )
 
     def _comparison_outside_zone_company_ids(self, product=None):
@@ -135,9 +160,7 @@ class Website(models.Model):
         of it.
         """
         self.ensure_one()
-        return self._comparison_zone_company_ids(
-            self._comparison_product_zone(product)
-        )
+        return self._comparison_zone_company_ids(self._comparison_product_zone(product))
 
     def _comparison_owner_website(self, product):
         """The site of the shop that actually sells ``product``.
