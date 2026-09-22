@@ -1,11 +1,12 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo.tests import TransactionCase
+from odoo.tests import TransactionCase, tagged
 
 from .common import create_taxonomy
 
 
+@tagged("post_install", "-at_install")
 class TestLocalContentRating(TransactionCase):
     """Read-only display of the migrated legacy ratings on public pages."""
 

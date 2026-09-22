@@ -1270,3 +1270,120 @@ msgstr "<i class=\"fa fa-trash me-1\"/>Quitar mi valoración"
 #: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
 msgid "Choose from 1 to 5 stars."
 msgstr "Elige de 1 a 5 estrellas."
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.rating_rating_view_form_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.rating_rating_view_list_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.rating_rating_view_search_local_content
+msgid "Author"
+msgstr "Autor"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.rating_rating_view_form_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.rating_rating_view_list_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.rating_rating_view_search_local_content
+msgid "Comment"
+msgstr "Comentario"
+
+#. module: website_local_content
+#: model:ir.model.fields,field_description:website_local_content.field_rating_rating__feedback_moderation_status
+msgid "Comment Status"
+msgstr "Estado del comentario"
+
+#. module: website_local_content
+#: model:mail.template,subject:website_local_content.mail_template_comment_moderation
+msgid "Comment pending review on {{ object.res_name }}"
+msgstr "Comentario pendiente de revisión en {{ object.res_name }}"
+
+#. module: website_local_content
+#: model:ir.ui.menu,name:website_local_content.menu_local_content_comments
+msgid "Comments pending review"
+msgstr "Comentarios pendientes de revisión"
+
+#. module: website_local_content
+#: model:ir.actions.act_window,name:website_local_content.action_local_content_comment
+#: model:ir.ui.menu,name:website_local_content.menu_moderation_local_content_comments
+msgid "Local Content Comments"
+msgstr "Comentarios de contenido local"
+
+#. module: website_local_content
+#: model:mail.template,name:website_local_content.mail_template_comment_moderation
+msgid "Local Content: Comment Pending Review"
+msgstr "Contenido local: comentario pendiente de revisión"
+
+#. module: website_local_content
+#. odoo-python
+#: code:addons/website_local_content/models/rating_rating.py:0
+msgid "Local content comment pending review"
+msgstr "Comentario de contenido local pendiente de revisión"
+
+#. module: website_local_content
+#: model:ir.model.fields,help:website_local_content.field_rating_rating__feedback_moderation_status
+msgid ""
+"Local content ratings only. The stars always count; the comment text is held"
+" for a manager when it contains a forbidden word."
+msgstr "Solo valoraciones de contenido local. Las estrellas siempre cuentan; el texto del comentario se retiene para un gestor cuando contiene una palabra prohibida."
+
+#. module: website_local_content
+#: model_terms:ir.actions.act_window,help:website_local_content.action_local_content_comment
+msgid "No comments to review"
+msgstr "No hay comentarios que revisar"
+
+#. module: website_local_content
+#. odoo-python
+#: code:addons/website_local_content/models/rating_rating.py:0
+msgid "Only local content managers can change the comment status."
+msgstr "Solo los gestores de contenido local pueden cambiar el estado del comentario."
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.rating_rating_view_search_local_content
+msgid "Pending Review"
+msgstr "Pendiente de revisión"
+
+#. module: website_local_content
+#: model:ir.model.fields.selection,name:website_local_content.selection__rating_rating__feedback_moderation_status__pending
+msgid "Pending review"
+msgstr "Pendiente de revisión"
+
+#. module: website_local_content
+#: model:ir.model,name:website_local_content.model_rating_rating
+msgid "Rating"
+msgstr "Valoración"
+
+#. module: website_local_content
+#: model_terms:ir.actions.act_window,help:website_local_content.action_local_content_comment
+msgid ""
+"Rating comments that contain a forbidden word wait here for\n"
+"                a manual check. Their stars are already published."
+msgstr ""
+"Los comentarios de valoración que contienen una palabra prohibida\n"
+"                esperan aquí una revisión manual. Sus estrellas ya están publicadas."
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.rating_rating_view_form_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.rating_rating_view_list_local_content
+msgid "Stars"
+msgstr "Estrellas"
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.rating_rating_view_search_local_content
+msgid "Status"
+msgstr "Estado"
+
+#. module: website_local_content
+#. odoo-python
+#: code:addons/website_local_content/models/rating_rating.py:0
+msgid ""
+"The comment of %(author)s on %(item)s contains words that require a manual "
+"check."
+msgstr "El comentario de %(author)s en %(item)s contiene palabras que requieren una revisión manual."
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "Your comment was not published."
+msgstr "Tu comentario no se ha publicado."
+
+#. module: website_local_content
+#: model_terms:ir.ui.view,arch_db:website_local_content.content_detail
+msgid "Your comment will be published after review."
+msgstr "Tu comentario se publicará tras la revisión."

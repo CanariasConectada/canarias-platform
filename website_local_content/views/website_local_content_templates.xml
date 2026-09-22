@@ -458,7 +458,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- Reviews (read-only, migrated legacy ratings) -->
+                            <!-- Reviews: every consumed rating (stars always public) -->
                             <section t-if="reviews" id="wlc_reviews" class="wlc-reviews mb-4">
                                 <h3 class="mb-3">
                                     Reviews
@@ -474,7 +474,19 @@
                                             <t t-call="website_local_content.content_rating_stars">
                                                 <t t-set="stars" t-value="round(review.rating)"/>
                                             </t>
-                                            <p class="mb-0 mt-2" t-if="review.feedback" t-esc="review.feedback"/>
+                                            <!-- A held comment is only shown to its author, with a
+                                                 neutral notice (never the matched word); a rejected one
+                                                 is hidden from everyone. The stars above always show. -->
+                                            <t t-set="is_own_review" t-value="my_rating and review.id == my_rating.id"/>
+                                            <p class="mb-0 mt-2" t-if="review.feedback and review.feedback_moderation_status == 'approved'" t-esc="review.feedback"/>
+                                            <t t-elif="review.feedback and is_own_review">
+                                                <p t-if="review.feedback_moderation_status == 'pending'" class="mb-1 mt-2 wlc-review-held" t-esc="review.feedback"/>
+                                                <p class="mb-0 small text-muted wlc-feedback-notice">
+                                                    <i class="fa fa-clock-o me-1"/>
+                                                    <t t-if="review.feedback_moderation_status == 'pending'">Your comment will be published after review.</t>
+                                                    <t t-else="">Your comment was not published.</t>
+                                                </p>
+                                            </t>
                                         </div>
                                     </div>
                                 </t>
@@ -570,6 +582,14 @@
                                         <p t-if="my_rating" class="mb-2 fw-bold wlc-my-rating">
                                             Your rating: <t t-esc="int(my_rating.rating)"/> ★
                                         </p>
+                                        <div t-if="my_rating and my_rating.feedback and my_rating.feedback_moderation_status == 'pending'"
+                                             role="status" class="alert alert-info py-2 small wlc-feedback-notice">
+                                            Your comment will be published after review.
+                                        </div>
+                                        <div t-if="my_rating and my_rating.feedback and my_rating.feedback_moderation_status == 'rejected'"
+                                             role="status" class="alert alert-secondary py-2 small wlc-feedback-notice">
+                                            Your comment was not published.
+                                        </div>
                                         <div t-if="rating_error" role="alert"
                                              class="alert alert-warning py-2 small wlc-rating-error">
                                             Choose from 1 to 5 stars.

@@ -125,9 +125,7 @@ class TestLocalContentModels(TransactionCase):
 
     def test_image_url_sizes(self):
         item = self._create_item()
-        self.assertEqual(
-            item.get_image_url(), f"/explora/test-type-a/img/{item.id}"
-        )
+        self.assertEqual(item.get_image_url(), f"/explora/test-type-a/img/{item.id}")
         self.assertEqual(
             item.get_image_url(size=512),
             f"/explora/test-type-a/img/{item.id}?size=512",
@@ -202,6 +200,7 @@ class TestLocalContentModels(TransactionCase):
         self.assertNotIn(only_a, visible_on_b)
 
 
+@tagged("post_install", "-at_install")
 class TestLocalContentAccess(TransactionCase):
     """Anonymous and portal visitors must never read visitor PII (like:
     ip_address/session_key) nor gallery images through the ORM/RPC. The public
@@ -213,18 +212,32 @@ class TestLocalContentAccess(TransactionCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.type_a, cls.category_a, cls.subcategory_a = create_taxonomy(cls.env, "A")
-        item = cls.env["website.local.content.item"].sudo().create(
-            {
-                "name": "Casa del Niño",
-                "type_id": cls.type_a.id,
-                "category_id": cls.category_a.id,
-            }
+        item = (
+            cls.env["website.local.content.item"]
+            .sudo()
+            .create(
+                {
+                    "name": "Casa del Niño",
+                    "type_id": cls.type_a.id,
+                    "category_id": cls.category_a.id,
+                }
+            )
         )
-        cls.like = cls.env["website.local.content.like"].sudo().create(
-            {"item_id": item.id, "session_key": "sess-1", "ip_address": "203.0.113.9"}
+        cls.like = (
+            cls.env["website.local.content.like"]
+            .sudo()
+            .create(
+                {
+                    "item_id": item.id,
+                    "session_key": "sess-1",
+                    "ip_address": "203.0.113.9",
+                }
+            )
         )
-        cls.image = cls.env["website.local.content.image"].sudo().create(
-            {"item_id": item.id, "name": "gallery"}
+        cls.image = (
+            cls.env["website.local.content.image"]
+            .sudo()
+            .create({"item_id": item.id, "name": "gallery"})
         )
         cls.portal_user = new_test_user(
             cls.env, login="wlc_portal", groups="base.group_portal"

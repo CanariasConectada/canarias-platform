@@ -1,7 +1,1 @@
-from . import (
-    microsite_content_editor,
-    rating_rating,
-    res_company,
-    res_config_settings,
-    review_forbidden_word,
-)
+from . import microsite_content_editor, rating_rating, res_company, res_config_settings
