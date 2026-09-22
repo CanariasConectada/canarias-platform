@@ -2,7 +2,7 @@
 
 Solo lectura sobre la BD `prod`. Lotes de 10 sites ordenados por id de website. Jev: `typesafe/jev-1.13` vía OpenRouter Decisions API.
 
-Última actualización: 2026-09-22 23:48 UTC  ·  Coste Jev acumulado: 0.00147 USD
+Última actualización: 2026-09-22 23:48 UTC  ·  Coste Jev acumulado: 0.00177 USD
 
 | Lote | Sites | T1 reseñas | T2 sección 1 | T3 imágenes |
 |---|---|---|---|---|
@@ -19,7 +19,7 @@ Solo lectura sobre la BD `prod`. Lotes de 10 sites ordenados por id de website. 
 | 10 | 103-112 | 10 OK / 0 fallan | 0 cand. · 0 cambios · 0 revisión | 1 cand. · 0 cambios · 0 revisión |
 | 11 | 113-122 | 10 OK / 0 fallan | 0 cand. · 0 cambios · 0 revisión | 3 cand. · 10 cambios · 0 revisión |
 | 12 | 123-132 | 10 OK / 0 fallan | 0 cand. · 0 cambios · 0 revisión | 7 cand. · 28 cambios · 0 revisión |
-| 13 | 133-142 | 10 OK / 0 fallan | 0 cand. · 0 cambios · 0 revisión | — |
+| 13 | 133-142 | 10 OK / 0 fallan | 0 cand. · 0 cambios · 0 revisión | 7 cand. · 28 cambios · 0 revisión |
 | 14 | 144-153 | 10 OK / 0 fallan | 0 cand. · 0 cambios · 0 revisión | — |
 | 15 | 154-164 | 10 OK / 0 fallan | 0 cand. · 0 cambios · 0 revisión | — |
 | 16 | 165-174 | 10 OK / 0 fallan | 0 cand. · 0 cambios · 0 revisión | — |
@@ -29,7 +29,7 @@ Solo lectura sobre la BD `prod`. Lotes de 10 sites ordenados por id de website. 
 | 20 | 207-218 | 10 OK / 0 fallan | 7 cand. · 6 cambios · 8 revisión | — |
 | 21 | 221-223 | 2 OK / 0 fallan | 0 cand. · 0 cambios · 0 revisión | — |
 
-Sites cubiertos: T1 212/212 · T2 212/212 · T3 130/212
+Sites cubiertos: T1 212/212 · T2 212/212 · T3 140/212
 
 ## Notas por lote
 
@@ -42,3 +42,9 @@ Sites cubiertos: T1 212/212 · T2 212/212 · T3 130/212
 - [t3 b12] site 128: sección Separador sin imagen candidata en la carpeta 'churreriaastrid'
 - [t3 b12] site 131: sección Separador sin imagen candidata en la carpeta 'cortican'
 - [t3 b12] site 132: sección Separador sin imagen candidata en la carpeta 'darens'
+- [t3 b13] site 133: sección Separador sin imagen candidata en la carpeta 'decoratina'
+- [t3 b13] site 134: sección Separador sin imagen candidata en la carpeta 'diazlejaservicios'
+- [t3 b13] site 135: sección Separador sin imagen candidata en la carpeta 'electromecanicaadrian'
+- [t3 b13] site 137: sección Separador sin imagen candidata en la carpeta 'evocars'
+- [t3 b13] site 138: sección Separador sin imagen candidata en la carpeta 'joyerialucia'
+- [t3 b13] site 141: sección Separador sin imagen candidata en la carpeta 'latrastiendabiomarket'
