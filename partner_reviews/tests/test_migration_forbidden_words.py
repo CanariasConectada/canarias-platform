@@ -70,15 +70,20 @@ class TestForbiddenWordsMigration(TransactionCase):
     def test_migration_copies_merges_and_cleans_up(self):
         seeded = self._word("hostia")
         self.assertTrue(seeded.active, "precondition: the seed ships hostia active")
+        archived_seed = self._word("timo")
+        self.assertFalse(
+            archived_seed.active, "precondition: the seed ships timo archived"
+        )
         self._build_old_table(
             [
                 ("prtestcustomword", True),  # not in the seed: copied
-                ("Hostia", False),  # seeded, archived in the old list
+                ("Hostia", False),  # seeded active, archived in the old list
+                ("timo", True),  # seeded archived, active in the old list
                 ("IMBECIL", True),  # normalized collision with the seed
                 ("PrTestCustomWord", True),  # collision inside the old list
             ]
         )
-        self.assertEqual(self._old_xmlids(), 4)
+        self.assertEqual(self._old_xmlids(), 5)
         before = self.Word.search_count([])
 
         self.migration.migrate(self.env.cr, "19.0.2.2.1")
@@ -88,7 +93,8 @@ class TestForbiddenWordsMigration(TransactionCase):
         self.assertEqual(custom.name, "prtestcustomword")
         self.assertTrue(custom.active)
         self.assertEqual(custom.note, "Migrated from the merchant reviews list")
-        self.assertFalse(seeded.active, "archived flag propagated onto the seed")
+        self.assertFalse(seeded.active, "old archived state propagated onto the seed")
+        self.assertTrue(archived_seed.active, "old active state re-activates the seed")
         self.assertEqual(len(self._word("imbecil")), 1, "no duplicate created")
         self.assertEqual(self.Word.search_count([]), before + 1)
         self.assertEqual(self._old_xmlids(), 0)

@@ -4,8 +4,10 @@
   `website_moderation_forbidden_word` (one list for merchant reviews and
   local content comments, client decision). `review.forbidden.word` is
   gone: the migration copies every row into `moderation.forbidden.word`
-  (entries the shared seed already holds are skipped, an archived flag is
-  propagated), deletes its orphan xmlids and drops the old table.
+  (entries the shared seed already holds are skipped but take the old
+  row's active state, so a word that held reviews before keeps holding
+  them even where the seed ships it archived), deletes its orphan xmlids
+  and drops the old table.
 - Matching now ignores accents on both sides (`IMBECIL` hits `imbécil`)
   and keeps the whole-word rule; multi-word entries keep working.
 - *Reviews > Forbidden Words* stays for review administrators and opens the
