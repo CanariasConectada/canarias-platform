@@ -40,7 +40,10 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     lib.add_connection_args(ap)
     ap.add_argument("--apply", action="store_true", help="write (default: dry-run)")
+    ap.add_argument("--plan", help="JSON file {'glossary': [terms], 'jobs': [job ids]} instead of the built-in list")
     args = ap.parse_args()
+    if args.plan:
+        return run_plan(args)
     client = lib.client_from_args(args)
     mode = "APPLY" if args.apply else "DRY-RUN"
 
@@ -78,6 +81,35 @@ def main() -> int:
         n = client.execute_kw("auto.translate.job", "action_translate_again", [[j["id"] for j in redo]])
         print(f"re-queued: {n}")
     if not args.apply:
+        print("dry-run: nothing written. Re-run with --apply.")
+    return 0
+
+
+def run_plan(args) -> int:
+    """Platform-wide variant: glossary terms and job ids come from a plan file."""
+    import json
+    plan = json.loads(Path(args.plan).read_text(encoding="utf-8"))
+    client = lib.client_from_args(args)
+    mode = "APPLY" if args.apply else "DRY-RUN"
+    to_create = []
+    for term in plan["glossary"]:
+        candidates = client.search_read("auto.translate.glossary",
+                                        [("name", "=ilike", term), ("lang", "=", False)], ["id", "name"])
+        if any(c["name"].casefold() == term.casefold() for c in candidates):
+            print(f"[{mode}] glossary EXISTS {term!r}")
+        else:
+            print(f"[{mode}] glossary CREATE {term!r}")
+            to_create.append({"name": term, "note": "Commerce name missing from the glossary (tools/jev-microsites, 2026-09-23)"})
+    job_ids = [int(j) for j in plan["jobs"]]
+    jobs = client.search_read("auto.translate.job", [("id", "in", job_ids)], ["id", "state", "model_name"])
+    redo = [j["id"] for j in jobs if j["state"] != "locked" and j["model_name"] == "ir.ui.view"]
+    print(f"[{mode}] jobs: {len(redo)} to translate again ({len(job_ids) - len(redo)} skipped: locked or missing)")
+    if args.apply:
+        if to_create:
+            print("created glossary ids:", client.execute_kw("auto.translate.glossary", "create", [to_create]))
+        if redo:
+            print("re-queued:", client.execute_kw("auto.translate.job", "action_translate_again", [redo]))
+    else:
         print("dry-run: nothing written. Re-run with --apply.")
     return 0
 
