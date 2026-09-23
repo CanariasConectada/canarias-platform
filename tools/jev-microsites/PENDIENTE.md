@@ -90,7 +90,7 @@ Nota: en 31 comercios el banner de la Sección 1 es «Bienvenidos a <nombre>», 
 
 ```
 cd tools/jev-microsites
-python3 -m unittest                             # 39 tests de las funciones puras y del flujo (cliente falso)
+python3 -m unittest                             # 60 tests de las funciones puras y del flujo (cliente falso)
 python3 aplicar.py --offline                    # plan y validación sin conexión (rutas del zip, campos, duplicados)
 export ODOO_LOGIN=...                           # la contraseña se pide por getpass o va en ODOO_PASSWORD; no existe --password
 python3 aplicar.py                              # dry-run conectado: comprueba que la vista es la portada del site y compara con el servidor
