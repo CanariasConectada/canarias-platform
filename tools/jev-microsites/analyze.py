@@ -132,6 +132,7 @@ class Context:
         for a in load_json(DATA / "company_images.json", []):
             self.company_images[a["company_id"]][a["res_field"]] = a
         self.sec1_texts = load_json(HERE / "sec1_texts.json", {})
+        self.about_texts = load_json(HERE / "about_texts.json", {})
         self.reviews = None  # lazy
 
     def batches(self):
@@ -406,6 +407,103 @@ def analyze_images(ctx: Context, site: dict):
 
 
 # --------------------------------------------------------------------------
+# Task 4: About us / Our services
+# --------------------------------------------------------------------------
+TEMPLATE_PREFIXES = ("En nuestro espacio encontrarás productos", "Atención cercana y asesoramiento honesto")
+
+
+def is_template(text: str) -> bool:
+    t = (text or "").strip()
+    return t == "" or t.startswith(TEMPLATE_PREFIXES)
+
+
+def acerca_columns(view_id: int):
+    """Full card-body text of each Acerca column in the es_ES arch (None if no section)."""
+    import html as _html
+    rows = psql_json(f"select json_build_object('a', arch_db->>'es_ES') from ir_ui_view where id = {int(view_id)}")
+    arch = (rows or {}).get("a") or ""
+    m = re.search(r'<section\b[^>]*data-name="Acerca".*?</section>', arch, re.S)
+    if not m:
+        return None
+    cards = re.findall(r'<div class="card card-body bg-light">(.*?)</div>', m.group(0), re.S)
+    return [re.sub(r"\s+", " ", _html.unescape(re.sub(r"<[^>]+>", " ", c))).strip() for c in cards]
+
+
+def analyze_about(ctx: Context, site: dict):
+    wid = site["website_id"]
+    rows, notes = [], []
+    if wid in NON_MERCHANT_SITES or wid in TEST_SITES or not site["section_order"]:
+        return {"candidate": False, "reason": "no es microsite de comercio o portada vacía"}, rows, notes
+    about, services = (site["microsite_about_text"] or "").strip(), (site["microsite_services_text"] or "").strip()
+    need = {"about": is_template(about), "services": is_template(services)}
+    if not any(need.values()):
+        return {"candidate": False, "reason": "Sobre nosotros y Servicios con texto propio"}, rows, notes
+    flags = manual_flags(site)
+    proposed = ctx.about_texts.get(str(wid), {})
+    cols = acerca_columns(site["view_id"]) if site["view_id"] else None
+    sec1 = site["sections"].get("SEC1")
+    state = (
+        f"Local business microsite on Canarias Conectada (Las Palmas de Gran Canaria).\n"
+        f"Company: {site['company_name']} | Website name: {site['website_name']} | Site: {site['domain']}\n"
+        f"Directory category: {site['category_name'] or 'none'} | Commercial zone: {site['commercial_zone']}\n"
+        f"Intro banner heading: {' '.join(sec1['headings']) if sec1 else '(none)'}\n"
+        f"Current 'About us' text: {about or '(empty)'}\nCurrent 'Our services' text: {services or '(empty)'}\n"
+        f"Proposed 'About us': {proposed.get('about', '(keep current)')}\nProposed 'Our services': {proposed.get('services', '(keep current)')}"
+    )
+    q = {
+        "niche": {"type": "choice", "instructions": "Which niche best describes this business?", "criteria": NICHES},
+        "is_manual": {"type": "noul",
+                      "instructions": "Were the CURRENT About/Services texts written specifically for this business by its owner, rather than a generic template or left empty?",
+                      "criteria": {"true": "Concrete details unique to this business.",
+                                   "false": "Generic template wording ('En nuestro espacio encontrarás productos y servicios...', 'Atención cercana y asesoramiento honesto...') or empty."}},
+    }
+    for key, label in (("about", "About us"), ("services", "Our services")):
+        if need[key] and proposed.get(key):
+            q[f"fits_{key}"] = {"type": "noul", "instructions": f"Does the proposed '{label}' text fit this business accurately (no invented products, services or places; consistent with name, category, zone and banner)?",
+                                "criteria": {"true": "Consistent and plausible for this exact business.", "false": "Invents details, contradicts the category or the name, or fits another business."}}
+    ans = jev_client.decide(state, q, tag=f"t4-about-{wid}")["answers"]
+    niche, niche_conf = ans["niche"]["choice"], float(ans["niche"].get("confidence") or 0)
+    p_manual = float(ans["is_manual"]["noul"])
+    fits = {k: float(ans[f"fits_{k}"]["noul"]) for k in ("about", "services") if f"fits_{k}" in ans}
+    rec = {"candidate": True, "need": need, "niche": niche, "niche_conf": niche_conf, "p_manual": p_manual, "fits": fits,
+           "proposed": proposed, "has_acerca": cols is not None, "n_cols": len(cols) if cols else 0,
+           "current": {"about": about, "services": services}, **flags}
+    manual = flags["manual_effective"] or p_manual >= THRESHOLD
+    base = f"nicho Jev={niche} ({niche_conf:.2f}); manual Jev={p_manual:.2f}"
+    if manual:
+        base = "MANUAL: " + ("editado por uid %s/%s; " % (flags["view_write_uid"], flags["company_write_uid"]) if flags["manual_effective"] else "Jev lo considera texto propio; ") + base
+    elif flags["manual_strict"]:
+        base += "; write_date>create_date por script propio (uid %s/%s), no manual" % (flags["view_write_uid"], flags["company_write_uid"])
+    field = {"about": "microsite_about_text", "services": "microsite_services_text"}
+    col = {"about": 1, "services": 2}
+    for key in ("about", "services"):
+        if not need[key]:
+            continue
+        if not proposed.get(key):
+            notes.append(f"site {wid}: sin texto propuesto para {key}")
+            continue
+        conf = round(min(niche_conf, fits[key]), 3)
+        target = "revision" if (manual or conf < THRESHOLD) else "cambios"
+        motivo = f"{base}; encaje {key}={fits[key]:.2f}"
+        rows.append({"site": wid, "campo": f"res_company.{field[key]}", "valor_anterior": rec["current"][key], "valor_nuevo": proposed[key],
+                     "confianza": conf, "motivo": motivo, "_target": target, "_task": 4})
+        if cols is not None:
+            prev = cols[col[key] - 1] if len(cols) >= col[key] else ""
+            extra = "" if len(cols) >= col[key] else "; la portada no tiene esta columna: se añade"
+            rows.append({"site": wid, "campo": f"ir_ui_view.{site['view_id']}.Acerca.col{col[key]}", "valor_anterior": prev, "valor_nuevo": proposed[key],
+                         "confianza": conf, "motivo": motivo + extra, "_target": target, "_task": 4})
+    if cols is None and all(proposed.get(k) for k in ("about", "services")):
+        conf = round(min([niche_conf] + list(fits.values())), 3)
+        target = "revision" if (manual or conf < THRESHOLD) else "cambios"
+        payload = json.dumps({"about_title": site["microsite_about_title"] or "Sobre nosotros", "about": proposed["about"],
+                              "services_title": site["microsite_services_title"] or "Nuestros servicios", "services": proposed["services"],
+                              "slug": site["subdomain"] or f"site{wid}"}, ensure_ascii=False)
+        rows.append({"site": wid, "campo": f"ir_ui_view.{site['view_id']}.Acerca.insert", "valor_anterior": "", "valor_nuevo": payload,
+                     "confianza": conf, "motivo": base + "; la portada no tiene bloque Acerca: se inserta tras SEC1", "_target": target, "_task": 4})
+    return rec, rows, notes
+
+
+# --------------------------------------------------------------------------
 # CSV / progress persistence
 # --------------------------------------------------------------------------
 def read_csv(path: Path):
@@ -455,15 +553,15 @@ def update_progress(ctx: Context, task, batch_idx, batch, stats, notes):
 
 
 def render_progress(ctx: Context, state):
-    done_sites = {t: 0 for t in (1, 2, 3)}
+    done_sites = {t: 0 for t in (1, 2, 3, 4)}
     lines = ["# PROGRESO — auditoría Jev de microsites (2026-09-22, trabajo nocturno)", "",
              "Solo lectura sobre la BD `prod`. Lotes de 10 sites ordenados por id de website. Jev: `typesafe/jev-1.13` vía OpenRouter Decisions API.", "",
              f"Última actualización: {now_utc()}  ·  Coste Jev acumulado: {state.get('cost', 0):.5f} USD", "",
-             "| Lote | Sites | T1 reseñas | T2 sección 1 | T3 imágenes |", "|---|---|---|---|---|"]
+             "| Lote | Sites | T1 reseñas | T2 sección 1 | T3 imágenes | T4 nosotros/servicios |", "|---|---|---|---|---|---|"]
     for k in sorted(state["batches"], key=int):
         b = state["batches"][k]
         cells = []
-        for t in (1, 2, 3):
+        for t in (1, 2, 3, 4):
             s = b.get(f"task{t}")
             if not s:
                 cells.append("—")
@@ -474,7 +572,7 @@ def render_progress(ctx: Context, state):
             else:
                 cells.append(f"{s['candidatos']} cand. · {s['cambios']} cambios · {s['revision']} revisión")
         lines.append(f"| {int(k):02d} | {b['sites']} | " + " | ".join(cells) + " |")
-    lines += ["", f"Sites cubiertos: T1 {done_sites[1]}/{len(ctx.sites)} · T2 {done_sites[2]}/{len(ctx.sites)} · T3 {done_sites[3]}/{len(ctx.sites)}", ""]
+    lines += ["", f"Sites cubiertos: T1 {done_sites[1]}/{len(ctx.sites)} · T2 {done_sites[2]}/{len(ctx.sites)} · T3 {done_sites[3]}/{len(ctx.sites)} · T4 {done_sites[4]}/{len(ctx.sites)}", ""]
     if state.get("notes"):
         lines += ["## Notas por lote", ""] + [f"- {n}" for n in state["notes"]] + [""]
     PROGRESO.write_text("\n".join(lines))
@@ -495,16 +593,18 @@ def run(ctx: Context, task: int, batch_idx: int):
             r, n = [], []
         elif task == 2:
             rec, r, n = analyze_sec1(ctx, site)
+        elif task == 4:
+            rec, r, n = analyze_about(ctx, site)
         else:
             rec, r, n = analyze_images(ctx, site)
-        if task in (2, 3) and rec.get("candidate"):
+        if task in (2, 3, 4) and rec.get("candidate"):
             stats["candidatos"] += 1
         stats["cambios"] += sum(1 for x in r if x["_target"] == "cambios")
         stats["revision"] += sum(1 for x in r if x["_target"] == "revision")
         rows += r
         notes += n
         save_site_analysis(task, site["website_id"], rec)
-    if task in (2, 3):
+    if task in (2, 3, 4):
         merge_rows(rows, batch, task)
     update_progress(ctx, task, batch_idx, batch, stats, notes)
     print(f"task {task} batch {batch_idx:02d} sites {batch[0]['website_id']}-{batch[-1]['website_id']}: {stats} cost={jev_client.total_cost():.5f}")
@@ -512,7 +612,7 @@ def run(ctx: Context, task: int, batch_idx: int):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--task", type=int, choices=(1, 2, 3))
+    ap.add_argument("--task", type=int, choices=(1, 2, 3, 4))
     ap.add_argument("--batch", type=int)
     ap.add_argument("--all-batches", action="store_true")
     ap.add_argument("--all", action="store_true")
