@@ -145,3 +145,12 @@ Pendiente tras la aplicación:
 - **Verificación (21:49 UTC)**: 0 nombres perdidos en ninguna página; 824/824 traducciones revisadas presentes; 70/70 portadas con estructura idéntica en los 7 idiomas; 0 trabajos fallidos.
 - Observación: el nombre del website «Profesional Biuty by Estefaníaa» tiene una errata (doble «a»); se protegió tal cual. Corregirla es decisión del usuario.
 - La calidad del motor para contenido futuro sigue dependiendo de LibreTranslate; mejorarla en toda la plataforma requiere activar DeepL, Google o Claude con clave de API.
+
+## 10. Subdominios, DNS comodín y redirecciones (2026-09-23, noche)
+
+- Errata «Profesional Biuty by Estefaníaa» corregida (nombre de microsite de la compañía 192, portada del site 190 en los 7 idiomas y término 415 del glosario). Backup: `/home/odoo/Pending/jev-work/errata_backup.json`.
+- DNS: el usuario creó `*.canariasconectada.es A 5.250.187.50` en IONOS. Verificado en el DNS autoritativo. Con esto, los sites `mgmoda`, `pcstore` y `manhattancomuter`, que no tenían registro, ya abren.
+- El HTTPS ya era comodín (nginx, `*.canariasconectada.es`, vence el 2026-11-24) y Traefik ya enruta cualquier subdominio a Odoo, así que un comercio nuevo tiene subdominio automáticamente.
+- Redirecciones 301 de los 30 subdominios antiguos del zip: `microsite-redirects.yml`, instalado por el usuario en `/etc/dokploy/traefik/dynamic/`. 30/30 verificadas (maquifer, fijando la IP; el caché DNS local aún tenía la dirección de IONOS).
+- Pendiente: decidir el destino de `cafeteriaastrid` (dos sites Astrid); 10 subdominios sin comercio en prod; comprobar la renovación del certificado comodín antes del 2026-11-24 (requiere validación DNS).
+- Si se borran registros individuales en IONOS: mantener el dominio raíz, los MX, el SPF y cualquier TXT/CNAME; un nombre con más registros se borra entero o no se toca.
