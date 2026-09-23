@@ -106,3 +106,18 @@ Reglas de seguridad de `aplicar.py` (tras la revisión de riesgo + fiabilidad):
 - Las filas `ir_ui_view.*` se rechazan si la vista no es la portada (`website.page url='/'`) del site indicado. Las rutas del zip no pueden salir de `--zip-root`. Los fondos solo aceptan `/web/image/res.company/<id de la compañía del site>/<campo>`.
 - Idiomas: se escribe el mismo texto español en los 7 idiomas (hoy tienen traducciones automáticas del placeholder); `website_auto_translate` está instalado y puede retraducir al guardar, por lo que un segundo dry-run puede mostrar los idiomas secundarios como "pendientes de completar": es esperado, no un error.
 - La fila `ir_ui_view.<id>.SEC1.bg` sustituye el degradado de la sección insertada por la imagen (dos `background-image` dejarían ganar al degradado).
+
+## 7. Aplicación en producción (2026-09-23)
+
+| Hora UTC | Paso | Resultado |
+|---|---|---|
+| 08:48 | Backup `pg_dump` de ir_ui_view, website_page, res_company, ir_attachment | `/home/odoo/backup/kimi/20260923_0448_jev_microsites_pre_apply/` (48 MB) |
+| 08:59 | Dry-run conectado | 306 aplicables, 2 saltadas: sites 134 y 161 ya tenían imagen SEC1 con URL `/web/content/…` (el análisis solo reconocía `/web/image/…`). Filas movidas a `revision.csv`. |
+| 09:02 | Piloto site 68 | 6 filas aplicadas. La imagen no se veía: la plantilla del importador trae `background: linear-gradient(...)` después de `background-image`, y el shorthand la pisa. Corregido en `set_section_background` (commit 825e76a) y reaplicado a las 09:08. |
+| 09:10 | Resto de `cambios.csv` | 298 aplicadas, 6 ya aplicadas (site 68), 0 fallos. Las 304 filas verificadas contra `backup.jsonl`. |
+| 09:17 | `validar_traducciones.py` | 34 portadas ok (solo imágenes), 36 pendientes de la cola de traducción (10 trabajos cada 5 min, ~3,5 h), 0 con estructura distinta. |
+
+Notas:
+- Las portadas se escriben solo en es_ES: Odoo reconstruye los otros 6 idiomas y `website_auto_translate` traduce los textos nuevos por cola. Hasta que la cola termine, esos textos se ven en español en los otros idiomas.
+- Log de Odoo sin errores; solo el aviso de obsolescencia de XML-RPC en Odoo 19.
+- La contraseña de producción quedó visible para el asistente al guardar `.env.jev` (aviso automático de la herramienta). Rotarla.
