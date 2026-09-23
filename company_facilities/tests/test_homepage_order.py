@@ -194,7 +194,7 @@ class TestNoClientSideReorder(HttpCase):
 
     def test_frontend_bundle_ships_no_facilities_script(self):
         paths = [
-            path
+            path.lstrip("/")
             for path, *_rest in self.env["ir.asset"]._get_asset_paths(
                 "web.assets_frontend", {}
             )
