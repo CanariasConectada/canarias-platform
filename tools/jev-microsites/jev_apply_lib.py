@@ -18,7 +18,10 @@ Contents:
 * A thin XML-RPC client for Odoo (``OdooClient``). The password is only
   taken from ``ODOO_PASSWORD`` or an interactive prompt, never from a flag.
 * Backup file (JSON lines) reading and writing with ``backup`` / ``pending``
-  / ``applied`` events.
+  / ``applied`` events. View backups hold the arch of EVERY language in one
+  record (``valor_anterior`` is a ``{lang: arch}`` dict, ``lang`` is null),
+  because writing ``arch_db`` in one language makes Odoo rebuild all the
+  others.
 
 Only the Python standard library is used.
 """
@@ -48,6 +51,9 @@ DEFAULT_CSV = HERE / "cambios.csv"
 DEFAULT_BACKUP = Path("/home/odoo/Pending/jev-work/backup.jsonl")
 DEFAULT_ZIP_ROOT = Path("/home/odoo/Pending/jev-work/zip/HTML_LIMPIO_WORK_FINAL/COMPLETOS")
 DEFAULT_PRIMARY_LANG = "es_ES"
+# Odoo keeps en_US in every translated jsonb value as the fallback, active
+# or not; view backups always include it.
+FALLBACK_LANG = "en_US"
 
 CSV_COLUMNS = ("site", "campo", "valor_anterior", "valor_nuevo", "confianza", "motivo")
 
@@ -972,8 +978,18 @@ class OdooClient:
             raise OdooError(f"view {view_id} has an empty arch for {lang}")
         return arch
 
-    def write_arch(self, view_id: int, lang: str, arch: str) -> None:
-        self.write(MODEL_VIEW, [view_id], {FIELD_ARCH: arch}, {"lang": lang})
+    # There is intentionally no per-language arch writer: ``arch_db`` is an
+    # xml_translate field and a write in language L rebuilds every other
+    # language from L. ``aplicar.py`` writes the primary language only.
+
+
+def backup_languages(langs: Iterable[str]) -> list[str]:
+    """Languages whose arch is backed up for a view: the given (active)
+    languages plus :data:`FALLBACK_LANG`, in :func:`order_languages` order
+    (first given language first)."""
+    langs = list(langs)
+    primary = langs[0] if langs else FALLBACK_LANG
+    return order_languages([*langs, FALLBACK_LANG], primary)
 
 
 def order_languages(codes: Iterable[str], primary: str) -> list[str]:
@@ -1044,8 +1060,12 @@ class BackupWriter:
     Three kinds of lines are written:
 
     * ``event="backup"``: the value present on the server before a write,
-      with ``applied=false``. Written for every row of a batch and flushed
-      before any write of that batch happens.
+      with ``applied=false``. Written for every write of a batch and flushed
+      before any write of that batch happens. Company values get one line
+      per row (``lang`` null). A view gets ONE line per write
+      (:meth:`append_view_backup`): ``lang`` null, ``valor_anterior`` a
+      ``{lang: arch}`` dict of every language, and ``rows`` the CSV rows
+      combined into that write.
     * ``event="pending"``: appended and flushed immediately before the RPC
       write of that value is attempted. If the process dies between the
       write and the ``applied`` line, the pending line tells ``revertir.py``
@@ -1092,6 +1112,28 @@ class BackupWriter:
             "lang": lang,
             "valor_anterior": valor_anterior,
             "valor_nuevo": valor_nuevo,
+            "applied": False,
+        })
+
+    def append_view_backup(self, *, site: int, rows: list[dict], res_id: int, archs: dict[str, str],
+                           primary_lang: str) -> None:
+        """One backup line for a view write: the arch of every language
+        (``archs``) and the CSV rows (``campo``/``valor_anterior``/
+        ``valor_nuevo``) combined into that write."""
+        campo = ",".join(row["campo"] for row in rows)
+        self._write({
+            "ts": utc_now_iso(),
+            "event": EVENT_BACKUP,
+            "row_id": f"{site}:{campo}",
+            "site": site,
+            "campo": campo,
+            "model": MODEL_VIEW,
+            "res_id": res_id,
+            "field": FIELD_ARCH,
+            "lang": None,
+            "primary_lang": primary_lang,
+            "valor_anterior": dict(archs),
+            "rows": rows,
             "applied": False,
         })
 

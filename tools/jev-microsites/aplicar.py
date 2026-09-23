@@ -8,8 +8,9 @@ without connecting (checks that need the server are deferred).
 
 Backup (``--backup``, default ``/home/odoo/Pending/jev-work/backup.jsonl``,
 outside the git tree): before any write of a batch, the current value of
-every affected record (full arch per language for views, base64 for images)
-is appended as a ``backup`` line. Immediately before each RPC write a
+every affected record is appended as a ``backup`` line: one line per view
+holding the full arch of EVERY language (active languages plus ``en_US``)
+as a ``{lang: arch}`` dict, one line per company row (base64 for images). Immediately before each RPC write a
 ``pending`` line is flushed, and an ``applied`` line right after it succeeds,
 so ``revertir.py`` can tell which values may have changed even if this
 process dies mid-write.
@@ -32,17 +33,18 @@ Safety rules per row:
 * ``--apply`` against db ``prod`` asks for interactive confirmation unless
   ``--yes`` is given.
 
-Languages: every active language's arch is read. The primary language
-(``--primary-lang``, default ``es_ES``) drives the drift check. When the
-primary value equals ``valor_anterior`` the change is applied to every
-language; when the primary already holds ``valor_nuevo`` the change is still
-applied to the other languages whose transformation is not done yet
-(idempotent completion after a partial failure); otherwise the row is
-"changed on server". Text policy (headings, SEC1 insert): the SAME Spanish
-text is written to every language. The other languages currently hold
-machine translations of the placeholder and the ``website_auto_translate``
-module re-translates on save. Languages are processed primary first, then
-the remaining codes sorted.
+Languages: view rows (h2, bg, SEC1/Acerca insert, Acerca columns) are
+transformed, checked and written in the primary language only
+(``--primary-lang``, default ``es_ES``): one write per view with context
+``{'lang': primary}``. ``ir.ui.view.arch_db`` is an xml_translate field, so
+Odoo itself rebuilds every other language from that write (unchanged terms
+keep their translation, new terms are copied in Spanish) and the
+``website_auto_translate`` queue (enqueued on es_ES writes, processed by a
+cron every 5 minutes) translates the new terms into the other languages.
+Writing the other languages here would rebuild the rest again and mix
+languages, so they are never written. Drift and "already applied" checks
+look at the primary language only; the other languages are only read to be
+backed up.
 
 Legacy "Acerca" block: ``Acerca.col1``/``Acerca.col2`` set the full text
 (and its 120 char preview) of a column, appending the column when it is
@@ -51,7 +53,7 @@ section after SEC1 (or Hero). Within a site, inserts run first (SEC1 before
 Acerca), then column, heading and background edits.
 
 Multiple rows targeting the same view are combined in memory and written
-once per language. Credentials: ``--login``/``ODOO_LOGIN`` and
+once. Credentials: ``--login``/``ODOO_LOGIN`` and
 ``ODOO_PASSWORD`` (or an interactive prompt); there is no password flag.
 """
 from __future__ import annotations
@@ -97,11 +99,13 @@ class WriteUnit:
     model: str
     res_id: int
     field: str
-    lang: str | None
+    lang: str | None                          # backup identity (None for views and company)
     value: object = None
     base: object = None
     ops: list = field(default_factory=list)   # [(Change, callable(arch) -> arch)]
     changes: list = field(default_factory=list)
+    write_lang: str | None = None             # context lang of the write (views: primary)
+    archs: dict = field(default_factory=dict)  # views: {lang: arch} of every language, for the backup
     done: bool = False
     error: str = ""
 
@@ -147,8 +151,11 @@ class SiteContext:
         self.args = args
         self.rows = rows
         self.primary_lang = langs[0]
-        self._arch_original: dict[tuple[int, str], str] = {}
-        self._arch_work: dict[tuple[int, str], str] = {}
+        self.backup_langs = lib.backup_languages(langs)
+        # Primary language arch per view: as read, and with the staged edits.
+        self._arch_original: dict[int, str] = {}
+        self._arch_work: dict[int, str] = {}
+        self._arch_all: dict[int, dict[str, str]] = {}
         self._company_values: dict[str, object] = {}
         self.units: dict[tuple, WriteUnit] = {}
         self.backup_entries: list[BackupEntry] = []
@@ -163,17 +170,29 @@ class SiteContext:
 
     # Reads (cached per site) ------------------------------------------------
 
-    def original_arch(self, view_id: int, lang: str) -> str:
-        key = (view_id, lang)
-        if key not in self._arch_original:
-            arch = self.client.read_arch(view_id, lang)
-            self._arch_original[key] = arch
-            self._arch_work.setdefault(key, arch)
-        return self._arch_original[key]
+    def original_arch(self, view_id: int) -> str:
+        """Primary language arch as read from the server."""
+        if view_id not in self._arch_original:
+            arch = self.client.read_arch(view_id, self.primary_lang)
+            self._arch_original[view_id] = arch
+            self._arch_work.setdefault(view_id, arch)
+        return self._arch_original[view_id]
 
-    def work_arch(self, view_id: int, lang: str) -> str:
-        self.original_arch(view_id, lang)
-        return self._arch_work[(view_id, lang)]
+    def work_arch(self, view_id: int) -> str:
+        """Primary language arch with the edits staged so far."""
+        self.original_arch(view_id)
+        return self._arch_work[view_id]
+
+    def all_archs(self, view_id: int) -> dict[str, str]:
+        """``{lang: arch}`` of every backed-up language, read before any
+        write (Odoo rewrites all of them when the primary is written)."""
+        if view_id not in self._arch_all:
+            archs = {}
+            for lang in self.backup_langs:
+                archs[lang] = self.original_arch(view_id) if lang == self.primary_lang \
+                    else self.client.read_arch(view_id, lang)
+            self._arch_all[view_id] = archs
+        return self._arch_all[view_id]
 
     def company_value(self, field_name: str):
         if field_name not in self._company_values:
@@ -183,18 +202,18 @@ class SiteContext:
 
     # Pending writes -----------------------------------------------------------
 
-    def stage_arch(self, change: lib.Change, view_id: int, lang: str,
-                   op: Callable[[str], str]) -> None:
-        """Apply ``op`` to the working arch of (view, lang), record the
-        transformation on the write unit and its backup entry."""
-        original = self.original_arch(view_id, lang)
-        self._arch_work[(view_id, lang)] = op(self.work_arch(view_id, lang))
-        self.backup_entries.append(BackupEntry(
-            change, lib.MODEL_VIEW, view_id, lib.FIELD_ARCH, lang, original, change.valor_nuevo))
-        key = (lib.MODEL_VIEW, view_id, lib.FIELD_ARCH, lang)
+    def stage_arch(self, change: lib.Change, view_id: int, op: Callable[[str], str]) -> None:
+        """Apply ``op`` to the primary language working arch of the view and
+        record the transformation on the view's single write unit. The
+        first row of a view also reads every language for the backup."""
+        key = (lib.MODEL_VIEW, view_id, lib.FIELD_ARCH, None)
         unit = self.units.get(key)
         if unit is None:
-            unit = self.units[key] = WriteUnit(lib.MODEL_VIEW, view_id, lib.FIELD_ARCH, lang, base=original)
+            archs = self.all_archs(view_id)   # may raise: nothing staged yet
+            unit = self.units[key] = WriteUnit(
+                lib.MODEL_VIEW, view_id, lib.FIELD_ARCH, None, base=self.original_arch(view_id),
+                write_lang=self.primary_lang, archs=archs)
+        self._arch_work[view_id] = op(self.work_arch(view_id))
         unit.ops.append((change, op))
         if change not in unit.changes:
             unit.changes.append(change)
@@ -282,42 +301,31 @@ def prepare_company_image(ctx: SiteContext, change: lib.Change) -> Outcome:
     return Outcome(change, STATUS_PLAN, f"{path.stat().st_size} bytes from {path.name}", current_display)
 
 
-def _plan_languages(ctx: SiteContext, change: lib.Change, current: dict[str, object],
-                    done: dict[str, bool]) -> tuple[list[str], Outcome | None, str]:
-    """Decide which languages to transform.
+def _decide(ctx: SiteContext, change: lib.Change, current, done: bool) -> Outcome | None:
+    """SKIP when the primary language already holds the new value or no
+    longer matches ``valor_anterior``; ``None`` when the row can be staged."""
+    if done:
+        return Outcome(change, STATUS_SKIP, REASON_ALREADY, lib.truncate(current))
+    return _changed_on_server(ctx, change, current)
 
-    ``current[lang]`` is the value on the server, ``done[lang]`` whether the
-    transformation is already present. Returns ``(pending, skip, note)``."""
-    primary = ctx.primary_lang
-    pending = [lang for lang in ctx.langs if not done[lang]]
-    if not pending:
-        return [], Outcome(change, STATUS_SKIP, REASON_ALREADY, lib.truncate(current[primary])), ""
-    if done[primary]:
-        return pending, None, f"completing {len(pending)} language(s), primary already applied"
-    skip = _changed_on_server(ctx, change, current[primary])
-    if skip:
-        return [], skip, ""
-    return pending, None, f"{len(pending)} language(s)"
+
+def _section_missing(ctx: SiteContext, view_id: int, section: str) -> str | None:
+    return None if lib.find_section(ctx.work_arch(view_id), section) else \
+        f"section {section!r} not found in view {view_id} ({ctx.primary_lang})"
 
 
 def prepare_view_h2(ctx: SiteContext, change: lib.Change) -> Outcome:
     view_id, section = change.target.view_id, change.target.section
     text = change.valor_nuevo
-    current: dict[str, object] = {}
-    done: dict[str, bool] = {}
-    for lang in ctx.langs:
-        arch = ctx.work_arch(view_id, lang)
-        if not lib.find_section(arch, section):
-            return Outcome(change, STATUS_FAIL, f"section {section!r} not found in view {view_id} ({lang})")
-        current[lang] = lib.extract_section_h2(arch, section)
-        done[lang] = lib.normalize_text(current[lang]) == lib.normalize_text(text)
-    pending, skip, note = _plan_languages(ctx, change, current, done)
+    missing = _section_missing(ctx, view_id, section)
+    if missing:
+        return Outcome(change, STATUS_FAIL, missing)
+    current = lib.extract_section_h2(ctx.work_arch(view_id), section)
+    skip = _decide(ctx, change, current, lib.normalize_text(current) == lib.normalize_text(text))
     if skip:
         return skip
-    for lang in pending:
-        ctx.stage_arch(change, view_id, lang,
-                       lambda arch, s=section, t=text: lib.replace_section_h2(arch, s, t))
-    return Outcome(change, STATUS_PLAN, note, lib.truncate(current[ctx.primary_lang]))
+    ctx.stage_arch(change, view_id, lambda arch, s=section, t=text: lib.replace_section_h2(arch, s, t))
+    return Outcome(change, STATUS_PLAN, "", lib.truncate(current))
 
 
 def _sibling_image_row(ctx: SiteContext, image_field: str, path: str | None) -> lib.Change | None:
@@ -364,32 +372,24 @@ def prepare_view_bg(ctx: SiteContext, change: lib.Change) -> Outcome:
     url, error = _resolve_bg_url(ctx, change)
     if error:
         return Outcome(change, STATUS_FAIL, error)
-    current: dict[str, object] = {}
-    done: dict[str, bool] = {}
-    for lang in ctx.langs:
-        arch = ctx.work_arch(view_id, lang)
-        if not lib.find_section(arch, section):
-            return Outcome(change, STATUS_FAIL, f"section {section!r} not found in view {view_id} ({lang})")
-        current[lang] = lib.extract_section_bg(arch, section)
-        done[lang] = current[lang] == url
-    pending, skip, note = _plan_languages(ctx, change, current, done)
+    missing = _section_missing(ctx, view_id, section)
+    if missing:
+        return Outcome(change, STATUS_FAIL, missing)
+    current = lib.extract_section_bg(ctx.work_arch(view_id), section)
+    skip = _decide(ctx, change, current, current == url)
     if skip:
         return skip
-    for lang in pending:
-        ctx.stage_arch(change, view_id, lang,
-                       lambda arch, s=section, u=url: lib.set_section_background(arch, s, u))
-    return Outcome(change, STATUS_PLAN, f"url={url} ({note})", lib.truncate(current[ctx.primary_lang]))
+    ctx.stage_arch(change, view_id, lambda arch, s=section, u=url: lib.set_section_background(arch, s, u))
+    return Outcome(change, STATUS_PLAN, f"url={url}", lib.truncate(current))
 
 
-def _dry_run_op(ctx: SiteContext, view_id: int, langs: list[str], op: Callable[[str], str]) -> str:
-    """Run ``op`` on the working arch of every language without staging, so
-    a row is either staged for all its languages or for none. Returns the
-    first error message or ``""``."""
-    for lang in langs:
-        try:
-            op(ctx.work_arch(view_id, lang))
-        except lib.ArchError as exc:
-            return f"{type(exc).__name__} ({lang}): {exc}"
+def _dry_run_op(ctx: SiteContext, view_id: int, op: Callable[[str], str]) -> str:
+    """Run ``op`` on the working arch without staging. Returns the error
+    message or ``""``."""
+    try:
+        op(ctx.work_arch(view_id))
+    except lib.ArchError as exc:
+        return f"{type(exc).__name__} ({ctx.primary_lang}): {exc}"
     return ""
 
 
@@ -398,31 +398,27 @@ def prepare_view_column(ctx: SiteContext, change: lib.Change) -> Outcome:
     text = change.valor_nuevo
     if not text.strip():
         return Outcome(change, STATUS_FAIL, f"empty text for {section}.col{n}")
-    current: dict[str, object] = {}
-    done: dict[str, bool] = {}
-    for lang in ctx.langs:
-        arch = ctx.work_arch(view_id, lang)
-        if not lib.find_section(arch, section):
-            return Outcome(change, STATUS_FAIL, f"section {section!r} not found in view {view_id} ({lang})")
-        current[lang] = lib.extract_acerca_column(arch, n)
-        done[lang] = lib.normalize_text(current[lang]) == lib.normalize_text(text)
+    missing = _section_missing(ctx, view_id, section)
+    if missing:
+        return Outcome(change, STATUS_FAIL, missing)
+    arch = ctx.work_arch(view_id)
+    current = lib.extract_acerca_column(arch, n)
+    if lib.normalize_text(current) == lib.normalize_text(text):
+        return Outcome(change, STATUS_SKIP, REASON_ALREADY, lib.truncate(current))
     # When the section is created by an Acerca.insert row of this run, the
     # server had no column at analysis time: drift is checked against "".
-    baseline = dict(current)
-    if lib.find_section(ctx.original_arch(view_id, ctx.primary_lang), section) is None:
-        baseline[ctx.primary_lang] = ""
-    pending, skip, note = _plan_languages(ctx, change, baseline, done)
+    baseline = current if lib.find_section(ctx.original_arch(view_id), section) else ""
+    skip = _changed_on_server(ctx, change, baseline)
     if skip:
+        skip.current = lib.truncate(current)
         return skip
-    if any(n not in lib.acerca_column_slots(ctx.work_arch(view_id, lang)) for lang in pending):
-        note += f", column {n} appended"
+    note = f"column {n} appended" if n not in lib.acerca_column_slots(arch) else ""
     op = lambda arch, c=n, t=text, s=ctx.site: lib.set_acerca_column(arch, c, t, s)  # noqa: E731
-    error = _dry_run_op(ctx, view_id, pending, op)
+    error = _dry_run_op(ctx, view_id, op)
     if error:
-        return Outcome(change, STATUS_FAIL, error, lib.truncate(current[ctx.primary_lang]))
-    for lang in pending:
-        ctx.stage_arch(change, view_id, lang, op)
-    return Outcome(change, STATUS_PLAN, note, lib.truncate(current[ctx.primary_lang]))
+        return Outcome(change, STATUS_FAIL, error, lib.truncate(current))
+    ctx.stage_arch(change, view_id, op)
+    return Outcome(change, STATUS_PLAN, note, lib.truncate(current))
 
 
 def prepare_acerca_insert(ctx: SiteContext, change: lib.Change) -> Outcome:
@@ -431,38 +427,20 @@ def prepare_acerca_insert(ctx: SiteContext, change: lib.Change) -> Outcome:
         payload = lib.parse_acerca_payload(change.valor_nuevo)
     except ValueError as exc:
         return Outcome(change, STATUS_FAIL, str(exc))
-    expected = lib.acerca_payload_key(payload)
-    current: dict[str, object] = {}
-    done: dict[str, bool] = {}
-    for lang in ctx.langs:
-        current[lang] = lib.extract_acerca_section(ctx.work_arch(view_id, lang))
-        done[lang] = current[lang] == expected
-    pending, skip, note = _plan_languages(ctx, change, current, done)
+    current = lib.extract_acerca_section(ctx.work_arch(view_id))
+    skip = _decide(ctx, change, current, current == lib.acerca_payload_key(payload))
     if skip:
         return skip
-    # Never stage a partial row: refuse up front if any pending language
-    # already has a (different) Acerca section.
-    existing = [lang for lang in pending if current[lang]]
-    if existing:
+    if current:
         return Outcome(change, STATUS_FAIL,
-                       f"section 'Acerca' already exists with other content in {', '.join(existing)}",
-                       lib.truncate(current[ctx.primary_lang]))
-    # The section must land after the same anchor in every language, or the
-    # translations would diverge structurally.
-    anchors = {lang: lib.acerca_anchor_name(ctx.work_arch(view_id, lang)) for lang in pending}
-    if len(set(anchors.values())) > 1:
-        detail = ", ".join(f"{lang}={anchors[lang] or 'none'}" for lang in pending)
-        return Outcome(change, STATUS_FAIL,
-                       f"Acerca insert anchor differs between languages ({detail}); "
-                       "add SEC1 in every language first",
-                       lib.truncate(current[ctx.primary_lang]))
+                       f"section 'Acerca' already exists with other content in {ctx.primary_lang}",
+                       lib.truncate(current))
     op = lambda arch, p=payload: lib.insert_acerca_section(arch, p)  # noqa: E731
-    error = _dry_run_op(ctx, view_id, pending, op)
+    error = _dry_run_op(ctx, view_id, op)
     if error:
         return Outcome(change, STATUS_FAIL, error)
-    for lang in pending:
-        ctx.stage_arch(change, view_id, lang, op)
-    return Outcome(change, STATUS_PLAN, note, lib.truncate(current[ctx.primary_lang]))
+    ctx.stage_arch(change, view_id, op)
+    return Outcome(change, STATUS_PLAN, "", lib.truncate(current))
 
 
 def prepare_view_insert(ctx: SiteContext, change: lib.Change) -> Outcome:
@@ -470,23 +448,20 @@ def prepare_view_insert(ctx: SiteContext, change: lib.Change) -> Outcome:
         return prepare_acerca_insert(ctx, change)
     view_id = change.target.view_id
     text = change.valor_nuevo
-    current: dict[str, object] = {}
-    done: dict[str, bool] = {}
-    for lang in ctx.langs:
-        arch = ctx.work_arch(view_id, lang)
-        exists = lib.find_section(arch, "SEC1") is not None
-        current[lang] = lib.extract_section_h2(arch, "SEC1") if exists else None
-        done[lang] = exists and lib.normalize_text(current[lang]) == lib.normalize_text(text)
-    pending, skip, note = _plan_languages(ctx, change, current, done)
+    exists = lib.find_section(ctx.work_arch(view_id), "SEC1") is not None
+    current = lib.extract_section_h2(ctx.work_arch(view_id), "SEC1") if exists else None
+    skip = _decide(ctx, change, current, exists and lib.normalize_text(current) == lib.normalize_text(text))
     if skip:
         return skip
-    for lang in pending:
-        if lib.find_section(ctx.work_arch(view_id, lang), "SEC1"):
-            op = lambda arch, t=text: lib.replace_section_h2(arch, "SEC1", t)  # noqa: E731
-        else:
-            op = lambda arch, t=text: lib.insert_sec1_after_hero(arch, t)  # noqa: E731
-        ctx.stage_arch(change, view_id, lang, op)
-    return Outcome(change, STATUS_PLAN, note, lib.truncate(current[ctx.primary_lang]))
+    if exists:
+        op = lambda arch, t=text: lib.replace_section_h2(arch, "SEC1", t)  # noqa: E731
+    else:
+        op = lambda arch, t=text: lib.insert_sec1_after_hero(arch, t)  # noqa: E731
+    error = _dry_run_op(ctx, view_id, op)
+    if error:
+        return Outcome(change, STATUS_FAIL, error)
+    ctx.stage_arch(change, view_id, op)
+    return Outcome(change, STATUS_PLAN, "", lib.truncate(current))
 
 
 PREPARERS = {
@@ -535,12 +510,21 @@ def prepare_site(client, site: int, rows: list[lib.Change], langs: list[str], ar
 # ---------------------------------------------------------------------------
 
 def write_backup(backup: lib.BackupWriter, contexts: list[SiteContext]) -> None:
+    """Company rows get one line each; every view gets one line with the
+    arch of all its languages."""
     for ctx in contexts:
         for entry in ctx.backup_entries:
             backup.append_backup(
                 site=ctx.site, campo=entry.change.campo, model=entry.model, res_id=entry.res_id,
                 field=entry.field, lang=entry.lang, valor_anterior=entry.valor_anterior,
                 valor_nuevo=entry.valor_nuevo)
+        for unit in ctx.units.values():
+            if unit.model != lib.MODEL_VIEW:
+                continue
+            rows = [{"campo": c.campo, "valor_anterior": c.valor_anterior, "valor_nuevo": c.valor_nuevo}
+                    for c in unit.changes]
+            backup.append_view_backup(site=ctx.site, rows=rows, res_id=unit.res_id, archs=unit.archs,
+                                      primary_lang=ctx.primary_lang)
     backup.flush()
 
 
@@ -577,12 +561,12 @@ def execute_site(ctx: SiteContext, backup: lib.BackupWriter, stop_on_error: bool
         except lib.ArchError as exc:
             unit.error = f"{type(exc).__name__}: {exc}"
             failed_deps.add(unit.dep_key)
-            print(f"  ERROR building {unit.model}[{unit.res_id}].{unit.field} lang={unit.lang}: {exc}")
+            print(f"  ERROR building {unit.model}[{unit.res_id}].{unit.field} lang={unit.write_lang}: {exc}")
             if stop_on_error:
                 _finalize_outcomes(ctx)
                 return False
             continue
-        context = {"lang": unit.lang} if unit.lang else None
+        context = {"lang": unit.write_lang} if unit.write_lang else None
         for change in active:
             backup.append_pending(**_event_fields(ctx, unit, change))
         try:
@@ -591,7 +575,7 @@ def execute_site(ctx: SiteContext, backup: lib.BackupWriter, stop_on_error: bool
         except lib.OdooError as exc:
             unit.error = str(exc)
             failed_deps.add(unit.dep_key)
-            print(f"  ERROR writing {unit.model}[{unit.res_id}].{unit.field} lang={unit.lang}: {exc}")
+            print(f"  ERROR writing {unit.model}[{unit.res_id}].{unit.field} lang={unit.write_lang}: {exc}")
             if stop_on_error:
                 _finalize_outcomes(ctx)
                 return False
@@ -682,7 +666,8 @@ def build_parser() -> argparse.ArgumentParser:
                         help="write even if the server value differs from valor_anterior; "
                              "requires --only-site and only affects those sites")
     parser.add_argument("--primary-lang", default=lib.DEFAULT_PRIMARY_LANG,
-                        help="language used to compare view values with valor_anterior")
+                        help="only language written for views (the others are regenerated by Odoo "
+                             "and translated by website_auto_translate); also used for the drift check")
     return parser
 
 
@@ -839,7 +824,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"primary language {args.primary_lang!r} is not active (active: {', '.join(langs)})",
               file=sys.stderr)
         return 2
-    print(f"connected to {args.url} db={args.db} uid={client.uid}; languages: {', '.join(langs)}")
+    print(f"connected to {args.url} db={args.db} uid={client.uid}; languages: {', '.join(langs)} "
+          f"(views written in {args.primary_lang} only)")
     mode = "APPLY" if args.apply else "DRY-RUN"
 
     backup = lib.BackupWriter(args.backup)

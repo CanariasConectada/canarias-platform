@@ -16,6 +16,8 @@ import csv
 import io
 import json
 import os
+import re
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -550,41 +552,61 @@ class LanguageOrderTests(unittest.TestCase):
                          ["es_ES", "de_DE", "en_US", "fr_FR"])
         self.assertEqual(lib.order_languages(["en_US"], "es_ES"), ["en_US"])
 
+    def test_backup_languages_always_include_fallback(self):
+        self.assertEqual(lib.backup_languages(["es_ES", "fr_FR"]), ["es_ES", "en_US", "fr_FR"])
+        self.assertEqual(lib.backup_languages(["es_ES", "en_US"]), ["es_ES", "en_US"])
+
 
 # ---------------------------------------------------------------------------
 # Backup file and revertir
 # ---------------------------------------------------------------------------
 
-def _rec(event, key=("ir.ui.view", 1, "arch_db", "es_ES"), ts="2026-01-01T00:00:00", line=1, value="v"):
+VIEW_KEY = ("ir.ui.view", 1, "arch_db", None)
+ARCHS = {"es_ES": "<div>es</div>", "en_US": "<div>en</div>"}
+
+
+def _rec(event, key=VIEW_KEY, ts="2026-01-01T00:00:00", line=1, value=None):
     model, res_id, field, lang = key
     rec = {"ts": ts, "event": event, "row_id": "68:x", "site": 68, "campo": "x", "model": model,
            "res_id": res_id, "field": field, "lang": lang, "applied": event == "applied", "_line": line}
     if event == "backup":
-        rec["valor_anterior"] = value
+        rec["valor_anterior"] = dict(ARCHS) if value is None else value
         rec["valor_nuevo"] = "new"
     return rec
 
 
 class RevertirCollectTests(unittest.TestCase):
     def test_earliest_backup_and_events(self):
-        k_applied = ("ir.ui.view", 1, "arch_db", "es_ES")
-        k_pending = ("ir.ui.view", 1, "arch_db", "en_US")
+        k_applied = VIEW_KEY
+        k_pending = ("ir.ui.view", 2, "arch_db", None)
         k_backup_only = ("res.company", 68, "microsite_hero_image", None)
+        second = {"es_ES": "<div>second run</div>", "en_US": "<div>second run</div>"}
         records = [
-            _rec("backup", k_applied, ts="2026-01-01T00:00:01", line=1, value="ORIGINAL"),
+            _rec("backup", k_applied, ts="2026-01-01T00:00:01", line=1),
             _rec("pending", k_applied, ts="2026-01-01T00:00:02", line=2),
             _rec("applied", k_applied, ts="2026-01-01T00:00:03", line=3),
-            _rec("backup", k_applied, ts="2026-01-02T00:00:00", line=4, value="SECOND RUN"),
-            _rec("backup", k_pending, ts="2026-01-01T00:00:01", line=5, value="P0"),
+            _rec("backup", k_applied, ts="2026-01-02T00:00:00", line=4, value=second),
+            _rec("backup", k_pending, ts="2026-01-01T00:00:01", line=5),
             _rec("pending", k_pending, ts="2026-01-01T00:00:02", line=6),
             _rec("backup", k_backup_only, ts="2026-01-01T00:00:01", line=7, value="IMG"),
         ]
         restores = {(r.model, r.res_id, r.field, r.lang): r for r in revertir.collect_restores(records)}
         self.assertEqual(len(restores), 3)
-        self.assertEqual(restores[k_applied].valor_anterior, "ORIGINAL")
+        self.assertEqual(restores[k_applied].valor_anterior, ARCHS)   # earliest wins
         self.assertTrue(restores[k_applied].applied)
         self.assertTrue(restores[k_pending].applied)  # pending counts as attempted
         self.assertFalse(restores[k_backup_only].applied)
+
+    def test_old_per_language_view_lines_rejected(self):
+        old = _rec("backup", ("ir.ui.view", 1, "arch_db", "es_ES"), value="<div/>")
+        with self.assertRaisesRegex(ValueError, "old backup format"):
+            revertir.collect_restores([old])
+        with self.assertRaisesRegex(ValueError, "old backup format"):
+            revertir.collect_restores([_rec("applied", ("ir.ui.view", 1, "arch_db", "en_US"))])
+        for bad in ("<div/>", {}, {"es_ES": "<div/>"}, {"es_ES": "", "en_US": "x"},
+                    {"es_ES; DROP": "x", "en_US": "x"}):
+            with self.assertRaises(ValueError, msg=repr(bad)):
+                revertir.collect_restores([_rec("backup", value=bad)])
 
     def test_writer_events(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -595,9 +617,84 @@ class RevertirCollectTests(unittest.TestCase):
             w.append_backup(**fields, valor_anterior="a", valor_nuevo="b")
             w.append_pending(**fields)
             w.append_applied(**fields)
+            w.append_view_backup(site=68, rows=[{"campo": "a", "valor_anterior": "", "valor_nuevo": "x"},
+                                                {"campo": "b", "valor_anterior": "", "valor_nuevo": "y"}],
+                                 res_id=5, archs=ARCHS, primary_lang="es_ES")
             w.close()
-            events = [r["event"] for r in lib.read_backup(path)]
-        self.assertEqual(events, ["backup", "pending", "applied"])
+            records = lib.read_backup(path)
+        self.assertEqual([r["event"] for r in records], ["backup", "pending", "applied", "backup"])
+        view = records[-1]
+        self.assertEqual((view["model"], view["res_id"], view["field"], view["lang"]),
+                         ("ir.ui.view", 5, "arch_db", None))
+        self.assertEqual(view["valor_anterior"], ARCHS)
+        self.assertEqual(view["campo"], "a,b")
+        self.assertEqual(view["primary_lang"], "es_ES")
+
+
+class RevertirSqlTests(unittest.TestCase):
+    def _restore(self, res_id=3352, archs=None):
+        return revertir.Restore(site=68, campo="x", model="ir.ui.view", res_id=res_id, field="arch_db",
+                                lang=None, valor_anterior=archs or dict(ARCHS), applied=True, line=1)
+
+    def test_single_transaction_with_signal(self):
+        archs = {"es_ES": "<p>Caf\u00e9 $$ ' \\ </p>", "en_US": "<p>x</p>", "fr_FR": "<p>y</p>"}
+        script = revertir.build_view_restore_sql([self._restore(3352, archs), self._restore(12)])
+        lines = script.strip().split("\n")
+        self.assertEqual(lines[0], "BEGIN;")
+        self.assertEqual(lines[-1], "COMMIT;")
+        self.assertEqual(lines[-2], "INSERT INTO orm_signaling_templates DEFAULT VALUES;")
+        self.assertEqual(script.count("BEGIN;"), 1)
+        self.assertEqual(script.count("COMMIT;"), 1)
+        self.assertEqual(script.count("orm_signaling_templates"), 1)
+        updates = _parse_updates(script)
+        self.assertEqual(updates, {3352: archs, 12: dict(ARCHS)})
+        self.assertTrue(script.isascii())
+
+    def test_tag_never_occurs_in_payload(self):
+        archs = {"es_ES": "<p>$jev_aaaa$</p>", "en_US": "<p/>"}
+        with mock.patch.object(revertir.secrets, "token_hex", side_effect=["aaaa", "bbbb"]):
+            script = revertir.build_view_restore_sql([self._restore(1, archs)])
+        self.assertIn("$jev_bbbb$", script)
+        self.assertEqual(_parse_updates(script), {1: archs})
+
+    def test_rejects_bad_ids_and_payloads(self):
+        for bad_id in ("1; DROP TABLE x", 0, -3, True, 1.5):
+            with self.assertRaises(ValueError, msg=repr(bad_id)):
+                revertir.build_view_restore_sql([self._restore(bad_id)])
+        with self.assertRaises(ValueError):
+            revertir.build_view_restore_sql([self._restore(1, {"es_ES": "x"})])   # no en_US
+        with self.assertRaises(ValueError):
+            revertir.build_view_restore_sql([])
+        with self.assertRaises(ValueError):
+            revertir.psql_command("ctr; touch /tmp/pwn", "prod")
+
+    def test_psql_invocation(self):
+        done = subprocess.CompletedProcess([], 0, "", "")
+        with mock.patch.object(revertir.subprocess, "run", return_value=done) as run:
+            revertir.run_view_restore_sql("BEGIN;\nCOMMIT;\n", "ctr", "prod")
+        command = run.call_args.args[0]
+        self.assertEqual(command[:4], ["docker", "exec", "-i", "ctr"])
+        self.assertIn("psql", command)
+        self.assertEqual(command[command.index("-d") + 1], "prod")
+        self.assertEqual(command[command.index("-U") + 1], "odoo")
+        self.assertEqual(command[command.index("-v") + 1], "ON_ERROR_STOP=1")
+        self.assertEqual(run.call_args.kwargs["input"], "BEGIN;\nCOMMIT;\n")
+        self.assertNotIn("shell", run.call_args.kwargs)
+        failed = subprocess.CompletedProcess([], 3, "", "ERROR:  division by zero")
+        with mock.patch.object(revertir.subprocess, "run", return_value=failed), \
+                self.assertRaisesRegex(revertir.RestoreError, "division by zero"):
+            revertir.run_view_restore_sql("x", "ctr", "prod")
+
+
+_UPDATE_RE = re.compile(r"UPDATE ir_ui_view SET arch_db = (\$jev_[0-9a-f]+\$)(.*?)\1::jsonb WHERE id = (\d+) ", re.S)
+
+
+def _parse_updates(script: str) -> dict[int, dict]:
+    """{view id: payload dict} of every UPDATE of a restore script."""
+    updates = {}
+    for m in _UPDATE_RE.finditer(script):
+        updates[int(m.group(3))] = json.loads(m.group(2))
+    return updates
 
 
 # ---------------------------------------------------------------------------
@@ -616,6 +713,7 @@ class FakeClient:
         self.views = views            # view_id -> {lang: arch}
         self.fail_writes: set[tuple] = set()   # (model, res_id, field)
         self.writes: list[tuple] = []
+        self.contexts: list = []
 
     def language_codes(self, primary=lib.DEFAULT_PRIMARY_LANG):
         return lib.order_languages(self.langs, primary)
@@ -646,10 +744,14 @@ class FakeClient:
                 if (model, res_id, field_name) in self.fail_writes:
                     raise lib.OdooError(f"{model}.write: simulated failure")
                 self.writes.append((model, res_id, field_name, (context or {}).get("lang")))
+                self.contexts.append(context)
                 if model == lib.MODEL_COMPANY:
                     self.companies[res_id][field_name] = value
                 elif model == lib.MODEL_VIEW:
-                    self.views[res_id][context["lang"]] = value
+                    # xml_translate: a write in one language rebuilds every
+                    # other one (simplified: new terms copied as written).
+                    for lang in self.views[res_id]:
+                        self.views[res_id][lang] = value
         return True
 
 
@@ -672,6 +774,7 @@ class AplicarEndToEndTests(unittest.TestCase):
             companies={68: {"microsite_intro_title": "Bienvenidos a nuestro espacio", "microsite_hero_image": False}},
             views={3352: {"es_ES": ARCH, "en_US": ARCH.replace("Bienvenidos a nuestro espacio", "Welcome to our space")}},
         )
+        self.en_arch = self.client.views[3352]["en_US"]
         self.patcher = mock.patch.object(lib, "client_from_args", lambda args: self.client)
         self.patcher.start()
 
@@ -719,20 +822,26 @@ class AplicarEndToEndTests(unittest.TestCase):
             arch = self.client.views[3352][lang]
             self.assertEqual(lib.extract_section_bg(arch, "Hero"), URL_68_HERO)
             self.assertEqual(lib.extract_section_h2(arch, "SEC1"), "Playa chica")
-        # company writes first (KIND_ORDER: fields, then images), then one
-        # arch write per language with both view rows combined
-        self.assertEqual(self.client.writes[:2], [("res.company", 68, "microsite_intro_title", None),
-                                                  ("res.company", 68, "microsite_hero_image", None)])
-        self.assertEqual([w[3] for w in self.client.writes[2:]], ["es_ES", "en_US"])
+        # company writes first (KIND_ORDER: fields, then images), then ONE
+        # arch write in es_ES with both view rows combined
+        self.assertEqual(self.client.writes, [("res.company", 68, "microsite_intro_title", None),
+                                              ("res.company", 68, "microsite_hero_image", None),
+                                              ("ir.ui.view", 3352, "arch_db", "es_ES")])
+        self.assertEqual(self.client.contexts[-1], {"lang": "es_ES"})
         records = lib.read_backup(self.backup)
         events = [r["event"] for r in records]
-        self.assertEqual(events.count("backup"), 6)   # 2 company + 2 rows x 2 langs
-        self.assertEqual(events.count("pending"), 6)
-        self.assertEqual(events.count("applied"), 6)
+        self.assertEqual(events.count("backup"), 3)   # 2 company + 1 view (all languages)
+        self.assertEqual(events.count("pending"), 4)  # 2 company + 2 view rows
+        self.assertEqual(events.count("applied"), 4)
         self.assertLess(events.index("pending"), events.index("applied"))
-        self.assertTrue(all(e == "backup" for e in events[:6]))
-        original = next(r for r in records if r["event"] == "backup" and r["lang"] == "es_ES")
-        self.assertEqual(original["valor_anterior"], ARCH)
+        self.assertTrue(all(e == "backup" for e in events[:3]))
+        view = next(r for r in records if r["event"] == "backup" and r["model"] == "ir.ui.view")
+        self.assertIsNone(view["lang"])
+        self.assertEqual(view["valor_anterior"], {"es_ES": ARCH, "en_US": self.en_arch})
+        self.assertEqual([r["campo"] for r in view["rows"]],
+                         ["ir_ui_view.3352.SEC1.insert", "ir_ui_view.3352.Hero.bg"])
+        view_events = [r for r in records if r["model"] == "ir.ui.view" and r["event"] != "backup"]
+        self.assertTrue(all(r["lang"] is None for r in view_events))
 
         writes_before = list(self.client.writes)
         code, out = self.run_main("--apply")
@@ -753,20 +862,71 @@ class AplicarEndToEndTests(unittest.TestCase):
             self.assertEqual(lib.extract_section_h2(arch, "SEC1"), "Playa chica")   # sibling row still written
         self.assertEqual(self.client.companies[68]["microsite_intro_title"], "Playa chica")
         events = [r["event"] for r in lib.read_backup(self.backup)]
-        # pending: intro_title, hero_image (failed), arch es_ES, arch en_US
-        self.assertEqual(events.count("pending"), 4)
-        self.assertEqual(events.count("applied"), 3)
+        # pending: intro_title, hero_image (failed), SEC1 row of the es_ES arch write
+        self.assertEqual(events.count("pending"), 3)
+        self.assertEqual(events.count("applied"), 2)
+        self.assertEqual([w[3] for w in self.client.writes if w[0] == "ir.ui.view"], ["es_ES"])
 
-    def test_partial_language_completion(self):
+    def test_other_languages_never_completed(self):
         self.write_csv(self.STANDARD_ROWS[2:])
-        # es_ES already transformed, en_US not: complete en_US without blocking.
+        # es_ES already transformed, en_US not: Odoo and the translation
+        # queue own the other languages, nothing is written.
         self.client.views[3352]["es_ES"] = lib.insert_sec1_after_hero(ARCH, "Playa chica")
         self.client.companies[68]["microsite_intro_title"] = "Playa chica"
         code, out = self.run_main("--apply")
         self.assertEqual(code, 0, out)
-        self.assertIn("completing 1 language(s), primary already applied", out)
-        self.assertEqual(self.client.writes, [("ir.ui.view", 3352, "arch_db", "en_US")])
-        self.assertEqual(lib.extract_section_h2(self.client.views[3352]["en_US"], "SEC1"), "Playa chica")
+        self.assertEqual(out.count("already applied"), 2, out)
+        self.assertEqual(self.client.writes, [])
+        self.assertIsNone(lib.find_section(self.client.views[3352]["en_US"], "SEC1"))
+
+    def test_only_primary_written_with_many_languages(self):
+        langs = ["es_ES", "en_US", "fr_FR", "de_DE", "it_IT"]
+        self.client.langs = langs
+        self.client.views[3352] = {lang: ARCH.replace("Little Beach", f"Little Beach {lang}") for lang in langs}
+        before = dict(self.client.views[3352])
+        self.write_csv(self.STANDARD_ROWS + [
+            (68, "ir_ui_view.3352.Hero.h2", "Bienvenidos a nuestro espacio", "Nuevo titular")])
+        code, out = self.run_main("--apply")
+        self.assertEqual(code, 0, out)
+        self.assertIn("views written in es_ES only", out)
+        view_writes = [(w, c) for w, c in zip(self.client.writes, self.client.contexts) if w[0] == "ir.ui.view"]
+        self.assertEqual(view_writes, [(("ir.ui.view", 3352, "arch_db", "es_ES"), {"lang": "es_ES"})])
+        arch = self.client.views[3352]["es_ES"]
+        self.assertEqual(lib.extract_section_h2(arch, "Hero"), "Nuevo titular")
+        self.assertEqual(lib.extract_section_bg(arch, "Hero"), URL_68_HERO)
+        self.assertEqual(lib.extract_section_h2(arch, "SEC1"), "Playa chica")
+        view_backups = [r for r in lib.read_backup(self.backup)
+                        if r["event"] == "backup" and r["model"] == "ir.ui.view"]
+        self.assertEqual(len(view_backups), 1)
+        self.assertEqual(view_backups[0]["valor_anterior"], before)
+        self.assertEqual(len(view_backups[0]["rows"]), 3)
+
+    def test_inactive_fallback_language_is_backed_up(self):
+        self.client.langs = ["es_ES", "fr_FR"]
+        self.client.views[3352]["fr_FR"] = ARCH.replace("Little Beach", "Petite plage")
+        before = dict(self.client.views[3352])
+        self.write_csv([(68, "ir_ui_view.3352.Hero.h2", "Bienvenidos a nuestro espacio", "Nuevo")])
+        code, out = self.run_main("--apply")
+        self.assertEqual(code, 0, out)
+        backup = next(r for r in lib.read_backup(self.backup) if r["event"] == "backup")
+        self.assertEqual(backup["valor_anterior"], before)
+        self.assertEqual(sorted(backup["valor_anterior"]), ["en_US", "es_ES", "fr_FR"])
+        self.assertEqual(self.client.writes, [("ir.ui.view", 3352, "arch_db", "es_ES")])
+
+    def test_other_language_read_failure_blocks_the_view(self):
+        self.write_csv([(68, "ir_ui_view.3352.Hero.h2", "Bienvenidos a nuestro espacio", "Nuevo")])
+        real = self.client.read_arch
+
+        def read_arch(view_id, lang):
+            if lang == "en_US":
+                raise lib.OdooError(f"view {view_id} has an empty arch for {lang}")
+            return real(view_id, lang)
+
+        with mock.patch.object(self.client, "read_arch", side_effect=read_arch):
+            code, out = self.run_main("--apply")
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, r"Hero\.h2\s+FAIL.*empty arch for en_US")
+        self.assertEqual(self.client.writes, [])
 
     def test_changed_on_server_and_scoped_force(self):
         self.write_csv([(68, "ir_ui_view.3352.Hero.h2", "Otra cosa", "Nuevo titular")])
@@ -778,7 +938,7 @@ class AplicarEndToEndTests(unittest.TestCase):
         self.assertEqual(code, 0, out)
         self.assertIn("FORCED", out)
         self.assertEqual(lib.extract_section_h2(self.client.views[3352]["es_ES"], "Hero"), "Nuevo titular")
-        self.assertEqual(lib.extract_section_h2(self.client.views[3352]["en_US"], "Hero"), "Nuevo titular")
+        self.assertEqual(self.client.writes, [("ir.ui.view", 3352, "arch_db", "es_ES")])
 
     def test_force_requires_only_site(self):
         self.write_csv(self.STANDARD_ROWS)
@@ -877,9 +1037,9 @@ class AplicarEndToEndTests(unittest.TestCase):
             self.assertLess(sec1.end, acerca.start)
             self.assertEqual(lib.extract_acerca_column(arch, 1), PAYLOAD["about"])
             self.assertEqual(lib.extract_acerca_column(arch, 2), "Servicios finales")
-        # one arch write per language, all view rows combined
+        # one arch write in es_ES, all view rows combined
         self.assertEqual([w for w in self.client.writes if w[0] == "ir.ui.view"],
-                         [("ir.ui.view", 3352, "arch_db", "es_ES"), ("ir.ui.view", 3352, "arch_db", "en_US")])
+                         [("ir.ui.view", 3352, "arch_db", "es_ES")])
 
         writes_before = list(self.client.writes)
         code, out = self.run_main("--apply")
@@ -898,7 +1058,7 @@ class AplicarEndToEndTests(unittest.TestCase):
         code, out = self.run_main("--apply")
         self.assertEqual(code, 0, out)
         self.assertIn("already applied", out)
-        self.assertEqual(len(self.client.writes), 2)
+        self.assertEqual(len(self.client.writes), 1)
 
         self.client.views[3352] = {"es_ES": LEGACY_ONE, "en_US": LEGACY_ONE}
         self.client.writes = []
@@ -906,10 +1066,10 @@ class AplicarEndToEndTests(unittest.TestCase):
         code, out = self.run_main("--apply")
         self.assertEqual(code, 0, out)
         self.assertIn("column 2 appended", out)
-        self.assertIn('id="acerca2_lapapayafitnesscenter"', self.client.views[3352]["en_US"])
+        self.assertIn('id="acerca2_lapapayafitnesscenter"', self.client.views[3352]["es_ES"])
         code, out = self.run_main("--apply")
         self.assertIn("already applied", out)
-        self.assertEqual(len(self.client.writes), 2)
+        self.assertEqual(len(self.client.writes), 1)
 
     def test_acerca_insert_refused_when_present(self):
         self.client.views[3352] = {"es_ES": LEGACY_TWO, "en_US": LEGACY_TWO}
@@ -930,15 +1090,16 @@ class AplicarEndToEndTests(unittest.TestCase):
         self.assertEqual(code, 0, out)
         self.assertEqual(lib.extract_acerca_column(self.client.views[3352]["es_ES"], 1), "Nueva")
 
-    def test_acerca_insert_anchor_must_match_across_languages(self):
+    def test_acerca_insert_ignores_other_language_structure(self):
+        # Other languages are regenerated by Odoo from es_ES: their
+        # structure does not block the insert.
         self.client.views[3352] = {"es_ES": NO_ACERCA, "en_US": NO_ACERCA_NO_SEC1}
         self.write_rows_csv([(68, "ir_ui_view.3352.Acerca.insert", "", json.dumps(PAYLOAD))])
         code, out = self.run_main("--apply")
-        self.assertEqual(code, 1, out)
-        self.assertRegex(out, r"Acerca\.insert\s+FAIL.*anchor differs")
-        self.assertIn("es_ES=SEC1", out)
-        self.assertIn("en_US=Hero", out)
-        self.assertEqual(self.client.writes, [])
+        self.assertEqual(code, 0, out)
+        self.assertEqual(self.client.writes, [("ir.ui.view", 3352, "arch_db", "es_ES")])
+        arch = self.client.views[3352]["es_ES"]
+        self.assertLess(lib.find_section(arch, "SEC1").end, lib.find_section(arch, "Acerca").start)
 
     def test_acerca_offline_validation(self):
         self.write_rows_csv([
@@ -970,6 +1131,82 @@ class AplicarEndToEndTests(unittest.TestCase):
         self.assertEqual(code, 2)
         self.assertIn("refusing to --apply on db 'prod'", out.getvalue())
         self.assertEqual(self.client.writes, [])
+
+
+class RevertirEndToEndTests(unittest.TestCase):
+    """aplicar --apply, then revertir with the psql call mocked."""
+
+    setUp = AplicarEndToEndTests.setUp
+    tearDown = AplicarEndToEndTests.tearDown
+    write_csv = AplicarEndToEndTests.write_csv
+    run_main = AplicarEndToEndTests.run_main
+
+    def run_revertir(self, *extra, returncode=0):
+        out = io.StringIO()
+        done = subprocess.CompletedProcess([], returncode, "", "ERROR:  boom" if returncode else "")
+        argv = ["--db", "test", "--backup", str(self.backup), "--container", "ctr", "--pg-db", "testdb", *extra]
+        with mock.patch.object(revertir.subprocess, "run", return_value=done) as run, \
+                contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+            code = revertir.main(argv)
+        return code, out.getvalue(), run
+
+    def setup_applied(self):
+        self.client.langs = ["es_ES", "en_US", "fr_FR"]
+        self.client.views[3352]["fr_FR"] = ARCH.replace("Little Beach", "Petite plage")
+        self.before = dict(self.client.views[3352])
+        self.write_csv(AplicarEndToEndTests.STANDARD_ROWS)
+        code, out = self.run_main("--apply")
+        self.assertEqual(code, 0, out)
+        self.client.writes, self.client.contexts = [], []
+
+    def test_dry_run_executes_nothing(self):
+        self.setup_applied()
+        code, out, run = self.run_revertir()
+        self.assertEqual(code, 0, out)
+        run.assert_not_called()
+        self.assertEqual(self.client.writes, [])
+        self.assertRegex(out, r"ir\.ui\.view\[3352\].*WOULD RESTORE.*languages: es_ES=\d+, en_US=\d+, fr_FR=\d+ chars"
+                              r".*current es_ES differs: yes.*3/3 language\(s\) differ")
+        self.assertEqual(out.count("WOULD RESTORE"), 3)   # 2 company values + 1 view
+
+    def test_apply_restores_views_in_one_sql_transaction(self):
+        self.setup_applied()
+        code, out, run = self.run_revertir("--apply")
+        self.assertEqual(code, 0, out)
+        run.assert_called_once()
+        command, script = run.call_args.args[0], run.call_args.kwargs["input"]
+        self.assertEqual(command[:4], ["docker", "exec", "-i", "ctr"])
+        self.assertEqual(command[command.index("-d") + 1], "testdb")
+        self.assertEqual(_parse_updates(script), {3352: self.before})
+        self.assertEqual(script.count("BEGIN;"), 1)
+        self.assertTrue(script.rstrip().endswith("INSERT INTO orm_signaling_templates DEFAULT VALUES;\nCOMMIT;"))
+        # company values through XML-RPC, views never through the ORM
+        self.assertEqual(sorted(w[2] for w in self.client.writes), ["microsite_hero_image", "microsite_intro_title"])
+        self.assertTrue(all(w[0] == "res.company" for w in self.client.writes))
+        self.assertIn("restored 1 view(s) in one transaction", out)
+
+    def test_psql_failure_fails_views(self):
+        self.setup_applied()
+        code, out, run = self.run_revertir("--apply", returncode=3)
+        self.assertEqual(code, 1, out)
+        self.assertIn("nothing committed: psql exited with 3: ERROR:  boom", out)
+        self.assertIn("fail: 1", out)
+
+    def test_view_already_original_is_skipped(self):
+        self.setup_applied()
+        self.client.views[3352].update(self.before)
+        code, out, run = self.run_revertir("--apply")
+        self.assertEqual(code, 0, out)
+        run.assert_not_called()
+        self.assertIn("already at original value (all languages)", out)
+
+    def test_old_backup_rejected(self):
+        self.backup.write_text(json.dumps(_rec("backup", ("ir.ui.view", 1, "arch_db", "es_ES"), value="x")) + "\n",
+                               encoding="utf-8")
+        code, out, run = self.run_revertir()
+        self.assertEqual(code, 2)
+        self.assertIn("old backup format", out)
+        run.assert_not_called()
 
 
 class CredentialsTests(unittest.TestCase):
