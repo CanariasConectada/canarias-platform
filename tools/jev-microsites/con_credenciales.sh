@@ -7,8 +7,8 @@ set -euo pipefail
 ENV_FILE="${JEV_ENV_FILE:-/home/odoo/Pending/jev-work/.env.jev}"
 cd "$(dirname "$0")"
 case "${1:-}" in
-  aplicar.py|revertir.py|corregir_marcas.py) ;;
-  *) echo "usage: $0 aplicar.py|revertir.py|corregir_marcas.py [flags...]" >&2; exit 2 ;;
+  aplicar.py|revertir.py|corregir_marcas.py|corregir_traducciones.py) ;;
+  *) echo "usage: $0 aplicar.py|revertir.py|corregir_marcas.py|corregir_traducciones.py [flags...]" >&2; exit 2 ;;
 esac
 [ -r "$ENV_FILE" ] || { echo "missing $ENV_FILE" >&2; exit 2; }
 perm=$(stat -c %a "$ENV_FILE")
