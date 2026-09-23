@@ -129,3 +129,11 @@ Pendiente tras la aplicación:
 - `revision.csv` (69 filas) sin aplicar, a la espera de revisión.
 - Fixes de reseñas (§3) sin aplicar.
 - Comprobación HTTP automática no hecha (hook); verificación visual hecha por el usuario en el site 68.
+
+## 8. Corrección de nombres de comercio en las traducciones (2026-09-23)
+
+- Detectado: en 7 portadas (sites 39, 175, 178, 188, 190, 197, 207) el motor tradujo o rompió el nombre del comercio en las frases nuevas.
+- Causa: el glosario tenía variantes en mayúsculas y sin tildes («EL TUCAN 24H»), que no protegen «El Tucán 24H» (la guarda distingue tildes); y los nombres con «&» se guardan como `&amp;` en la página.
+- Corrección con `corregir_marcas.py`: 8 términos nuevos en el glosario (ids 383-390) y 42 trabajos retraducidos con `action_translate_again`.
+- Resultado (19:27 UTC): 96 de 108 apariciones intactas; las 12 restantes son «El Tucán 24H», que ahora sale como «EL TUCÁN 24H» (nombre correcto, en mayúsculas). Estructura ok en las 7 portadas.
+- Queda: calidad general del motor (frases literales como «nearby prices», «Komm schon. M&G Moda…»). Y el glosario de la plataforma tiene muchos nombres sin tildes que no protegen la versión con tildes.
