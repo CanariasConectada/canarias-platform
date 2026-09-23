@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Company Facilities",
-    "version": "19.0.3.1.1",
+    "version": "19.0.3.1.2",
     "category": "Website",
     "summary": "Facilities and services a shop offers, by subdivision and icon",
     "author": "MikeColangelo",
@@ -36,7 +36,6 @@
         ],
         "web.assets_frontend": [
             "company_facilities/static/src/scss/facilities.scss",
-            "company_facilities/static/src/js/facilities_order.js",
         ],
     },
     "installable": True,
