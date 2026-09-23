@@ -121,3 +121,11 @@ Notas:
 - Las portadas se escriben solo en es_ES: Odoo reconstruye los otros 6 idiomas y `website_auto_translate` traduce los textos nuevos por cola. Hasta que la cola termine, esos textos se ven en español en los otros idiomas.
 - Log de Odoo sin errores; solo el aviso de obsolescencia de XML-RPC en Odoo 19.
 - La contraseña de producción quedó visible para el asistente al guardar `.env.jev` (aviso automático de la herramienta). Rotarla.
+| 12:47 | Cola de traducción terminada | 420/420 trabajos hechos, 0 fallidos. `validar_traducciones.py`: 70/70 portadas ok, estructura idéntica en 7 idiomas. |
+| 12:48 | Backup posterior | `/home/odoo/backup/kimi/20260923_0848_jev_microsites_post_apply/` (pg_dump + backup.jsonl) |
+
+Pendiente tras la aplicación:
+- Calidad del motor de traducción: traduce o rompe nombres de comercio (ej. «M&G Moda» → «M&G Fashion»; en pl_PL «do&G Moda»). Proponer glosario con los nombres de los comercios.
+- `revision.csv` (69 filas) sin aplicar, a la espera de revisión.
+- Fixes de reseñas (§3) sin aplicar.
+- Comprobación HTTP automática no hecha (hook); verificación visual hecha por el usuario en el site 68.
