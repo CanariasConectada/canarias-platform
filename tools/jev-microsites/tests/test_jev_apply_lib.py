@@ -336,9 +336,73 @@ class AcercaColumnTests(unittest.TestCase):
         out = lib.set_acerca_column(bare, 2, "x", site_id=42)
         self.assertIn('id="acerca2_site42"', out)
         with self.assertRaises(lib.ArchError):
-            lib.set_acerca_column(LEGACY_ONE.replace(COL1, ""), 2, "x", site_id=42)
-        with self.assertRaises(lib.ArchError):
             lib.set_acerca_column(LEGACY_TWO, 1, "  ")
+
+    def test_columns_identified_by_id_not_position(self):
+        arch = _legacy_arch(COL2)   # only the services column (acerca2_, fa-cogs)
+        self.assertEqual(lib.extract_acerca_column(arch, 1), "")
+        self.assertEqual(lib.extract_acerca_column(arch, 2), "Servicios completos")
+        self.assertEqual(list(lib.acerca_column_slots(arch)), [2])
+
+        out = lib.set_acerca_column(arch, 1, "Historia & nueva", site_id=42)
+        slots = lib.acerca_column_slots(out)
+        self.assertEqual(sorted(slots), [1, 2])
+        self.assertLess(slots[1].end, slots[2].start)      # about before services
+        col2 = arch[lib.acerca_column_slots(arch)[2].start:lib.acerca_column_slots(arch)[2].end]
+        self.assertEqual(out[slots[2].start:slots[2].end], col2)   # byte-identical
+        self.assertEqual(out[slots[2].start:], arch[lib.acerca_column_slots(arch)[2].start:])
+        new_col = out[slots[1].start:slots[1].end]
+        self.assertIn('class="fa fa-book fa-3x mb-3"', new_col)
+        self.assertIn('id="acerca1_lapapayafitnesscenter"', new_col)
+        self.assertEqual(lib.extract_acerca_column(out, 1), "Historia & nueva")
+        self.assertEqual(lib.extract_acerca_column(out, 2), "Servicios completos")
+
+        out = lib.set_acerca_column(arch, 2, "Otros servicios")
+        self.assertEqual(out, arch.replace("Servicios cortos", "Otros servicios")
+                         .replace("Servicios completos", "Otros servicios"))
+        self.assertEqual(lib.extract_acerca_column(out, 1), "")
+
+        # document order does not matter: col2 first, col1 second
+        swapped = _legacy_arch(COL2 + "\n" + COL1)
+        self.assertEqual(lib.extract_acerca_column(swapped, 1), "Historia completa")
+        out = lib.set_acerca_column(swapped, 1, "Nueva")
+        self.assertEqual(out, swapped.replace("Historia corta", "Nueva").replace("Historia completa", "Nueva"))
+
+        # positional fallback only when no column carries an acerca id
+        bare = _legacy_arch(COL1.replace("acerca1_", "x1_") + "\n" + COL2.replace("acerca2_", "x2_"))
+        self.assertEqual(lib.extract_acerca_column(bare, 1), "Historia completa")
+        self.assertEqual(lib.extract_acerca_column(bare, 2), "Servicios completos")
+        mixed = _legacy_arch(COL1.replace("acerca1_", "x1_") + "\n" + COL2)
+        self.assertEqual(lib.extract_acerca_column(mixed, 1), "")
+        self.assertEqual(lib.extract_acerca_column(mixed, 2), "Servicios completos")
+
+    def test_duplicate_slot_raises(self):
+        arch = _legacy_arch(COL1 + "\n" + COL2.replace("acerca2_", "acerca1_"))
+        for call in (lambda: lib.extract_acerca_column(arch, 1),
+                     lambda: lib.set_acerca_column(arch, 2, "x"),
+                     lambda: lib.extract_acerca_section(arch)):
+            with self.assertRaises(lib.ArchError):
+                call()
+
+    def test_zero_columns(self):
+        empty = _legacy_arch("")
+        self.assertEqual(lib.acerca_columns(empty), [])
+        self.assertEqual(lib.extract_acerca_column(empty, 1), "")
+        out = lib.set_acerca_column(empty, 1, "Historia", site_id=42)
+        self.assertEqual(sorted(lib.acerca_column_slots(out)), [1])
+        self.assertIn('id="acerca1_site42"', out)
+        self.assertEqual(lib.extract_acerca_column(out, 1), "Historia")
+        self.assertIn('\n                <div class="border', out)   # row indent + 4
+        self.assertIsNotNone(lib.find_section(out, "Contacto"))
+        out2 = lib.set_acerca_column(out, 2, "Servicios")
+        slots = lib.acerca_column_slots(out2)
+        self.assertLess(slots[1].end, slots[2].start)
+        self.assertIn('id="acerca2_site42"', out2)
+        # col2 alone into an empty section, then col1 goes before it
+        out = lib.set_acerca_column(lib.set_acerca_column(empty, 2, "S", site_id=7), 1, "H", site_id=7)
+        slots = lib.acerca_column_slots(out)
+        self.assertLess(slots[1].end, slots[2].start)
+        self.assertEqual((lib.extract_acerca_column(out, 1), lib.extract_acerca_column(out, 2)), ("H", "S"))
 
     def test_back_to_back_append(self):
         arch = _legacy_arch(COL1 + '<div class="x">keep</div>')
@@ -865,6 +929,16 @@ class AplicarEndToEndTests(unittest.TestCase):
         code, out = self.run_main("--apply")
         self.assertEqual(code, 0, out)
         self.assertEqual(lib.extract_acerca_column(self.client.views[3352]["es_ES"], 1), "Nueva")
+
+    def test_acerca_insert_anchor_must_match_across_languages(self):
+        self.client.views[3352] = {"es_ES": NO_ACERCA, "en_US": NO_ACERCA_NO_SEC1}
+        self.write_rows_csv([(68, "ir_ui_view.3352.Acerca.insert", "", json.dumps(PAYLOAD))])
+        code, out = self.run_main("--apply")
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, r"Acerca\.insert\s+FAIL.*anchor differs")
+        self.assertIn("es_ES=SEC1", out)
+        self.assertIn("en_US=Hero", out)
+        self.assertEqual(self.client.writes, [])
 
     def test_acerca_offline_validation(self):
         self.write_rows_csv([

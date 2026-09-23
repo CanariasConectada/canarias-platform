@@ -414,7 +414,7 @@ def prepare_view_column(ctx: SiteContext, change: lib.Change) -> Outcome:
     pending, skip, note = _plan_languages(ctx, change, baseline, done)
     if skip:
         return skip
-    if any(n > len(lib.acerca_columns(ctx.work_arch(view_id, lang))) for lang in pending):
+    if any(n not in lib.acerca_column_slots(ctx.work_arch(view_id, lang)) for lang in pending):
         note += f", column {n} appended"
     op = lambda arch, c=n, t=text, s=ctx.site: lib.set_acerca_column(arch, c, t, s)  # noqa: E731
     error = _dry_run_op(ctx, view_id, pending, op)
@@ -446,6 +446,15 @@ def prepare_acerca_insert(ctx: SiteContext, change: lib.Change) -> Outcome:
     if existing:
         return Outcome(change, STATUS_FAIL,
                        f"section 'Acerca' already exists with other content in {', '.join(existing)}",
+                       lib.truncate(current[ctx.primary_lang]))
+    # The section must land after the same anchor in every language, or the
+    # translations would diverge structurally.
+    anchors = {lang: lib.acerca_anchor_name(ctx.work_arch(view_id, lang)) for lang in pending}
+    if len(set(anchors.values())) > 1:
+        detail = ", ".join(f"{lang}={anchors[lang] or 'none'}" for lang in pending)
+        return Outcome(change, STATUS_FAIL,
+                       f"Acerca insert anchor differs between languages ({detail}); "
+                       "add SEC1 in every language first",
                        lib.truncate(current[ctx.primary_lang]))
     op = lambda arch, p=payload: lib.insert_acerca_section(arch, p)  # noqa: E731
     error = _dry_run_op(ctx, view_id, pending, op)

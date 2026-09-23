@@ -565,6 +565,8 @@ _SMALL_CLOSE_RE = re.compile(r"</small\s*>")
 _H6_OPEN_RE = re.compile(r"<h6\b[^>]*>")
 _H6_CLOSE_RE = re.compile(r"</h6\s*>")
 _ACERCA_SLUG_IN_ARCH_RE = re.compile(r'acerca\d+_(\S+?)"')
+_ACERCA_COLLAPSE_ID_RE = re.compile(r'\sid="acerca(\d+)_[^"]*"')
+_ROW_CLASS_RE = re.compile(r"""\sclass=(["'])(?:[^"']*\s)?row(?:\s[^"']*)?\1""")
 
 
 @dataclass(frozen=True)
@@ -614,6 +616,37 @@ def acerca_columns(arch: str) -> list[Column]:
     return columns
 
 
+def _column_number(arch: str, column: Column) -> int | None:
+    """N of the first ``id="acerca<N>_..."`` div inside ``column``."""
+    for _start, _open_end, _close_start, _end, tag in _div_spans(arch, column.open_end, column.close_start):
+        m = _ACERCA_COLLAPSE_ID_RE.search(tag)
+        if m:
+            return int(m.group(1))
+    return None
+
+
+def acerca_column_slots(arch: str) -> dict[int, Column]:
+    """Columns of the Acerca section keyed by their slot number.
+
+    A column's slot is the ``N`` of its ``id="acerca<N>_<slug>"`` collapse
+    div. Only when no column of the section carries such an id are columns
+    numbered by document position (1-based). Columns without an id are
+    ignored when others have one. Raises :class:`ArchError` when two
+    columns claim the same slot and :class:`SectionNotFound`."""
+    columns = acerca_columns(arch)
+    numbers = [_column_number(arch, column) for column in columns]
+    if all(number is None for number in numbers):
+        return {index: column for index, column in enumerate(columns, start=1)}
+    slots: dict[int, Column] = {}
+    for column, number in zip(columns, numbers):
+        if number is None:
+            continue
+        if number in slots:
+            raise ArchError(f"two Acerca columns claim slot {number} (acerca{number}_...)")
+        slots[number] = column
+    return slots
+
+
 def acerca_preview(text: str) -> str:
     """Preview rule of the legacy builder (unescaped)."""
     if len(text) <= ACERCA_PREVIEW_LEN:
@@ -645,13 +678,13 @@ def _plain(fragment: str) -> str:
 
 
 def extract_acerca_column(arch: str, n: int) -> str:
-    """Unescaped full text (card body) of column ``n`` (1-based) of the
-    Acerca section, or ``""`` when the column does not exist. Raises
-    :class:`SectionNotFound`."""
-    columns = acerca_columns(arch)
-    if n < 1 or n > len(columns):
+    """Unescaped full text (card body) of the column in slot ``n`` (see
+    :func:`acerca_column_slots`) of the Acerca section, or ``""`` when that
+    slot is absent. Raises :class:`SectionNotFound` / :class:`ArchError`."""
+    column = acerca_column_slots(arch).get(n)
+    if column is None:
         return ""
-    span = _card_body_span(arch, columns[n - 1])
+    span = _card_body_span(arch, column)
     return _plain(arch[span[0]:span[1]]) if span else ""
 
 
@@ -696,21 +729,24 @@ def _line_indent(arch: str, index: int) -> str:
 def set_acerca_column(arch: str, n: int, text: str, site_id: int | None = None) -> str:
     """Set the full text of column ``n`` (1 or 2) of the Acerca section.
 
-    Existing column: the inner text of its ``<small>`` becomes the preview
-    and the inner text of its ``card card-body`` div the full text (both
-    HTML-escaped); everything else stays byte-identical. Missing column
-    ``n`` when exactly ``n - 1`` columns exist: a new column is appended
-    right after the last column's closing tag, with the default icon and
-    title and the collapse id ``acerca<n>_<slug>`` (slug from an existing
-    id in the section, else ``site<site_id>``)."""
+    Columns are identified by slot (:func:`acerca_column_slots`), never by
+    position alone. Existing slot ``n``: the inner text of its ``<small>``
+    becomes the preview and the inner text of its ``card card-body`` div the
+    full text (both HTML-escaped); everything else stays byte-identical.
+    Missing slot ``n``: a new column is added in slot order, i.e. right
+    before the first column of a higher slot, else right after the last
+    column, else (no column at all) at the end of the section's ``row``
+    div. It gets the default icon and title and the collapse id
+    ``acerca<n>_<slug>`` (slug from an existing id in the section, else
+    ``site<site_id>``)."""
     if n not in ACERCA_COLUMN_DEFAULTS:
         raise ArchError(f"unsupported Acerca column {n}")
     if not (text or "").strip():
         raise ArchError(f"empty text for Acerca column {n}")
     section = _require_section(arch, ACERCA_SECTION)
-    columns = acerca_columns(arch)
-    if n <= len(columns):
-        column = columns[n - 1]
+    slots = acerca_column_slots(arch)
+    column = slots.get(n)
+    if column is not None:
         small = _inner_span(arch, column, _SMALL_OPEN_RE, _SMALL_CLOSE_RE)
         card = _card_body_span(arch, column)
         if small is None or card is None:
@@ -720,14 +756,31 @@ def set_acerca_column(arch: str, n: int, text: str, site_id: int | None = None) 
         for (start, end), value in edits:
             arch = arch[:start] + value + arch[end:]
         return arch
-    if len(columns) != n - 1 or not columns:
-        raise ArchError(f"cannot add Acerca column {n}: the section has {len(columns)} column(s)")
-    last = columns[-1]
-    indent = _line_indent(arch, last.start)
-    title = ACERCA_COLUMN_DEFAULTS[n][1]
-    lines = _acerca_column_lines(n, title, text, _acerca_slug(arch, section, site_id))
+    lines = _acerca_column_lines(n, ACERCA_COLUMN_DEFAULTS[n][1], text, _acerca_slug(arch, section, site_id))
+    higher = sorted(number for number in slots if number > n)
+    columns = acerca_columns(arch)
+    if higher:
+        # Before the next slot, keeping visual order (about -> services).
+        start = slots[higher[0]].start
+        indent = _line_indent(arch, start)
+        block = "\n".join(indent + line for line in lines)[len(indent):]
+        return arch[:start] + block + "\n" + indent + arch[start:]
+    if columns:
+        last = columns[-1]
+        indent = _line_indent(arch, last.start)
+        block = "\n".join(indent + line for line in lines)
+        return arch[:last.end] + "\n" + block + arch[last.end:]
+    row = next((span for span in _div_spans(arch, section.open_end, section.close_start)
+                if _ROW_CLASS_RE.search(span[4])), None)
+    if row is None:
+        raise ArchError(f"cannot add Acerca column {n}: the section has no column and no row div")
+    row_start, _open_end, close_start, _end, _tag = row
+    indent = _line_indent(arch, row_start) + "    "
     block = "\n".join(indent + line for line in lines)
-    return arch[:last.end] + "\n" + block + arch[last.end:]
+    line_start = arch.rfind("\n", 0, close_start) + 1
+    if not arch[line_start:close_start].strip() and line_start > row_start:
+        return arch[:line_start] + block + "\n" + arch[line_start:]
+    return arch[:close_start] + "\n" + block + "\n" + arch[close_start:]
 
 
 def parse_acerca_payload(value: str) -> dict:
@@ -773,18 +826,27 @@ def extract_acerca_section(arch: str) -> str:
     section = find_section(arch, ACERCA_SECTION)
     if section is None:
         return ""
-    columns = acerca_columns(arch)
+    slots = acerca_column_slots(arch)
     values = {}
     for n, (title_key, text_key) in ((1, ("about_title", "about")), (2, ("services_title", "services"))):
         title = text = ""
-        if n <= len(columns):
-            h6 = _inner_span(arch, columns[n - 1], _H6_OPEN_RE, _H6_CLOSE_RE)
+        if n in slots:
+            h6 = _inner_span(arch, slots[n], _H6_OPEN_RE, _H6_CLOSE_RE)
             title = _plain(arch[h6[0]:h6[1]]) if h6 else ""
             text = extract_acerca_column(arch, n)
         values[title_key], values[text_key] = title, text
     m = _ACERCA_SLUG_IN_ARCH_RE.search(arch, section.open_end, section.close_start)
     values["slug"] = m.group(1) if m else ""
     return acerca_payload_key(values)
+
+
+def acerca_anchor_name(arch: str) -> str | None:
+    """Section the Acerca insert is anchored after: ``"SEC1"`` when present,
+    else ``"Hero"`` when present, else ``None``."""
+    for name in ("SEC1", "Hero"):
+        if find_section(arch, name) is not None:
+            return name
+    return None
 
 
 def insert_acerca_section(arch: str, payload: dict) -> str:
