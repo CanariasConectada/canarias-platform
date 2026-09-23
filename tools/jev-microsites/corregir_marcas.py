@@ -48,8 +48,12 @@ def main() -> int:
     to_create = []
     for site, terms in TERMS.items():
         for term in terms:
-            existing = client.search_read("auto.translate.glossary",
-                                          [("name", "=ilike", term), ("lang", "=", False)], ["id", "name"])
+            # The database has unaccent, so =ilike also returns "EL TUCAN 24H"
+            # for "El Tucán 24H"; the engine's guard is accent-sensitive, so
+            # only an exact (case-insensitive) spelling counts as existing.
+            candidates = client.search_read("auto.translate.glossary",
+                                            [("name", "=ilike", term), ("lang", "=", False)], ["id", "name"])
+            existing = [c for c in candidates if c["name"].casefold() == term.casefold()]
             if existing:
                 print(f"[{mode}] glossary  site {site:>3}  EXISTS   {term!r} (id {existing[0]['id']})")
             else:
