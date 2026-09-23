@@ -1,14 +1,23 @@
 #!/usr/bin/env python3
 """Restore the values recorded in ``backup.jsonl`` by ``aplicar.py``.
 
-For every (model, res_id, field, lang) the EARLIEST backup line is used, so
-running ``aplicar.py`` twice still restores the original value. Only values
-whose write was confirmed (an ``applied`` line exists) are restored unless
-``--include-unapplied`` is given.
+For every (model, res_id, field, lang) the EARLIEST ``backup`` line is used,
+so running ``aplicar.py`` twice still restores the original value.
+
+Which values are restored (event semantics of the backup file):
+
+* ``backup`` line only: the write was never attempted (the batch was
+  interrupted before it, or a dependency failed). Skipped by default;
+  restored with ``--include-unapplied``.
+* ``pending`` line: ``aplicar.py`` flushed it immediately before the RPC
+  write. If no ``applied`` line follows, the process died mid-write and the
+  server value is unknown, so the value IS restored by default.
+* ``applied`` line: the write succeeded. Restored by default.
 
 Dry-run by default; ``--apply`` performs the writes. Before each write the
 current server value is read and the restore is skipped when it already
-equals the backed-up value.
+equals the backed-up value. The default backup path lives outside the git
+tree (``/home/odoo/Pending/jev-work/backup.jsonl``).
 """
 from __future__ import annotations
 
@@ -49,13 +58,17 @@ class Restore:
 
 
 def collect_restores(records: list[dict]) -> list[Restore]:
-    """Reduce backup lines to one :class:`Restore` per value identity."""
+    """Reduce backup lines to one :class:`Restore` per value identity.
+
+    ``Restore.applied`` is True when an ``applied`` or ``pending`` event
+    exists for the key (the write was confirmed or at least attempted)."""
     earliest: dict[tuple, Restore] = {}
     applied_keys: set[tuple] = set()
     for record in records:
         event = record.get("event", lib.EVENT_BACKUP if "valor_anterior" in record else lib.EVENT_APPLIED)
         key = lib.backup_key(record)
-        if event == lib.EVENT_APPLIED or record.get("applied") is True:
+        if event in (lib.EVENT_APPLIED, lib.EVENT_PENDING) or record.get("applied") is True:
+            # A pending line means the write was attempted: restore it too.
             applied_keys.add(key)
         if event != lib.EVENT_BACKUP:
             continue
@@ -127,7 +140,7 @@ def build_parser() -> argparse.ArgumentParser:
                         help="comma separated website ids to restore")
     parser.add_argument("--batch-size", type=int, default=10, help="sites per batch")
     parser.add_argument("--include-unapplied", action="store_true",
-                        help="also restore values whose write was never confirmed")
+                        help="also restore values that only have a 'backup' line (write never attempted)")
     parser.add_argument("--stop-on-error", action="store_true", help="abort on the first failed write")
     return parser
 
@@ -150,7 +163,7 @@ def main(argv: list[str] | None = None) -> int:
     grouped: dict[int, list[Restore]] = {}
     for restore in restores:
         if not restore.applied and not args.include_unapplied:
-            restore.status, restore.reason = STATUS_SKIP, "never applied (use --include-unapplied)"
+            restore.status, restore.reason = STATUS_SKIP, "write never attempted (use --include-unapplied)"
             print_restore(restore)
             continue
         grouped.setdefault(restore.site, []).append(restore)

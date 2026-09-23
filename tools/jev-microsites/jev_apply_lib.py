@@ -5,12 +5,17 @@ Contents:
 
 * CSV loading and ``campo`` parsing for ``cambios.csv``.
 * Pure, regex based arch manipulation for the homepage view
-  (``replace_section_h2``, ``set_section_background``,
+  (``find_section``, ``replace_section_h2``, ``set_section_background``,
   ``insert_sec1_after_hero``, ``extract_section_h2``, ``extract_section_bg``).
-  The document is left byte-identical outside the edited span; the arch is
-  never parsed with lxml.
-* A thin XML-RPC client for Odoo (``OdooClient``).
-* Backup file (JSON lines) reading and writing.
+  ``find_section`` is depth aware (nested ``<section>`` elements are
+  handled). The document is left byte-identical outside the edited span; the
+  arch is never parsed with lxml.
+* Validation helpers: zip path containment (``zip_image_path``) and the
+  background URL whitelist (``check_bg_url``).
+* A thin XML-RPC client for Odoo (``OdooClient``). The password is only
+  taken from ``ODOO_PASSWORD`` or an interactive prompt, never from a flag.
+* Backup file (JSON lines) reading and writing with ``backup`` / ``pending``
+  / ``applied`` events.
 
 Only the Python standard library is used.
 """
@@ -18,11 +23,13 @@ from __future__ import annotations
 
 import argparse
 import csv
+import getpass
 import html
 import json
 import os
 import re
 import socket
+import sys
 import xmlrpc.client
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -34,7 +41,8 @@ HERE = Path(__file__).resolve().parent
 DEFAULT_URL = "https://canariasconectada.es"
 DEFAULT_DB = "prod"
 DEFAULT_CSV = HERE / "cambios.csv"
-DEFAULT_BACKUP = HERE / "backup.jsonl"
+# Outside the git tree: the backup holds full archs and base64 images.
+DEFAULT_BACKUP = Path("/home/odoo/Pending/jev-work/backup.jsonl")
 DEFAULT_ZIP_ROOT = Path("/home/odoo/Pending/jev-work/zip/HTML_LIMPIO_WORK_FINAL/COMPLETOS")
 DEFAULT_PRIMARY_LANG = "es_ES"
 
@@ -49,7 +57,17 @@ SECTION_IMAGE_FIELD = {
     "Separador": "microsite_banner_image",
 }
 
+MODEL_COMPANY = "res.company"
+MODEL_VIEW = "ir.ui.view"
+MODEL_PAGE = "website.page"
+FIELD_ARCH = "arch_db"
+
 WEB_IMAGE_PREFIX = "/web/image/"
+COMPANY_IMAGE_URL_PREFIX = f"{WEB_IMAGE_PREFIX}{MODEL_COMPANY}/"
+
+# The only background URLs that may be written into a view.
+_BG_URL_WHITELIST_RE = re.compile(
+    r"^/web/image/res\.company/(\d+)/(%s)$" % "|".join(COMPANY_IMAGE_FIELDS))
 
 # Prepended to the ``style`` attribute when a section has no background-image yet.
 BG_STYLE_PREFIX = (
@@ -86,10 +104,6 @@ KIND_ORDER = {
     KIND_VIEW_BG: 4,
 }
 
-MODEL_COMPANY = "res.company"
-MODEL_VIEW = "ir.ui.view"
-FIELD_ARCH = "arch_db"
-
 
 class ArchError(ValueError):
     """The arch does not contain what the operation needs."""
@@ -105,6 +119,10 @@ class CampoError(ValueError):
 
 class OdooError(RuntimeError):
     """Authentication or RPC failure."""
+
+
+class CredentialsError(OdooError):
+    """Login or password could not be obtained."""
 
 
 # ---------------------------------------------------------------------------
@@ -175,28 +193,52 @@ class Change:
         return f"{self.site}:{self.campo}"
 
 
-def load_changes(path: Path) -> list[Change]:
-    """Load ``cambios.csv``. Raises ``ValueError`` on malformed rows."""
+@dataclass
+class InvalidRow:
+    """A CSV row that could not be parsed (reported as FAIL, never applied)."""
+
+    line: int
+    site: str
+    campo: str
+    error: str
+
+
+def load_changes(path: Path) -> tuple[list[Change], list[InvalidRow]]:
+    """Load ``cambios.csv``.
+
+    Returns ``(changes, invalid)``. Rows whose ``site``, ``confianza`` or
+    ``campo`` cannot be parsed are returned in ``invalid`` instead of raising
+    so the caller can report them as failed rows. A missing column raises
+    ``ValueError``."""
     changes: list[Change] = []
+    invalid: list[InvalidRow] = []
     with open(path, newline="", encoding="utf-8-sig") as fh:
         reader = csv.DictReader(fh)
         missing = [c for c in CSV_COLUMNS if c not in (reader.fieldnames or [])]
         if missing:
             raise ValueError(f"{path}: missing columns {missing}; header is {reader.fieldnames}")
         for line, raw in enumerate(reader, start=1):
-            try:
-                site = int(str(raw["site"]).strip())
-            except (TypeError, ValueError):
-                raise ValueError(f"{path} row {line}: site must be an integer, got {raw['site']!r}")
+            site_text = str(raw.get("site") or "").strip()
+            campo = (raw.get("campo") or "").strip()
             conf_raw = (raw.get("confianza") or "").strip()
+            try:
+                site = int(site_text)
+            except ValueError:
+                invalid.append(InvalidRow(line, site_text, campo, f"site must be an integer, got {site_text!r}"))
+                continue
             try:
                 confianza = float(conf_raw) if conf_raw else 0.0
             except ValueError:
-                raise ValueError(f"{path} row {line}: confianza must be a number, got {conf_raw!r}")
-            target = parse_campo(raw["campo"] or "")
+                invalid.append(InvalidRow(line, site_text, campo, f"confianza must be a number, got {conf_raw!r}"))
+                continue
+            try:
+                target = parse_campo(campo)
+            except CampoError as exc:
+                invalid.append(InvalidRow(line, site_text, campo, str(exc)))
+                continue
             changes.append(Change(
                 site=site,
-                campo=(raw["campo"] or "").strip(),
+                campo=campo,
                 valor_anterior=raw.get("valor_anterior") or "",
                 valor_nuevo=raw.get("valor_nuevo") or "",
                 confianza=confianza,
@@ -204,7 +246,7 @@ def load_changes(path: Path) -> list[Change]:
                 target=target,
                 line=line,
             ))
-    return changes
+    return changes, invalid
 
 
 def group_by_site(changes: Iterable[Change]) -> dict[int, list[Change]]:
@@ -236,24 +278,145 @@ def parse_site_list(text: str) -> set[int]:
 
 
 # ---------------------------------------------------------------------------
+# Validation helpers
+# ---------------------------------------------------------------------------
+
+def zip_image_path(zip_root: Path, value: str) -> Path:
+    """Resolve an image path from the CSV against ``zip_root``.
+
+    Rejects empty, absolute and ``..`` containing values, and any path that
+    resolves (symlinks included) outside ``zip_root``. Raises ``ValueError``.
+    The returned path is not checked for existence."""
+    value = (value or "").strip()
+    if not value:
+        raise ValueError("empty image path")
+    relative = Path(value)
+    if relative.is_absolute() or value.startswith(("/", "\\")):
+        raise ValueError(f"absolute image path not allowed: {value!r}")
+    if ".." in relative.parts:
+        raise ValueError(f"'..' not allowed in image path: {value!r}")
+    root = Path(zip_root).resolve()
+    resolved = (root / relative).resolve()
+    if not resolved.is_relative_to(root):
+        raise ValueError(f"image path escapes the zip root: {value!r}")
+    return resolved
+
+
+def check_bg_url(url: str, company_id: int | None = None) -> str:
+    """Return an error message when ``url`` is not an allowed background.
+
+    Only ``/web/image/res.company/<id>/<microsite image field>`` is accepted.
+    With ``company_id`` the ``<id>`` must match it; with ``None`` (offline)
+    only the shape is checked. Returns ``""`` when the URL is acceptable."""
+    m = _BG_URL_WHITELIST_RE.match(url or "")
+    if not m:
+        return (f"background url {url!r} is not allowed; expected "
+                f"{COMPANY_IMAGE_URL_PREFIX}<company_id>/<{'|'.join(COMPANY_IMAGE_FIELDS)}>")
+    if company_id is not None and int(m.group(1)) != int(company_id):
+        return f"background url {url!r} does not belong to company {company_id}"
+    return ""
+
+
+def bg_url_field(url: str) -> str | None:
+    """The res.company image field named by an allowed background URL."""
+    m = _BG_URL_WHITELIST_RE.match(url or "")
+    return m.group(2) if m else None
+
+
+def company_image_url(company_id: int, field: str) -> str:
+    return f"{COMPANY_IMAGE_URL_PREFIX}{int(company_id)}/{field}"
+
+
+# ---------------------------------------------------------------------------
 # Pure arch manipulation
 # ---------------------------------------------------------------------------
 
-_OPEN_TAG_RE = re.compile(r"<section\b[^>]*>")
-_H2_RE = re.compile(r"(<h2\b[^>]*>)(.*?)(</h2>)", re.S)
+_SECTION_TOKEN_RE = re.compile(r"<section\b[^>]*>|</section\s*>")
+_H2_TOKEN_RE = re.compile(r"<section\b[^>]*>|</section\s*>|<h2\b[^>]*>")
+_H2_CLOSE_RE = re.compile(r"</h2\s*>")
 _STYLE_RE = re.compile(r"""\sstyle=(["'])(.*?)\1""", re.S)
 _BG_URL_RE = re.compile(r"""background-image\s*:\s*url\(\s*(['"]?)(.*?)\1\s*\)""", re.S)
+_BG_DECL_RE = re.compile(r"background-image\s*:\s*[^;]*", re.S)
 _TAG_RE = re.compile(r"<[^>]+>")
 _WS_RE = re.compile(r"\s+")
 
 
-def _section_re(name: str) -> re.Pattern:
-    return re.compile(r'<section\b[^>]*data-name="%s"[^>]*>.*?</section>' % re.escape(name), re.S)
+@dataclass(frozen=True)
+class Section:
+    """Span of a ``<section data-name="...">...</section>`` inside an arch."""
+
+    name: str
+    start: int      # index of "<section"
+    open_end: int   # index right after the opening tag's ">"
+    end: int        # index right after "</section>"
+    arch: str
+
+    def group(self, _index: int = 0) -> str:
+        return self.arch[self.start:self.end]
+
+    @property
+    def open_tag(self) -> str:
+        return self.arch[self.start:self.open_end]
+
+    @property
+    def body(self) -> str:
+        return self.arch[self.open_end:self.close_start]
+
+    @property
+    def close_start(self) -> int:
+        return self.arch.rfind("</section", self.open_end, self.end)
 
 
-def find_section(arch: str, section_name: str) -> re.Match | None:
-    """Return the match of the first ``<section data-name="...">...</section>``."""
-    return _section_re(section_name).search(arch)
+def _section_open_re(name: str) -> re.Pattern:
+    return re.compile(r'<section\b[^>]*\sdata-name="%s"[^>]*>' % re.escape(name))
+
+
+def find_section(arch: str, section_name: str) -> Section | None:
+    """Locate the first ``<section data-name="NAME">`` and its matching close
+    tag, counting nested ``<section>`` opens and closes. Returns ``None`` when
+    the section does not exist; raises :class:`ArchError` when its close tag
+    is missing."""
+    m = _section_open_re(section_name).search(arch)
+    if not m:
+        return None
+    if m.group(0).endswith("/>"):
+        return Section(section_name, m.start(), m.end(), m.end(), arch)
+    depth = 1
+    for token in _SECTION_TOKEN_RE.finditer(arch, m.end()):
+        if token.group(0).startswith("</"):
+            depth -= 1
+            if depth == 0:
+                return Section(section_name, m.start(), m.end(), token.end(), arch)
+        elif not token.group(0).endswith("/>"):
+            depth += 1
+    raise ArchError(f"section {section_name!r} has no matching </section>")
+
+
+def _require_section(arch: str, section_name: str) -> Section:
+    section = find_section(arch, section_name)
+    if section is None:
+        raise SectionNotFound(section_name)
+    return section
+
+
+def _first_h2(section: Section) -> tuple[int, int] | None:
+    """(inner_start, inner_end) of the first ``<h2>`` of the section that is
+    not inside a nested ``<section>``; absolute indexes into ``section.arch``."""
+    depth = 0
+    for token in _H2_TOKEN_RE.finditer(section.arch, section.open_end, section.close_start):
+        text = token.group(0)
+        if text.startswith("</"):
+            depth -= 1
+        elif text.startswith("<section") and not text.endswith("/>"):
+            depth += 1
+        elif text.startswith("<h2") and depth == 0:
+            if text.endswith("/>"):
+                continue
+            close = _H2_CLOSE_RE.search(section.arch, token.end(), section.close_start)
+            if not close:
+                raise ArchError(f"section {section.name!r}: <h2> without </h2>")
+            return token.end(), close.start()
+    return None
 
 
 def normalize_text(value) -> str:
@@ -264,40 +427,32 @@ def normalize_text(value) -> str:
 
 
 def extract_section_h2(arch: str, section_name: str) -> str | None:
-    """Plain text of the first ``<h2>`` inside the section (tags stripped,
-    entities unescaped, whitespace collapsed). ``None`` when the section has
-    no ``<h2>``. Raises :class:`SectionNotFound`."""
-    m = find_section(arch, section_name)
-    if not m:
-        raise SectionNotFound(section_name)
-    h2 = _H2_RE.search(m.group(0))
-    if not h2:
+    """Plain text of the first ``<h2>`` of the section that is not inside a
+    nested section (tags stripped, entities unescaped, whitespace collapsed).
+    ``None`` when the section has no such ``<h2>``. Raises
+    :class:`SectionNotFound`."""
+    section = _require_section(arch, section_name)
+    span = _first_h2(section)
+    if span is None:
         return None
-    return normalize_text(_TAG_RE.sub("", h2.group(2)))
+    return normalize_text(_TAG_RE.sub("", arch[span[0]:span[1]]))
 
 
 def replace_section_h2(arch: str, section_name: str, text: str) -> str:
-    """Replace the inner text of the first ``<h2>`` of the section with
-    ``text`` (HTML-escaped). Everything else stays byte-identical."""
-    m = find_section(arch, section_name)
-    if not m:
-        raise SectionNotFound(section_name)
-    section = m.group(0)
-    h2 = _H2_RE.search(section)
-    if not h2:
+    """Replace the inner text of the section's first (non nested) ``<h2>``
+    with ``text`` (HTML-escaped). Everything else stays byte-identical."""
+    section = _require_section(arch, section_name)
+    span = _first_h2(section)
+    if span is None:
         raise ArchError(f"section {section_name!r} has no <h2>")
-    new_section = section[:h2.start(2)] + html.escape(text, quote=False) + section[h2.end(2):]
-    return arch[:m.start()] + new_section + arch[m.end():]
+    return arch[:span[0]] + html.escape(text, quote=False) + arch[span[1]:]
 
 
 def extract_section_bg(arch: str, section_name: str) -> str | None:
     """URL of ``background-image: url(...)`` in the section's opening tag
     style, or ``None`` when absent. Raises :class:`SectionNotFound`."""
-    m = find_section(arch, section_name)
-    if not m:
-        raise SectionNotFound(section_name)
-    open_tag = _OPEN_TAG_RE.match(m.group(0)).group(0)
-    style = _STYLE_RE.search(open_tag)
+    section = _require_section(arch, section_name)
+    style = _STYLE_RE.search(section.open_tag)
     if not style:
         return None
     bg = _BG_URL_RE.search(style.group(2))
@@ -305,33 +460,36 @@ def extract_section_bg(arch: str, section_name: str) -> str | None:
 
 
 def set_section_background(arch: str, section_name: str, url: str) -> str:
-    """Set the section's background image URL in its opening tag.
+    """Set the section's background image URL. Only the opening tag changes.
 
-    If the ``style`` attribute already declares ``background-image: url(...)``
-    only the URL is replaced. Otherwise the standard cover declaration is
-    prepended to the style (the attribute is created when missing).
+    ``url`` must pass :func:`check_bg_url` (shape only; the caller checks the
+    company). If the ``style`` attribute already declares ``background-image``
+    (url or gradient) that declaration is replaced. Otherwise the standard
+    cover declaration is prepended to the style (the attribute is created
+    when missing).
     """
-    if any(ch in url for ch in "'\"<>"):
-        raise ArchError(f"unsafe characters in url {url!r}")
-    m = find_section(arch, section_name)
-    if not m:
-        raise SectionNotFound(section_name)
-    section = m.group(0)
-    open_tag = _OPEN_TAG_RE.match(section).group(0)
+    error = check_bg_url(url)
+    if error:
+        raise ArchError(error)
+    section = _require_section(arch, section_name)
+    open_tag = section.open_tag
     declaration = f"background-image: url('{url}')"
     style = _STYLE_RE.search(open_tag)
     if style:
         value = style.group(2)
-        if _BG_URL_RE.search(value):
-            new_value = _BG_URL_RE.sub(lambda _m: declaration, value, count=1)
+        if _BG_DECL_RE.search(value):
+            new_value = _BG_DECL_RE.sub(lambda _m: declaration, value, count=1)
         else:
             new_value = BG_STYLE_PREFIX.format(url=url) + value
         new_open = open_tag[:style.start(2)] + new_value + open_tag[style.end(2):]
     else:
         attr = ' style="' + BG_STYLE_PREFIX.format(url=url).rstrip() + '"'
-        new_open = open_tag[:-1].rstrip() + attr + ">"
-    new_section = new_open + section[len(open_tag):]
-    return arch[:m.start()] + new_section + arch[m.end():]
+        head = open_tag[:-1]
+        self_closing = head.endswith("/")
+        if self_closing:
+            head = head[:-1]
+        new_open = head.rstrip() + attr + ("/>" if self_closing else ">")
+    return arch[:section.start] + new_open + arch[section.open_end:]
 
 
 def insert_sec1_after_hero(arch: str, text: str) -> str:
@@ -340,16 +498,14 @@ def insert_sec1_after_hero(arch: str, text: str) -> str:
     exists and :class:`SectionNotFound` when there is no Hero."""
     if find_section(arch, "SEC1"):
         raise ArchError("section 'SEC1' already exists")
-    hero = find_section(arch, "Hero")
-    if not hero:
-        raise SectionNotFound("Hero")
-    line_start = arch.rfind("\n", 0, hero.start()) + 1
-    indent = arch[line_start:hero.start()]
+    hero = _require_section(arch, "Hero")
+    line_start = arch.rfind("\n", 0, hero.start) + 1
+    indent = arch[line_start:hero.start]
     if indent.strip():
         indent = ""
     skeleton = SEC1_SKELETON.replace("{TEXT}", html.escape(text, quote=False))
     block = "\n".join(indent + line for line in skeleton.split("\n"))
-    return arch[:hero.end()] + "\n" + block + arch[hero.end():]
+    return arch[:hero.end] + "\n" + block + arch[hero.end:]
 
 
 # ---------------------------------------------------------------------------
@@ -412,10 +568,11 @@ class OdooClient:
 
     # Convenience helpers -------------------------------------------------
 
-    def language_codes(self) -> list[str]:
-        """Codes of the active languages (``es_ES``, ``en_US``, ...)."""
+    def language_codes(self, primary: str = DEFAULT_PRIMARY_LANG) -> list[str]:
+        """Codes of the active languages, ``primary`` first (when active) and
+        the rest sorted, so processing order is deterministic."""
         rows = self.search_read("res.lang", [("active", "=", True)], ["code"])
-        return [row["code"] for row in rows]
+        return order_languages([row["code"] for row in rows], primary)
 
     def company_of_website(self, website_id: int) -> int:
         """Id of the company owning a website."""
@@ -424,6 +581,17 @@ class OdooClient:
         if not company:
             raise OdooError(f"website {website_id} has no company")
         return int(company[0])
+
+    def homepage_view_id(self, website_id: int) -> int | None:
+        """Id of the view behind the website's ``/`` page, or ``None``."""
+        rows = self.search_read(
+            MODEL_PAGE, [("website_id", "=", int(website_id)), ("url", "=", "/")], ["view_id"], limit=1)
+        if not rows:
+            return None
+        view = rows[0].get("view_id")
+        if isinstance(view, (list, tuple)) and view:
+            return int(view[0])
+        return int(view) if view else None
 
     def read_arch(self, view_id: int, lang: str) -> str:
         record = self.read_one(MODEL_VIEW, view_id, [FIELD_ARCH], {"lang": lang})
@@ -436,21 +604,47 @@ class OdooClient:
         self.write(MODEL_VIEW, [view_id], {FIELD_ARCH: arch}, {"lang": lang})
 
 
+def order_languages(codes: Iterable[str], primary: str) -> list[str]:
+    """``primary`` first (when present) followed by the other codes sorted."""
+    ordered = sorted(set(codes))
+    if primary in ordered:
+        ordered.remove(primary)
+        ordered.insert(0, primary)
+    return ordered
+
+
 def add_connection_args(parser: argparse.ArgumentParser) -> None:
-    """Register ``--url/--db/--login/--password`` on an argument parser."""
+    """Register ``--url/--db/--login`` on an argument parser.
+
+    There is intentionally no ``--password`` flag: the password is read from
+    ``ODOO_PASSWORD`` or prompted interactively (see :func:`resolve_password`)."""
     group = parser.add_argument_group("connection")
     group.add_argument("--url", default=DEFAULT_URL, help=f"Odoo base URL (default: {DEFAULT_URL})")
     group.add_argument("--db", default=DEFAULT_DB, help=f"database name (default: {DEFAULT_DB})")
     group.add_argument("--login", default=None, help="login; defaults to env ODOO_LOGIN")
-    group.add_argument("--password", default=None, help="password; defaults to env ODOO_PASSWORD (never printed)")
+
+
+def resolve_password(login: str, db: str) -> str:
+    """Password from ``ODOO_PASSWORD``, else an interactive prompt when a TTY
+    is available. Raises :class:`CredentialsError` otherwise."""
+    password = os.environ.get("ODOO_PASSWORD")
+    if password:
+        return password
+    if sys.stdin.isatty():
+        password = getpass.getpass(f"Odoo password for {login} on db {db!r}: ")
+        if password:
+            return password
+        raise CredentialsError("empty password")
+    raise CredentialsError(
+        "password required: set ODOO_PASSWORD (no TTY available to prompt for it)")
 
 
 def client_from_args(args: argparse.Namespace) -> OdooClient:
     """Build an :class:`OdooClient` from CLI flags and environment."""
     login = args.login or os.environ.get("ODOO_LOGIN")
-    password = args.password or os.environ.get("ODOO_PASSWORD")
-    if not login or not password:
-        raise OdooError("credentials required: set ODOO_LOGIN/ODOO_PASSWORD or pass --login/--password")
+    if not login:
+        raise CredentialsError("login required: pass --login or set ODOO_LOGIN")
+    password = resolve_password(login, args.db)
     return OdooClient(args.url, args.db, login, password)
 
 
@@ -459,6 +653,7 @@ def client_from_args(args: argparse.Namespace) -> OdooClient:
 # ---------------------------------------------------------------------------
 
 EVENT_BACKUP = "backup"
+EVENT_PENDING = "pending"
 EVENT_APPLIED = "applied"
 
 
@@ -474,11 +669,15 @@ def backup_key(record: dict) -> tuple:
 class BackupWriter:
     """Append-only writer for ``backup.jsonl``.
 
-    Two kinds of lines are written:
+    Three kinds of lines are written:
 
     * ``event="backup"``: the value present on the server before a write,
-      with ``applied=false``. Written for every row of a batch before any
-      write of that batch happens.
+      with ``applied=false``. Written for every row of a batch and flushed
+      before any write of that batch happens.
+    * ``event="pending"``: appended and flushed immediately before the RPC
+      write of that value is attempted. If the process dies between the
+      write and the ``applied`` line, the pending line tells ``revertir.py``
+      that the value may have changed.
     * ``event="applied"``: appended right after the corresponding write
       succeeded (same ``row_id``/``model``/``res_id``/``field``/``lang``,
       ``applied=true``). It carries no values.
@@ -524,11 +723,11 @@ class BackupWriter:
             "applied": False,
         })
 
-    def append_applied(self, *, site: int, campo: str, model: str, res_id: int, field: str,
-                       lang: str | None) -> None:
+    def _append_event(self, event: str, *, site: int, campo: str, model: str, res_id: int,
+                      field: str, lang: str | None) -> None:
         self._write({
             "ts": utc_now_iso(),
-            "event": EVENT_APPLIED,
+            "event": event,
             "row_id": f"{site}:{campo}",
             "site": site,
             "campo": campo,
@@ -536,9 +735,17 @@ class BackupWriter:
             "res_id": res_id,
             "field": field,
             "lang": lang,
-            "applied": True,
+            "applied": event == EVENT_APPLIED,
         })
         self.flush()
+
+    def append_pending(self, **fields) -> None:
+        """Flushed right before the RPC write is attempted."""
+        self._append_event(EVENT_PENDING, **fields)
+
+    def append_applied(self, **fields) -> None:
+        """Flushed right after the RPC write succeeded."""
+        self._append_event(EVENT_APPLIED, **fields)
 
 
 def read_backup(path: Path) -> list[dict]:

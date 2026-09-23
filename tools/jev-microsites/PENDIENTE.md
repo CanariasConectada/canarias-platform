@@ -71,12 +71,19 @@ Carpetas del zip **sin site en la BD** (29): aloestorecanarias, amigojuanito, ap
 
 ```
 cd tools/jev-microsites
-export ODOO_LOGIN=... ODOO_PASSWORD=...        # usuario con permisos sobre website / res.company / ir.ui.view
-python3 aplicar.py --offline                    # plan sin conexión
-python3 aplicar.py                              # dry-run conectado: compara valor_anterior con el servidor
-python3 aplicar.py --apply                      # aplica cambios.csv en lotes de 10 sites, backup previo en backup.jsonl
+python3 -m unittest                             # 39 tests de las funciones puras y del flujo (cliente falso)
+python3 aplicar.py --offline                    # plan y validación sin conexión (rutas del zip, campos, duplicados)
+export ODOO_LOGIN=...                           # la contraseña se pide por getpass o va en ODOO_PASSWORD; no existe --password
+python3 aplicar.py                              # dry-run conectado: comprueba que la vista es la portada del site y compara con el servidor
+python3 aplicar.py --apply --only-site 68       # primer site (Little Beach, 3 imágenes); pide confirmar "prod" salvo --yes
+python3 aplicar.py --apply                      # todo cambios.csv en lotes de 10 sites
 python3 revertir.py                             # dry-run de la reversión
-python3 revertir.py --apply                     # restaura desde backup.jsonl (valor más antiguo por campo e idioma)
+python3 revertir.py --apply                     # restaura desde /home/odoo/Pending/jev-work/backup.jsonl
 ```
 
-Recomendación: aplicar primero `--only-site 68` (Little Beach, 3 imágenes) y comprobar la portada antes del resto.
+Reglas de seguridad de `aplicar.py` (tras la revisión de riesgo + fiabilidad):
+- Backup en `/home/odoo/Pending/jev-work/backup.jsonl` (fuera del repo, `*.jsonl` ignorado por git): una línea `backup` por fila e idioma antes de escribir, `pending` justo antes de cada RPC y `applied` después. Tras un corte a mitad, `revertir.py` restaura también las `pending`.
+- Una fila se salta si el valor actual del servidor no coincide con `valor_anterior` ("changed on server"); `--force` solo funciona junto a `--only-site` y solo para esos sites.
+- Las filas `ir_ui_view.*` se rechazan si la vista no es la portada (`website.page url='/'`) del site indicado. Las rutas del zip no pueden salir de `--zip-root`. Los fondos solo aceptan `/web/image/res.company/<id de la compañía del site>/<campo>`.
+- Idiomas: se escribe el mismo texto español en los 7 idiomas (hoy tienen traducciones automáticas del placeholder); `website_auto_translate` está instalado y puede retraducir al guardar, por lo que un segundo dry-run puede mostrar los idiomas secundarios como "pendientes de completar": es esperado, no un error.
+- La fila `ir_ui_view.<id>.SEC1.bg` sustituye el degradado de la sección insertada por la imagen (dos `background-image` dejarían ganar al degradado).

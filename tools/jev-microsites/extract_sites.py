@@ -105,6 +105,11 @@ def main():
             if s["bg_attachment_id"]:
                 att_ids.add(s["bg_attachment_id"])
             att_ids.update(s["img_attachment_ids"])
+    # ATT_SQL interpolates the ids with %; they come from regex \d+ captures
+    # cast to int, and we re-check the type here so nothing else can ever be
+    # formatted into the query.
+    if not all(isinstance(i, int) for i in att_ids):
+        raise TypeError(f"attachment ids must be ints, got {sorted(map(repr, att_ids))[:5]}")
     atts = json.loads(psql(ATT_SQL % ",".join(str(i) for i in sorted(att_ids))) or "[]") if att_ids else []
     OUT.write_text(json.dumps({"sites": rows, "attachments": atts}, ensure_ascii=False, indent=1))
     print(f"sites={len(rows)} attachments={len(atts)} -> {OUT}")
