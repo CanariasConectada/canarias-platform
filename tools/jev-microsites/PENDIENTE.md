@@ -67,6 +67,25 @@ Notas:
 
 Carpetas del zip **sin site en la BD** (29): aloestorecanarias, amigojuanito, apapachar, barcafeterialarebana2, carpinteriaylacados, centrodeesteticaalma, correduriajorgenaranjo, cruisingblues, eresmucho, ferreteriatosan, gaiafruteria, jorgenaranjo, joyeriadanieldelpino, laislastore, larebana2, lavaysalt, medicalicaro, modasolaida, napa, personalfitness, pizzeriahamburgueseriahawai, preciosacanarias, quiroestetica, restaurantecasarayco, salchiburguergrill, segurosmapfre, tupuntoahorro, unitedbarbers, walldecorpinturas. Son comercios que no existen (o tienen otro nombre) en `prod`.
 
+## 4 bis. Tarea 4 — Sobre nosotros y Nuestros servicios (añadida el 2026-09-23 a petición del usuario)
+
+Mismo criterio que la Sección 1: solo comercios con el texto de plantilla («En nuestro espacio encontrarás productos…», «Atención cercana y asesoramiento honesto…») o vacío; nunca lo editado por el comercio; Jev puntúa nicho, «manual» y encaje; umbral 0,85; lotes de 10 con commit por lote. Textos redactados a mano en `about_texts.json`, máximo 2 frases por bloque, solo con datos verificables (nombre, categoría, zona, banner actual).
+
+| Resultado | Sites |
+|---|---|
+| Candidatos | 42 |
+| Todo a `cambios.csv` | 39, 140, 167, 169, 170, 172, 174, 175, 177, 178, 180, 181, 182, 185, 187, 188, 190, 191, 192, 193, 194, 197, 199, 201, 205, 207, 208, 209, 213, 215, 217 |
+| Un bloque a cambios y otro a revisión | 179, 183, 189, 196, 203, 216 |
+| Todo a `revision.csv` | 113, 171, 176, 195, 206 |
+| Excluidos | 221 Neveri (manual, uid 207); 184 Lonrodi y el resto de comercios (texto propio); 39 y 140 solo en el bloque que está vacío |
+
+Qué se escribe:
+- `res_company.microsite_about_text` / `microsite_services_text`: el texto del editor del comercio.
+- `ir_ui_view.<id>.Acerca.col1` / `col2`: vista previa (120 caracteres) y texto completo de la columna en la portada estática; si falta la columna, se añade (caso 140, que solo tiene «Nuestra historia»).
+- `ir_ui_view.<id>.Acerca.insert`: en las 11 portadas que solo tienen Hero, se inserta el bloque completo tras la Sección 1 (que a su vez inserta la tarea 2).
+
+Nota: en 31 comercios el banner de la Sección 1 es «Bienvenidos a <nombre>», texto que generamos nosotros en la importación. No lo tratamos como vacío, así que no hay propuesta para él. Si lo quieres reemplazar, es un cambio de criterio.
+
 ## 6. Cómo aplicar y revertir
 
 ```

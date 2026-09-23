@@ -76,6 +76,19 @@ th{{background:#f4f4f4}}.ok{{color:#177245}}.bad{{color:#b00020}}.muted{{color:#
         cls = "ok" if dest == "cambios" else "bad"
         parts.append(f"<tr><td>{site_link(wid)}</td><td>{esc(v.get('heading') or v.get('intro_title') or '(sin sección)')}</td><td>{esc(v['niche'])} ({v['niche_conf']:.2f})</td><td>{v['p_fits']:.2f}</td><td>{v['p_manual']:.2f}</td><td>{esc(v['proposed'])}</td><td class='{cls}'>{dest}</td></tr>")
     parts.append("</table>")
+    # Task 4
+    t4 = {int(k): v["task4"] for k, v in analysis.items() if v.get("task4", {}).get("candidate")}
+    parts.append(f"<h2>Tarea 4 · Sobre nosotros y Nuestros servicios — {len(t4)} candidatos</h2>")
+    parts.append("<table><tr><th>Site</th><th>Nicho Jev</th><th>Manual Jev</th><th>Sobre nosotros (encaje)</th><th>Nuestros servicios (encaje)</th><th>Portada</th></tr>")
+    for wid, v in sorted(t4.items()):
+        cells = []
+        for key in ("about", "services"):
+            if not v["need"][key]:
+                cells.append("<span class='muted'>texto propio</span>")
+            else:
+                cells.append(f"{esc(v['proposed'].get(key, ''))} ({v['fits'].get(key, 0):.2f})")
+        parts.append(f"<tr><td>{site_link(wid)}</td><td>{esc(v['niche'])} ({v['niche_conf']:.2f})</td><td>{v['p_manual']:.2f}</td><td>{cells[0]}</td><td>{cells[1]}</td><td>{'columnas' if v['has_acerca'] else 'insertar bloque'}</td></tr>")
+    parts.append("</table>")
     # Task 3
     cand3 = {k: v for k, v in t3.items() if v.get("candidate")}
     nofolder = sorted(k for k, v in cand3.items() if v.get("reason") == "sin carpeta en el zip")
@@ -96,14 +109,14 @@ th{{background:#f4f4f4}}.ok{{color:#177245}}.bad{{color:#b00020}}.muted{{color:#
         parts.append(f"<tr><td>{site_link(int(r['site']))}</td><td><code>{esc(r['campo'])}</code></td><td>{esc(r['confianza'])}</td><td>{esc(r['motivo'])}</td></tr>")
     parts.append("</table>")
     # Progress
-    parts.append("<h2>Lotes</h2><table><tr><th>Lote</th><th>Sites</th><th>T1</th><th>T2</th><th>T3</th></tr>")
+    parts.append("<h2>Lotes</h2><table><tr><th>Lote</th><th>Sites</th><th>T1</th><th>T2</th><th>T3</th><th>T4</th></tr>")
     for k in sorted(progress["batches"], key=int):
         b = progress["batches"][k]
         cells = []
-        for t in (1, 2, 3):
+        for t in (1, 2, 3, 4):
             s = b.get(f"task{t}", {})
             cells.append(f"{s.get('ok', 0)} OK / {s.get('fallan', 0)} fallan" if t == 1 else f"{s.get('candidatos', 0)} cand · {s.get('cambios', 0)} cambios · {s.get('revision', 0)} rev")
-        parts.append(f"<tr><td>{int(k):02d}</td><td>{esc(b['sites'])}</td><td>{cells[0]}</td><td>{cells[1]}</td><td>{cells[2]}</td></tr>")
+        parts.append(f"<tr><td>{int(k):02d}</td><td>{esc(b['sites'])}</td><td>{cells[0]}</td><td>{cells[1]}</td><td>{cells[2]}</td><td>{cells[3]}</td></tr>")
     parts.append("</table>")
     parts.append("<h2>Cómo aplicar y revertir</h2><pre>python3 aplicar.py --offline      # plan\npython3 aplicar.py                # dry-run conectado\npython3 aplicar.py --apply        # aplica en lotes de 10, backup.jsonl previo\npython3 revertir.py --apply       # restaura desde backup.jsonl</pre>")
     parts.append("<p class='muted'>Detalle de bloqueos, criterios y fixes en PENDIENTE.md.</p></body></html>")

@@ -6,7 +6,10 @@ Contents:
 * CSV loading and ``campo`` parsing for ``cambios.csv``.
 * Pure, regex based arch manipulation for the homepage view
   (``find_section``, ``replace_section_h2``, ``set_section_background``,
-  ``insert_sec1_after_hero``, ``extract_section_h2``, ``extract_section_bg``).
+  ``insert_sec1_after_hero``, ``extract_section_h2``, ``extract_section_bg``)
+  and for the legacy "Acerca" block (``set_acerca_column``,
+  ``extract_acerca_column``, ``insert_acerca_section``,
+  ``extract_acerca_section``).
   ``find_section`` is depth aware (nested ``<section>`` elements are
   handled). The document is left byte-identical outside the edited span; the
   arch is never parsed with lxml.
@@ -89,20 +92,39 @@ SEC1_SKELETON = (
 )
 
 # Row kinds, in the order they must be processed inside one site: images are
-# uploaded before the backgrounds that reference them, and SEC1 is inserted
-# before its heading/background are edited.
+# uploaded before the backgrounds that reference them, and section inserts
+# happen before any column/heading/background edit of the same arch.
 KIND_COMPANY_FIELD = "company_field"
 KIND_COMPANY_IMAGE = "company_image"
 KIND_VIEW_INSERT = "view_insert"
+KIND_VIEW_COLUMN = "view_column"
 KIND_VIEW_H2 = "view_h2"
 KIND_VIEW_BG = "view_bg"
 KIND_ORDER = {
     KIND_COMPANY_FIELD: 0,
     KIND_COMPANY_IMAGE: 1,
     KIND_VIEW_INSERT: 2,
-    KIND_VIEW_H2: 3,
-    KIND_VIEW_BG: 4,
+    KIND_VIEW_COLUMN: 3,
+    KIND_VIEW_H2: 4,
+    KIND_VIEW_BG: 5,
 }
+
+# Sections that support ``.insert`` and their order among inserts of one
+# site: SEC1 goes first because the Acerca insert is anchored after it.
+INSERT_ORDER = {"SEC1": 0, "Acerca": 1}
+
+# The legacy "Acerca" block (About us / Our services).
+ACERCA_SECTION = "Acerca"
+ACERCA_OPS = ("insert", "col1", "col2")
+ACERCA_PREVIEW_LEN = 120
+ACERCA_READ_MORE = "Leer más"
+# column number -> (icon class, default title)
+ACERCA_COLUMN_DEFAULTS = {
+    1: ("fa-book", "Sobre nosotros"),
+    2: ("fa-cogs", "Nuestros servicios"),
+}
+ACERCA_PAYLOAD_KEYS = ("about_title", "about", "services_title", "services", "slug")
+ACERCA_SLUG_RE = re.compile(r"^[A-Za-z0-9_-]+$")
 
 
 class ArchError(ValueError):
@@ -138,10 +160,11 @@ class Target:
     field: str
     view_id: int | None = None
     section: str | None = None
+    column: int | None = None   # 1-based, only for KIND_VIEW_COLUMN
 
 
 _CAMPO_COMPANY_RE = re.compile(r"^res_company\.([A-Za-z_][A-Za-z0-9_]*)$")
-_CAMPO_VIEW_RE = re.compile(r"^ir_ui_view\.(\d+)\.([^.]+)\.(h2|bg|insert)$")
+_CAMPO_VIEW_RE = re.compile(r"^ir_ui_view\.(\d+)\.([^.]+)\.(h2|bg|insert|col\d+)$")
 
 
 def parse_campo(campo: str) -> Target:
@@ -153,6 +176,12 @@ def parse_campo(campo: str) -> Target:
         ir_ui_view.<view_id>.<SectionName>.h2
         ir_ui_view.<view_id>.<SectionName>.bg
         ir_ui_view.<view_id>.SEC1.insert
+        ir_ui_view.<view_id>.Acerca.insert   (valor_nuevo: JSON payload)
+        ir_ui_view.<view_id>.Acerca.col1     (valor_nuevo: full text)
+        ir_ui_view.<view_id>.Acerca.col2
+
+    ``colN`` and ``insert`` on ``Acerca`` only accept the ops of
+    :data:`ACERCA_OPS`.
     """
     campo = campo.strip()
     m = _CAMPO_COMPANY_RE.match(campo)
@@ -163,15 +192,23 @@ def parse_campo(campo: str) -> Target:
     m = _CAMPO_VIEW_RE.match(campo)
     if m:
         view_id, section, op = int(m.group(1)), m.group(2), m.group(3)
-        if op == "h2":
+        column = None
+        if op.startswith("col"):
+            if section != ACERCA_SECTION or op not in ACERCA_OPS:
+                raise CampoError(f"unsupported column op {op!r} for section {section!r} in {campo!r}; "
+                                 f"only {ACERCA_SECTION}.col1/col2 exist")
+            kind = KIND_VIEW_COLUMN
+            column = int(op[3:])
+        elif op == "h2":
             kind = KIND_VIEW_H2
         elif op == "bg":
             kind = KIND_VIEW_BG
         else:
-            if section != "SEC1":
-                raise CampoError(f"'insert' is only supported for SEC1, got {campo!r}")
+            if section not in INSERT_ORDER:
+                raise CampoError(f"'insert' is only supported for {'/'.join(INSERT_ORDER)}, got {campo!r}")
             kind = KIND_VIEW_INSERT
-        return Target(kind=kind, model=MODEL_VIEW, field=FIELD_ARCH, view_id=view_id, section=section)
+        return Target(kind=kind, model=MODEL_VIEW, field=FIELD_ARCH, view_id=view_id, section=section,
+                      column=column)
     raise CampoError(f"unknown campo format: {campo!r}")
 
 
@@ -249,13 +286,23 @@ def load_changes(path: Path) -> tuple[list[Change], list[InvalidRow]]:
     return changes, invalid
 
 
+def processing_key(change: Change) -> tuple:
+    """Sort key of a row inside its site: by kind (:data:`KIND_ORDER`), then
+    inserts by section (:data:`INSERT_ORDER`, SEC1 before Acerca), then by
+    CSV line."""
+    target = change.target
+    insert_rank = INSERT_ORDER.get(target.section, len(INSERT_ORDER)) \
+        if target.kind == KIND_VIEW_INSERT else 0
+    return (KIND_ORDER[target.kind], insert_rank, change.line)
+
+
 def group_by_site(changes: Iterable[Change]) -> dict[int, list[Change]]:
-    """Group rows by site (ascending) and order rows by processing kind."""
+    """Group rows by site (ascending) and order rows by :func:`processing_key`."""
     grouped: dict[int, list[Change]] = {}
     for change in changes:
         grouped.setdefault(change.site, []).append(change)
     for rows in grouped.values():
-        rows.sort(key=lambda c: (KIND_ORDER[c.target.kind], c.line))
+        rows.sort(key=processing_key)
     return dict(sorted(grouped.items()))
 
 
@@ -506,6 +553,269 @@ def insert_sec1_after_hero(arch: str, text: str) -> str:
     skeleton = SEC1_SKELETON.replace("{TEXT}", html.escape(text, quote=False))
     block = "\n".join(indent + line for line in skeleton.split("\n"))
     return arch[:hero.end] + "\n" + block + arch[hero.end:]
+
+
+# --- Legacy "Acerca" block ---------------------------------------------------
+
+_DIV_TOKEN_RE = re.compile(r"<div\b[^>]*>|</div\s*>")
+_COLUMN_ATTR_RE = re.compile(r'\sdata-name="Column"')
+_CARD_CLASS_RE = re.compile(r"""\sclass=(["'])([^"']*)\1""")
+_SMALL_OPEN_RE = re.compile(r"<small\b[^>]*>")
+_SMALL_CLOSE_RE = re.compile(r"</small\s*>")
+_H6_OPEN_RE = re.compile(r"<h6\b[^>]*>")
+_H6_CLOSE_RE = re.compile(r"</h6\s*>")
+_ACERCA_SLUG_IN_ARCH_RE = re.compile(r'acerca\d+_(\S+?)"')
+
+
+@dataclass(frozen=True)
+class Column:
+    """Span of a ``<div data-name="Column">`` of the Acerca section."""
+
+    start: int        # index of "<div"
+    open_end: int     # right after the opening tag
+    close_start: int  # index of "</div"
+    end: int          # right after "</div>"
+
+
+def _div_spans(arch: str, start: int, stop: int) -> list[tuple[int, int, int, int, str]]:
+    """Every non self-closing ``<div>`` in ``arch[start:stop]`` with its
+    matching close, as ``(start, open_end, close_start, end, open_tag)`` in
+    document order. Depth aware; unbalanced divs raise :class:`ArchError`."""
+    stack: list[tuple[int, int, str]] = []
+    spans = []
+    for token in _DIV_TOKEN_RE.finditer(arch, start, stop):
+        text = token.group(0)
+        if text.startswith("</"):
+            if not stack:
+                raise ArchError(f"unbalanced </div> at offset {token.start()}")
+            o_start, o_end, o_tag = stack.pop()
+            spans.append((o_start, o_end, token.start(), token.end(), o_tag))
+        elif not text.endswith("/>"):
+            stack.append((token.start(), token.end(), text))
+    if stack:
+        raise ArchError(f"<div> without </div> at offset {stack[-1][0]}")
+    spans.sort()
+    return spans
+
+
+def acerca_columns(arch: str) -> list[Column]:
+    """Top-level ``data-name="Column"`` divs of the Acerca section, in
+    document order. Raises :class:`SectionNotFound`. Indentation and
+    back-to-back columns (``</div><div ...>``) do not matter: divs are
+    matched by depth."""
+    section = _require_section(arch, ACERCA_SECTION)
+    columns: list[Column] = []
+    for start, open_end, close_start, end, tag in _div_spans(arch, section.open_end, section.close_start):
+        if not _COLUMN_ATTR_RE.search(tag):
+            continue
+        if columns and start < columns[-1].end:
+            continue   # nested inside a previous column
+        columns.append(Column(start, open_end, close_start, end))
+    return columns
+
+
+def acerca_preview(text: str) -> str:
+    """Preview rule of the legacy builder (unescaped)."""
+    if len(text) <= ACERCA_PREVIEW_LEN:
+        return text
+    return text[:ACERCA_PREVIEW_LEN] + "..."
+
+
+def _card_body_span(arch: str, column: Column) -> tuple[int, int] | None:
+    """(inner_start, inner_end) of the column's ``card card-body`` div."""
+    for start, open_end, close_start, _end, tag in _div_spans(arch, column.open_end, column.close_start):
+        cls = _CARD_CLASS_RE.search(tag)
+        if cls and {"card", "card-body"} <= set(cls.group(2).split()):
+            return open_end, close_start
+    return None
+
+
+def _inner_span(arch: str, column: Column, open_re: re.Pattern, close_re: re.Pattern) -> tuple[int, int] | None:
+    m = open_re.search(arch, column.open_end, column.close_start)
+    if not m or m.group(0).endswith("/>"):
+        return None
+    close = close_re.search(arch, m.end(), column.close_start)
+    if not close:
+        raise ArchError(f"{m.group(0)!r} without closing tag")
+    return m.end(), close.start()
+
+
+def _plain(fragment: str) -> str:
+    return html.unescape(_TAG_RE.sub("", fragment)).strip()
+
+
+def extract_acerca_column(arch: str, n: int) -> str:
+    """Unescaped full text (card body) of column ``n`` (1-based) of the
+    Acerca section, or ``""`` when the column does not exist. Raises
+    :class:`SectionNotFound`."""
+    columns = acerca_columns(arch)
+    if n < 1 or n > len(columns):
+        return ""
+    span = _card_body_span(arch, columns[n - 1])
+    return _plain(arch[span[0]:span[1]]) if span else ""
+
+
+def _acerca_slug(arch: str, section: Section, site_id: int | None) -> str:
+    m = _ACERCA_SLUG_IN_ARCH_RE.search(arch, section.open_end, section.close_start)
+    if m:
+        return m.group(1)
+    if site_id is None:
+        raise ArchError("no acerca<N>_<slug> id in the Acerca section and no site id for the fallback")
+    return f"site{int(site_id)}"
+
+
+def _acerca_column_lines(n: int, title: str, text: str, slug: str) -> list[str]:
+    """Skeleton lines (no leading indentation) of one Acerca column."""
+    icon = ACERCA_COLUMN_DEFAULTS[n][0]
+    col_id = f"acerca{n}_{slug}"
+    title_html = html.escape(title, quote=False)
+    preview_html = html.escape(acerca_preview(text), quote=False)
+    full_html = html.escape(text, quote=False)
+    return [
+        '<div class="border o_colored_level col-lg-6 text-center pt-4 pb-4" data-name="Column">',
+        f'    <span class="fa {icon} fa-3x mb-3" style="display: block;"/>',
+        f'    <h6 class="text-center">{title_html}</h6>',
+        f'    <small class="text-muted d-block" style="padding: 0 20px;">{preview_html}</small>',
+        '    <div class="mt-3 text-center">',
+        f'        <a href="#{col_id}" data-bs-toggle="collapse" '
+        f'class="btn btn-primary rounded-pill px-4">{ACERCA_READ_MORE}</a>',
+        '    </div>',
+        f'    <div id="{col_id}" class="collapse mt-3">',
+        f'        <div class="card card-body bg-light">{full_html}</div>',
+        '    </div>',
+        '</div>',
+    ]
+
+
+def _line_indent(arch: str, index: int) -> str:
+    """Leading whitespace of the line that contains ``index``."""
+    line_start = arch.rfind("\n", 0, index) + 1
+    return re.match(r"[ \t]*", arch[line_start:index]).group(0)
+
+
+def set_acerca_column(arch: str, n: int, text: str, site_id: int | None = None) -> str:
+    """Set the full text of column ``n`` (1 or 2) of the Acerca section.
+
+    Existing column: the inner text of its ``<small>`` becomes the preview
+    and the inner text of its ``card card-body`` div the full text (both
+    HTML-escaped); everything else stays byte-identical. Missing column
+    ``n`` when exactly ``n - 1`` columns exist: a new column is appended
+    right after the last column's closing tag, with the default icon and
+    title and the collapse id ``acerca<n>_<slug>`` (slug from an existing
+    id in the section, else ``site<site_id>``)."""
+    if n not in ACERCA_COLUMN_DEFAULTS:
+        raise ArchError(f"unsupported Acerca column {n}")
+    if not (text or "").strip():
+        raise ArchError(f"empty text for Acerca column {n}")
+    section = _require_section(arch, ACERCA_SECTION)
+    columns = acerca_columns(arch)
+    if n <= len(columns):
+        column = columns[n - 1]
+        small = _inner_span(arch, column, _SMALL_OPEN_RE, _SMALL_CLOSE_RE)
+        card = _card_body_span(arch, column)
+        if small is None or card is None:
+            raise ArchError(f"Acerca column {n} has no <small> preview or card-body div")
+        edits = sorted([(small, html.escape(acerca_preview(text), quote=False)),
+                        (card, html.escape(text, quote=False))], reverse=True)
+        for (start, end), value in edits:
+            arch = arch[:start] + value + arch[end:]
+        return arch
+    if len(columns) != n - 1 or not columns:
+        raise ArchError(f"cannot add Acerca column {n}: the section has {len(columns)} column(s)")
+    last = columns[-1]
+    indent = _line_indent(arch, last.start)
+    title = ACERCA_COLUMN_DEFAULTS[n][1]
+    lines = _acerca_column_lines(n, title, text, _acerca_slug(arch, section, site_id))
+    block = "\n".join(indent + line for line in lines)
+    return arch[:last.end] + "\n" + block + arch[last.end:]
+
+
+def parse_acerca_payload(value: str) -> dict:
+    """Parse and validate the JSON payload of ``Acerca.insert``. Raises
+    ``ValueError`` with a readable message. Blank titles are replaced by the
+    column defaults in the returned dict (what the section will show)."""
+    try:
+        payload = json.loads(value or "")
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Acerca.insert value is not valid JSON ({exc})") from exc
+    if not isinstance(payload, dict):
+        raise ValueError("Acerca.insert value must be a JSON object")
+    missing = [k for k in ACERCA_PAYLOAD_KEYS if k not in payload]
+    extra = sorted(set(payload) - set(ACERCA_PAYLOAD_KEYS))
+    if missing or extra:
+        raise ValueError(f"Acerca.insert keys must be exactly {list(ACERCA_PAYLOAD_KEYS)} "
+                         f"(missing {missing}, unexpected {extra})")
+    not_str = [k for k in ACERCA_PAYLOAD_KEYS if not isinstance(payload[k], str)]
+    if not_str:
+        raise ValueError(f"Acerca.insert values must be strings: {not_str}")
+    empty = [k for k in ("about", "services") if not payload[k].strip()]
+    if empty:
+        raise ValueError(f"Acerca.insert values must not be empty: {empty}")
+    if not ACERCA_SLUG_RE.match(payload["slug"]):
+        raise ValueError(f"Acerca.insert slug must match {ACERCA_SLUG_RE.pattern}, got {payload['slug']!r}")
+    payload = dict(payload)
+    for n, title_key in ((1, "about_title"), (2, "services_title")):
+        payload[title_key] = payload[title_key].strip() or ACERCA_COLUMN_DEFAULTS[n][1]
+    return payload
+
+
+def acerca_payload_key(payload: dict) -> str:
+    """Canonical JSON of a payload (whitespace-normalized values, sorted
+    keys) used to compare the arch with ``valor_nuevo``."""
+    return json.dumps({k: normalize_text(payload.get(k, "")) for k in ACERCA_PAYLOAD_KEYS},
+                      ensure_ascii=False, sort_keys=True)
+
+
+def extract_acerca_section(arch: str) -> str:
+    """``""`` when the arch has no Acerca section, otherwise the canonical
+    payload (:func:`acerca_payload_key`) read back from it: column titles
+    (``<h6>``), full texts and slug. Missing columns give empty values."""
+    section = find_section(arch, ACERCA_SECTION)
+    if section is None:
+        return ""
+    columns = acerca_columns(arch)
+    values = {}
+    for n, (title_key, text_key) in ((1, ("about_title", "about")), (2, ("services_title", "services"))):
+        title = text = ""
+        if n <= len(columns):
+            h6 = _inner_span(arch, columns[n - 1], _H6_OPEN_RE, _H6_CLOSE_RE)
+            title = _plain(arch[h6[0]:h6[1]]) if h6 else ""
+            text = extract_acerca_column(arch, n)
+        values[title_key], values[text_key] = title, text
+    m = _ACERCA_SLUG_IN_ARCH_RE.search(arch, section.open_end, section.close_start)
+    values["slug"] = m.group(1) if m else ""
+    return acerca_payload_key(values)
+
+
+def insert_acerca_section(arch: str, payload: dict) -> str:
+    """Insert a full two-column Acerca section right after SEC1 when present,
+    otherwise right after Hero, using the anchor line's indentation.
+    ``payload`` is validated with :func:`parse_acerca_payload` rules (blank
+    titles fall back to the column defaults). Raises :class:`ArchError` when
+    an Acerca section already exists and :class:`SectionNotFound` when
+    neither SEC1 nor Hero exists."""
+    if find_section(arch, ACERCA_SECTION):
+        raise ArchError(f"section {ACERCA_SECTION!r} already exists")
+    try:
+        payload = parse_acerca_payload(json.dumps(payload))
+    except (TypeError, ValueError) as exc:
+        raise ArchError(str(exc)) from exc
+    anchor = find_section(arch, "SEC1") or _require_section(arch, "Hero")
+    indent = _line_indent(arch, anchor.start)
+    if arch[arch.rfind("\n", 0, anchor.start) + 1:anchor.start].strip():
+        indent = ""
+    lines = [
+        '<section class="s_attributes_vertical o_colored_level pt48 pb56" '
+        f'data-snippet="s_attributes_vertical" data-name="{ACERCA_SECTION}">',
+        '    <div class="container">',
+        '        <div class="row justify-content-center">',
+    ]
+    for n, title_key, text_key in ((1, "about_title", "about"), (2, "services_title", "services")):
+        lines += ["            " + line
+                  for line in _acerca_column_lines(n, payload[title_key], payload[text_key], payload["slug"])]
+    lines += ['        </div>', '    </div>', '</section>']
+    block = "\n".join(indent + line for line in lines)
+    return arch[:anchor.end] + "\n" + block + arch[anchor.end:]
 
 
 # ---------------------------------------------------------------------------

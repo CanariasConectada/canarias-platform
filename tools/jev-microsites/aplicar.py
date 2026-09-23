@@ -44,6 +44,12 @@ machine translations of the placeholder and the ``website_auto_translate``
 module re-translates on save. Languages are processed primary first, then
 the remaining codes sorted.
 
+Legacy "Acerca" block: ``Acerca.col1``/``Acerca.col2`` set the full text
+(and its 120 char preview) of a column, appending the column when it is
+missing; ``Acerca.insert`` (JSON payload) inserts the whole two-column
+section after SEC1 (or Hero). Within a site, inserts run first (SEC1 before
+Acerca), then column, heading and background edits.
+
 Multiple rows targeting the same view are combined in memory and written
 once per language. Credentials: ``--login``/``ODOO_LOGIN`` and
 ``ODOO_PASSWORD`` (or an interactive prompt); there is no password flag.
@@ -375,7 +381,84 @@ def prepare_view_bg(ctx: SiteContext, change: lib.Change) -> Outcome:
     return Outcome(change, STATUS_PLAN, f"url={url} ({note})", lib.truncate(current[ctx.primary_lang]))
 
 
+def _dry_run_op(ctx: SiteContext, view_id: int, langs: list[str], op: Callable[[str], str]) -> str:
+    """Run ``op`` on the working arch of every language without staging, so
+    a row is either staged for all its languages or for none. Returns the
+    first error message or ``""``."""
+    for lang in langs:
+        try:
+            op(ctx.work_arch(view_id, lang))
+        except lib.ArchError as exc:
+            return f"{type(exc).__name__} ({lang}): {exc}"
+    return ""
+
+
+def prepare_view_column(ctx: SiteContext, change: lib.Change) -> Outcome:
+    view_id, section, n = change.target.view_id, change.target.section, change.target.column
+    text = change.valor_nuevo
+    if not text.strip():
+        return Outcome(change, STATUS_FAIL, f"empty text for {section}.col{n}")
+    current: dict[str, object] = {}
+    done: dict[str, bool] = {}
+    for lang in ctx.langs:
+        arch = ctx.work_arch(view_id, lang)
+        if not lib.find_section(arch, section):
+            return Outcome(change, STATUS_FAIL, f"section {section!r} not found in view {view_id} ({lang})")
+        current[lang] = lib.extract_acerca_column(arch, n)
+        done[lang] = lib.normalize_text(current[lang]) == lib.normalize_text(text)
+    # When the section is created by an Acerca.insert row of this run, the
+    # server had no column at analysis time: drift is checked against "".
+    baseline = dict(current)
+    if lib.find_section(ctx.original_arch(view_id, ctx.primary_lang), section) is None:
+        baseline[ctx.primary_lang] = ""
+    pending, skip, note = _plan_languages(ctx, change, baseline, done)
+    if skip:
+        return skip
+    if any(n > len(lib.acerca_columns(ctx.work_arch(view_id, lang))) for lang in pending):
+        note += f", column {n} appended"
+    op = lambda arch, c=n, t=text, s=ctx.site: lib.set_acerca_column(arch, c, t, s)  # noqa: E731
+    error = _dry_run_op(ctx, view_id, pending, op)
+    if error:
+        return Outcome(change, STATUS_FAIL, error, lib.truncate(current[ctx.primary_lang]))
+    for lang in pending:
+        ctx.stage_arch(change, view_id, lang, op)
+    return Outcome(change, STATUS_PLAN, note, lib.truncate(current[ctx.primary_lang]))
+
+
+def prepare_acerca_insert(ctx: SiteContext, change: lib.Change) -> Outcome:
+    view_id = change.target.view_id
+    try:
+        payload = lib.parse_acerca_payload(change.valor_nuevo)
+    except ValueError as exc:
+        return Outcome(change, STATUS_FAIL, str(exc))
+    expected = lib.acerca_payload_key(payload)
+    current: dict[str, object] = {}
+    done: dict[str, bool] = {}
+    for lang in ctx.langs:
+        current[lang] = lib.extract_acerca_section(ctx.work_arch(view_id, lang))
+        done[lang] = current[lang] == expected
+    pending, skip, note = _plan_languages(ctx, change, current, done)
+    if skip:
+        return skip
+    # Never stage a partial row: refuse up front if any pending language
+    # already has a (different) Acerca section.
+    existing = [lang for lang in pending if current[lang]]
+    if existing:
+        return Outcome(change, STATUS_FAIL,
+                       f"section 'Acerca' already exists with other content in {', '.join(existing)}",
+                       lib.truncate(current[ctx.primary_lang]))
+    op = lambda arch, p=payload: lib.insert_acerca_section(arch, p)  # noqa: E731
+    error = _dry_run_op(ctx, view_id, pending, op)
+    if error:
+        return Outcome(change, STATUS_FAIL, error)
+    for lang in pending:
+        ctx.stage_arch(change, view_id, lang, op)
+    return Outcome(change, STATUS_PLAN, note, lib.truncate(current[ctx.primary_lang]))
+
+
 def prepare_view_insert(ctx: SiteContext, change: lib.Change) -> Outcome:
+    if change.target.section == lib.ACERCA_SECTION:
+        return prepare_acerca_insert(ctx, change)
     view_id = change.target.view_id
     text = change.valor_nuevo
     current: dict[str, object] = {}
@@ -403,6 +486,7 @@ PREPARERS = {
     lib.KIND_VIEW_H2: prepare_view_h2,
     lib.KIND_VIEW_BG: prepare_view_bg,
     lib.KIND_VIEW_INSERT: prepare_view_insert,
+    lib.KIND_VIEW_COLUMN: prepare_view_column,
 }
 
 
@@ -652,6 +736,18 @@ def validate_offline(change: lib.Change, rows: list[lib.Change], zip_root: Path)
             return str(exc)
         if not path.is_file():
             return f"image file not found: {path}"
+    elif target.section == lib.ACERCA_SECTION and target.model == lib.MODEL_VIEW:
+        op = f"col{target.column}" if target.kind == lib.KIND_VIEW_COLUMN else \
+            {lib.KIND_VIEW_INSERT: "insert", lib.KIND_VIEW_H2: "h2", lib.KIND_VIEW_BG: "bg"}[target.kind]
+        if op not in lib.ACERCA_OPS:
+            return f"unsupported op {op!r} for section 'Acerca' (supported: {', '.join(lib.ACERCA_OPS)})"
+        if target.kind == lib.KIND_VIEW_INSERT:
+            try:
+                lib.parse_acerca_payload(change.valor_nuevo)
+            except ValueError as exc:
+                return str(exc)
+        elif not change.valor_nuevo.strip():
+            return f"empty text for Acerca.{op}"
     elif target.kind == lib.KIND_COMPANY_FIELD and target.field == "category_id":
         new_text = change.valor_nuevo.strip()
         if new_text and not new_text.isdigit():

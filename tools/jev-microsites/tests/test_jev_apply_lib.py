@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import base64
 import contextlib
+import csv
 import io
 import json
 import os
@@ -216,6 +217,185 @@ class InsertSec1Tests(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
+# Legacy "Acerca" block
+# ---------------------------------------------------------------------------
+
+def _legacy_column(icon, title, preview, full, col_id):
+    return (f"""            <div class="border o_colored_level col-lg-6 text-center pt-4 pb-4" data-name="Column">
+            <span class="fa {icon} fa-3x mb-3" style="display: block;"/>
+            <h6 class="text-center">{title}</h6>
+            <small class="text-muted d-block" style="padding: 0 20px;">{preview}</small>
+            <div class="mt-3 text-center">
+                <a href="#{col_id}" data-bs-toggle="collapse" class="btn btn-primary rounded-pill px-4">Leer más</a>
+            </div>
+            <div id="{col_id}" class="collapse mt-3">
+                <div class="card card-body bg-light">{full}</div>
+            </div>
+        </div>""")
+
+
+COL1 = _legacy_column("fa-book", "Nuestra historia", "Historia corta", "Historia completa",
+                      "acerca1_lapapayafitnesscenter")
+COL2 = _legacy_column("fa-cogs", "Nuestros servicios", "Servicios cortos", "Servicios completos",
+                      "acerca2_lapapayafitnesscenter")
+
+
+def _legacy_arch(columns, sec1=True):
+    sec1_block = ('    <section class="s_kickoff" data-name="SEC1"><div class="container">'
+                  '<h2>Intro</h2></div></section>\n') if sec1 else ""
+    return (
+        '<div id="wrap">\n'
+        '    <section class="s_cover" data-name="Hero"><div class="container"><h2>Hola</h2></div></section>\n'
+        + sec1_block +
+        '    <section class="s_attributes_vertical o_colored_level pt48 pb56" '
+        'data-snippet="s_attributes_vertical" data-name="Acerca">\n'
+        '        <div class="container">\n'
+        '            <div class="row justify-content-center">\n'
+        + columns + '\n'
+        '        </div>\n'
+        '    </div>\n'
+        '</section>\n'
+        '    <section class="s_footer" data-name="Contacto"><div><h2>Contacto</h2></div></section>\n'
+        '</div>\n')
+
+
+LEGACY_TWO = _legacy_arch(COL1 + "\n" + COL2)
+LEGACY_ONE = _legacy_arch(COL1)
+LEGACY_BACK_TO_BACK = _legacy_arch(COL1 + COL2.lstrip())   # "</div><div class="border ..."
+NO_ACERCA = LEGACY_TWO[:LEGACY_TWO.index('    <section class="s_attributes_vertical')] \
+    + LEGACY_TWO[LEGACY_TWO.index('    <section class="s_footer"'):]
+NO_ACERCA_NO_SEC1 = NO_ACERCA.replace(
+    '    <section class="s_kickoff" data-name="SEC1"><div class="container"><h2>Intro</h2></div></section>\n', "")
+
+PAYLOAD = {"about_title": "Sobre nosotros", "about": "Somos & <b>fuertes</b>",
+           "services_title": "Nuestros servicios", "services": "Entrenamiento " * 20, "slug": "lapapaya"}
+
+
+class AcercaColumnTests(unittest.TestCase):
+    def test_columns_found_depth_aware(self):
+        for arch in (LEGACY_TWO, LEGACY_BACK_TO_BACK):
+            cols = lib.acerca_columns(arch)
+            self.assertEqual(len(cols), 2)
+            self.assertIn("Historia completa", arch[cols[0].start:cols[0].end])
+            self.assertNotIn("Servicios", arch[cols[0].start:cols[0].end])
+            self.assertIn("Servicios completos", arch[cols[1].start:cols[1].end])
+        self.assertIn('</div><div class="border', LEGACY_BACK_TO_BACK)
+
+    def test_extract(self):
+        self.assertEqual(lib.extract_acerca_column(LEGACY_TWO, 1), "Historia completa")
+        self.assertEqual(lib.extract_acerca_column(LEGACY_TWO, 2), "Servicios completos")
+        self.assertEqual(lib.extract_acerca_column(LEGACY_ONE, 2), "")
+        with self.assertRaises(lib.SectionNotFound):
+            lib.extract_acerca_column(NO_ACERCA, 1)
+
+    def test_replace_escapes_and_keeps_rest(self):
+        text = "Tom & Jerry <3 desde 1990"
+        out = lib.set_acerca_column(LEGACY_TWO, 2, text)
+        esc = "Tom &amp; Jerry &lt;3 desde 1990"
+        a_start = LEGACY_TWO.index("Servicios cortos")
+        a_end = a_start + len("Servicios cortos")
+        b_start = LEGACY_TWO.index("Servicios completos")
+        b_end = b_start + len("Servicios completos")
+        expected = (LEGACY_TWO[:a_start] + esc + LEGACY_TWO[a_end:b_start] + esc + LEGACY_TWO[b_end:])
+        self.assertEqual(out, expected)
+        self.assertEqual(lib.extract_acerca_column(out, 2), text)
+        self.assertEqual(lib.extract_acerca_column(out, 1), "Historia completa")
+        # back to back columns edit the right column too
+        out = lib.set_acerca_column(LEGACY_BACK_TO_BACK, 1, "Nueva")
+        self.assertEqual(lib.extract_acerca_column(out, 1), "Nueva")
+        self.assertEqual(lib.extract_acerca_column(out, 2), "Servicios completos")
+        self.assertEqual(out, LEGACY_BACK_TO_BACK.replace("Historia corta", "Nueva")
+                         .replace("Historia completa", "Nueva"))
+
+    def test_preview_truncation(self):
+        self.assertEqual(lib.acerca_preview("a" * 120), "a" * 120)
+        self.assertEqual(lib.acerca_preview("a" * 121), "a" * 120 + "...")
+        out = lib.set_acerca_column(LEGACY_TWO, 1, "b" * 121)
+        self.assertIn(f'style="padding: 0 20px;">{"b" * 120}...</small>', out)
+        self.assertIn(f'bg-light">{"b" * 121}</div>', out)
+        out = lib.set_acerca_column(LEGACY_TWO, 1, "c" * 120)
+        self.assertIn(f'style="padding: 0 20px;">{"c" * 120}</small>', out)
+        self.assertNotIn("c...", out)
+
+    def test_missing_column_appended(self):
+        out = lib.set_acerca_column(LEGACY_ONE, 2, "Servicios & más", site_id=42)
+        cols = lib.acerca_columns(out)
+        self.assertEqual(len(cols), 2)
+        self.assertEqual(out[:cols[0].end], LEGACY_ONE[:cols[0].end])
+        self.assertEqual(out[cols[1].end:], LEGACY_ONE[cols[0].end:])
+        col2 = out[cols[0].end:cols[1].end]
+        self.assertTrue(col2.startswith("\n            <div class=\"border"))
+        self.assertIn('class="fa fa-cogs fa-3x mb-3"', col2)
+        self.assertIn('<h6 class="text-center">Nuestros servicios</h6>', col2)
+        self.assertIn('href="#acerca2_lapapayafitnesscenter"', col2)
+        self.assertIn('<div id="acerca2_lapapayafitnesscenter" class="collapse mt-3">', col2)
+        self.assertIn(">Servicios &amp; más</small>", col2)
+        self.assertEqual(lib.extract_acerca_column(out, 2), "Servicios & más")
+        # slug fallback when the section carries no acerca id
+        bare = LEGACY_ONE.replace("acerca1_lapapayafitnesscenter", "other")
+        out = lib.set_acerca_column(bare, 2, "x", site_id=42)
+        self.assertIn('id="acerca2_site42"', out)
+        with self.assertRaises(lib.ArchError):
+            lib.set_acerca_column(LEGACY_ONE.replace(COL1, ""), 2, "x", site_id=42)
+        with self.assertRaises(lib.ArchError):
+            lib.set_acerca_column(LEGACY_TWO, 1, "  ")
+
+    def test_back_to_back_append(self):
+        arch = _legacy_arch(COL1 + '<div class="x">keep</div>')
+        out = lib.set_acerca_column(arch, 2, "Nuevo", site_id=1)
+        self.assertEqual(lib.extract_acerca_column(out, 2), "Nuevo")
+        self.assertLess(out.index("acerca2_"), out.index('<div class="x">keep</div>'))
+
+
+class AcercaInsertTests(unittest.TestCase):
+    def test_insert_after_sec1(self):
+        out = lib.insert_acerca_section(NO_ACERCA, PAYLOAD)
+        sec1, acerca = lib.find_section(out, "SEC1"), lib.find_section(out, "Acerca")
+        self.assertEqual(out[sec1.end:acerca.start], "\n    ")
+        self.assertEqual(out[:sec1.end], NO_ACERCA[:sec1.end])
+        self.assertEqual(out[acerca.end:], NO_ACERCA[sec1.end:])
+        self.assertEqual(lib.extract_acerca_column(out, 1), PAYLOAD["about"])
+        self.assertEqual(lib.extract_acerca_column(out, 2), PAYLOAD["services"].strip())
+        self.assertIn('id="acerca1_lapapaya"', out)
+        self.assertIn('id="acerca2_lapapaya"', out)
+        self.assertIn('class="fa fa-cogs fa-3x mb-3"', out)
+        self.assertIn(">Somos &amp; &lt;b&gt;fuertes&lt;/b&gt;</small>", out)
+        self.assertIn(">" + PAYLOAD["services"][:120] + "...</small>", out)
+        self.assertEqual(out.count('data-name="Column"'), 2)
+        self.assertEqual(lib.extract_acerca_section(out),
+                         lib.acerca_payload_key(lib.parse_acerca_payload(json.dumps(PAYLOAD))))
+        self.assertEqual(lib.extract_acerca_section(NO_ACERCA), "")
+
+    def test_insert_after_hero_without_sec1(self):
+        out = lib.insert_acerca_section(NO_ACERCA_NO_SEC1, PAYLOAD)
+        hero, acerca = lib.find_section(out, "Hero"), lib.find_section(out, "Acerca")
+        self.assertEqual(out[hero.end:acerca.start], "\n    ")
+        self.assertTrue(out.endswith(NO_ACERCA_NO_SEC1[hero.end:]))
+
+    def test_refuses_when_present(self):
+        with self.assertRaises(lib.ArchError):
+            lib.insert_acerca_section(LEGACY_TWO, PAYLOAD)
+
+    def test_default_titles(self):
+        payload = dict(PAYLOAD, about_title="", services_title=" ")
+        out = lib.insert_acerca_section(NO_ACERCA, payload)
+        self.assertIn('<h6 class="text-center">Sobre nosotros</h6>', out)
+        self.assertIn('<h6 class="text-center">Nuestros servicios</h6>', out)
+        self.assertEqual(lib.extract_acerca_section(out),
+                         lib.acerca_payload_key(lib.parse_acerca_payload(json.dumps(payload))))
+
+    def test_payload_validation(self):
+        bad = ["", "not json", "[]", json.dumps({k: v for k, v in PAYLOAD.items() if k != "slug"}),
+               json.dumps(dict(PAYLOAD, about="  ")), json.dumps(dict(PAYLOAD, services=3)),
+               json.dumps(dict(PAYLOAD, slug='x" onclick="y')), json.dumps(dict(PAYLOAD, extra="x"))]
+        for value in bad:
+            with self.assertRaises(ValueError, msg=value):
+                lib.parse_acerca_payload(value)
+        with self.assertRaises(lib.ArchError):
+            lib.insert_acerca_section(NO_ACERCA, dict(PAYLOAD, slug=""))
+
+
+# ---------------------------------------------------------------------------
 # campo / zip / csv
 # ---------------------------------------------------------------------------
 
@@ -229,10 +409,28 @@ class ParseCampoTests(unittest.TestCase):
         self.assertEqual((t.kind, t.view_id, t.section, t.field), (lib.KIND_VIEW_BG, 3352, "Hero", "arch_db"))
         self.assertEqual(lib.parse_campo("ir_ui_view.1.SEC1.h2").kind, lib.KIND_VIEW_H2)
         self.assertEqual(lib.parse_campo(" ir_ui_view.1.SEC1.insert ").kind, lib.KIND_VIEW_INSERT)
+        t = lib.parse_campo("ir_ui_view.7.Acerca.col2")
+        self.assertEqual((t.kind, t.section, t.column), (lib.KIND_VIEW_COLUMN, "Acerca", 2))
+        self.assertEqual(lib.parse_campo("ir_ui_view.7.Acerca.insert").kind, lib.KIND_VIEW_INSERT)
+        t = lib.parse_campo("res_company.microsite_about_text")
+        self.assertEqual((t.kind, t.field), (lib.KIND_COMPANY_FIELD, "microsite_about_text"))
+        self.assertEqual(lib.parse_campo("res_company.microsite_services_text").kind, lib.KIND_COMPANY_FIELD)
+
+    def test_processing_order(self):
+        def row(campo, line):
+            return lib.Change(68, campo, "", "", 1.0, "", lib.parse_campo(campo), line)
+        rows = [row("ir_ui_view.1.Hero.bg", 1), row("ir_ui_view.1.SEC1.h2", 2), row("ir_ui_view.1.Acerca.col1", 3),
+                row("ir_ui_view.1.Acerca.insert", 4), row("ir_ui_view.1.SEC1.insert", 5),
+                row("res_company.microsite_about_text", 6)]
+        ordered = [c.campo for c in lib.group_by_site(rows)[68]]
+        self.assertEqual(ordered, ["res_company.microsite_about_text", "ir_ui_view.1.SEC1.insert",
+                                   "ir_ui_view.1.Acerca.insert", "ir_ui_view.1.Acerca.col1",
+                                   "ir_ui_view.1.SEC1.h2", "ir_ui_view.1.Hero.bg"])
 
     def test_invalid(self):
         for bad in ("", "foo", "res_company.", "ir_ui_view.x.Hero.bg", "ir_ui_view.1.Hero.insert",
-                    "ir_ui_view.1.Hero.style", "res_company.a.b"):
+                    "ir_ui_view.1.Hero.style", "res_company.a.b", "ir_ui_view.1.Acerca.col3",
+                    "ir_ui_view.1.Hero.col1", "ir_ui_view.1.Acerca.col"):
             with self.assertRaises(lib.CampoError, msg=bad):
                 lib.parse_campo(bad)
 
@@ -581,6 +779,112 @@ class AplicarEndToEndTests(unittest.TestCase):
         self.assertRegex(out, r"microsite_hero_image\s+FAIL.*absolute")
         self.assertRegex(out, r"ir_ui_view\.2\.Hero\.bg\s+FAIL.*no res_company\.microsite_hero_image row")
         self.assertEqual(self.client.writes, [])
+
+    def write_rows_csv(self, rows):
+        """CSV with proper quoting (values may contain quotes / JSON)."""
+        buf = io.StringIO()
+        writer = csv.writer(buf, lineterminator="\n")
+        writer.writerow(["site", "campo", "valor_anterior", "valor_nuevo", "confianza", "motivo"])
+        for site, campo, prev, new in rows:
+            writer.writerow([site, campo, prev, new, "0.98", "m"])
+        self.csv.write_text(buf.getvalue(), encoding="utf-8")
+
+    def test_sec1_then_acerca_insert_end_to_end(self):
+        base = NO_ACERCA_NO_SEC1
+        self.client.views[3352] = {"es_ES": base, "en_US": base.replace("Hola", "Hello")}
+        self.client.companies[68].update(microsite_about_text=False, microsite_services_text="Viejo")
+        # CSV order deliberately puts the Acerca rows before the SEC1 insert.
+        self.write_rows_csv([
+            (68, "ir_ui_view.3352.Acerca.col2", "", "Servicios finales"),
+            (68, "ir_ui_view.3352.Acerca.insert", "", json.dumps(PAYLOAD, ensure_ascii=False)),
+            (68, "ir_ui_view.3352.SEC1.insert", "", "Playa chica"),
+            (68, "res_company.microsite_about_text", "", PAYLOAD["about"]),
+            (68, "res_company.microsite_services_text", "Viejo", PAYLOAD["services"]),
+        ])
+        code, out = self.run_main("--apply")
+        self.assertEqual(code, 0, out)
+        self.assertEqual(out.count("APPLIED"), 5, out)
+        self.assertEqual(self.client.companies[68]["microsite_about_text"], PAYLOAD["about"])
+        self.assertEqual(self.client.companies[68]["microsite_services_text"], PAYLOAD["services"])
+        for lang in ("es_ES", "en_US"):
+            arch = self.client.views[3352][lang]
+            hero, sec1, acerca = (lib.find_section(arch, n) for n in ("Hero", "SEC1", "Acerca"))
+            self.assertLess(hero.end, sec1.start)
+            self.assertLess(sec1.end, acerca.start)
+            self.assertEqual(lib.extract_acerca_column(arch, 1), PAYLOAD["about"])
+            self.assertEqual(lib.extract_acerca_column(arch, 2), "Servicios finales")
+        # one arch write per language, all view rows combined
+        self.assertEqual([w for w in self.client.writes if w[0] == "ir.ui.view"],
+                         [("ir.ui.view", 3352, "arch_db", "es_ES"), ("ir.ui.view", 3352, "arch_db", "en_US")])
+
+        writes_before = list(self.client.writes)
+        code, out = self.run_main("--apply")
+        self.assertEqual(code, 0, out)
+        # the insert row now reads a different col2 than its payload: it is
+        # "changed on server", never re-inserted; the rest is already applied
+        self.assertEqual(out.count("already applied"), 4, out)
+        self.assertRegex(out, r"Acerca\.insert\s+SKIP.*changed on server")
+        self.assertEqual(self.client.writes, writes_before)
+
+    def test_acerca_insert_idempotent_and_column_append(self):
+        self.client.views[3352] = {"es_ES": NO_ACERCA, "en_US": NO_ACERCA}
+        self.write_rows_csv([(68, "ir_ui_view.3352.Acerca.insert", "", json.dumps(PAYLOAD))])
+        code, out = self.run_main("--apply")
+        self.assertEqual(code, 0, out)
+        code, out = self.run_main("--apply")
+        self.assertEqual(code, 0, out)
+        self.assertIn("already applied", out)
+        self.assertEqual(len(self.client.writes), 2)
+
+        self.client.views[3352] = {"es_ES": LEGACY_ONE, "en_US": LEGACY_ONE}
+        self.client.writes = []
+        self.write_rows_csv([(68, "ir_ui_view.3352.Acerca.col2", "", "Nuevos servicios")])
+        code, out = self.run_main("--apply")
+        self.assertEqual(code, 0, out)
+        self.assertIn("column 2 appended", out)
+        self.assertIn('id="acerca2_lapapayafitnesscenter"', self.client.views[3352]["en_US"])
+        code, out = self.run_main("--apply")
+        self.assertIn("already applied", out)
+        self.assertEqual(len(self.client.writes), 2)
+
+    def test_acerca_insert_refused_when_present(self):
+        self.client.views[3352] = {"es_ES": LEGACY_TWO, "en_US": LEGACY_TWO}
+        self.write_rows_csv([(68, "ir_ui_view.3352.Acerca.insert", "", json.dumps(PAYLOAD))])
+        code, out = self.run_main("--apply", "--force", "--only-site", "68")
+        self.assertEqual(code, 1, out)
+        self.assertRegex(out, r"Acerca\.insert\s+FAIL.*already exists")
+        self.assertEqual(self.client.writes, [])
+
+    def test_acerca_column_drift(self):
+        self.client.views[3352] = {"es_ES": LEGACY_TWO, "en_US": LEGACY_TWO}
+        self.write_rows_csv([(68, "ir_ui_view.3352.Acerca.col1", "Otra  historia", "Nueva")])
+        code, out = self.run_main("--apply")
+        self.assertRegex(out, r"Acerca\.col1\s+SKIP.*changed on server")
+        self.assertEqual(self.client.writes, [])
+        self.write_rows_csv([(68, "ir_ui_view.3352.Acerca.col1", " Historia\n completa ", "Nueva")])
+        code, out = self.run_main("--apply")
+        self.assertEqual(code, 0, out)
+        self.assertEqual(lib.extract_acerca_column(self.client.views[3352]["es_ES"], 1), "Nueva")
+
+    def test_acerca_offline_validation(self):
+        self.write_rows_csv([
+            (68, "ir_ui_view.3352.Acerca.insert", "", json.dumps(PAYLOAD)),
+            (68, "ir_ui_view.3352.Acerca.col1", "", "Texto"),
+            (69, "ir_ui_view.1.Acerca.insert", "", "{not json"),
+            (69, "ir_ui_view.1.Acerca.col2", "", "   "),
+            (69, "ir_ui_view.1.Acerca.h2", "", "x"),
+            (70, "ir_ui_view.2.Acerca.insert", "", json.dumps(dict(PAYLOAD, about=""))),
+            (70, "ir_ui_view.2.Acerca.col3", "", "x"),
+        ])
+        code, out = self.run_main("--offline")
+        self.assertEqual(code, 1)
+        self.assertIn("would apply: 2", out)
+        self.assertIn("failed:  5", out)
+        self.assertRegex(out, r"ir_ui_view\.1\.Acerca\.insert\s+FAIL.*not valid JSON")
+        self.assertRegex(out, r"ir_ui_view\.1\.Acerca\.col2\s+FAIL.*empty text")
+        self.assertRegex(out, r"ir_ui_view\.1\.Acerca\.h2\s+FAIL.*unsupported op 'h2'")
+        self.assertRegex(out, r"ir_ui_view\.2\.Acerca\.insert\s+FAIL.*must not be empty")
+        self.assertRegex(out, r"Acerca\.col3.*FAIL.*unsupported column op")
 
     def test_prod_requires_confirmation_without_tty(self):
         self.write_csv(self.STANDARD_ROWS)
