@@ -1,0 +1,333 @@
+http:
+  routers:
+    mig-3rj:
+      rule: "Host(`3rj.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-3rj]
+      service: noop@internal
+    mig-abinformatica:
+      rule: "Host(`abinformatica.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-abinformatica]
+      service: noop@internal
+    mig-acuarican:
+      rule: "Host(`acuarican.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-acuarican]
+      service: noop@internal
+    mig-arkayluismorote:
+      rule: "Host(`arkayluismorote.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-arkayluismorote]
+      service: noop@internal
+    mig-arkayripoche:
+      rule: "Host(`arkayripoche.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-arkayripoche]
+      service: noop@internal
+    mig-aromadecafe:
+      rule: "Host(`aromadecafe.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-aromadecafe]
+      service: noop@internal
+    mig-autocristalralarsa:
+      rule: "Host(`autocristalralarsa.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-autocristalralarsa]
+      service: noop@internal
+    mig-coffeebike:
+      rule: "Host(`coffeebike.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-coffeebike]
+      service: noop@internal
+    mig-davidreze:
+      rule: "Host(`davidreze.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-davidreze]
+      service: noop@internal
+    mig-diazleja:
+      rule: "Host(`diazleja.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-diazleja]
+      service: noop@internal
+    mig-electroguanarteme:
+      rule: "Host(`electroguanarteme.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-electroguanarteme]
+      service: noop@internal
+    mig-eltucan24h:
+      rule: "Host(`eltucan24h.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-eltucan24h]
+      service: noop@internal
+    mig-escuelainfantil:
+      rule: "Host(`escuelainfantil.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-escuelainfantil]
+      service: noop@internal
+    mig-fame:
+      rule: "Host(`fame.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-fame]
+      service: noop@internal
+    mig-juanhernandez:
+      rule: "Host(`juanhernandez.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-juanhernandez]
+      service: noop@internal
+    mig-lakota:
+      rule: "Host(`lakota.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-lakota]
+      service: noop@internal
+    mig-maquifer:
+      rule: "Host(`maquifer.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-maquifer]
+      service: noop@internal
+    mig-milagrosbar:
+      rule: "Host(`milagrosbar.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-milagrosbar]
+      service: noop@internal
+    mig-mygmoda:
+      rule: "Host(`mygmoda.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-mygmoda]
+      service: noop@internal
+    mig-peluquerialunaymar:
+      rule: "Host(`peluquerialunaymar.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-peluquerialunaymar]
+      service: noop@internal
+    mig-pirotecniavolcanguanarteme:
+      rule: "Host(`pirotecniavolcanguanarteme.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-pirotecniavolcanguanarteme]
+      service: noop@internal
+    mig-pizzeria-raffaele:
+      rule: "Host(`pizzeria-raffaele.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-pizzeria-raffaele]
+      service: noop@internal
+    mig-pizzeriahipopotamo:
+      rule: "Host(`pizzeriahipopotamo.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-pizzeriahipopotamo]
+      service: noop@internal
+    mig-professionalbeauty:
+      rule: "Host(`professionalbeauty.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-professionalbeauty]
+      service: noop@internal
+    mig-ramcast:
+      rule: "Host(`ramcast.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-ramcast]
+      service: noop@internal
+    mig-restaurantesanfernando:
+      rule: "Host(`restaurantesanfernando.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-restaurantesanfernando]
+      service: noop@internal
+    mig-somaphi:
+      rule: "Host(`somaphi.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-somaphi]
+      service: noop@internal
+    mig-tallerluiscompeticion:
+      rule: "Host(`tallerluiscompeticion.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-tallerluiscompeticion]
+      service: noop@internal
+    mig-thecaptain:
+      rule: "Host(`thecaptain.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-thecaptain]
+      service: noop@internal
+    mig-yaizaruiz:
+      rule: "Host(`yaizaruiz.canariasconectada.es`)"
+      entryPoints: [web]
+      priority: 200
+      middlewares: [mig-yaizaruiz]
+      service: noop@internal
+  middlewares:
+    mig-3rj:
+      redirectRegex:
+        regex: '^https?://3rj\.canariasconectada\.es/?(.*)'
+        replacement: 'https://3rjsurftime.canariasconectada.es/${1}'
+        permanent: true
+    mig-abinformatica:
+      redirectRegex:
+        regex: '^https?://abinformatica\.canariasconectada\.es/?(.*)'
+        replacement: 'https://serviciotecnicoabinformatica.canariasconectada.es/${1}'
+        permanent: true
+    mig-acuarican:
+      redirectRegex:
+        regex: '^https?://acuarican\.canariasconectada\.es/?(.*)'
+        replacement: 'https://veterinariaacuarican.canariasconectada.es/${1}'
+        permanent: true
+    mig-arkayluismorote:
+      redirectRegex:
+        regex: '^https?://arkayluismorote\.canariasconectada\.es/?(.*)'
+        replacement: 'https://perfumeriasarkayluismorote.canariasconectada.es/${1}'
+        permanent: true
+    mig-arkayripoche:
+      redirectRegex:
+        regex: '^https?://arkayripoche\.canariasconectada\.es/?(.*)'
+        replacement: 'https://perfumeriasarkayripoche.canariasconectada.es/${1}'
+        permanent: true
+    mig-aromadecafe:
+      redirectRegex:
+        regex: '^https?://aromadecafe\.canariasconectada\.es/?(.*)'
+        replacement: 'https://aromacafe.canariasconectada.es/${1}'
+        permanent: true
+    mig-autocristalralarsa:
+      redirectRegex:
+        regex: '^https?://autocristalralarsa\.canariasconectada\.es/?(.*)'
+        replacement: 'https://ralarsa.canariasconectada.es/${1}'
+        permanent: true
+    mig-coffeebike:
+      redirectRegex:
+        regex: '^https?://coffeebike\.canariasconectada\.es/?(.*)'
+        replacement: 'https://coffeandbike.canariasconectada.es/${1}'
+        permanent: true
+    mig-davidreze:
+      redirectRegex:
+        regex: '^https?://davidreze\.canariasconectada\.es/?(.*)'
+        replacement: 'https://pasteleriapanaderiadavidreze.canariasconectada.es/${1}'
+        permanent: true
+    mig-diazleja:
+      redirectRegex:
+        regex: '^https?://diazleja\.canariasconectada\.es/?(.*)'
+        replacement: 'https://diazlejaservicios.canariasconectada.es/${1}'
+        permanent: true
+    mig-electroguanarteme:
+      redirectRegex:
+        regex: '^https?://electroguanarteme\.canariasconectada\.es/?(.*)'
+        replacement: 'https://electroguanartemesl.canariasconectada.es/${1}'
+        permanent: true
+    mig-eltucan24h:
+      redirectRegex:
+        regex: '^https?://eltucan24h\.canariasconectada\.es/?(.*)'
+        replacement: 'https://tucan24h.canariasconectada.es/${1}'
+        permanent: true
+    mig-escuelainfantil:
+      redirectRegex:
+        regex: '^https?://escuelainfantil\.canariasconectada\.es/?(.*)'
+        replacement: 'https://lagallinaturuleta.canariasconectada.es/${1}'
+        permanent: true
+    mig-fame:
+      redirectRegex:
+        regex: '^https?://fame\.canariasconectada\.es/?(.*)'
+        replacement: 'https://famerehabilitacionfachadas.canariasconectada.es/${1}'
+        permanent: true
+    mig-juanhernandez:
+      redirectRegex:
+        regex: '^https?://juanhernandez\.canariasconectada\.es/?(.*)'
+        replacement: 'https://juanhernandezestudio.canariasconectada.es/${1}'
+        permanent: true
+    mig-lakota:
+      redirectRegex:
+        regex: '^https?://lakota\.canariasconectada\.es/?(.*)'
+        replacement: 'https://centroestudioslakota.canariasconectada.es/${1}'
+        permanent: true
+    mig-maquifer:
+      redirectRegex:
+        regex: '^https?://maquifer\.canariasconectada\.es/?(.*)'
+        replacement: 'https://maquifercoop.canariasconectada.es/${1}'
+        permanent: true
+    mig-milagrosbar:
+      redirectRegex:
+        regex: '^https?://milagrosbar\.canariasconectada\.es/?(.*)'
+        replacement: 'https://losmilagrosbar.canariasconectada.es/${1}'
+        permanent: true
+    mig-mygmoda:
+      redirectRegex:
+        regex: '^https?://mygmoda\.canariasconectada\.es/?(.*)'
+        replacement: 'https://mgmoda.canariasconectada.es/${1}'
+        permanent: true
+    mig-peluquerialunaymar:
+      redirectRegex:
+        regex: '^https?://peluquerialunaymar\.canariasconectada\.es/?(.*)'
+        replacement: 'https://lunaymarlaspalmas.canariasconectada.es/${1}'
+        permanent: true
+    mig-pirotecniavolcanguanarteme:
+      redirectRegex:
+        regex: '^https?://pirotecniavolcanguanarteme\.canariasconectada\.es/?(.*)'
+        replacement: 'https://pirotecniavolcan.canariasconectada.es/${1}'
+        permanent: true
+    mig-pizzeria-raffaele:
+      redirectRegex:
+        regex: '^https?://pizzeria-raffaele\.canariasconectada\.es/?(.*)'
+        replacement: 'https://pizzeriaravo.canariasconectada.es/${1}'
+        permanent: true
+    mig-pizzeriahipopotamo:
+      redirectRegex:
+        regex: '^https?://pizzeriahipopotamo\.canariasconectada\.es/?(.*)'
+        replacement: 'https://hipopotamopizza.canariasconectada.es/${1}'
+        permanent: true
+    mig-professionalbeauty:
+      redirectRegex:
+        regex: '^https?://professionalbeauty\.canariasconectada\.es/?(.*)'
+        replacement: 'https://estefaniadiazmartel.canariasconectada.es/${1}'
+        permanent: true
+    mig-ramcast:
+      redirectRegex:
+        regex: '^https?://ramcast\.canariasconectada\.es/?(.*)'
+        replacement: 'https://ramcastdistribucion.canariasconectada.es/${1}'
+        permanent: true
+    mig-restaurantesanfernando:
+      redirectRegex:
+        regex: '^https?://restaurantesanfernando\.canariasconectada\.es/?(.*)'
+        replacement: 'https://cafeteriasanfernando.canariasconectada.es/${1}'
+        permanent: true
+    mig-somaphi:
+      redirectRegex:
+        regex: '^https?://somaphi\.canariasconectada\.es/?(.*)'
+        replacement: 'https://psicologialuciagarciasantana.canariasconectada.es/${1}'
+        permanent: true
+    mig-tallerluiscompeticion:
+      redirectRegex:
+        regex: '^https?://tallerluiscompeticion\.canariasconectada\.es/?(.*)'
+        replacement: 'https://luiscompeticion.canariasconectada.es/${1}'
+        permanent: true
+    mig-thecaptain:
+      redirectRegex:
+        regex: '^https?://thecaptain\.canariasconectada\.es/?(.*)'
+        replacement: 'https://thecaptain13.canariasconectada.es/${1}'
+        permanent: true
+    mig-yaizaruiz:
+      redirectRegex:
+        regex: '^https?://yaizaruiz\.canariasconectada\.es/?(.*)'
+        replacement: 'https://yaizaruizestetica.canariasconectada.es/${1}'
+        permanent: true
