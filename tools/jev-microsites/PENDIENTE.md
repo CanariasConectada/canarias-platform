@@ -137,3 +137,11 @@ Pendiente tras la aplicación:
 - Corrección con `corregir_marcas.py`: 8 términos nuevos en el glosario (ids 383-390) y 42 trabajos retraducidos con `action_translate_again`.
 - Resultado (19:27 UTC): 96 de 108 apariciones intactas; las 12 restantes son «El Tucán 24H», que ahora sale como «EL TUCÁN 24H» (nombre correcto, en mayúsculas). Estructura ok en las 7 portadas.
 - Queda: calidad general del motor (frases literales como «nearby prices», «Komm schon. M&G Moda…»). Y el glosario de la plataforma tiene muchos nombres sin tildes que no protegen la versión con tildes.
+
+## 9. Calidad de traducción y glosario de la plataforma (2026-09-23, tarde)
+
+- **Frases nuevas traducidas a mano**: 139 frases × 6 idiomas (`translations.json`). Control con Jev (`qa_traducciones.py`, umbral 0,85): 799 aprobadas; de las 35 restantes, 25 ganan a la traducción de la máquina en comparación directa y 10 conservan la de la máquina. 818 escritas con la corrección de frases del módulo (quedan bloqueadas); backup en `/home/odoo/Pending/jev-work/terms_backup.jsonl`.
+- **Glosario de la plataforma**: 27 nombres de comercio activos que no estaban protegidos (ids 391-417), y 71 traducciones de páginas donde ya se habían roto, retraducidas.
+- **Verificación (21:49 UTC)**: 0 nombres perdidos en ninguna página; 824/824 traducciones revisadas presentes; 70/70 portadas con estructura idéntica en los 7 idiomas; 0 trabajos fallidos.
+- Observación: el nombre del website «Profesional Biuty by Estefaníaa» tiene una errata (doble «a»); se protegió tal cual. Corregirla es decisión del usuario.
+- La calidad del motor para contenido futuro sigue dependiendo de LibreTranslate; mejorarla en toda la plataforma requiere activar DeepL, Google o Claude con clave de API.
