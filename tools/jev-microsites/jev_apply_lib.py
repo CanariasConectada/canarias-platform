@@ -390,6 +390,10 @@ _H2_CLOSE_RE = re.compile(r"</h2\s*>")
 _STYLE_RE = re.compile(r"""\sstyle=(["'])(.*?)\1""", re.S)
 _BG_URL_RE = re.compile(r"""background-image\s*:\s*url\(\s*(['"]?)(.*?)\1\s*\)""", re.S)
 _BG_DECL_RE = re.compile(r"background-image\s*:\s*[^;]*", re.S)
+# ``background:`` shorthand (not background-image/-size/...). A shorthand that
+# comes after ``background-image`` resets it, so the importer's placeholder
+# ``background: linear-gradient(...)`` hides any image set before it.
+_BG_SHORTHAND_RE = re.compile(r"(?<![\w-])background\s*:\s*[^;]*;?\s*", re.S)
 _TAG_RE = re.compile(r"<[^>]+>")
 _WS_RE = re.compile(r"\s+")
 
@@ -508,8 +512,14 @@ def extract_section_bg(arch: str, section_name: str) -> str | None:
     style = _STYLE_RE.search(section.open_tag)
     if not style:
         return None
-    bg = _BG_URL_RE.search(style.group(2))
-    return bg.group(2).strip() if bg else None
+    value = style.group(2)
+    bg = _BG_URL_RE.search(value)
+    if not bg:
+        return None
+    # A later ``background:`` shorthand overrides the image: not effective.
+    if _BG_SHORTHAND_RE.search(value, bg.end()):
+        return None
+    return bg.group(2).strip()
 
 
 def set_section_background(arch: str, section_name: str, url: str) -> str:
@@ -534,6 +544,10 @@ def set_section_background(arch: str, section_name: str, url: str) -> str:
             new_value = _BG_DECL_RE.sub(lambda _m: declaration, value, count=1)
         else:
             new_value = BG_STYLE_PREFIX.format(url=url) + value
+        # Drop placeholder ``background:`` shorthands (gradients, colours) that
+        # would reset the image; a shorthand carrying its own url() is kept.
+        new_value = _BG_SHORTHAND_RE.sub(
+            lambda m: m.group(0) if "url(" in m.group(0) else "", new_value)
         new_open = open_tag[:style.start(2)] + new_value + open_tag[style.end(2):]
     else:
         attr = ' style="' + BG_STYLE_PREFIX.format(url=url).rstrip() + '"'

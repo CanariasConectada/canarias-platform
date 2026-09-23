@@ -1226,3 +1226,29 @@ class CredentialsTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PlaceholderShorthandTests(unittest.TestCase):
+    ARCH = ('<section class="s_cover" data-name="Hero" style="background-image: url(\'/web/image/res.company/68/microsite_hero_image\'); '
+            'background-size: cover; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 60vh;">'
+            '<h1>X</h1></section>')
+
+    def test_shorthand_after_image_is_not_effective(self):
+        self.assertIsNone(lib.extract_section_bg(self.ARCH, "Hero"))
+
+    def test_set_background_drops_placeholder_shorthand(self):
+        url = "/web/image/res.company/68/microsite_hero_image"
+        out = lib.set_section_background(self.ARCH, "Hero", url)
+        self.assertNotIn("linear-gradient", out)
+        self.assertIn("min-height: 60vh;", out)
+        self.assertIn("background-size: cover;", out)
+        self.assertEqual(lib.extract_section_bg(out, "Hero"), url)
+        self.assertTrue(out.endswith("<h1>X</h1></section>"))
+
+    def test_shorthand_without_image_prepends_and_drops(self):
+        arch = '<section data-name="SEC1" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); position: relative;"><h2>a</h2></section>'
+        url = "/web/image/res.company/5/microsite_intro_image"
+        out = lib.set_section_background(arch, "SEC1", url)
+        self.assertNotIn("linear-gradient", out)
+        self.assertEqual(lib.extract_section_bg(out, "SEC1"), url)
+        self.assertIn("position: relative;", out)
