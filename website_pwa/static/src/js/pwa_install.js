@@ -5,6 +5,37 @@ import {registry} from "@web/core/registry";
 import {Interaction} from "@web/public/interaction";
 
 /**
+ * Is the page running as an installed app (home-screen launch)?
+ *
+ * Exported on its own so every card that must behave differently inside the
+ * app -- the install card, the notification prompt, the login page block --
+ * asks the same question the same way.
+ */
+export function isStandalone() {
+    return (
+        window.matchMedia("(display-mode: standalone)").matches ||
+        window.navigator.standalone === true
+    );
+}
+
+/**
+ * Is this an iPhone, iPod or iPad?
+ *
+ * iPadOS 13+ reports itself as desktop Safari on a Mac ("Macintosh" in the
+ * user agent, "MacIntel" as platform), so the user agent alone sends every
+ * iPad down the Android branch: waiting for a `beforeinstallprompt` Safari
+ * never fires, and no instructions shown. A Mac has no touch points; an iPad
+ * has five.
+ */
+export function isIOS() {
+    const nav = window.navigator;
+    if (/iphone|ipad|ipod/i.test(nav.userAgent)) {
+        return true;
+    }
+    return nav.platform === "MacIntel" && nav.maxTouchPoints > 1;
+}
+
+/**
  * Registers the service worker and drives the "install this app" card.
  *
  * The two platforms behave differently and the card reflects that instead of
@@ -42,6 +73,9 @@ export class PWAInstall extends Interaction {
             this.deferredPrompt = event;
             this.revealCard(".o_pwa_install_button");
         });
+        // Installed from the browser menu rather than from our button: the
+        // card must not keep offering what is already on the home screen.
+        this.addListener(window, "appinstalled", () => this.hideCards());
         this.addListener(document, "click", (event) => {
             const button = event.target.closest(".o_pwa_install_button");
             if (button) {
@@ -63,25 +97,28 @@ export class PWAInstall extends Interaction {
     }
 
     isStandalone() {
-        return (
-            window.matchMedia("(display-mode: standalone)").matches ||
-            window.navigator.standalone === true
-        );
+        return isStandalone();
     }
 
     isIOS() {
-        return /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+        return isIOS();
     }
 
+    /**
+     * Reveal EVERY install card on the page, not only the first.
+     *
+     * A page can carry more than one: the editor snippet and the login page's
+     * "Download Canarias Conectada" block are both install cards, and both
+     * are driven from here so the Android prompt and the iOS instructions are
+     * decided once. A `querySelector` would light the first and leave the
+     * other hidden forever.
+     */
     revealCard(childSelector) {
-        const card = document.querySelector(".o_pwa_install_card");
-        if (!card) {
-            return;
-        }
-        card.classList.remove("d-none");
-        const child = card.querySelector(childSelector);
-        if (child) {
-            child.classList.remove("d-none");
+        for (const card of document.querySelectorAll(".o_pwa_install_card")) {
+            card.classList.remove("d-none");
+            for (const child of card.querySelectorAll(childSelector)) {
+                child.classList.remove("d-none");
+            }
         }
     }
 
@@ -94,8 +131,11 @@ export class PWAInstall extends Interaction {
         // The event can only be used once; drop it either way so a second
         // click does not call a spent prompt.
         this.deferredPrompt = null;
-        const card = document.querySelector(".o_pwa_install_card");
-        if (card) {
+        this.hideCards();
+    }
+
+    hideCards() {
+        for (const card of document.querySelectorAll(".o_pwa_install_card")) {
             card.classList.add("d-none");
         }
     }
