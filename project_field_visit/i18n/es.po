@@ -1,0 +1,636 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* project_field_visit
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-25 00:55+0000\n"
+"PO-Revision-Date: 2026-09-25 00:55+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "%(business)s: unknown value %(value)r in %(column)s"
+msgstr "%(business)s: valor desconocido %(value)r en %(column)s"
+
+#. module: project_field_visit
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_task_view_form_field_visit
+msgid "<span class=\"o_stat_text\">Open microsite</span>"
+msgstr "<span class=\"o_stat_text\">Abrir microsite</span>"
+
+#. module: project_field_visit
+#: model_terms:ir.ui.view,arch_db:project_field_visit.field_visit_message
+msgid "<strong>Field visit</strong>"
+msgstr "<strong>Visita de campo</strong>"
+
+#. module: project_field_visit
+#: model:ir.model.constraint,message:project_field_visit.constraint_project_task_field_visit_import_key_unique
+msgid "A business can only have one task per field-visit project."
+msgstr ""
+"Un negocio solo puede tener una tarea por proyecto de visitas de campo."
+
+#. module: project_field_visit
+#: model:ir.model.fields.selection,name:project_field_visit.selection__project_field_visit_log__outcome__appointment
+#: model:ir.model.fields.selection,name:project_field_visit.selection__project_task__field_visit_last_outcome__appointment
+msgid "Appointment scheduled"
+msgstr "Cita agendada"
+
+#. module: project_field_visit
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_field_visit_import_view_form
+msgid "Back"
+msgstr "Volver"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_log__business_name
+#: model:ir.model.fields,field_description:project_field_visit.field_project_task__business_name
+msgid "Business"
+msgstr "Negocio"
+
+#. module: project_field_visit
+#: model:ir.model.fields.selection,name:project_field_visit.selection__project_field_visit_log__outcome__closed
+#: model:ir.model.fields.selection,name:project_field_visit.selection__project_task__field_visit_last_outcome__closed
+msgid "Business closed"
+msgstr "Negocio cerrado"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_task__business_partner_id
+msgid "Business contact"
+msgstr "Contacto del negocio"
+
+#. module: project_field_visit
+#: model:ir.model.fields,help:project_field_visit.field_project_task__business_company_id
+msgid "Business of the platform this task documents."
+msgstr "Negocio de la plataforma que documenta esta tarea."
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Business rows read: %s"
+msgstr "Filas de negocios leídas: %s"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Businesses without a platform company:"
+msgstr "Negocios sin compañía en la plataforma:"
+
+#. module: project_field_visit
+#: model:ir.model.fields,help:project_field_visit.field_project_field_visit_import__update_stages
+msgid ""
+"By default a re-import leaves existing tasks in the stage the consultants "
+"moved them to."
+msgstr ""
+"Por defecto, una nueva importación deja las tareas existentes en la etapa a "
+"la que las movieron los consultores."
+
+#. module: project_field_visit
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_field_visit_log_view_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Choose or create the phase project first."
+msgstr "Primero elija o cree el proyecto de la fase."
+
+#. module: project_field_visit
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_field_visit_import_view_form
+msgid "Close"
+msgstr "Cerrar"
+
+#. module: project_field_visit
+#: model:ir.model,name:project_field_visit.model_res_company
+msgid "Companies"
+msgstr "Compañías"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_log__user_id
+msgid "Consultant"
+msgstr "Consultor"
+
+#. module: project_field_visit
+#: model_terms:ir.ui.view,arch_db:project_field_visit.field_visit_message
+msgid "Consultant:"
+msgstr "Consultor:"
+
+#. module: project_field_visit
+#: model:ir.model,name:project_field_visit.model_res_partner
+msgid "Contact"
+msgstr "Contacto"
+
+#. module: project_field_visit
+#: model:ir.model.fields,help:project_field_visit.field_project_task__business_partner_id
+msgid ""
+"Contact of the visited business. For a business that is not on the platform "
+"yet (a prospect) this is the only link."
+msgstr ""
+"Contacto del negocio visitado. Para un negocio que aún no está en la "
+"plataforma (un posible adherido) es el único vínculo."
+
+#. module: project_field_visit
+#: model:ir.model,website_form_label:project_field_visit.model_res_partner
+msgid "Create a Customer"
+msgstr "Crear un cliente"
+
+#. module: project_field_visit
+#: model:ir.model,website_form_label:project_field_visit.model_project_task
+msgid "Create a Task"
+msgstr "Crear una tarea"
+
+#. module: project_field_visit
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_field_visit_import_view_form
+msgid "Create phase project"
+msgstr "Crear proyecto de fase"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_import__create_uid
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_log__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_import__create_date
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_log__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "DRY RUN: nothing was changed."
+msgstr "SIMULACIÓN: no se ha cambiado nada."
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_import__display_name
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_log__display_name
+#: model:ir.model.fields,field_description:project_field_visit.field_project_project__display_name
+#: model:ir.model.fields,field_description:project_field_visit.field_project_task__display_name
+#: model:ir.model.fields,field_description:project_field_visit.field_res_company__display_name
+#: model:ir.model.fields,field_description:project_field_visit.field_res_partner__display_name
+msgid "Display Name"
+msgstr "Nombre para mostrar"
+
+#. module: project_field_visit
+#: model:ir.model.fields.selection,name:project_field_visit.selection__project_field_visit_log__outcome__documents
+#: model:ir.model.fields.selection,name:project_field_visit.selection__project_task__field_visit_last_outcome__documents
+msgid "Documents collected or signed"
+msgstr "Documentos recogidos o firmados"
+
+#. module: project_field_visit
+#: model:ir.model.fields.selection,name:project_field_visit.selection__project_field_visit_log__outcome__refused
+#: model:ir.model.fields.selection,name:project_field_visit.selection__project_task__field_visit_last_outcome__refused
+msgid "Does not want to continue"
+msgstr "No quiere continuar"
+
+#. module: project_field_visit
+#: model:ir.model.fields.selection,name:project_field_visit.selection__project_field_visit_import__state__done
+msgid "Done"
+msgstr "Hecho"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Door-to-door consulting - Phase I"
+msgstr "Consultoría puerta a puerta - Fase I"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_project__is_field_visit_project
+#: model:ir.model.fields,field_description:project_field_visit.field_project_task__is_field_visit_project
+msgid "Door-to-door field visits"
+msgstr "Visitas de campo puerta a puerta"
+
+#. module: project_field_visit
+#: model:ir.model.fields.selection,name:project_field_visit.selection__project_field_visit_import__state__draft
+msgid "Draft"
+msgstr "Borrador"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_import__dry_run
+msgid "Dry run"
+msgstr "Simulación"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Duplicate row skipped: %s"
+msgstr "Fila duplicada omitida: %s"
+
+#. module: project_field_visit
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_project_view_form_field_visit
+msgid ""
+"Each task is a business of the platform visited by the consultants; the task"
+" properties are the checklist of this phase."
+msgstr ""
+"Cada tarea es un negocio de la plataforma visitado por los consultores; las "
+"propiedades de la tarea son la lista de comprobación de esta fase."
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_log__attachment_ids
+msgid "Evidence"
+msgstr "Evidencias"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_task__field_visit_import_key
+msgid "Field Visit Import Key"
+msgstr "Clave de importación de visita de campo"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_task__field_visit_import_observations
+msgid "Field Visit Import Observations"
+msgstr "Observaciones importadas de la visita de campo"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/models/project_task.py:0
+#: model:ir.model.fields,field_description:project_field_visit.field_res_company__field_visit_task_count
+#: model:ir.model.fields,field_description:project_field_visit.field_res_partner__field_visit_task_count
+#: model:ir.model.fields,field_description:project_field_visit.field_res_users__field_visit_task_count
+#: model_terms:ir.ui.view,arch_db:project_field_visit.res_company_view_form_field_visit
+#: model_terms:ir.ui.view,arch_db:project_field_visit.res_partner_view_form_field_visit
+msgid "Field visits"
+msgstr "Visitas de campo"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_import__filename
+msgid "Filename"
+msgstr "Nombre del archivo"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Give the new phase project a name."
+msgstr "Ponga un nombre al nuevo proyecto de fase."
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_import__id
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_log__id
+#: model:ir.model.fields,field_description:project_field_visit.field_project_project__id
+#: model:ir.model.fields,field_description:project_field_visit.field_project_task__id
+#: model:ir.model.fields,field_description:project_field_visit.field_res_company__id
+#: model:ir.model.fields,field_description:project_field_visit.field_res_partner__id
+msgid "ID"
+msgstr "ID"
+
+#. module: project_field_visit
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_field_visit_import_view_form
+msgid "Import"
+msgstr "Importar"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/models/project_project.py:0
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+#: model:ir.actions.act_window,name:project_field_visit.action_project_field_visit_import
+#: model:ir.ui.menu,name:project_field_visit.menu_project_field_visit_import
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_field_visit_import_view_form
+msgid "Import field visits"
+msgstr "Importar visitas de campo"
+
+#. module: project_field_visit
+#: model:ir.model,name:project_field_visit.model_project_field_visit_import
+msgid "Import field visits from a spreadsheet"
+msgstr "Importar visitas de campo desde una hoja de cálculo"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Import finished."
+msgstr "Importación terminada."
+
+#. module: project_field_visit
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_project_view_form_field_visit
+msgid "Import spreadsheet"
+msgstr "Importar hoja de cálculo"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_import__write_uid
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_log__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_import__write_date
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_log__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_task__field_visit_last_date
+msgid "Last visit"
+msgstr "Última visita"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_task__field_visit_last_outcome
+msgid "Last visit outcome"
+msgstr "Resultado de la última visita"
+
+#. module: project_field_visit
+#: model:ir.model.fields,help:project_field_visit.field_project_field_visit_log__stage_id
+msgid "Leave empty to keep the task where it is."
+msgstr "Déjelo vacío para mantener la tarea donde está."
+
+#. module: project_field_visit
+#: model:ir.model,name:project_field_visit.model_project_field_visit_log
+msgid "Log a field visit"
+msgstr "Registrar una visita de campo"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/models/project_task.py:0
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_field_visit_log_view_form
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_task_view_form_field_visit
+msgid "Log visit"
+msgstr "Registrar visita"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Matched by exact name: %s"
+msgstr "Encontrados por nombre exacto: %s"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Matched by similar name: %s"
+msgstr "Encontrados por nombre parecido: %s"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Matched by subdomain: %s"
+msgstr "Encontrados por subdominio: %s"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_task__business_website_id
+msgid "Microsite"
+msgstr "Microsite"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_task__business_microsite_url
+msgid "Microsite URL"
+msgstr "URL del microsite"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_import__update_stages
+msgid "Move existing tasks to the spreadsheet section"
+msgstr "Mover las tareas existentes a la sección de la hoja"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_log__stage_id
+msgid "Move to stage"
+msgstr "Mover a la etapa"
+
+#. module: project_field_visit
+#: model_terms:ir.ui.view,arch_db:project_field_visit.field_visit_message
+msgid "Moved to stage:"
+msgstr "Movida a la etapa:"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_import__new_project_name
+msgid "New phase project"
+msgstr "Nuevo proyecto de fase"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "New stages: %s"
+msgstr "Etapas nuevas: %s"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid ""
+"No header row found: the sheet needs at least the columns 'Comercio (razón "
+"social)' or 'Nombre comercial', and 'Subdominio'."
+msgstr ""
+"No se encontró la fila de cabecera: la hoja necesita al menos las columnas "
+"'Comercio (razón social)' o 'Nombre comercial', y 'Subdominio'."
+
+#. module: project_field_visit
+#: model:ir.model.fields.selection,name:project_field_visit.selection__project_field_visit_log__outcome__absent
+#: model:ir.model.fields.selection,name:project_field_visit.selection__project_task__field_visit_last_outcome__absent
+msgid "Nobody available, come back later"
+msgstr "Nadie disponible, volver más tarde"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Not on the platform (prospect contacts): %s"
+msgstr "Fuera de la plataforma (contactos potenciales): %s"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_log__notes
+msgid "Notes"
+msgstr "Notas"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Observations imported from the spreadsheet"
+msgstr "Observaciones importadas de la hoja de cálculo"
+
+#. module: project_field_visit
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_field_visit_import_view_form
+msgid ""
+"One project per phase: its task fields are the checklist\n"
+"                        of that phase. A project without fields gets the phase I\n"
+"                        checklist of the spreadsheet."
+msgstr ""
+"Un proyecto por fase: los campos de sus tareas son la lista de comprobación\n"
+"                        de esa fase. Un proyecto sin campos recibe la lista de la\n"
+"                        fase I de la hoja de cálculo."
+
+#. module: project_field_visit
+#: model:ir.model.fields.selection,name:project_field_visit.selection__project_field_visit_log__outcome__other
+#: model:ir.model.fields.selection,name:project_field_visit.selection__project_task__field_visit_last_outcome__other
+msgid "Other"
+msgstr "Otro"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_log__outcome
+msgid "Outcome"
+msgstr "Resultado"
+
+#. module: project_field_visit
+#: model_terms:ir.ui.view,arch_db:project_field_visit.field_visit_message
+msgid "Outcome:"
+msgstr "Resultado:"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_import__project_id
+msgid "Phase project"
+msgstr "Proyecto de fase"
+
+#. module: project_field_visit
+#: model:ir.model.fields,help:project_field_visit.field_project_field_visit_log__attachment_ids
+msgid "Photos and documents taken during the visit."
+msgstr "Fotos y documentos tomados durante la visita."
+
+#. module: project_field_visit
+#: model:ir.model,name:project_field_visit.model_project_project
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_log__project_id
+msgid "Project"
+msgstr "Proyecto"
+
+#. module: project_field_visit
+#: model:ir.model.fields,help:project_field_visit.field_project_field_visit_import__dry_run
+msgid ""
+"Read the spreadsheet and report what would happen, without changing "
+"anything."
+msgstr "Lee la hoja de cálculo e informa de lo que pasaría, sin cambiar nada."
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid ""
+"Reading .xlsx files needs the openpyxl library, which is not installed. Save"
+" the sheet as .csv and upload that instead."
+msgstr ""
+"Para leer archivos .xlsx hace falta la librería openpyxl, que no está "
+"instalada. Guarde la hoja como .csv y suba ese archivo."
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Rows skipped (no number or no name): %s"
+msgstr "Filas omitidas (sin número o sin nombre): %s"
+
+#. module: project_field_visit
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_field_visit_log_view_form
+msgid "Save visit"
+msgstr "Guardar visita"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_import__file
+msgid "Spreadsheet"
+msgstr "Hoja de cálculo"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_import__state
+msgid "State"
+msgstr "Provincia"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_import__summary
+msgid "Summary"
+msgstr "Resumen"
+
+#. module: project_field_visit
+#: model:ir.model,name:project_field_visit.model_project_task
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_log__task_id
+msgid "Task"
+msgstr "Tarea"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Tasks created: %s"
+msgstr "Tareas creadas: %s"
+
+#. module: project_field_visit
+#: model:ir.model.fields,help:project_field_visit.field_project_project__is_field_visit_project
+#: model:ir.model.fields,help:project_field_visit.field_project_task__is_field_visit_project
+msgid ""
+"Tasks of this project are visits to the businesses of the platform: each "
+"task is linked to the visited business and its microsite, and consultants "
+"log their visits from the task."
+msgstr ""
+"Las tareas de este proyecto son visitas a los negocios de la plataforma: "
+"cada tarea se vincula al negocio visitado y a su microsite, y los "
+"consultores registran sus visitas desde la tarea."
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Tasks updated: %s"
+msgstr "Tareas actualizadas: %s"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "The phase I checklist fields were added to the project."
+msgstr ""
+"Se añadieron al proyecto los campos de la lista de comprobación de la fase "
+"I."
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid ""
+"The project has no checklist fields: the phase I fields would be added."
+msgstr ""
+"El proyecto no tiene campos de lista de comprobación: se añadirían los de la"
+" fase I."
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "This file could not be read as an .xlsx spreadsheet."
+msgstr "No se pudo leer este archivo como hoja de cálculo .xlsx."
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Upload the spreadsheet first."
+msgstr "Primero suba la hoja de cálculo."
+
+#. module: project_field_visit
+#: model:ir.model.fields,help:project_field_visit.field_project_task__display_name
+msgid ""
+"Use these keywords in the title to set new tasks:\n"
+"\n"
+"            #tags Set tags on the task\n"
+"            @user Assign the task to a user\n"
+"            ! Set the task a medium priority\n"
+"            !! Set the task a high priority\n"
+"            !!! Set the task a urgent priority\n"
+"\n"
+"            Make sure to use the right format and order e.g. Improve the configuration screen #feature #v16 @Mitchell !"
+msgstr ""
+"Utiliza estas palabras clave en el título para establecer nuevas tareas:\n"
+"\n"
+"            #etiquetas Asignar etiquetas a la tarea\n"
+"            @usuario Asignar la tarea a un usuario\n"
+"            ! Asignar prioridad media a la tarea\n"
+"            !! Asignar prioridad alta a la tarea\n"
+"            !!! Asignar prioridad urgente a la tarea\n"
+"\n"
+"            Asegúrate de utilizar el formato y el orden correcto, por ejemplo: ¡Mejorar la pantalla de configuración #función #v16 @Mitchell!"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_log__visit_date
+msgid "Visit date"
+msgstr "Fecha de la visita"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_task__business_company_id
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_task_view_form_field_visit
+msgid "Visited business"
+msgstr "Negocio visitado"
+
+#. module: project_field_visit
+#: model:ir.model.fields.selection,name:project_field_visit.selection__project_field_visit_log__outcome__visited
+#: model:ir.model.fields.selection,name:project_field_visit.selection__project_task__field_visit_last_outcome__visited
+msgid "Visited, spoke with the business"
+msgstr "Visitado, se habló con el negocio"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Warnings:"
+msgstr "Avisos:"
+
+#. module: project_field_visit
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_field_visit_log_view_form
+msgid "What happened, what was agreed, what is missing..."
+msgstr "Qué pasó, qué se acordó, qué falta..."

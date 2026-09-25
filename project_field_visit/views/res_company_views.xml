@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <record id="res_company_view_form_field_visit" model="ir.ui.view">
+        <field name="name">res.company.form.field.visit</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form" />
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button
+                    name="action_view_field_visits"
+                    type="object"
+                    class="oe_stat_button"
+                    icon="fa-map-marker"
+                    groups="project.group_project_user"
+                >
+                    <field
+                        name="field_visit_task_count"
+                        string="Field visits"
+                        widget="statinfo"
+                    />
+                </button>
+            </div>
+        </field>
+    </record>
+</odoo>

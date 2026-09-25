@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <record id="project_task_view_form_field_visit" model="ir.ui.view">
+        <field name="name">project.task.form.field.visit</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2" />
+        <field name="arch" type="xml">
+            <xpath expr="//header/field[@name='stage_id']" position="before">
+                <field name="is_field_visit_project" invisible="1" />
+                <button
+                    name="action_log_field_visit"
+                    type="object"
+                    string="Log visit"
+                    class="btn-primary"
+                    icon="fa-map-marker"
+                    invisible="not is_field_visit_project or not id"
+                />
+            </xpath>
+            <span id="end_button_box" position="before">
+                <button
+                    name="action_open_business_microsite"
+                    type="object"
+                    class="oe_stat_button"
+                    icon="fa-globe"
+                    invisible="not is_field_visit_project or not business_microsite_url"
+                >
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Open microsite</span>
+                    </div>
+                </button>
+            </span>
+            <field name="task_properties" position="before">
+                <group
+                    name="field_visit_business"
+                    string="Visited business"
+                    invisible="not is_field_visit_project"
+                >
+                    <group>
+                        <!-- no_open: the business is usually outside the
+                             consultant's companies; the name is enough. -->
+                        <field
+                            name="business_company_id"
+                            options="{'no_open': True, 'no_create': True}"
+                        />
+                        <field
+                            name="business_partner_id"
+                            options="{'no_open': True}"
+                            context="{'default_is_company': True}"
+                        />
+                    </group>
+                    <group>
+                        <field
+                            name="business_website_id"
+                            options="{'no_open': True, 'no_create': True}"
+                            invisible="not business_company_id"
+                        />
+                        <field
+                            name="business_microsite_url"
+                            widget="url"
+                            invisible="not business_microsite_url"
+                        />
+                        <field
+                            name="field_visit_last_date"
+                            invisible="not field_visit_last_date"
+                        />
+                        <field
+                            name="field_visit_last_outcome"
+                            invisible="not field_visit_last_outcome"
+                        />
+                    </group>
+                </group>
+            </field>
+        </field>
+    </record>
+
+    <record id="project_task_view_kanban_field_visit" model="ir.ui.view">
+        <field name="name">project.task.kanban.field.visit</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_kanban" />
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="is_field_visit_project" invisible="1" />
+                <field
+                    name="business_name"
+                    invisible="not is_field_visit_project or not business_name"
+                    class="fw-semibold"
+                />
+                <field
+                    name="business_microsite_url"
+                    widget="url"
+                    invisible="not is_field_visit_project or not business_microsite_url"
+                />
+                <field
+                    name="field_visit_last_date"
+                    widget="date"
+                    invisible="not is_field_visit_project or not field_visit_last_date"
+                />
+            </field>
+        </field>
+    </record>
+
+    <record id="project_task_view_list_field_visit" model="ir.ui.view">
+        <field name="name">project.task.list.field.visit</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.project_task_view_tree_main_base" />
+        <field name="arch" type="xml">
+            <field name="project_id" position="after">
+                <field name="business_name" optional="show" />
+                <field name="field_visit_last_date" optional="hide" />
+                <field name="field_visit_last_outcome" optional="hide" />
+            </field>
+        </field>
+    </record>
+
+    <record id="project_task_view_search_field_visit" model="ir.ui.view">
+        <field name="name">project.task.search.field.visit</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_search_form" />
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="business_name" />
+            </field>
+        </field>
+    </record>
+</odoo>

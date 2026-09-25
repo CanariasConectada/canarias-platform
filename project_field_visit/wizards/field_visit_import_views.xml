@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <record id="project_field_visit_import_view_form" model="ir.ui.view">
+        <field name="name">project.field.visit.import.form</field>
+        <field name="model">project.field.visit.import</field>
+        <field name="arch" type="xml">
+            <form string="Import field visits">
+                <field name="state" invisible="1" />
+                <div invisible="state != 'draft'">
+                    <p class="text-muted">
+                        One project per phase: its task fields are the checklist
+                        of that phase. A project without fields gets the phase I
+                        checklist of the spreadsheet.
+                    </p>
+                    <group>
+                        <field
+                            name="project_id"
+                            options="{'no_create': True}"
+                        />
+                        <label for="new_project_name" invisible="project_id" />
+                        <div class="d-flex gap-2" invisible="project_id">
+                            <field name="new_project_name" />
+                            <button
+                                name="action_create_phase_project"
+                                type="object"
+                                string="Create phase project"
+                                class="btn-secondary"
+                            />
+                        </div>
+                        <field name="file" filename="filename" />
+                        <field name="filename" invisible="1" />
+                        <field name="dry_run" />
+                        <field name="update_stages" />
+                    </group>
+                </div>
+                <div invisible="state != 'done'">
+                    <field name="summary" nolabel="1" class="font-monospace" />
+                </div>
+                <footer>
+                    <button
+                        name="action_import"
+                        type="object"
+                        string="Import"
+                        class="btn-primary"
+                        invisible="state != 'draft'"
+                    />
+                    <button
+                        name="action_back"
+                        type="object"
+                        string="Back"
+                        class="btn-primary"
+                        invisible="state != 'done'"
+                    />
+                    <button special="cancel" string="Close" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_project_field_visit_import" model="ir.actions.act_window">
+        <field name="name">Import field visits</field>
+        <field name="res_model">project.field.visit.import</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>
