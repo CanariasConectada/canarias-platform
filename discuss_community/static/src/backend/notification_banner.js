@@ -4,6 +4,7 @@
 import {Component, useState} from "@odoo/owl";
 import {DiscussClientAction} from "@mail/core/public_web/discuss_client_action";
 import {browser} from "@web/core/browser/browser";
+import {patch} from "@web/core/utils/patch";
 import {useService} from "@web/core/utils/hooks";
 
 /** sessionStorage key: dismissed for this browser session only. */
@@ -61,7 +62,6 @@ export class DiscussNotificationBanner extends Component {
     }
 }
 
-DiscussClientAction.components = {
-    ...DiscussClientAction.components,
-    DiscussNotificationBanner,
-};
+patch(DiscussClientAction, {
+    components: {...DiscussClientAction.components, DiscussNotificationBanner},
+});

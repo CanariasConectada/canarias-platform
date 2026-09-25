@@ -12,6 +12,12 @@
 - Global record rules: a guest reads only the channels it is a member of and
   the open public channels, never "general" or "Administrators", and cannot
   join them. Non-guests are untouched.
+- Global read rule on channel members: in a `channel` a guest reads only its
+  own membership row (no roster of the community channel by RPC); in chats
+  and groups it belongs to it reads the other members; nothing in the staff
+  channels.
+- Changing `is_community_guest` on an existing user clears the registry cache,
+  so the cached rule domains follow.
 - Migration: existing guests leave "general", "Administrators" and their
   OdooBot chat; OdooBot is disabled for them.
 - "Turn on notifications" banner at the top of Discuss for every user until

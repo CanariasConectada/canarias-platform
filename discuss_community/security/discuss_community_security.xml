@@ -60,4 +60,33 @@
         <field name="perm_create" eval="True"/>
     </record>
 
+    <!--
+        Who is in a channel. Core lets every internal user read the members of
+        any open channel (`ir_rule_discuss_channel_member_read_all`), which
+        for a guest would mean the whole roster of "Canarias Conectada",
+        merchants included, one RPC away. A guest reads:
+          * in a `channel`: only its OWN membership row;
+          * in a chat or group it belongs to: the other members, since the
+            conversation is named after them;
+          * nothing at all in the staff channels.
+    -->
+    <record id="rule_discuss_channel_member_community_guest_read" model="ir.rule">
+        <field name="name">discuss.channel.member: community guests only read their own rows in channels</field>
+        <field name="model_id" ref="mail.model_discuss_channel_member"/>
+        <field name="domain_force">
+            [(1, "=", 1)] if not user.is_community_guest else [
+                ("channel_id", "not in", user.community_hidden_channel_ids.ids),
+                "|",
+                    ("is_self", "=", True),
+                    "&amp;",
+                        ("channel_id.channel_type", "!=", "channel"),
+                        ("channel_id.is_member", "=", True),
+            ]
+        </field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="perm_create" eval="False"/>
+    </record>
+
 </odoo>

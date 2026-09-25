@@ -23,6 +23,10 @@ registry.category("web_tour.tours").add("discuss_community_guest_profile", {
         {trigger: `${HEADER}:not(:has(.o-mail-ActionList-button))`},
         {trigger: ".o-mail-DiscussContent:not(:has(.o-discuss-ChannelMemberList))"},
         {trigger: ".o-mail-DiscussSearch:not(:has(button[data-hotkey='m']))"},
+        // Posting still works with the guest member rules in place.
+        {trigger: ".o-mail-Composer-input", run: "edit Hello from the DCM guest"},
+        {trigger: ".o-mail-Composer-input", run: "press Enter"},
+        {trigger: ".o-mail-Message-body:contains('Hello from the DCM guest')"},
         {trigger: ".o_dc_notification_banner_dismiss", run: "click"},
         {trigger: "body:not(:has(.o_dc_notification_banner))"},
     ],

@@ -108,6 +108,92 @@ class TestCommunityGuestChannels(GuestProfileMixin, TransactionCase):
 
 
 @tagged("post_install", "-at_install")
+class TestCommunityGuestMembers(GuestProfileMixin, TransactionCase):
+    """Who a community guest can see in a channel, through plain RPC."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls._setup_guest_profile_fixtures()
+        # Somebody else in the guest's channels: the employee is seated in the
+        # general community channel by the zone sync, the member in both.
+        cls.chat = (
+            cls.env["discuss.channel"]
+            .with_user(cls.employee)
+            ._get_or_create_chat(partners_to=cls.guest.partner_id.ids)
+        )
+
+    def _rpc_members(self, user, channel):
+        rows = (
+            self.env["discuss.channel.member"]
+            .with_user(user)
+            .search_read([("channel_id", "=", channel.id)], ["partner_id"])
+        )
+        return {row["partner_id"][0] for row in rows if row["partner_id"]}
+
+    def test_guest_reads_only_its_own_row_in_a_channel(self):
+        everyone = set(self.channel_general.sudo().channel_member_ids.partner_id.ids)
+        self.assertIn(self.employee.partner_id.id, everyone)
+        self.assertIn(self.member.partner_id.id, everyone)
+        self.assertEqual(
+            self._rpc_members(self.guest, self.channel_general),
+            {self.guest.partner_id.id},
+        )
+        self.assertEqual(
+            self._rpc_members(self.guest, self.channel_guanarteme),
+            {self.guest.partner_id.id},
+        )
+        # And no roster of channels it is not in either.
+        self.assertFalse(self._rpc_members(self.guest, self.channel_tamaraceite))
+
+    def test_guest_reads_the_members_of_its_chats(self):
+        self.assertEqual(
+            self._rpc_members(self.guest, self.chat),
+            {self.guest.partner_id.id, self.employee.partner_id.id},
+        )
+
+    def test_guest_reads_nothing_of_staff_channels(self):
+        self.employees_channel.sudo()._add_members(
+            partners=self.guest.partner_id, post_joined_message=False
+        )
+        self.assertFalse(self._rpc_members(self.guest, self.employees_channel))
+
+    def test_employee_still_reads_the_roster(self):
+        self.assertEqual(
+            self._rpc_members(self.employee, self.channel_general),
+            set(self.channel_general.sudo().channel_member_ids.partner_id.ids),
+        )
+
+    def test_flag_change_refreshes_the_cached_rules(self):
+        """Rule domains are cached per user: flipping the flag must reset them."""
+        self.assertIn(
+            self.employee.partner_id.id,
+            self._rpc_members(self.employee, self.channel_general),
+        )
+        self.assertTrue(
+            self.env["discuss.channel"]
+            .with_user(self.employee)
+            .search([("id", "=", self.employees_channel.id)])
+        )
+        self.employee.is_community_guest = True
+        self.assertEqual(
+            self._rpc_members(self.employee, self.channel_general),
+            {self.employee.partner_id.id},
+        )
+        self.assertFalse(
+            self.env["discuss.channel"]
+            .with_user(self.employee)
+            .search([("id", "=", self.employees_channel.id)])
+        )
+        self.employee.is_community_guest = False
+        self.assertTrue(
+            self.env["discuss.channel"]
+            .with_user(self.employee)
+            .search([("id", "=", self.employees_channel.id)])
+        )
+
+
+@tagged("post_install", "-at_install")
 class TestCommunityGuestProfile(GuestProfileMixin, TransactionCase):
     """Menus, OdooBot and the one-time cleanup of existing guests."""
 

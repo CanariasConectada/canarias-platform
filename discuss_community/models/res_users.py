@@ -243,6 +243,19 @@ class ResUsers(models.Model):
             vals["action_id"] = action.id
         return self.sudo().with_context(no_reset_password=True).create(vals)
 
+    def write(self, vals):
+        """Drop the cached record-rule domains when a user changes population.
+
+        The guest record rules branch on ``user.is_community_guest`` and
+        ``ir.rule._compute_domain`` caches the evaluated domain per user, so
+        flipping the flag on an existing account would otherwise keep
+        applying the old rules until the next restart.
+        """
+        result = super().write(vals)
+        if "is_community_guest" in vals:
+            self.env.registry.clear_cache()
+        return result
+
     def _notify_security_setting_update(self, subject, content, **kwargs):
         """Never warn a community guest that their password changed.
 
