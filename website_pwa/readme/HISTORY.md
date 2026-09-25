@@ -10,7 +10,8 @@
 - `pwa_install.js`: reveals and hides EVERY install card on the page instead of
   the first one only; exports `isIOS()` and `isStandalone()`; detects iPadOS,
   which reports itself as a Mac and was sent down the Android branch; hides
-  the cards on `appinstalled`.
+  the cards on `appinstalled`; registering the worker can no longer throw or
+  leave an unhandled rejection when the browser blocks service workers.
 - Tests pinning the manifest, the website worker and core's backend worker to
   each other: start_url inside the scope, `Service-Worker-Allowed` equal to
   the scope, the page registering the served worker with that scope, `/odoo`

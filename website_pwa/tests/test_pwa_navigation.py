@@ -78,7 +78,7 @@ class TestPWAConsistency(HttpCase):
         with file_open("website_pwa/static/src/js/pwa_install.js") as f:
             script = f.read()
         match = re.search(
-            r'serviceWorker\.register\("([^"]+)",\s*\{scope:\s*"([^"]+)"\}\)', script
+            r'serviceWorker\s*\.register\("([^"]+)",\s*\{scope:\s*"([^"]+)"\}\)', script
         )
         self.assertTrue(match, "the page script no longer registers the worker")
         self.assertEqual(match.group(1), SERVICE_WORKER_PATH)
@@ -171,9 +171,31 @@ class TestBackendHomeEntry(HttpCase):
             login=login,
         )
 
-    def test_administrator_sees_the_home_entry_in_discuss(self):
-        _make_user(self.env, "pwa_nav_admin", "base.group_system")
-        self._assert_home_entry("pwa_nav_admin")
+    def test_home_entry_is_registered_for_everybody(self):
+        """Cheap half of the check: the component is registered in the
+        systray and the user menu with no group condition (no
+        `isDisplayed`, no `hide`), and its template is the one the bundle
+        ships. The browser test below covers that it actually renders."""
+        with file_open(HOME_SYSTRAY_JS) as handle:
+            script = handle.read()
+        with file_open(HOME_SYSTRAY_XML) as handle:
+            templates = handle.read()
+        self.assertRegex(
+            script,
+            r'category\("systray"\)\s*\.add\("website_pwa\.canarias_home",\s*'
+            r"canariasHomeSystrayItem",
+        )
+        self.assertRegex(
+            script,
+            r'category\("user_menuitems"\)\s*\.add\("website_pwa\.canarias_home",\s*'
+            r"canariasHomeUserMenuItem",
+        )
+        self.assertNotIn("isDisplayed", script)
+        self.assertNotIn("hide:", script)
+        template = re.search(r'static template = "([^"]+)"', script).group(1)
+        self.assertIn(f't-name="{template}"', templates)
+        self.assertRegex(templates, r't-att-href="homeUrl"')
+        self.assertIn('export const CANARIAS_HOME_URL = "/";', script)
 
     def test_plain_internal_user_sees_the_home_entry(self):
         """Not a website-editor feature: every internal user needs the way

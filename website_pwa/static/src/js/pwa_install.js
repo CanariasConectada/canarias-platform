@@ -85,15 +85,25 @@ export class PWAInstall extends Interaction {
     }
 
     registerServiceWorker() {
-        if (!("serviceWorker" in navigator)) {
-            return;
-        }
         // The manifest link is only rendered when the website has the app
         // enabled, so its absence is the signal to do nothing at all.
         if (!document.querySelector('link[rel="manifest"]')) {
             return;
         }
-        navigator.serviceWorker.register("/service-worker.js", {scope: "/"});
+        // Never let the app plumbing break the page it sits on (the login
+        // page first of all): the accessor can throw in some privacy modes,
+        // and a refused registration must not surface as an unhandled
+        // rejection.
+        try {
+            if (!navigator.serviceWorker) {
+                return;
+            }
+            navigator.serviceWorker
+                .register("/service-worker.js", {scope: "/"})
+                .catch((error) => console.warn("PWA: service worker not registered", error));
+        } catch (error) {
+            console.warn("PWA: service workers unavailable", error);
+        }
     }
 
     isStandalone() {
