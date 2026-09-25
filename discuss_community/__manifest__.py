@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Discuss Community",
-    "version": "19.0.1.3.0",
+    "version": "19.0.1.4.0",
     "category": "Discuss",
     "summary": "Community members (residents and walk-in guests) as internal "
     "users whose whole backend is Discuss",
@@ -46,12 +46,27 @@
         # non-routable login domain constant, the signed reuse-cookie pattern
         # and the branded card styling the /community page reuses.
         "website_login_branding",
+        # `odoobot_state` and the first-load OdooBot onboarding this module
+        # switches off for guests.
+        "mail_bot",
     ],
     "data": [
         "security/discuss_community_groups.xml",
+        "security/discuss_community_security.xml",
         "data/ir_cron.xml",
         "views/community_templates.xml",
     ],
+    "assets": {
+        # The guest profile of Discuss (hidden calls, member list and header
+        # actions; the community channel opened on arrival) and the
+        # notifications banner every user sees until they allow them.
+        "web.assets_backend": [
+            "discuss_community/static/src/backend/**/*",
+        ],
+        "web.assets_tests": [
+            "discuss_community/static/tests/tours/**/*",
+        ],
+    },
     "installable": True,
     "application": False,
     "auto_install": False,

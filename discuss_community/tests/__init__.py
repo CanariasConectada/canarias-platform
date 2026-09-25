@@ -3,6 +3,7 @@
 
 from . import (
     test_community_guest,
+    test_community_guest_profile,
     test_community_http,
     test_community_members,
     test_community_security,

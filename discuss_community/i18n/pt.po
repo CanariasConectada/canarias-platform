@@ -8,7 +8,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
-"Language: es\n"
+"Language: pt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
@@ -21,40 +21,39 @@ msgid ""
 "guest' button. Internal (Discuss-only), reused via a signed cookie and "
 "garbage-collected once idle. Never set this by hand."
 msgstr ""
-"Cuenta anónima desechable creada desde el botón «Entrar como invitado» de la"
-" página de la comunidad. Interna (solo Conversaciones), reutilizada mediante"
-" una cookie firmada y eliminada cuando queda inactiva. No la marques nunca a"
-" mano."
+"Conta anónima descartável criada a partir do botão «Entrar como convidado» "
+"da página da comunidade. Interna (só Conversas), reutilizada através de um "
+"cookie assinado e eliminada quando fica inativa. Nunca a defina à mão."
 
 #. module: discuss_community
 #: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
 msgid "Chat with your neighbourhood: no forms, no waiting."
-msgstr "Chatea con tu barrio: sin formularios, sin esperas."
+msgstr "Converse com o seu bairro: sem formulários, sem esperas."
 
 #. module: discuss_community
 #: model:ir.model.fields,field_description:discuss_community.field_res_users__is_community_guest
 msgid "Community Guest"
-msgstr "Invitado de la comunidad"
+msgstr "Convidado da comunidade"
 
 #. module: discuss_community
 #: model:res.groups,name:discuss_community.group_community_member
 msgid "Community Member"
-msgstr "Miembro de la comunidad"
+msgstr "Membro da comunidade"
 
 #. module: discuss_community
 #: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
 msgid "Create my account"
-msgstr "Crear mi cuenta"
+msgstr "Criar a minha conta"
 
 #. module: discuss_community
 #: model:ir.actions.server,name:discuss_community.cron_gc_community_guests_ir_actions_server
 msgid "Discuss Community: purge idle guest accounts"
-msgstr "Comunidad de Conversaciones: purgar cuentas de invitado inactivas"
+msgstr "Comunidade de Conversas: limpar contas de convidado inativas"
 
 #. module: discuss_community
 #: model:ir.model,name:discuss_community.model_discuss_channel
 msgid "Discussion Channel"
-msgstr "Canal de conversación"
+msgstr "Canal de discussão"
 
 #. module: discuss_community
 #: model:ir.model.fields,field_description:discuss_community.field_discuss_channel__display_name
@@ -62,34 +61,34 @@ msgstr "Canal de conversación"
 #: model:ir.model.fields,field_description:discuss_community.field_ir_ui_menu__display_name
 #: model:ir.model.fields,field_description:discuss_community.field_res_users__display_name
 msgid "Display Name"
-msgstr "Nombre mostrado"
+msgstr "Nome exibido"
 
 #. module: discuss_community
 #. odoo-javascript
 #: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
 msgid "Enable notifications"
-msgstr "Activar notificaciones"
+msgstr "Ativar notificações"
 
 #. module: discuss_community
 #: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
 msgid "Enter as guest"
-msgstr "Entrar como invitado"
+msgstr "Entrar como convidado"
 
 #. module: discuss_community
 #: model:ir.model,name:discuss_community.model_ir_http
 msgid "HTTP Routing"
-msgstr "Enrutamiento HTTP"
+msgstr "Encaminhamento HTTP"
 
 #. module: discuss_community
 #: model:ir.model.fields,field_description:discuss_community.field_res_users__community_hidden_channel_ids
 msgid "Hidden Staff Channels"
-msgstr "Canales del equipo ocultos"
+msgstr "Canais da equipa ocultos"
 
 #. module: discuss_community
 #. odoo-javascript
 #: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
 msgid "Hide for now"
-msgstr "Ocultar por ahora"
+msgstr "Ocultar por agora"
 
 #. module: discuss_community
 #: model:ir.model.fields,field_description:discuss_community.field_discuss_channel__id
@@ -102,23 +101,23 @@ msgstr "ID"
 #. module: discuss_community
 #: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
 msgid "Join the community"
-msgstr "Únete a la comunidad"
+msgstr "Junte-se à comunidade"
 
 #. module: discuss_community
 #: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
 msgid "Log out and continue"
-msgstr "Cerrar sesión y continuar"
+msgstr "Terminar sessão e continuar"
 
 #. module: discuss_community
 #: model:ir.model,name:discuss_community.model_ir_ui_menu
 msgid "Menu"
-msgstr "Menú"
+msgstr "Menu"
 
 #. module: discuss_community
 #. odoo-javascript
 #: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
 msgid "Notifications are blocked."
-msgstr "Las notificaciones están bloqueadas."
+msgstr "As notificações estão bloqueadas."
 
 #. module: discuss_community
 #: model:res.groups,comment:discuss_community.group_community_member
@@ -128,10 +127,10 @@ msgid ""
 "            Discuss; the group is set automatically by website signup and by\n"
 "            the guest entry button, never by hand."
 msgstr ""
-"Vecinos e invitados ocasionales del chat de la comunidad. Son usuarios "
-"internos cuyo backend se reduce a Conversaciones; el grupo lo asignan "
-"automáticamente el registro en la web y el botón de entrada como invitado, "
-"nunca a mano."
+"Residentes e convidados ocasionais do chat da comunidade. São utilizadores "
+"internos cujo backend se reduz a Conversas; o grupo é atribuído "
+"automaticamente pelo registo no site e pelo botão de entrada como convidado,"
+" nunca à mão."
 
 #. module: discuss_community
 #: model:ir.model.fields,help:discuss_community.field_res_users__community_hidden_channel_ids
@@ -140,9 +139,9 @@ msgid ""
 "there by mistake. Read by the guest channel record rules; empty for "
 "everybody who is not a community guest."
 msgstr ""
-"Canales del equipo que un invitado de la comunidad nunca puede leer ni "
-"unirse, aunque esté dentro por error. Lo leen las reglas de registro de "
-"canales para invitados; vacío para quien no es invitado de la comunidad."
+"Canais da equipa que um convidado da comunidade nunca pode ler nem aderir, "
+"mesmo que lá esteja por engano. Lido pelas regras de registo dos canais para"
+" convidados; vazio para quem não é convidado da comunidade."
 
 #. module: discuss_community
 #. odoo-javascript
@@ -152,33 +151,32 @@ msgid ""
 "browser settings (the icon next to the address bar) or in your device "
 "settings, then reload the page."
 msgstr ""
-"Para enterarte de los mensajes nuevos, permite las notificaciones de este "
-"sitio en los ajustes del navegador (el icono junto a la barra de "
-"direcciones) o en los ajustes del dispositivo, y vuelve a cargar la página."
+"Para ser avisado de novas mensagens, permita as notificações deste site nas "
+"definições do navegador (o ícone junto à barra de endereço) ou nas "
+"definições do dispositivo e recarregue a página."
 
 #. module: discuss_community
 #. odoo-javascript
 #: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
 msgid "Turn on notifications."
-msgstr "Activa las notificaciones."
+msgstr "Ative as notificações."
 
 #. module: discuss_community
 #: model:ir.model,name:discuss_community.model_res_users
 msgid "User"
-msgstr "Usuario"
+msgstr "Utilizador"
 
 #. module: discuss_community
 #: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
 msgid ""
 "With an account you keep your name and your conversations on every visit."
-msgstr ""
-"Con una cuenta conservas tu nombre y tus conversaciones en cada visita."
+msgstr "Com uma conta mantém o seu nome e as suas conversas em cada visita."
 
 #. module: discuss_community
 #. odoo-javascript
 #: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
 msgid "You will know when someone answers you, even with this page closed."
-msgstr "Sabrás cuándo alguien te responde, incluso con esta página cerrada."
+msgstr "Saberá quando alguém lhe responde, mesmo com esta página fechada."
 
 #. module: discuss_community
 #: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
@@ -186,5 +184,5 @@ msgid ""
 "Your current account is not a community account. Log out first, then come "
 "back in as a guest or create a community account."
 msgstr ""
-"Tu cuenta actual no es una cuenta de la comunidad. Cierra sesión primero y "
-"vuelve a entrar como invitado o crea una cuenta de la comunidad."
+"A sua conta atual não é uma conta da comunidade. Termine primeiro a sessão e"
+" volte a entrar como convidado ou crie uma conta da comunidade."

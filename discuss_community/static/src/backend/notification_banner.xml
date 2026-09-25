@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<templates xml:space="preserve">
+
+    <t t-name="discuss_community.DiscussNotificationBanner">
+        <div t-if="isVisible" class="o_dc_notification_banner alert d-flex align-items-center gap-2 m-0 rounded-0 border-0 border-bottom py-2 px-3" t-att-class="isDenied ? 'alert-warning' : 'alert-info'" role="status">
+            <i class="fa fa-bell flex-shrink-0" aria-hidden="true"/>
+            <div class="flex-grow-1 small">
+                <t t-if="isDenied">
+                    <strong>Notifications are blocked.</strong>
+                    To be told about new messages, allow notifications for this site in your browser settings (the icon next to the address bar) or in your device settings, then reload the page.
+                </t>
+                <t t-else="">
+                    <strong>Turn on notifications.</strong>
+                    You will know when someone answers you, even with this page closed.
+                </t>
+            </div>
+            <button t-if="!isDenied" type="button" class="o_dc_notification_banner_enable btn btn-sm btn-primary flex-shrink-0" t-on-click="onClickEnable">Enable notifications</button>
+            <button type="button" class="o_dc_notification_banner_dismiss btn btn-sm btn-link text-reset flex-shrink-0 p-1" title="Hide for now" aria-label="Hide for now" t-on-click="onClickDismiss">
+                <i class="oi oi-close" aria-hidden="true"/>
+            </button>
+        </div>
+    </t>
+
+    <!-- A column wrapper, so the banner sits above Discuss and Discuss keeps
+         the whole remaining height. -->
+    <t t-inherit="mail.DiscussClientAction" t-inherit-mode="extension">
+        <xpath expr="//Discuss" position="replace">
+            <div class="o_dc_discuss_wrapper d-flex flex-column h-100 w-100">
+                <DiscussNotificationBanner/>
+                <div class="o_dc_discuss_body d-flex flex-grow-1">
+                    <Discuss/>
+                </div>
+            </div>
+        </xpath>
+    </t>
+
+</templates>

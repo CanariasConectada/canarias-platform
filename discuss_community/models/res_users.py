@@ -23,6 +23,15 @@ DISCUSS_ACTION_XMLID = "mail.action_discuss"
 # populations should age out at the same speed.
 COMMUNITY_GUEST_STALE_DAYS = 7
 
+# The staff channels ``mail`` seeds: "general" (every employee) and
+# "Administrators". A community guest is internal, so core would let it read
+# and join the first; the guest record rules and the guest cleanup keep it out
+# of both.
+STAFF_CHANNEL_XMLIDS = ("mail.channel_all_employees", "mail.channel_admin")
+
+# The one channel a community guest opens on after login.
+COMMUNITY_DEFAULT_CHANNEL_XMLID = "discuss_channel_zone.channel_canarias"
+
 
 class ResUsers(models.Model):
     """Community members: internal users whose whole backend is Discuss.
@@ -58,6 +67,30 @@ class ResUsers(models.Model):
         "signed cookie and garbage-collected once idle. Never set this "
         "by hand.",
     )
+
+    community_hidden_channel_ids = fields.Many2many(
+        comodel_name="discuss.channel",
+        string="Hidden Staff Channels",
+        compute="_compute_community_hidden_channel_ids",
+        help="Staff channels a community guest may never read or join, even "
+        "when seated there by mistake. Read by the guest channel record "
+        "rules; empty for everybody who is not a community guest.",
+    )
+
+    @api.depends("is_community_guest")
+    def _compute_community_hidden_channel_ids(self):
+        """The staff channels, for guests only; nothing for anybody else.
+
+        Non-stored on purpose: the record rules read it once per user and the
+        rule domain is then cached (``ir.rule._compute_domain``), so the only
+        thing that matters is that the ids are stable -- and they are: they
+        are the two channels ``mail`` seeds, resolved by xmlid.
+        """
+        hidden = self._community_staff_channels()
+        for user in self:
+            user.community_hidden_channel_ids = (
+                hidden if user.is_community_guest else self.env["discuss.channel"]
+            )
 
     # ------------------------------------------------------------------
     # The shape of a community member
@@ -201,11 +234,27 @@ class ResUsers(models.Model):
             "group_ids": [(6, 0, self._community_group_ids())],
             "notification_type": "email",
             "is_community_guest": True,
+            # Never onboarded by OdooBot: a throwaway resident account has no
+            # use for a tour of the employee chat features.
+            "odoobot_state": "disabled",
             "chat_zone": self.env["res.company"].sudo()._normalise_zone(zone),
         }
         if action:
             vals["action_id"] = action.id
         return self.sudo().with_context(no_reset_password=True).create(vals)
+
+    def write(self, vals):
+        """Drop the cached record-rule domains when a user changes population.
+
+        The guest record rules branch on ``user.is_community_guest`` and
+        ``ir.rule._compute_domain`` caches the evaluated domain per user, so
+        flipping the flag on an existing account would otherwise keep
+        applying the old rules until the next restart.
+        """
+        result = super().write(vals)
+        if "is_community_guest" in vals:
+            self.env.registry.clear_cache()
+        return result
 
     def _notify_security_setting_update(self, subject, content, **kwargs):
         """Never warn a community guest that their password changed.
@@ -226,6 +275,108 @@ class ResUsers(models.Model):
         return super(ResUsers, recipients)._notify_security_setting_update(
             subject, content, **kwargs
         )
+
+    # ------------------------------------------------------------------
+    # The guest profile: no OdooBot, no staff channels
+    # ------------------------------------------------------------------
+
+    def _on_webclient_bootstrap(self):
+        """Keep OdooBot away from community guests.
+
+        ``mail_bot`` opens a DM with OdooBot on the first backend load of any
+        internal user whose ``odoobot_state`` is still unset
+        (``mail_bot/models/res_users.py``). New guests are born ``disabled``;
+        this covers guests created before that, or by any other path, by
+        disabling the bot BEFORE the core hook decides.
+        """
+        if self.is_community_guest and self.odoobot_state in (
+            False,
+            "not_initialized",
+        ):
+            self.sudo().odoobot_state = "disabled"
+        return super()._on_webclient_bootstrap()
+
+    @api.model
+    def _community_staff_channels(self):
+        """The staff channels ``mail`` seeds that are installed, as a recordset."""
+        channels = self.env["discuss.channel"]
+        for xmlid in STAFF_CHANNEL_XMLIDS:
+            channel = self.env.ref(xmlid, raise_if_not_found=False)
+            if channel:
+                channels |= channel
+        return channels
+
+    @api.model
+    def _community_default_channel(self):
+        """The channel a community guest opens on, or an empty recordset."""
+        channel = self.env.ref(
+            COMMUNITY_DEFAULT_CHANNEL_XMLID, raise_if_not_found=False
+        )
+        return channel.sudo() if channel else self.env["discuss.channel"]
+
+    @api.model
+    def _cleanup_community_guests(self):
+        """Bring existing guests to the guest profile. Returns counters.
+
+        Idempotent, and run by the module migration: the create path and the
+        auto-subscription carve-out already keep NEW guests clean, this fixes
+        the ones seated before they existed.
+
+        * **Staff channels.** Memberships in "general" and "Administrators"
+          are removed (plain ``unlink``, silent: core posts no leave notice on
+          a ``channel``).
+        * **OdooBot.** The guest leaves its DM with OdooBot (its member row is
+          removed, the conversation itself is kept for OdooBot's side) and the
+          bot is disabled so the DM is never re-created.
+        """
+        guests = (
+            self.sudo()
+            .with_context(active_test=False)
+            .search([("is_community_guest", "=", True)])
+        )
+        counters = {"staff_seats": 0, "odoobot_chats": 0, "odoobot_disabled": 0}
+        if not guests:
+            return counters
+        member_model = self.env["discuss.channel.member"].sudo()
+        staff_channels = self.sudo()._community_staff_channels()
+        if staff_channels:
+            staff_seats = member_model.search(
+                [
+                    ("channel_id", "in", staff_channels.ids),
+                    ("partner_id", "in", guests.partner_id.ids),
+                ]
+            )
+            counters["staff_seats"] = len(staff_seats)
+            staff_seats.unlink()
+
+        odoobot = self.env.ref("base.partner_root", raise_if_not_found=False)
+        if odoobot:
+            bot_chats = member_model.search(
+                [
+                    ("channel_id.channel_type", "=", "chat"),
+                    ("partner_id", "=", odoobot.id),
+                ]
+            ).channel_id
+            guest_seats = member_model.search(
+                [
+                    ("channel_id", "in", bot_chats.ids),
+                    ("partner_id", "in", guests.partner_id.ids),
+                ]
+            )
+            counters["odoobot_chats"] = len(guest_seats)
+            guest_seats.unlink()
+
+        to_disable = guests.filtered(lambda user: user.odoobot_state != "disabled")
+        counters["odoobot_disabled"] = len(to_disable)
+        if to_disable:
+            to_disable.write({"odoobot_state": "disabled"})
+        _logger.info(
+            "discuss_community: guest cleanup removed %(staff_seats)s staff "
+            "seats and %(odoobot_chats)s OdooBot chats, disabled OdooBot for "
+            "%(odoobot_disabled)s guests",
+            counters,
+        )
+        return counters
 
     # ------------------------------------------------------------------
     # Garbage collection (daily cron)

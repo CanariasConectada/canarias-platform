@@ -44,4 +44,22 @@ class IrUiMenu(models.Model):
             # empty backend.
             return visible
         allowed = self.sudo().search([("id", "child_of", discuss_root.id)])
+        if user.is_community_guest:
+            allowed -= self._community_guest_hidden_menus()
         return frozenset(visible & set(allowed.ids))
+
+    @api.model
+    def _community_guest_hidden_menus(self):
+        """Discuss menus a community GUEST does not get, children included.
+
+        Only the Discuss "Configuration" subtree (notification settings,
+        voice & video, canned responses, roles): it configures the staff side
+        of Discuss and has nothing a throwaway visitor account can use.
+        Filtered here and not with ``group_ids`` on the menu, because a group
+        on a core menu would hide it from EVERY user outside that group --
+        merchants and registered residents included.
+        """
+        config = self.env.ref("mail.menu_configuration", raise_if_not_found=False)
+        if not config:
+            return self.browse()
+        return self.sudo().search([("id", "child_of", config.id)])
