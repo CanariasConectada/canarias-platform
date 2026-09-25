@@ -16,6 +16,7 @@
                     class="btn-primary"
                     icon="fa-map-marker"
                     invisible="not is_field_visit_project or not id"
+                    groups="project_field_visit.group_field_visit_consultant"
                 />
             </xpath>
             <span id="end_button_box" position="before">
@@ -25,6 +26,7 @@
                     class="oe_stat_button"
                     icon="fa-globe"
                     invisible="not is_field_visit_project or not business_microsite_url"
+                    groups="project_field_visit.group_field_visit_consultant"
                 >
                     <div class="o_stat_info">
                         <span class="o_stat_text">Open microsite</span>
@@ -36,6 +38,7 @@
                     name="field_visit_business"
                     string="Visited business"
                     invisible="not is_field_visit_project"
+                    groups="project_field_visit.group_field_visit_consultant"
                 >
                     <group>
                         <!-- no_open: the business is usually outside the
@@ -47,7 +50,7 @@
                         <field
                             name="business_partner_id"
                             options="{'no_open': True}"
-                            context="{'default_is_company': True}"
+                            context="{'default_is_company': True, 'default_is_field_visit_prospect': True}"
                         />
                     </group>
                     <group>

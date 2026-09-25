@@ -4,7 +4,7 @@
     "name": "Project Field Visits",
     "summary": "Door-to-door consultant visits to the platform businesses, "
     "one project per phase with its own checklist fields",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.1.0",
     "author": "Canarias Conectada",
     "website": "https://github.com/CanariasConectada/canarias-platform",
     "category": "Services/Project",
@@ -15,6 +15,7 @@
     # properties that hold the per-phase checklist.
     "depends": ["project", "website"],
     "data": [
+        "security/field_visit_security.xml",
         "security/ir.model.access.csv",
         "data/field_visit_message_templates.xml",
         "wizards/field_visit_log_views.xml",

@@ -75,6 +75,7 @@ class ProjectFieldVisitLog(models.TransientModel):
 
     def action_log_visit(self):
         self.ensure_one()
+        self.env["project.task"]._check_field_visit_access()
         task = self.task_id
         body = self.env["ir.qweb"]._render(
             "project_field_visit.field_visit_message",

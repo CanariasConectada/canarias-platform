@@ -3,6 +3,8 @@
 
 from odoo.tests import TransactionCase
 
+CONSULTANT = "project_field_visit.group_field_visit_consultant"
+
 
 class FieldVisitCase(TransactionCase):
     """A phase project owned by the programme company, a business company
@@ -37,7 +39,26 @@ class FieldVisitCase(TransactionCase):
                 "email": "zzfv.consultant@example.com",
                 "company_id": cls.owner.id,
                 "company_ids": [(6, 0, cls.owner.ids)],
-                "group_ids": [(6, 0, [cls.env.ref("project.group_project_user").id])],
+                "group_ids": [
+                    (6, 0, [cls.env.ref(CONSULTANT).id]),
+                ],
+            }
+        )
+        cls.project_user = cls._user("zzfv_project_user", "project.group_project_user")
+        cls.project_manager = cls._user(
+            "zzfv_project_manager", "project.group_project_manager"
+        )
+
+    @classmethod
+    def _user(cls, login, group):
+        """A user of the programme company who is NOT a field consultant."""
+        return cls.env["res.users"].create(
+            {
+                "name": login,
+                "login": login,
+                "company_id": cls.owner.id,
+                "company_ids": [(6, 0, cls.owner.ids)],
+                "group_ids": [(6, 0, [cls.env.ref(group).id])],
             }
         )
 

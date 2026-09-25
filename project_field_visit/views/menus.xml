@@ -7,7 +7,7 @@
         name="Import field visits"
         parent="project.menu_project_config"
         action="action_project_field_visit_import"
-        groups="project.group_project_manager"
+        groups="project_field_visit.group_field_visit_manager"
         sequence="50"
     />
 </odoo>

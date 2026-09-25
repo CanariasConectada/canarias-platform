@@ -3,7 +3,9 @@
 
 import copy
 
-from odoo import _, fields, models
+from odoo import _, api, fields, models
+
+from .project_task import MANAGER_GROUP
 
 YES_NO_PENDING = [["yes", "Sí"], ["no", "No"], ["pending", "Pendiente"]]
 
@@ -74,6 +76,17 @@ class ProjectProject(models.Model):
         "microsite, and consultants log their visits from the task.",
     )
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        if any(vals.get("is_field_visit_project") for vals in vals_list):
+            self.env["project.task"]._check_field_visit_access(MANAGER_GROUP)
+        return super().create(vals_list)
+
+    def write(self, vals):
+        if "is_field_visit_project" in vals:
+            self.env["project.task"]._check_field_visit_access(MANAGER_GROUP)
+        return super().write(vals)
+
     def _field_visit_phase_one_properties(self):
         """Checklist definition proposed for a phase that has none yet."""
         return [
@@ -95,6 +108,7 @@ class ProjectProject(models.Model):
 
     def action_open_field_visit_import(self):
         self.ensure_one()
+        self.env["project.task"]._check_field_visit_access(MANAGER_GROUP)
         return {
             "type": "ir.actions.act_window",
             "name": _("Import field visits"),

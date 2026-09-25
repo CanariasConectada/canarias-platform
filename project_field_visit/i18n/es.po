@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-25 00:55+0000\n"
-"PO-Revision-Date: 2026-09-25 00:55+0000\n"
+"POT-Creation-Date: 2026-09-25 01:33+0000\n"
+"PO-Revision-Date: 2026-09-25 01:33+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es\n"
@@ -37,6 +37,12 @@ msgstr "<strong>Visita de campo</strong>"
 msgid "A business can only have one task per field-visit project."
 msgstr ""
 "Un negocio solo puede tener una tarea por proyecto de visitas de campo."
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_res_partner__field_visit_annex_number
+#: model:ir.model.fields,field_description:project_field_visit.field_res_users__field_visit_annex_number
+msgid "Annex number"
+msgstr "Número de anexo"
 
 #. module: project_field_visit
 #: model:ir.model.fields.selection,name:project_field_visit.selection__project_field_visit_log__outcome__appointment
@@ -250,11 +256,34 @@ msgid "Field Visit Import Observations"
 msgstr "Observaciones importadas de la visita de campo"
 
 #. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_res_partner__field_visit_prospect_key
+#: model:ir.model.fields,field_description:project_field_visit.field_res_users__field_visit_prospect_key
+msgid "Field Visit Prospect Key"
+msgstr "Clave del posible adherido"
+
+#. module: project_field_visit
+#: model:res.groups,name:project_field_visit.group_field_visit_consultant
+msgid "Field visit consultant"
+msgstr "Consultor de visitas de campo"
+
+#. module: project_field_visit
+#: model:res.groups,name:project_field_visit.group_field_visit_manager
+msgid "Field visit manager"
+msgstr "Responsable de visitas de campo"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_res_partner__is_field_visit_prospect
+#: model:ir.model.fields,field_description:project_field_visit.field_res_users__is_field_visit_prospect
+msgid "Field visit prospect"
+msgstr "Posible adherido (visitas de campo)"
+
+#. module: project_field_visit
 #. odoo-python
 #: code:addons/project_field_visit/models/project_task.py:0
 #: model:ir.model.fields,field_description:project_field_visit.field_res_company__field_visit_task_count
 #: model:ir.model.fields,field_description:project_field_visit.field_res_partner__field_visit_task_count
 #: model:ir.model.fields,field_description:project_field_visit.field_res_users__field_visit_task_count
+#: model:res.groups.privilege,name:project_field_visit.res_groups_privilege_field_visit
 #: model_terms:ir.ui.view,arch_db:project_field_visit.res_company_view_form_field_visit
 #: model_terms:ir.ui.view,arch_db:project_field_visit.res_partner_view_form_field_visit
 msgid "Field visits"
@@ -451,6 +480,12 @@ msgstr ""
 "                        fase I de la hoja de cálculo."
 
 #. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/models/project_task.py:0
+msgid "Only field visit consultants can do this."
+msgstr "Solo los consultores de visitas de campo pueden hacer esto."
+
+#. module: project_field_visit
 #: model:ir.model.fields.selection,name:project_field_visit.selection__project_field_visit_log__outcome__other
 #: model:ir.model.fields.selection,name:project_field_visit.selection__project_task__field_visit_last_outcome__other
 msgid "Other"
@@ -506,6 +541,14 @@ msgid "Rows skipped (no number or no name): %s"
 msgstr "Filas omitidas (sin número o sin nombre): %s"
 
 #. module: project_field_visit
+#: model:res.groups,comment:project_field_visit.group_field_visit_manager
+msgid ""
+"Runs the programme: creates phase projects and imports the spreadsheets."
+msgstr ""
+"Dirige el programa: crea los proyectos de fase e importa las hojas de "
+"cálculo."
+
+#. module: project_field_visit
 #: model_terms:ir.ui.view,arch_db:project_field_visit.project_field_visit_log_view_form
 msgid "Save visit"
 msgstr "Guardar visita"
@@ -557,6 +600,18 @@ msgstr "Tareas actualizadas: %s"
 
 #. module: project_field_visit
 #. odoo-python
+#: code:addons/project_field_visit/models/project_task.py:0
+msgid "The business contact must be the contact of the visited business."
+msgstr "El contacto del negocio debe ser el contacto del negocio visitado."
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "The file is larger than %(size)s MB."
+msgstr "El archivo ocupa más de %(size)s MB."
+
+#. module: project_field_visit
+#. odoo-python
 #: code:addons/project_field_visit/wizards/field_visit_import.py:0
 msgid "The phase I checklist fields were added to the project."
 msgstr ""
@@ -575,8 +630,38 @@ msgstr ""
 #. module: project_field_visit
 #. odoo-python
 #: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "The sheet has more than %(rows)s rows or %(columns)s columns."
+msgstr "La hoja tiene más de %(rows)s filas o %(columns)s columnas."
+
+#. module: project_field_visit
+#: model:ir.model.constraint,message:project_field_visit.constraint_project_task_field_visit_business_company_unique
+msgid "This business already has a task in this field-visit project."
+msgstr "Este negocio ya tiene una tarea en este proyecto de visitas de campo."
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
 msgid "This file could not be read as an .xlsx spreadsheet."
 msgstr "No se pudo leer este archivo como hoja de cálculo .xlsx."
+
+#. module: project_field_visit
+#: model:ir.model.constraint,message:project_field_visit.constraint_project_task_field_visit_business_partner_unique
+msgid "This prospect already has a task in this field-visit project."
+msgstr ""
+"Este posible adherido ya tiene una tarea en este proyecto de visitas de "
+"campo."
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "To review (fix the sheet or the company, then re-import):"
+msgstr "A revisar (corrija la hoja o la compañía y vuelva a importar):"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "To review (not imported): %s"
+msgstr "A revisar (no importadas): %s"
 
 #. module: project_field_visit
 #. odoo-python
@@ -625,6 +710,15 @@ msgid "Visited, spoke with the business"
 msgstr "Visitado, se habló con el negocio"
 
 #. module: project_field_visit
+#: model:res.groups,comment:project_field_visit.group_field_visit_consultant
+msgid ""
+"Visits the businesses of the platform: sees the field-visit projects and "
+"logs visits."
+msgstr ""
+"Visita los negocios de la plataforma: ve los proyectos de visitas de campo y"
+" registra las visitas."
+
+#. module: project_field_visit
 #. odoo-python
 #: code:addons/project_field_visit/wizards/field_visit_import.py:0
 msgid "Warnings:"
@@ -634,3 +728,45 @@ msgstr "Avisos:"
 #: model_terms:ir.ui.view,arch_db:project_field_visit.project_field_visit_log_view_form
 msgid "What happened, what was agreed, what is missing..."
 msgstr "Qué pasó, qué se acordó, qué falta..."
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/models/project_task.py:0
+msgid ""
+"Without a platform business, the contact must be a field-visit prospect."
+msgstr ""
+"Sin un negocio de la plataforma, el contacto debe ser un posible adherido de"
+" visitas de campo."
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "looks like a known prospect, but not surely the same"
+msgstr ""
+"se parece a un posible adherido conocido, pero no es seguro que sea el mismo"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "matches an archived company"
+msgstr "coincide con una compañía archivada"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "several known prospects are called like this"
+msgstr "hay varios posibles adheridos conocidos con este nombre"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid ""
+"subdomain '%(slug)s' belongs to '%(company)s', whose name does not match"
+msgstr ""
+"el subdominio '%(slug)s' pertenece a '%(company)s', cuyo nombre no coincide"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "subdomain '%s' belongs to several websites"
+msgstr "el subdominio '%s' pertenece a varios sitios web"

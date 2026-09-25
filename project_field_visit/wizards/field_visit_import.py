@@ -8,12 +8,15 @@ import io
 import logging
 import re
 import unicodedata
+from collections import defaultdict
 from urllib.parse import urlsplit
 
 from markupsafe import Markup, escape
 
 from odoo import api, fields, models
 from odoo.exceptions import UserError
+
+from ..models.project_task import MANAGER_GROUP
 
 _logger = logging.getLogger(__name__)
 
@@ -66,6 +69,13 @@ LEGAL_SUFFIX = re.compile(
     r"(\s+(s\s?l\s?u|s\s?l\s?l|s\s?l|s\s?a|s\s?c\s?p|c\s?b|s\s?coop))+$"
 )
 FUZZY_CUTOFF = 0.92
+# Below FUZZY_CUTOFF but above this, a prospect "looks like" a known one: the
+# row is not linked nor duplicated, it goes to the review list.
+REVIEW_CUTOFF = 0.8
+# Hard limits, checked before the content is materialized.
+MAX_FILE_BYTES = 10 * 1024 * 1024
+MAX_ROWS = 5000
+MAX_COLUMNS = 60
 
 
 def normalize(value):
@@ -103,6 +113,31 @@ def as_int(value):
     if re.fullmatch(r"\d+(\.0+)?", text):
         return int(float(text))
     return None
+
+
+def names_agree(keys, company_key):
+    """Whether a row's names designate the company.
+
+    Equal keys, one name's words all contained in the other's ("zzfv bakery"
+    and "panaderia zzfv bakery"), or a similar spelling.
+    """
+    if not company_key:
+        return False
+    company_words = set(company_key.split())
+    for key in keys:
+        if not key:
+            continue
+        if key == company_key:
+            return True
+        words = set(key.split())
+        shorter = min((words, company_words), key=len)
+        if len("".join(shorter)) >= 6 and (
+            words <= company_words or company_words <= words
+        ):
+            return True
+        if difflib.SequenceMatcher(None, key, company_key).ratio() >= FUZZY_CUTOFF:
+            return True
+    return False
 
 
 def clean(value):
@@ -148,20 +183,53 @@ class ProjectFieldVisitImport(models.TransientModel):
     # ------------------------------------------------------------------
     # Reading
     # ------------------------------------------------------------------
-    def _read_rows(self):
-        """All rows of the first sheet as lists of cell values."""
+    def _file_content(self):
         self.ensure_one()
         if not self.file:
             raise UserError(self.env._("Upload the spreadsheet first."))
+        # Base64 is 4/3 of the payload: refuse before decoding a huge upload.
+        if len(self.file) * 3 // 4 > MAX_FILE_BYTES:
+            raise UserError(self._too_big_message())
         content = base64.b64decode(self.file)
-        name = (self.filename or "").lower()
-        if name.endswith(".csv"):
-            text = content.decode("utf-8-sig")
-            try:
-                dialect = csv.Sniffer().sniff(text[:4096], delimiters=",;\t")
-            except csv.Error:
-                dialect = csv.excel
-            return [list(row) for row in csv.reader(io.StringIO(text), dialect)]
+        if len(content) > MAX_FILE_BYTES:
+            raise UserError(self._too_big_message())
+        return content
+
+    def _too_big_message(self):
+        return self.env._(
+            "The file is larger than %(size)s MB.", size=MAX_FILE_BYTES // 1024 // 1024
+        )
+
+    def _too_many_message(self):
+        return self.env._(
+            "The sheet has more than %(rows)s rows or %(columns)s columns.",
+            rows=MAX_ROWS,
+            columns=MAX_COLUMNS,
+        )
+
+    def _iter_rows(self):
+        """Rows of the first sheet, streamed, as lists of cell values."""
+        content = self._file_content()
+        if (self.filename or "").lower().endswith(".csv"):
+            rows = self._iter_csv(content)
+        else:
+            rows = self._iter_xlsx(content)
+        for count, row in enumerate(rows, start=1):
+            if count > MAX_ROWS or len(row) > MAX_COLUMNS:
+                raise UserError(self._too_many_message())
+            yield row
+
+    @api.model
+    def _iter_csv(self, content):
+        text = content.decode("utf-8-sig")
+        try:
+            dialect = csv.Sniffer().sniff(text[:4096], delimiters=",;\t")
+        except csv.Error:
+            dialect = csv.excel
+        for row in csv.reader(io.StringIO(text), dialect):
+            yield row
+
+    def _iter_xlsx(self, content):
         if openpyxl is None:
             raise UserError(
                 self.env._(
@@ -177,20 +245,32 @@ class ProjectFieldVisitImport(models.TransientModel):
             raise UserError(
                 self.env._("This file could not be read as an .xlsx spreadsheet.")
             ) from error
-        sheet = book.worksheets[0]
-        rows = [list(row) for row in sheet.iter_rows(values_only=True)]
-        book.close()
-        return rows
+        try:
+            sheet = book.worksheets[0]
+            # The declared dimension is cheap to check; the streamed count
+            # in _iter_rows catches a file that lies about it.
+            if (sheet.max_row or 0) > MAX_ROWS or (sheet.max_column or 0) > MAX_COLUMNS:
+                raise UserError(self._too_many_message())
+            for row in sheet.iter_rows(values_only=True, max_col=MAX_COLUMNS + 1):
+                # Trailing empty cells are padding, not columns.
+                values = list(row)
+                while values and values[-1] is None:
+                    values.pop()
+                yield values
+        finally:
+            book.close()
 
     @api.model
     def _parse_rows(self, rows):
         """Split the sheet into section labels and business rows.
 
+        :param rows: iterable of rows (lists of cell values)
         :return: (records, skipped) where each record is a dict with the
             column keys plus ``section`` (label of the section row above it).
         """
-        header_index, columns = None, {}
-        for index, row in enumerate(rows[:15]):
+        rows = iter(rows)
+        columns = None
+        for _index, row in zip(range(15), rows, strict=False):
             found = {}
             for col, cell in enumerate(row):
                 text = normalize(cell)
@@ -201,9 +281,9 @@ class ProjectFieldVisitImport(models.TransientModel):
             if "subdomain" in found and (
                 "legal_name" in found or "trade_name" in found
             ):
-                header_index, columns = index, found
+                columns = found
                 break
-        if header_index is None:
+        if columns is None:
             raise UserError(
                 self.env._(
                     "No header row found: the sheet needs at least the columns "
@@ -216,10 +296,9 @@ class ProjectFieldVisitImport(models.TransientModel):
             return row[col] if col is not None and col < len(row) else None
 
         records, skipped, section = [], 0, None
-        for row in rows[header_index + 1 :]:
-            legal, trade = clean(cell(row, "legal_name")), clean(
-                cell(row, "trade_name")
-            )
+        for row in rows:
+            legal = clean(cell(row, "legal_name"))
+            trade = clean(cell(row, "trade_name"))
             first = cell(row, "total")
             if not legal and not trade:
                 if clean(first) and as_int(first) is None:
@@ -242,45 +321,96 @@ class ProjectFieldVisitImport(models.TransientModel):
     # Matching
     # ------------------------------------------------------------------
     @api.model
-    def _matching_index(self):
-        websites = self.env["website"].sudo().with_context(active_test=False).search([])
-        by_slug = {}
-        for website in websites:
-            slug = subdomain_slug(website.domain)
-            if slug and website.company_id:
-                by_slug.setdefault(slug, website)
+    def _excluded_companies(self, project):
+        """Companies that are never a visited business.
+
+        The platform company, the zone companies (when the zone module is
+        installed) and the company that owns the phase project.
+        """
+        Company = self.env["res.company"].sudo()
+        excluded = self.env.ref("base.main_company").sudo() | project.sudo().company_id
+        if "zone_company_key" in Company._fields:
+            excluded |= Company.with_context(active_test=False).search(
+                [("zone_company_key", "!=", False)]
+            )
+        return excluded
+
+    @api.model
+    def _matching_index(self, project):
+        """Candidate businesses by microsite slug and by name key.
+
+        Runs as superuser so that the manager sees every business of the
+        platform, which is why only field visit managers get here.
+        """
+        self.env["project.task"]._check_field_visit_access(MANAGER_GROUP)
+        excluded = self._excluded_companies(project)
         companies = (
-            self.env["res.company"].sudo().with_context(active_test=False).search([])
+            self.env["res.company"].sudo().search([("id", "not in", excluded.ids)])
         )
-        by_name = {}
+        by_slug = defaultdict(lambda: self.env["website"].sudo())
+        for website in (
+            self.env["website"].sudo().search([("company_id", "in", companies.ids)])
+        ):
+            slug = subdomain_slug(website.domain)
+            if slug:
+                by_slug[slug] |= website
+        by_name = defaultdict(lambda: self.env["res.company"].sudo())
         for company in companies:
             key = name_key(company.name)
             if key:
-                by_name.setdefault(key, self.env["res.company"].sudo())
                 by_name[key] |= company
-        return by_slug, by_name
+        # Never linked, but a row naming one is not a new prospect either.
+        archived = {
+            name_key(company.name)
+            for company in self.env["res.company"]
+            .sudo()
+            .with_context(active_test=False)
+            .search([("active", "=", False), ("id", "not in", excluded.ids)])
+        }
+        return dict(by_slug), dict(by_name), archived
 
     @api.model
     def _match_business(self, record, index):
         """Find the platform company of a spreadsheet row.
 
-        :return: (company, website, method) with method one of ``subdomain``,
-            ``name``, ``fuzzy`` or ``None`` when nothing matches.
+        :return: (company, website, method, review) where method is
+            ``subdomain``, ``name``, ``fuzzy`` or ``None``, and ``review`` is
+            the reason a manager must look at the row (nothing is linked).
         """
-        by_slug, by_name = index
-        company = self.env["res.company"]
-        slug = subdomain_slug(record.get("subdomain"))
-        if slug and slug in by_slug:
-            website = by_slug[slug]
-            return website.company_id, website, "subdomain"
+        by_slug, by_name, archived = index
+        none = self.env["res.company"]
         keys = [
             k
             for k in (name_key(record["legal_name"]), name_key(record["trade_name"]))
             if k
         ]
+        slug = subdomain_slug(record.get("subdomain"))
+        if slug and slug in by_slug:
+            websites = by_slug[slug]
+            if len(websites) > 1:
+                return (
+                    none,
+                    None,
+                    None,
+                    self.env._("subdomain '%s' belongs to several websites", slug),
+                )
+            company = websites.company_id
+            if not names_agree(keys, name_key(company.name)):
+                return (
+                    none,
+                    None,
+                    None,
+                    self.env._(
+                        "subdomain '%(slug)s' belongs to '%(company)s', whose name "
+                        "does not match",
+                        slug=slug,
+                        company=company.name,
+                    ),
+                )
+            return company, websites, "subdomain", None
         for key in keys:
-            if len(by_name.get(key, company)) == 1:
-                return by_name[key], None, "name"
+            if len(by_name.get(key, none)) == 1:
+                return by_name[key], None, "name", None
         for key in keys:
             if len(key) < 4:
                 continue
@@ -289,8 +419,61 @@ class ProjectFieldVisitImport(models.TransientModel):
             )
             # Only an unambiguous near-match: two candidates means guessing.
             if len(close) == 1 and len(by_name[close[0]]) == 1:
-                return by_name[close[0]], None, "fuzzy"
-        return company, None, None
+                return by_name[close[0]], None, "fuzzy", None
+        if archived.intersection(keys):
+            return none, None, None, self.env._("matches an archived company")
+        return none, None, None, None
+
+    @api.model
+    def _match_prospect(self, record, prospects):
+        """Known prospect partner of a row without a platform company.
+
+        :param prospects: prospect partners already linked to the project
+        :return: (partner or empty, review reason or None)
+        """
+        none = self.env["res.partner"]
+        key = name_key(record["trade_name"] or record["legal_name"])
+        annex = as_int(record.get("annex_number"))
+
+        def compatible(partner):
+            # Two same-named businesses with different annex numbers are
+            # two businesses.
+            known = partner.field_visit_annex_number
+            return not (annex and known and annex != known)
+
+        same = prospects.filtered(
+            lambda p: p.field_visit_prospect_key == key and compatible(p)
+        )
+        exact = same.filtered(lambda p: annex and p.field_visit_annex_number == annex)
+        if len(exact) == 1:
+            return exact, None
+        if len(same) == 1:
+            return same, None
+        if len(same) > 1:
+            return none, self.env._("several known prospects are called like this")
+        # Renamed in the sheet since the last import?
+        scored = sorted(
+            (
+                (
+                    difflib.SequenceMatcher(
+                        None, key, p.field_visit_prospect_key or ""
+                    ).ratio(),
+                    p,
+                )
+                for p in prospects
+                if compatible(p)
+            ),
+            key=lambda pair: pair[0],
+            reverse=True,
+        )
+        best = [p for ratio, p in scored if ratio >= FUZZY_CUTOFF]
+        if len(best) == 1:
+            return best[0], None
+        if best or any(ratio >= REVIEW_CUTOFF for ratio, _p in scored):
+            return none, self.env._(
+                "looks like a known prospect, but not surely the same"
+            )
+        return none, None
 
     # ------------------------------------------------------------------
     # Values
@@ -350,6 +533,7 @@ class ProjectFieldVisitImport(models.TransientModel):
     # ------------------------------------------------------------------
     def action_create_phase_project(self):
         self.ensure_one()
+        self.env["project.task"]._check_field_visit_access(MANAGER_GROUP)
         name = clean(self.new_project_name)
         if not name:
             raise UserError(self.env._("Give the new phase project a name."))
@@ -362,9 +546,10 @@ class ProjectFieldVisitImport(models.TransientModel):
 
     def action_import(self):
         self.ensure_one()
+        self.env["project.task"]._check_field_visit_access(MANAGER_GROUP)
         if not self.project_id:
             raise UserError(self.env._("Choose or create the phase project first."))
-        records, skipped = self._parse_rows(self._read_rows())
+        records, skipped = self._parse_rows(self._iter_rows())
         self.summary = self._run_import(records, skipped, self.dry_run)
         self.state = "done"
         return self._reopen()
@@ -384,6 +569,32 @@ class ProjectFieldVisitImport(models.TransientModel):
             "name": self.env._("Import field visits"),
         }
 
+    @api.model
+    def _existing_tasks(self, Task, project):
+        """Tasks of the project by business: ``company:<id>`` / ``partner:<id>``."""
+        existing = {}
+        for task in Task.search(
+            [
+                ("project_id", "=", project.id),
+                "|",
+                ("business_company_id", "!=", False),
+                ("business_partner_id", "!=", False),
+            ]
+        ):
+            if task.business_company_id:
+                existing[f"company:{task.business_company_id.id}"] = task
+            else:
+                existing[f"partner:{task.business_partner_id.id}"] = task
+        return existing
+
+    @api.model
+    def _known_prospects(self, existing):
+        tasks = [task for key, task in existing.items() if key.startswith("partner:")]
+        partners = self.env["res.partner"].union(
+            *(task.business_partner_id for task in tasks)
+        )
+        return partners.filtered("is_field_visit_prospect")
+
     def _run_import(self, records, skipped, dry_run):
         """Create or update one task per business; return a summary text."""
         self.ensure_one()
@@ -400,18 +611,32 @@ class ProjectFieldVisitImport(models.TransientModel):
         )
         definition_names = {prop["name"] for prop in definition}
         stages, created_stages = self._stage_map(project, records, dry_run)
-        index = self._matching_index()
+        index = self._matching_index(project)
         existing = self._existing_tasks(Task, project)
         counts = dict.fromkeys(
             ("created", "updated", "subdomain", "name", "fuzzy", "prospect"), 0
         )
-        unmatched, warnings = [], []
+        unmatched, review, warnings = [], [], []
         seen = set()
         for record in records:
-            company, website, method = self._match_business(record, index)
             display = record["trade_name"] or record["legal_name"]
-            name_ref = "name:" + name_key(display)
-            key = f"company:{company.id}" if company else name_ref
+            company, website, method, reason = self._match_business(record, index)
+            prospect = self.env["res.partner"]
+            if not company and not reason:
+                prospects = self._known_prospects(existing)
+                prospect, reason = self._match_prospect(record, prospects)
+            if reason:
+                review.append(f"{display}: {reason}")
+                continue
+            if company:
+                key = f"company:{company.id}"
+            elif prospect:
+                key = f"partner:{prospect.id}"
+            else:
+                key = "new:%s:%s" % (
+                    name_key(display),
+                    as_int(record.get("annex_number")) or "",
+                )
             if key in seen:
                 warnings.append(self.env._("Duplicate row skipped: %s", display))
                 continue
@@ -419,9 +644,13 @@ class ProjectFieldVisitImport(models.TransientModel):
             counts[method or "prospect"] += 1
             if not company:
                 unmatched.append(display)
-            # A prospect that joined the platform since the last import
-            # keeps its task: the name key is upgraded to the company key.
-            task = existing.get(key) or (company and existing.get(name_ref))
+            task = existing.get(key)
+            if company and not task:
+                # A prospect that joined the platform since the last import
+                # keeps its task.
+                prospects = self._known_prospects(existing)
+                former, _reason = self._match_prospect(record, prospects)
+                task = former and existing.pop(f"partner:{former.id}")
             props, row_warnings = self._property_values(record, definition_names)
             warnings += [
                 self.env._(
@@ -435,9 +664,14 @@ class ProjectFieldVisitImport(models.TransientModel):
             counts["updated" if task else "created"] += 1
             if dry_run:
                 continue
-            existing[key] = self._save_task(
-                Task, task, record, key, company, website, props, stages
-            )
+            task = self._save_task(Task, task, record, company, website, props, stages)
+            existing[
+                (
+                    f"company:{company.id}"
+                    if company
+                    else f"partner:{task.business_partner_id.id}"
+                )
+            ] = task
         return self._summary_text(
             dry_run,
             len(records),
@@ -446,37 +680,20 @@ class ProjectFieldVisitImport(models.TransientModel):
             created_stages,
             definition_missing,
             unmatched,
+            review,
             warnings,
         )
 
-    @api.model
-    def _existing_tasks(self, Task, project):
-        """Tasks of the project by import key."""
-        existing = {}
-        for task in Task.search(
-            [
-                ("project_id", "=", project.id),
-                "|",
-                ("field_visit_import_key", "!=", False),
-                ("business_company_id", "!=", False),
-            ]
-        ):
-            # Tasks created by hand for a platform business count too.
-            if task.business_company_id:
-                existing.setdefault(f"company:{task.business_company_id.id}", task)
-            if task.field_visit_import_key:
-                existing[task.field_visit_import_key] = task
-        return existing
-
-    def _save_task(self, Task, task, record, key, company, website, props, stages):
+    def _save_task(self, Task, task, record, company, website, props, stages):
         """Write one spreadsheet row on its task (created when missing)."""
         display = record["trade_name"] or record["legal_name"]
-        vals = {"field_visit_import_key": key}
+        vals = {}
         if props:
             vals["task_properties"] = props
         stage = stages.get(record["section"])
         if company:
             vals["business_company_id"] = company.id
+            vals["field_visit_import_key"] = f"company:{company.id}"
             if website:
                 vals["business_website_id"] = website.id
         if task:
@@ -491,7 +708,9 @@ class ProjectFieldVisitImport(models.TransientModel):
             if stage:
                 vals["stage_id"] = stage.id
             if not company:
-                vals["business_partner_id"] = self._prospect_partner(display).id
+                partner = self._prospect_partner(record)
+                vals["business_partner_id"] = partner.id
+                vals["field_visit_import_key"] = f"partner:{partner.id}"
             task = Task.create(vals)
         observations = str(record.get("observations") or "").strip()
         if observations and observations != (
@@ -505,8 +724,17 @@ class ProjectFieldVisitImport(models.TransientModel):
         return task
 
     @api.model
-    def _prospect_partner(self, name):
-        return self.env["res.partner"].create({"name": name, "is_company": True})
+    def _prospect_partner(self, record):
+        display = record["trade_name"] or record["legal_name"]
+        return self.env["res.partner"].create(
+            {
+                "name": display,
+                "is_company": True,
+                "is_field_visit_prospect": True,
+                "field_visit_prospect_key": name_key(display),
+                "field_visit_annex_number": as_int(record.get("annex_number")),
+            }
+        )
 
     def _summary_text(
         self,
@@ -517,6 +745,7 @@ class ProjectFieldVisitImport(models.TransientModel):
         created_stages,
         definition_missing,
         unmatched,
+        review,
         warnings,
     ):
         _ = self.env._
@@ -530,6 +759,7 @@ class ProjectFieldVisitImport(models.TransientModel):
             _("Matched by exact name: %s", counts["name"]),
             _("Matched by similar name: %s", counts["fuzzy"]),
             _("Not on the platform (prospect contacts): %s", counts["prospect"]),
+            _("To review (not imported): %s", len(review)),
         ]
         if created_stages:
             lines.append(_("New stages: %s", ", ".join(created_stages)))
@@ -541,6 +771,12 @@ class ProjectFieldVisitImport(models.TransientModel):
                 if dry_run
                 else _("The phase I checklist fields were added to the project.")
             )
+        if review:
+            lines += [
+                "",
+                _("To review (fix the sheet or the company, then re-import):"),
+            ]
+            lines += [f"- {line}" for line in review]
         if unmatched:
             lines += ["", _("Businesses without a platform company:")]
             lines += [f"- {name}" for name in unmatched]

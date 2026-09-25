@@ -1,3 +1,7 @@
+Give the consultants the *Field visits / Field visit consultant* access and
+whoever runs the programme *Field visit manager*. Project access alone does
+not show field-visit projects.
+
 1. Project > Configuration > Import field visits. Create the phase project
    from the dialog (for example "Consultoría puerta a puerta — Fase I") or pick
    an existing one with *Door-to-door field visits* enabled in its settings.
