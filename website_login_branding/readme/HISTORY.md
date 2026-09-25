@@ -7,3 +7,5 @@
   asks for permission from the tap iOS requires, so core subscribes the device
   as soon as the user signs in. Both cards come from `website_pwa` and
   `website_pwa_push`, which this module now depends on.
+- Browser tests: the login still submits and signs in when the Push API is
+  missing or its accessors throw.

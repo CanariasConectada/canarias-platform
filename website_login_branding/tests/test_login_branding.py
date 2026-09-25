@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 import re
 from datetime import timedelta
+from unittest.mock import patch
 
 from odoo import fields
 from odoo.tests import HttpCase, TransactionCase, tagged
+from odoo.tests.common import ChromeBrowser
 
 CC_LOGO = "/website_login_branding/static/src/img/canarias_conectada_logo.webp"
 FUNDING_STRIP = "/website_login_branding/static/src/img/subvenciones.png"
@@ -247,3 +249,116 @@ class TestLoginPwaQuickAccess(HttpCase):
         body = self.url_open("/web/login").text
         self.assertIn("Descarga Canarias Conectada", body)
         self.assertIn("Activar notificaciones", body)
+
+
+# Injected before any page script runs, on every document of the browser run.
+# Only the login page loses the APIs: the backend it lands on afterwards is
+# core's web client, whose own tolerance is not what is under test here.
+_BREAK_PUSH_APIS = """
+(() => {
+    // `includes`, not `startsWith`: the page may be served under a language
+    // prefix (/en/web/login).
+    if (!location.pathname.includes("/web/login")) {
+        if (location.pathname.startsWith("/odoo")) {
+            document.addEventListener("DOMContentLoaded", () => {
+                console.log("test successful");
+            });
+        }
+        return;
+    }
+    const mode = %(mode)s;
+    const names = ["Notification", "PushManager"];
+    if (mode === "delete") {
+        for (const name of names) {
+            delete window[name];
+        }
+        delete Navigator.prototype.serviceWorker;
+    } else {
+        const boom = (name) => ({
+            configurable: true,
+            get() {
+                throw new Error(name + " is blocked in this browser");
+            },
+        });
+        // Only `PushManager` throws. A throwing `Notification` or
+        // `navigator.serviceWorker` breaks CORE's frontend on every page,
+        // before or beside any of our code: `@web/core/browser/browser`
+        // reads `window.Notification` at module definition and mail's
+        // `store_service` reads `navigator.serviceWorker?.` at start (the
+        // `?.` still runs the getter). Those two are removed instead; the
+        // page scripts' own try/catch around them is exercised by the node
+        // harness, not here.
+        delete window.Notification;
+        delete Navigator.prototype.serviceWorker;
+        Object.defineProperty(window, "PushManager", boom("PushManager"));
+    }
+})();
+"""
+
+# Runs once the login page is ready: give the public interactions time to
+# start (they are what touches the APIs), then submit the real form.
+_SUBMIT_LOGIN = """
+let broken;
+try {
+    broken = !navigator.serviceWorker && !window.Notification && !window.PushManager;
+} catch {
+    broken = true;
+}
+if (!broken) {
+    console.error("the push APIs were not broken on the login page");
+}
+setTimeout(() => {
+    const form = document.querySelector("form.oe_login_form");
+    form.querySelector("input[name=login]").value = "cc_resilience";
+    form.querySelector("input[name=password]").value = "cc_resilience_pwd";
+    form.querySelector("button[type=submit]").click();
+}, 1500);
+"""
+
+
+@tagged("post_install", "-at_install")
+class TestLoginWithoutPushApis(HttpCase):
+    """The app plumbing on the login page must never cost a login.
+
+    Privacy modes, in-app browsers and old engines either lack the Push API
+    entirely or expose accessors that throw when read. Any uncaught error
+    fails the test (the browser harness turns it into a failure), and the
+    only success signal is emitted by the backend page reached AFTER the form
+    was submitted.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.env.ref("website.default_website").pwa_enabled = True
+        cls.env["res.users"].with_context(no_reset_password=True).create(
+            {
+                "name": "Resilience",
+                "login": "cc_resilience",
+                "password": "cc_resilience_pwd",
+                "group_ids": [(6, 0, [cls.env.ref("base.group_user").id])],
+            }
+        )
+
+    def _login_with_apis(self, mode):
+        original = ChromeBrowser.navigate_to
+        source = _BREAK_PUSH_APIS % {"mode": '"%s"' % mode}
+
+        def navigate_to(browser, url, wait_stop=False):
+            browser._websocket_request(
+                "Page.addScriptToEvaluateOnNewDocument", params={"source": source}
+            )
+            return original(browser, url, wait_stop=wait_stop)
+
+        with patch.object(ChromeBrowser, "navigate_to", navigate_to):
+            self.browser_js(
+                "/web/login",
+                _SUBMIT_LOGIN,
+                ready="!!document.querySelector('.o_cc_login_pwa')",
+            )
+
+    def test_login_works_when_the_apis_are_missing(self):
+        self._login_with_apis("delete")
+
+    def test_login_works_when_push_manager_throws(self):
+        self._login_with_apis("throw")
