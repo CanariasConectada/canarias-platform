@@ -1,3 +1,15 @@
+## 19.0.1.1.0 (2026-09-25)
+
+- `mail.push.device.cc_worker` records which service worker owns a device:
+  the website's (scope `/`) or core's backend one (scope `/odoo`).
+  `/mail/push/subscribe` takes an optional `worker` (anything else reads as
+  `website`); core's `register_devices` tags `backend`.
+- Safety net against double notifications: registering a backend device for
+  an internal user deletes that user's `website` devices. The server cannot
+  tell browsers apart, so it removes all of them, which matches the routing
+  rule (internal users are pushed through the backend worker only). Rows with
+  no recorded worker, and portal users and guests, are left alone.
+
 ## 19.0.1.0.0 (2026-08-05)
 
 - First release: `mail.push.device` may belong to a `mail.guest`, with the

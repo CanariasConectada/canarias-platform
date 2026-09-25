@@ -1,0 +1,123 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* mail_push_guest
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-25 01:45+0000\n"
+"PO-Revision-Date: 2026-09-25 01:45+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: mail_push_guest
+#. odoo-python
+#: code:addons/mail_push_guest/models/discuss_channel.py:0
+msgid "%(author)s in %(channel)s"
+msgstr "%(author)s en %(channel)s"
+
+#. module: mail_push_guest
+#: model:ir.model.constraint,message:mail_push_guest.constraint_mail_push_device_persona_not_both
+msgid "A push device cannot belong to a partner and a guest at the same time."
+msgstr ""
+"Un dispositivo push no puede pertenecer a un contacto y a un invitado a la "
+"vez."
+
+#. module: mail_push_guest
+#. odoo-python
+#: code:addons/mail_push_guest/models/mail_push_device.py:0
+msgid ""
+"A push device must belong to exactly one persona: a partner or a guest."
+msgstr ""
+"Un dispositivo push debe pertenecer exactamente a una persona: un contacto o"
+" un invitado."
+
+#. module: mail_push_guest
+#: model:ir.model.fields.selection,name:mail_push_guest.selection__mail_push_device__cc_worker__backend
+msgid "Backend worker"
+msgstr "Service worker del backend"
+
+#. module: mail_push_guest
+#: model:ir.model,name:mail_push_guest.model_discuss_channel
+msgid "Discussion Channel"
+msgstr "Canal de conversación"
+
+#. module: mail_push_guest
+#: model:ir.model.fields,field_description:mail_push_guest.field_discuss_channel__display_name
+#: model:ir.model.fields,field_description:mail_push_guest.field_mail_push_device__display_name
+msgid "Display Name"
+msgstr "Nombre mostrado"
+
+#. module: mail_push_guest
+#: model:ir.model.fields,field_description:mail_push_guest.field_mail_push_device__guest_id
+msgid "Guest"
+msgstr "Invitado"
+
+#. module: mail_push_guest
+#: model:ir.model.fields,field_description:mail_push_guest.field_discuss_channel__id
+#: model:ir.model.fields,field_description:mail_push_guest.field_mail_push_device__id
+msgid "ID"
+msgstr "ID"
+
+#. module: mail_push_guest
+#. odoo-python
+#: code:addons/mail_push_guest/models/mail_push_device.py:0
+msgid "Invalid browser subscription keys."
+msgstr "Claves de suscripción del navegador no válidas."
+
+#. module: mail_push_guest
+#: model:ir.model.fields,field_description:mail_push_guest.field_mail_push_device__partner_id
+msgid "Partner"
+msgstr "Contacto"
+
+#. module: mail_push_guest
+#: model:ir.model,name:mail_push_guest.model_mail_push_device
+msgid "Push Notification Device"
+msgstr "Dispositivo de notificaciones push"
+
+#. module: mail_push_guest
+#: model:ir.model.fields,field_description:mail_push_guest.field_mail_push_device__cc_worker
+msgid "Service worker"
+msgstr "Service worker"
+
+#. module: mail_push_guest
+#: model:ir.model.fields,help:mail_push_guest.field_mail_push_device__cc_worker
+msgid ""
+"Service worker that owns the subscription: the website's (scope /) or the "
+"backend's (scope /odoo). Empty on devices registered before this was "
+"recorded."
+msgstr ""
+"Service worker al que pertenece la suscripción: el del sitio web (ámbito /) "
+"o el del backend (ámbito /odoo). Vacío en los dispositivos registrados antes"
+" de que se guardara."
+
+#. module: mail_push_guest
+#. odoo-python
+#: code:addons/mail_push_guest/models/mail_push_device.py:0
+msgid "This account already has the maximum number of notification devices."
+msgstr ""
+"Esta cuenta ya tiene el número máximo de dispositivos de notificación."
+
+#. module: mail_push_guest
+#. odoo-python
+#: code:addons/mail_push_guest/models/mail_push_device.py:0
+msgid "This endpoint is not a known push service."
+msgstr "Este endpoint no es un servicio push conocido."
+
+#. module: mail_push_guest
+#. odoo-python
+#: code:addons/mail_push_guest/models/mail_push_device.py:0
+msgid "This visitor already has the maximum number of notification devices."
+msgstr ""
+"Este visitante ya tiene el número máximo de dispositivos de notificación."
+
+#. module: mail_push_guest
+#: model:ir.model.fields.selection,name:mail_push_guest.selection__mail_push_device__cc_worker__website
+msgid "Website worker"
+msgstr "Service worker del sitio web"

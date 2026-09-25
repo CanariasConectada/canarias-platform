@@ -91,6 +91,15 @@ MAX_BROWSER_KEY_LENGTH = 256
 
 BROWSER_KEY_NAMES = ("p256dh", "auth")
 
+# Which service worker owns a subscription. An origin running the installed app
+# has two: the website's (`website_pwa`, scope "/") and core's backend one
+# (`/web/service-worker.js`, scope "/odoo"). A push is handled by the worker of
+# the registration that owns the subscription, so a persona subscribed on both
+# gets every notification twice.
+WORKER_WEBSITE = "website"
+WORKER_BACKEND = "backend"
+WORKERS = (WORKER_WEBSITE, WORKER_BACKEND)
+
 
 class MailPushDevice(models.Model):
     """Push devices that may belong to a guest instead of a partner.
@@ -129,6 +138,18 @@ class MailPushDevice(models.Model):
         # `cascade` matches `guest_id` and keeps the invariant true by
         # construction.
         ondelete="cascade",
+    )
+
+    cc_worker = fields.Selection(
+        selection=[
+            (WORKER_WEBSITE, "Website worker"),
+            (WORKER_BACKEND, "Backend worker"),
+        ],
+        string="Service worker",
+        readonly=True,
+        help="Service worker that owns the subscription: the website's "
+        "(scope /) or the backend's (scope /odoo). Empty on devices "
+        "registered before this was recorded.",
     )
 
     _persona_not_both = models.Constraint(
@@ -312,6 +333,7 @@ class MailPushDevice(models.Model):
         keys=None,
         expiration_time=None,
         vapid_public_key=None,
+        worker=WORKER_WEBSITE,
     ):
         """Upsert the device of `endpoint` for exactly one persona.
 
@@ -324,6 +346,8 @@ class MailPushDevice(models.Model):
 
         :param partner: `res.partner` owning the device, or None
         :param guest: `mail.guest` owning the device, or None
+        :param worker: `WORKER_WEBSITE` or `WORKER_BACKEND`, the worker the
+            browser subscribed on; anything else is read as the website one
         :returns: the `mail.push.device` record, always as sudo, or an EMPTY
             recordset when the endpoint already belongs to somebody else (see
             `_may_claim_device`). Callers on the public route must NOT let
@@ -364,6 +388,7 @@ class MailPushDevice(models.Model):
             "keys": json.dumps({name: keys[name] for name in BROWSER_KEY_NAMES}),
             "partner_id": partner.id if partner else False,
             "guest_id": guest.id if guest else False,
+            "cc_worker": worker if worker in WORKERS else WORKER_WEBSITE,
         }
         # sudo: mail.push.device is granted to base.group_system only
         # (mail/security/ir.model.access.csv:67-68); every persona touching it
@@ -391,6 +416,7 @@ class MailPushDevice(models.Model):
                 # `_may_claim_device` for why the refusal is silent.
                 return devices_su.browse()
             existing.write(vals)
+            self._cc_drop_website_devices(existing)
             return existing
         persona_domain = (
             [("partner_id", "=", partner.id)]
@@ -404,7 +430,54 @@ class MailPushDevice(models.Model):
                     "notification devices."
                 )
             )
-        return devices_su.create([vals])
+        device = devices_su.create([vals])
+        self._cc_drop_website_devices(device)
+        return device
+
+    @api.model
+    def _cc_drop_website_devices(self, device):
+        """Safety net against double notifications for internal users.
+
+        Internal users are pushed through core's backend worker, the only one
+        carrying core's push handler (calls, badges, the Discuss client). A
+        website-worker subscription of theirs is therefore always a leftover
+        -- made before `website_pwa_push` routed them to the backend worker,
+        or on a website with push on -- and while it lives every message
+        arrives twice. The page script retires the one of the browser it runs
+        in; this removes what the script could not reach.
+
+        "Same browser" cannot be told on the server: the two workers of one
+        browser hold unrelated endpoints and nothing else identifies a
+        browser. So once an internal user registers a backend device, ALL of
+        their website-worker devices go. That is the routing rule itself, not
+        collateral: no internal user should hold one, on any browser, and a
+        browser that lost one re-subscribes on the backend worker the next
+        time the web client starts with permission granted.
+
+        Devices with no recorded worker (every row registered before the
+        field existed) are left alone.
+        """
+        if device.cc_worker != WORKER_BACKEND or not device.partner_id:
+            return
+        # sudo: `share` of another user's account; read only.
+        if not device.partner_id.sudo().user_ids.filtered(
+            lambda user: user.active and not user.share
+        ):
+            return
+        leftovers = self.sudo().search(
+            [
+                ("partner_id", "=", device.partner_id.id),
+                ("cc_worker", "=", WORKER_WEBSITE),
+                ("id", "!=", device.id),
+            ]
+        )
+        if leftovers:
+            _logger.info(
+                "WebPush: dropped %s website-worker device(s) of internal partner %s",
+                len(leftovers),
+                device.partner_id.id,
+            )
+            leftovers.unlink()
 
     @api.model
     def get_web_push_vapid_public_key(self):
@@ -573,7 +646,19 @@ class MailPushDevice(models.Model):
                     "notification devices."
                 )
             )
-        return super().register_devices(**kw)
+        result = super().register_devices(**kw)
+        # Core's door is the backend web client and the backend worker's own
+        # `pushsubscriptionchange`: every device it touches is a backend one.
+        if endpoint:
+            device = devices_su.search(
+                [("endpoint", "=", endpoint), ("partner_id", "=", partner.id)],
+                limit=1,
+            )
+            if device:
+                if device.cc_worker != WORKER_BACKEND:
+                    device.cc_worker = WORKER_BACKEND
+                self._cc_drop_website_devices(device)
+        return result
 
     @api.model
     def _may_claim_device(self, device, *, partner=None, guest=None):
