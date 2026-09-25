@@ -4,6 +4,7 @@ from . import (
     test_evaluation_start,
     test_guidance_menus,
     test_homepage_order,
+    test_items_catalog,
     test_landing,
     test_landing_body_js,
     test_menu_gating,
