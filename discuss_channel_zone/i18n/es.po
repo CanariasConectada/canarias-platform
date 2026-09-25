@@ -15,7 +15,8 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: discuss_channel_zone
-#: model:discuss.channel,name:discuss_channel_zone.channel_canarias
+#. odoo-python
+#: code:addons/discuss_channel_zone/models/discuss_channel.py:0
 #: model:ir.model.fields.selection,name:discuss_channel_zone.selection__res_users__chat_zone__canarias
 msgid "Canarias Conectada"
 msgstr "Canarias Conectada"
@@ -31,7 +32,8 @@ msgid "Community Chat: Registered Member"
 msgstr "Chat de la comunidad: miembro registrado"
 
 #. module: discuss_channel_zone
-#: model:discuss.channel,description:discuss_channel_zone.channel_canarias
+#. odoo-python
+#: code:addons/discuss_channel_zone/models/discuss_channel.py:0
 msgid ""
 "Community channel of the whole platform. Open to everyone, visitors "
 "included."
@@ -43,11 +45,6 @@ msgstr ""
 #: model:ir.model,name:discuss_channel_zone.model_res_company
 msgid "Companies"
 msgstr "Compañías"
-
-#. module: discuss_channel_zone
-#: model:ir.model.fields,field_description:discuss_channel_zone.field_discuss_channel__description
-msgid "Description"
-msgstr "Descripción"
 
 #. module: discuss_channel_zone
 #: model:ir.actions.server,name:discuss_channel_zone.cron_sync_zone_channels_ir_actions_server
@@ -68,7 +65,8 @@ msgid "Display Name"
 msgstr "Nombre mostrado"
 
 #. module: discuss_channel_zone
-#: model:discuss.channel,name:discuss_channel_zone.channel_guanarteme
+#. odoo-python
+#: code:addons/discuss_channel_zone/models/discuss_channel.py:0
 #: model:ir.model.fields.selection,name:discuss_channel_zone.selection__res_users__chat_zone__guanarteme
 msgid "Guanarteme"
 msgstr "Guanarteme"
@@ -92,25 +90,23 @@ msgid "ID"
 msgstr "ID"
 
 #. module: discuss_channel_zone
-#: model:discuss.channel,name:discuss_channel_zone.channel_lomolosfrailes
+#. odoo-python
+#: code:addons/discuss_channel_zone/models/discuss_channel.py:0
 #: model:ir.model.fields.selection,name:discuss_channel_zone.selection__res_users__chat_zone__lomolosfrailes
 msgid "Lomo los Frailes"
 msgstr "Lomo los Frailes"
 
 #. module: discuss_channel_zone
-#: model:ir.model.fields,field_description:discuss_channel_zone.field_discuss_channel__name
-msgid "Name"
-msgstr "Nombre"
-
-#. module: discuss_channel_zone
-#: model:discuss.channel,description:discuss_channel_zone.channel_guanarteme
+#. odoo-python
+#: code:addons/discuss_channel_zone/models/discuss_channel.py:0
 msgid ""
 "Neighbourhood channel of Guanarteme. An account is required to take part."
 msgstr ""
 "Canal del barrio de Guanarteme. Hace falta una cuenta para participar."
 
 #. module: discuss_channel_zone
-#: model:discuss.channel,description:discuss_channel_zone.channel_lomolosfrailes
+#. odoo-python
+#: code:addons/discuss_channel_zone/models/discuss_channel.py:0
 msgid ""
 "Neighbourhood channel of Lomo los Frailes. An account is required to take "
 "part."
@@ -118,7 +114,8 @@ msgstr ""
 "Canal del barrio de Lomo los Frailes. Hace falta una cuenta para participar."
 
 #. module: discuss_channel_zone
-#: model:discuss.channel,description:discuss_channel_zone.channel_tamaraceite
+#. odoo-python
+#: code:addons/discuss_channel_zone/models/discuss_channel.py:0
 msgid ""
 "Neighbourhood channel of Tamaraceite. An account is required to take part."
 msgstr ""
@@ -136,7 +133,8 @@ msgstr ""
 "marca su compañía."
 
 #. module: discuss_channel_zone
-#: model:discuss.channel,name:discuss_channel_zone.channel_tamaraceite
+#. odoo-python
+#: code:addons/discuss_channel_zone/models/discuss_channel.py:0
 #: model:ir.model.fields.selection,name:discuss_channel_zone.selection__res_users__chat_zone__tamaraceite
 msgid "Tamaraceite"
 msgstr "Tamaraceite"

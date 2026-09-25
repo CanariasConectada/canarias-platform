@@ -3,8 +3,8 @@
      License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
 <odoo>
     <!--
-        Names and descriptions are translatable (models/discuss_channel.py);
-        their translations live in i18n/, keyed by these xmlids.
+        Names and descriptions are shown translated while unedited
+        (models/discuss_channel.py, SEEDED_CHANNEL_TEXTS).
 
         noupdate="1": these four channels carry conversations. A module update
         must never rewrite a name somebody renamed, and must NEVER reset
