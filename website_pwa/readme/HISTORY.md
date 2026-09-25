@@ -1,3 +1,9 @@
+## 19.0.3.0.1 (2026-09-25)
+
+- Tests: the backend home entry browser test runs without a screencast; a
+  frame acknowledged on the closing socket failed it after the check had
+  succeeded (ConnectionResetError / `Browser.close()` timeout in CI).
+
 ## 19.0.3.0.0 (2026-09-25)
 
 - Backend: a "Canarias Conectada" home entry in the systray (house icon) and in

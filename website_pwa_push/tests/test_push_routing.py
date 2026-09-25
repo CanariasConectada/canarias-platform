@@ -1,7 +1,10 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+from unittest.mock import patch
+
 from odoo.tests import HttpCase, tagged
+from odoo.tests import common as test_common
 
 MODULE = "@website_pwa_push/js/pwa_push"
 
@@ -32,6 +35,18 @@ class TestPushRouting(HttpCase):
                 "password": "pwa_push_internal",
                 "group_ids": [(6, 0, [cls.env.ref("base.group_user").id])],
             }
+        )
+
+    def setUp(self):
+        super().setUp()
+        # No screencast: the page keeps repainting up to the moment the
+        # harness closes Chrome, and with screencasts on (CI and the lab) a
+        # frame acknowledged on the closing socket fails the test with a
+        # BrokenPipeError AFTER the browser check has already succeeded.
+        self.startPatcher(
+            patch.object(
+                test_common, "Screencaster", lambda *args: test_common.NoScreencast()
+            )
         )
 
     # ------------------------------------------------------------------

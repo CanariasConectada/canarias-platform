@@ -1,3 +1,9 @@
+## 19.0.2.3.1 (2026-09-25)
+
+- Tests: the login-without-push-APIs browser tests run without a screencast,
+  so a frame acknowledged while Chrome closes cannot fail them after the check
+  succeeded.
+
 ## 19.0.2.3.0 (2026-09-25)
 
 - "Download Canarias Conectada" under the login card (login, signup and reset

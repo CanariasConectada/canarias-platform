@@ -1,8 +1,11 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+from unittest.mock import patch
+
 from odoo.exceptions import AccessError
 from odoo.tests import HttpCase, TransactionCase, tagged
+from odoo.tests import common as test_common
 from odoo.tools import mute_logger
 
 from .common import CommunityMixin
@@ -359,6 +362,18 @@ class TestCommunityGuestTour(GuestProfileMixin, HttpCase):
         super().setUpClass()
         cls._setup_guest_profile_fixtures()
         cls.guest.password = "dcm_guest_pwd"
+
+    def setUp(self):
+        super().setUp()
+        # No screencast: the page keeps repainting up to the moment the
+        # harness closes Chrome, and with screencasts on (CI and the lab) a
+        # frame acknowledged on the closing socket fails the test with a
+        # BrokenPipeError AFTER the browser check has already succeeded.
+        self.startPatcher(
+            patch.object(
+                test_common, "Screencaster", lambda *args: test_common.NoScreencast()
+            )
+        )
 
     def test_guest_discuss_profile_tour(self):
         self.start_tour(

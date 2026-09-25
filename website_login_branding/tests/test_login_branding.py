@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 from odoo import fields
 from odoo.tests import HttpCase, TransactionCase, tagged
+from odoo.tests import common as test_common
 from odoo.tests.common import ChromeBrowser
 
 CC_LOGO = "/website_login_branding/static/src/img/canarias_conectada_logo.webp"
@@ -338,6 +339,18 @@ class TestLoginWithoutPushApis(HttpCase):
                 "password": "cc_resilience_pwd",
                 "group_ids": [(6, 0, [cls.env.ref("base.group_user").id])],
             }
+        )
+
+    def setUp(self):
+        super().setUp()
+        # No screencast: the page keeps repainting up to the moment the
+        # harness closes Chrome, and with screencasts on (CI and the lab) a
+        # frame acknowledged on the closing socket fails the test with a
+        # BrokenPipeError AFTER the browser check has already succeeded.
+        self.startPatcher(
+            patch.object(
+                test_common, "Screencaster", lambda *args: test_common.NoScreencast()
+            )
         )
 
     def _login_with_apis(self, mode):
