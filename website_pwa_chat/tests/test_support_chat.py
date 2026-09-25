@@ -314,9 +314,11 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
         self.assertIn('tabindex="0"', fab_zone)
         self.assertIn("<noscript>", fab_zone)
         noscript = fab_zone.split("<noscript>")[1].split("</noscript>")[0]
-        self.assertIn(
-            'href="/chat/soporte"',
+        # A multi-language database prefixes a non-default visitor language
+        # onto a real href (/en/chat/soporte), so the prefix is tolerated.
+        self.assertRegex(
             noscript,
+            r'href="(?:/[a-z]{2}(?:_[A-Z]{2})?)?/chat/soporte"',
             "without JavaScript the fallback link is the only working fab",
         )
 

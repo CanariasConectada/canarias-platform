@@ -488,3 +488,59 @@ msgstr "Chat schließen"
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
 msgid "Chat de soporte"
 msgstr "Support-Chat"
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/backend/support_request_button.xml:0
+msgid "Request support"
+msgstr "Support anfordern"
+
+#. module: website_pwa_chat
+#. odoo-python
+#: code:addons/website_pwa_chat/models/discuss_channel.py:0
+msgid ""
+"Support agents answer support conversations; they do not open one for "
+"themselves."
+msgstr "Support-Mitarbeitende beantworten Support-Unterhaltungen; sie eröffnen keine für sich selbst."
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/backend/support_name_dialog.xml:0
+msgid "Who is asking?"
+msgstr "Wer fragt?"
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/backend/support_name_dialog.xml:0
+msgid "Tell us your name so the support team knows who they are talking to."
+msgstr "Nennen Sie uns Ihren Namen, damit das Support-Team weiß, mit wem es spricht."
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/backend/support_name_dialog.xml:0
+msgid "Your name"
+msgstr "Ihr Name"
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/backend/support_name_dialog.xml:0
+msgid "Please enter your name."
+msgstr "Bitte geben Sie Ihren Namen ein."
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/backend/support_name_dialog.xml:0
+msgid "Email (optional)"
+msgstr "E-Mail (optional)"
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/backend/support_name_dialog.xml:0
+msgid "Open the conversation"
+msgstr "Unterhaltung öffnen"
+
+#. module: website_pwa_chat
+#. odoo-python
+#: code:addons/website_pwa_chat/models/discuss_channel.py:0
+msgid "Please tell us your name so the support team knows who is asking."
+msgstr "Bitte nennen Sie uns Ihren Namen, damit das Support-Team weiß, wer fragt."
