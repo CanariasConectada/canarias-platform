@@ -72,4 +72,39 @@
             </div>
         </xpath>
     </template>
+
+    <!--
+        "Download Canarias Conectada" on the login, signup and reset pages
+        (all three render website.login_layout).
+
+        Two cards, both owned by the website app modules and driven by their
+        scripts, so nothing about install prompts or permissions is decided
+        here:
+        - the install card: Android install button or iOS "Share / Add to
+          Home Screen" steps; hidden when already running as the app;
+        - the notification card: only inside the installed app, with the
+          button iOS requires before it shows the permission prompt. On this
+          page the visitor is usually not signed in yet, so the click grants
+          permission and the subscription follows the login (see pushTarget()
+          in website_pwa_push).
+
+        Only where the website has the app enabled: without a manifest there
+        is nothing to install.
+    -->
+    <template
+        id="login_layout_pwa_quick_access"
+        inherit_id="website_login_branding.login_layout_branding"
+        name="Login: download the app"
+    >
+        <xpath expr="//div[hasclass('o_cc_login_guest')]" position="after">
+            <div t-if="website and website.pwa_enabled" class="o_cc_login_pwa">
+                <t t-call="website_pwa.pwa_install_quick_access" />
+                <t t-call="website_pwa_push.pwa_notify_card">
+                    <t t-set="pwa_push_class" t-value="'mt-3 p-3 rounded-3 text-center'" />
+                    <t t-set="pwa_push_context" t-value="'login'" />
+                    <t t-set="pwa_push_standalone" t-value="True" />
+                </t>
+            </div>
+        </xpath>
+    </template>
 </odoo>

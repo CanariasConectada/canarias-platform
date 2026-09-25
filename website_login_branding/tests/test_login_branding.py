@@ -182,3 +182,68 @@ class TestGuestModel(TransactionCase):
             before,
             "a real account must still be told its password changed",
         )
+
+
+@tagged("post_install", "-at_install")
+class TestLoginPwaQuickAccess(HttpCase):
+    """ "Download Canarias Conectada" on the auth pages."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.website = cls.env.ref("website.default_website")
+        cls.website.pwa_enabled = True
+
+    def _assert_block(self, body):
+        self.assertIn("o_cc_login_pwa", body)
+        # The install card is website_pwa's own, driven by its script.
+        self.assertIn("o_pwa_install_card", body)
+        self.assertIn("o_pwa_install_button", body)
+        self.assertIn("o_pwa_ios_hint", body)
+        # The notification card, only inside the installed app, and marked
+        # as a login-page card so an anonymous visitor's grant is deferred.
+        self.assertIn("o_pwa_push_card", body)
+        self.assertIn('data-pwa-push-context="login"', body)
+        self.assertIn('data-pwa-push-standalone="1"', body)
+        # The scripts that drive both cards travel in the frontend bundle the
+        # page loads; the card is inert without them.
+        self.assertIn('rel="manifest"', body)
+
+    def test_login_page_offers_the_app(self):
+        response = self.url_open("/web/login")
+        self.assertEqual(response.status_code, 200)
+        self._assert_block(response.text)
+
+    def test_reset_password_page_offers_the_app(self):
+        response = self.url_open("/web/reset_password")
+        self.assertEqual(response.status_code, 200)
+        self._assert_block(response.text)
+
+    def test_signup_page_offers_the_app(self):
+        response = self.url_open("/web/signup")
+        self.assertIn(response.status_code, (200, 404))
+        if response.status_code == 200:
+            self._assert_block(response.text)
+
+    def test_block_sits_below_the_guest_entry(self):
+        body = self.url_open("/web/login").text
+        self.assertLess(body.index("o_cc_login_guest"), body.index("o_cc_login_pwa"))
+
+    def test_no_block_when_the_app_is_disabled(self):
+        """Without a manifest there is nothing to install: the block would
+        be a promise the browser refuses."""
+        self.website.pwa_enabled = False
+        self.assertNotIn("o_cc_login_pwa", self.url_open("/web/login").text)
+
+    def test_block_is_translated_to_spanish(self):
+        lang = self.env["res.lang"]._activate_lang("es_ES")
+        self.env["ir.module.module"]._load_module_terms(
+            ["website_pwa", "website_pwa_push"], ["es_ES"], overwrite=True
+        )
+        self.website.language_ids |= lang
+        self.website.default_lang_id = lang
+        # The visitor's language cookie outranks the website default.
+        self.opener.cookies.set("frontend_lang", "es_ES")
+        body = self.url_open("/web/login").text
+        self.assertIn("Descarga Canarias Conectada", body)
+        self.assertIn("Activar notificaciones", body)
