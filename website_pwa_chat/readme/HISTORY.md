@@ -5,10 +5,15 @@
   opens or reopens the same partner-keyed conversation the website button
   opens, through the new `/website_pwa_chat/support/request` route. Agents
   and administrators neither see it (`session_info`) nor may call it.
+  Walk-in community guests are first asked their name (required) and an
+  optional email in a small dialog; the answer is stored through
+  `_support_identify`, exactly like the website identify card.
 - Support conversations are named after who is asking (`Soporte · <name>`,
   at most 64 characters): the name typed on the identify card, else the
   account, else the guest. Community guests (`Invitado …`) are now offered
-  the identify card. A migration renames the existing conversations.
+  the identify card. A migration renames the existing conversations. The
+  rename writes every installed language when `discuss.channel.name` is
+  translatable, and a plain value when it is not.
 - The floating support window is larger: 26rem x 42rem on desktop, growing
   upwards, and nearly full-screen below 576px. The page inside it fills the
   frame and only the conversation scrolls. The identify card is more compact

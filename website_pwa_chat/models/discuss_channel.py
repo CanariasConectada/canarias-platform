@@ -5,7 +5,7 @@ import logging
 from datetime import timedelta
 
 from odoo import _, api, fields, models
-from odoo.exceptions import AccessError
+from odoo.exceptions import AccessError, UserError
 from odoo.tools import format_datetime
 
 from odoo.addons.mail.tools.discuss import Store
@@ -60,6 +60,10 @@ DEFAULT_EMPTY_PURGE_HOURS = 1
 # a paragraph into the "your name" field must not push everything else off the
 # row. Long enough for "Soporte · " plus a full first and last name.
 SUPPORT_NAME_MAX = 64
+
+# How long a typed name or email may be, whichever form it was typed in: the
+# website identify card and the Discuss dialog both declare maxlength=120.
+SUPPORT_IDENTITY_MAX = 120
 
 SUPPORT_WAITING = "waiting"
 SUPPORT_ANSWERED = "answered"
@@ -414,6 +418,9 @@ class DiscussChannel(models.Model):
             guests=guest or None,
             post_joined_message=False,
         )
+        # Once more through the one method that knows how to write a name in
+        # every language, for when `name` is translatable.
+        channel._support_refresh_name()
         channel._support_seat_agents()
         return channel
 
@@ -711,20 +718,20 @@ class DiscussChannel(models.Model):
         by ``_support_channel()`` from the session, never from the form.
         """
         self.ensure_one()
-        name = (name or "").strip()
+        name = self._support_clean_identity(name)
         if not name:
             return False
         values = {
             "support_identified": True,
-            "support_visitor_name": name[:120],
-            "support_visitor_email": (email or "").strip()[:120] or False,
+            "support_visitor_name": name,
+            "support_visitor_email": self._support_clean_identity(email) or False,
         }
         self.sudo().write(values)
         # The guest persona carries the name too, so the agent sees it on the
         # message and not only on the row.
         _partner, guest = self.env["res.partner"]._get_current_persona()
         if guest:
-            guest.sudo().write({"name": name[:120]})
+            guest.sudo().write({"name": name})
         # And the conversation itself: the name is what the agent reads in
         # the Soporte drawer and in the thread header, long before they open
         # the backend queue where "Quién pregunta" used to be the only place
@@ -782,15 +789,32 @@ class DiscussChannel(models.Model):
             return guest.name
         return False
 
+    @api.model
+    def _support_clean_identity(self, value):
+        """A typed name or email, stripped and capped; "" when there is none."""
+        return (value or "").strip()[:SUPPORT_IDENTITY_MAX].strip()
+
     def _support_refresh_name(self):
         """Rename these conversations after whoever asked.
 
         Written only when the name actually changes: every write on a
         channel's name is broadcast to all its members' Discuss clients.
+
+        Works whether or not ``name`` is translatable. When it is, a plain
+        write would only set the caller's language, and an agent reading
+        Discuss in another one would keep seeing the old name; the same value
+        goes to every installed language instead. The name is a person's
+        name, there is nothing in it to translate.
         """
+        translatable = bool(self._fields["name"].translate)
         for channel in self.sudo().filtered("support_key"):
             name = channel._support_channel_name(channel._support_requester_name())
-            if channel.name != name:
+            if translatable:
+                langs = [code for code, _label in self.env["res.lang"].get_installed()]
+                channel.update_field_translations(
+                    "name", {lang: name for lang in langs}
+                )
+            elif channel.name != name:
                 channel.name = name
 
     # ------------------------------------------------------------------
@@ -814,6 +838,19 @@ class DiscussChannel(models.Model):
         return False
 
     @api.model
+    def _support_is_community_guest(self, user=None):
+        """Whether this account is one of ``discuss_community``'s walk-ins.
+
+        Read by field name so this module keeps working where that module is
+        not installed. sudo: the flag sits on ``res.users``, which a guest
+        account cannot necessarily read about itself.
+        """
+        user = user or self.env.user
+        return "is_community_guest" in user._fields and bool(
+            user.sudo().is_community_guest
+        )
+
+    @api.model
     def _support_can_request_from_discuss(self):
         """Whether the "Request support" entry belongs in this user's Discuss.
 
@@ -825,13 +862,20 @@ class DiscussChannel(models.Model):
         return user._is_internal() and not self._support_is_agent(user)
 
     @api.model
-    def _support_request_from_discuss(self):
+    def _support_request_from_discuss(self, name=None, email=None):
         """Open (or reopen) the caller's support conversation from Discuss.
 
         The SAME conversation the website button opens for this account --
         ``_support_channel`` keys it on the partner either way -- so a
         merchant who asked from their shop's website and then from the
         backend is talking in one place, to the same seated agents.
+
+        A walk-in community guest is an account called "Invitado 3f9a2c", so
+        the Discuss dialog asks them who they are and the answer goes through
+        ``_support_identify``, exactly as the website identify card does. A
+        guest who has not identified yet must give a name; one who already
+        has may skip it. Everybody else is named after their account and any
+        name sent along is ignored.
         """
         if not self._support_can_request_from_discuss():
             raise AccessError(
@@ -840,7 +884,24 @@ class DiscussChannel(models.Model):
                     "open one for themselves."
                 )
             )
+        typed_name = ""
+        if self._support_is_community_guest():
+            typed_name = self._support_clean_identity(name)
+            if (
+                not typed_name
+                and not self._support_channel_existing().support_identified
+            ):
+                # Checked BEFORE the conversation is opened, so a refused
+                # request leaves nothing behind.
+                raise UserError(
+                    _(
+                        "Please tell us your name so the support team knows "
+                        "who is asking."
+                    )
+                )
         channel = self._support_channel()
+        if typed_name:
+            channel._support_identify(typed_name, email)
         if channel.support_closed:
             # Asking again is the clearest possible sign it is not over.
             channel.sudo().support_closed = False

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<templates xml:space="preserve">
+    <t t-name="website_pwa_chat.SupportNameDialog">
+        <Dialog title.translate="Who is asking?" size="'md'">
+            <p>Tell us your name so the support team knows who they are talking to.</p>
+            <div class="mb-3">
+                <label class="form-label" for="o_cc_support_name">Your name</label>
+                <input
+                    id="o_cc_support_name"
+                    type="text"
+                    class="form-control o_cc_support_name"
+                    t-att-class="{ 'is-invalid': state.missing }"
+                    maxlength="120"
+                    autocomplete="name"
+                    t-model="state.name"
+                    t-on-keydown="onKeydown"
+                />
+                <div t-if="state.missing" class="invalid-feedback">Please enter your name.</div>
+            </div>
+            <div class="mb-1">
+                <label class="form-label" for="o_cc_support_email">Email (optional)</label>
+                <input
+                    id="o_cc_support_email"
+                    type="email"
+                    class="form-control o_cc_support_email"
+                    maxlength="120"
+                    autocomplete="email"
+                    t-model="state.email"
+                    t-on-keydown="onKeydown"
+                />
+            </div>
+            <t t-set-slot="footer">
+                <button
+                    type="button"
+                    class="btn btn-primary o_cc_support_name_confirm"
+                    t-att-disabled="state.busy"
+                    t-on-click="confirm"
+                >Open the conversation</button>
+                <button type="button" class="btn btn-secondary" t-on-click="props.close">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+</templates>

@@ -6,6 +6,7 @@ import {Component, useState} from "@odoo/owl";
 import {rpc} from "@web/core/network/rpc";
 import {useService} from "@web/core/utils/hooks";
 import {session} from "@web/session";
+import {SupportNameDialog} from "./support_name_dialog";
 
 /**
  * "Request support", at the top of the Discuss sidebar.
@@ -26,6 +27,7 @@ export class SupportRequestButton extends Component {
     setup() {
         super.setup();
         this.store = useService("mail.store");
+        this.dialog = useService("dialog");
         this.state = useState({busy: false});
     }
 
@@ -33,13 +35,26 @@ export class SupportRequestButton extends Component {
         return Boolean(session.website_pwa_chat_can_request_support);
     }
 
-    async onClick() {
+    onClick() {
         if (this.state.busy) {
             return;
         }
+        if (session.website_pwa_chat_support_asks_name) {
+            this.dialog.add(SupportNameDialog, {
+                onConfirm: (identity) => this.request(identity),
+            });
+            return;
+        }
+        return this.request({});
+    }
+
+    async request({name, email} = {}) {
         this.state.busy = true;
         try {
-            const {channel_id} = await rpc("/website_pwa_chat/support/request", {});
+            const {channel_id} = await rpc("/website_pwa_chat/support/request", {
+                name,
+                email,
+            });
             const thread = await this.store.Thread.getOrFetch({
                 model: "discuss.channel",
                 id: channel_id,

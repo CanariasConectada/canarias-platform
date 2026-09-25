@@ -209,16 +209,20 @@ class WebsiteChat(http.Controller):
         type="jsonrpc",
         auth="user",
     )
-    def chat_support_request(self):
+    def chat_support_request(self, name=None, email=None):
         """The "Request support" entry of the backend Discuss sidebar.
 
         No ``website=True`` and no ``_chat_current()`` gate: this is asked
         from the backend, where there is no "current website" to be switched
         off, and the conversation belongs to the account, not to a site.
         Refused to the agents themselves by the model, not by the button
-        being hidden.
+        being hidden. ``name`` and ``email`` come from the dialog a walk-in
+        community guest is shown; the model validates them and ignores them
+        for everybody else.
         """
-        channel = request.env["discuss.channel"]._support_request_from_discuss()
+        channel = request.env["discuss.channel"]._support_request_from_discuss(
+            name=name, email=email
+        )
         return {"channel_id": channel.id}
 
     def _chat_identify_values(self, channel):
@@ -236,7 +240,10 @@ class WebsiteChat(http.Controller):
             # -- except a walk-in community guest, whose account is named
             # "Invitado 3f9a2c" and says nothing about who is behind it.
             "show_identify": not channel.support_identified
-            and (user._is_public() or self._chat_is_community_guest(user)),
+            and (
+                user._is_public()
+                or request.env["discuss.channel"]._support_is_community_guest(user)
+            ),
             "identify_pitch": _(
                 "¿Cómo te llamas? Así sabemos con quién hablamos y guardamos "
                 "esta conversación %(identified)s días en vez de "
@@ -248,18 +255,6 @@ class WebsiteChat(http.Controller):
                 "Hablamos con %s.", channel.support_visitor_name or ""
             ),
         }
-
-    @staticmethod
-    def _chat_is_community_guest(user):
-        """Whether this account is one of ``discuss_community``'s walk-ins.
-
-        Read by field name so this module keeps working where that module is
-        not installed. sudo: the flag sits on ``res.users``, which a guest
-        account cannot necessarily read about itself.
-        """
-        return "is_community_guest" in user._fields and bool(
-            user.sudo().is_community_guest
-        )
 
     @staticmethod
     def _chat_identify_days():

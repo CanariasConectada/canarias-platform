@@ -37,7 +37,9 @@ support agent find a **Request support** button at the top of the Discuss
 sidebar. It opens their support conversation, the same one the website button
 opens for their account, with the same agents seated, or reopens it if it
 was closed. Agents and administrators do not see the button, and the route
-behind it refuses them.
+behind it refuses them. A walk-in community guest is first asked their name
+(required) and, optionally, an email; the conversation is then named after
+what they typed.
 
 ## Who is asking
 

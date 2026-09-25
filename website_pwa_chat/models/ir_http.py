@@ -19,7 +19,13 @@ class IrHttp(models.AbstractModel):
         result = super().session_info()
         user = self.env.user
         if user._is_internal():
-            result["website_pwa_chat_can_request_support"] = self.env[
-                "discuss.channel"
-            ]._support_can_request_from_discuss()
+            Channel = self.env["discuss.channel"]
+            result["website_pwa_chat_can_request_support"] = (
+                Channel._support_can_request_from_discuss()
+            )
+            # Walk-in community guests are asked their name before the
+            # conversation opens; their account name says nothing.
+            result["website_pwa_chat_support_asks_name"] = (
+                Channel._support_is_community_guest()
+            )
         return result

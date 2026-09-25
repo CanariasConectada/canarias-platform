@@ -11,7 +11,7 @@ from odoo.tests import tagged
 from odoo.tests.common import JsonRpcException
 from odoo.tools.misc import file_path
 
-from ..models.discuss_channel import SUPPORT_NAME_MAX
+from ..models.discuss_channel import SUPPORT_IDENTITY_MAX, SUPPORT_NAME_MAX
 from .common import WebsiteChatMixin
 
 REQUEST_URL = "/website_pwa_chat/support/request"
@@ -142,6 +142,89 @@ class TestSupportFromDiscuss(SupportDiscussMixin, HttpCase):
 
 
 @tagged("post_install", "-at_install")
+class TestSupportFromDiscussCommunityGuest(SupportDiscussMixin, HttpCase):
+    """The walk-in community guest is asked their name before it opens."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls._setup_support_discuss()
+        if "is_community_guest" not in cls.env["res.users"]._fields:
+            cls.walk_in = None
+            return
+        cls.walk_in = cls._make_user(
+            "wpc_sd_walkin2", "Invitado 7c1e0b", is_community_guest=True
+        )
+
+    def setUp(self):
+        super().setUp()
+        if not self.walk_in:
+            self.skipTest("discuss_community is not installed")
+
+    def _request(self, **params):
+        self.authenticate(self.walk_in.login, self.walk_in.login)
+        return self.make_jsonrpc_request(REQUEST_URL, params)
+
+    def test_the_session_asks_a_guest_for_a_name_and_nobody_else(self):
+        self.authenticate(self.walk_in.login, self.walk_in.login)
+        info = self.make_jsonrpc_request("/web/session/get_session_info", {})
+        self.assertTrue(info.get("website_pwa_chat_support_asks_name"))
+
+        self.authenticate(self.merchant.login, self.merchant.login)
+        info = self.make_jsonrpc_request("/web/session/get_session_info", {})
+        self.assertFalse(info.get("website_pwa_chat_support_asks_name"))
+
+    def test_the_typed_name_identifies_and_renames(self):
+        result = self._request(name="  Carmen la del kiosco ", email="c@example.com")
+
+        channel = self.env["discuss.channel"].sudo().browse(result["channel_id"])
+        self.assertEqual(channel, self._support_of(self.walk_in))
+        self.assertTrue(channel.support_identified)
+        self.assertEqual(channel.support_visitor_name, "Carmen la del kiosco")
+        self.assertEqual(channel.support_visitor_email, "c@example.com")
+        self.assertIn("Carmen la del kiosco", channel.name)
+        self.assertNotIn("Invitado", channel.name)
+
+    def test_an_empty_name_is_refused_and_opens_nothing(self):
+        for name in (None, "", "   "):
+            with self.subTest(name=name), self.assertRaises(JsonRpcException):
+                self._request(name=name)
+        self.assertFalse(self._support_of(self.walk_in))
+
+    def test_a_long_name_is_capped(self):
+        result = self._request(name="Carmen " * 50)
+        channel = self.env["discuss.channel"].sudo().browse(result["channel_id"])
+        self.assertLessEqual(len(channel.support_visitor_name), SUPPORT_IDENTITY_MAX)
+        self.assertLessEqual(len(channel.name), SUPPORT_NAME_MAX)
+
+    def test_an_identified_guest_may_come_back_without_retyping(self):
+        first = self._request(name="Carmen la del kiosco")
+        again = self._request()
+        self.assertEqual(first["channel_id"], again["channel_id"])
+        channel = self.env["discuss.channel"].sudo().browse(again["channel_id"])
+        self.assertIn("Carmen la del kiosco", channel.name)
+
+    def test_a_non_guest_is_named_after_the_account_whatever_it_sends(self):
+        self.authenticate(self.merchant.login, self.merchant.login)
+        result = self.make_jsonrpc_request(REQUEST_URL, {"name": "Otro nombre"})
+        channel = self.env["discuss.channel"].sudo().browse(result["channel_id"])
+        self.assertIn("Ferretería Las Canteras", channel.name)
+        self.assertFalse(channel.support_visitor_name)
+
+    def test_the_dialog_asks_and_the_conversation_carries_the_name(self):
+        with patch.object(
+            test_common, "Screencaster", lambda *args: test_common.NoScreencast()
+        ):
+            self.start_tour(
+                "/odoo/discuss",
+                "website_pwa_chat_support_request_discuss_guest",
+                login=self.walk_in.login,
+            )
+        channel = self._support_of(self.walk_in)
+        self.assertEqual(channel.support_visitor_name, "Carmen la del kiosco")
+
+
+@tagged("post_install", "-at_install")
 class TestSupportChannelName(SupportDiscussMixin, HttpCase):
     """Requirement 11: the agent reads WHO is asking on the conversation."""
 
@@ -214,6 +297,51 @@ class TestSupportChannelName(SupportDiscussMixin, HttpCase):
         channel._support_identify("Nombre " * 40)
         self.assertLessEqual(len(channel.name), SUPPORT_NAME_MAX)
         self.assertTrue(channel.name.endswith("…"))
+
+    def test_the_rename_writes_a_plain_name_when_it_is_not_translatable(self):
+        if self.env["discuss.channel"]._fields["name"].translate:
+            self.skipTest("discuss.channel.name is translatable here")
+        channel = (
+            self.env["discuss.channel"]
+            .with_user(self.merchant)
+            ._support_request_from_discuss()
+        )
+        channel.name = "Soporte · Visitante"
+        with patch.object(
+            type(self.env["discuss.channel"]), "update_field_translations"
+        ) as update:
+            channel._support_refresh_name()
+        update.assert_not_called()
+        self.assertEqual(
+            channel.name, channel._support_channel_name("Ferretería Las Canteras")
+        )
+
+    def test_the_rename_writes_every_language_when_it_is_translatable(self):
+        """The other PR makes the name translatable; the rename must follow.
+
+        Simulated by flagging the field, with the translation writer mocked:
+        the column underneath is still varchar, so only the choice of writer
+        is asserted here, not the storage.
+        """
+        channel = (
+            self.env["discuss.channel"]
+            .with_user(self.merchant)
+            ._support_request_from_discuss()
+        )
+        field = self.env["discuss.channel"]._fields["name"]
+        installed = [code for code, _label in self.env["res.lang"].get_installed()]
+        with patch.object(field, "translate", True), patch.object(
+            type(self.env["discuss.channel"]), "update_field_translations"
+        ) as update:
+            channel._support_refresh_name()
+        update.assert_called_once()
+        fname, values = update.call_args.args
+        self.assertEqual(fname, "name")
+        self.assertEqual(set(values), set(installed))
+        self.assertEqual(
+            set(values.values()),
+            {channel._support_channel_name("Ferretería Las Canteras")},
+        )
 
     def test_the_migration_backfills_the_existing_conversations(self):
         self._forget_guest_cookie()

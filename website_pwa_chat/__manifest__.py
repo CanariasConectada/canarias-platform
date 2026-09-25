@@ -76,12 +76,15 @@
             "website_pwa_chat/static/src/backend/support_sidebar_category.js",
             # "Request support" for everybody who is not an agent: merchants
             # and walk-in guests live in the backend, not on the website.
+            "website_pwa_chat/static/src/backend/support_name_dialog.js",
+            "website_pwa_chat/static/src/backend/support_name_dialog.xml",
             "website_pwa_chat/static/src/backend/support_request_button.js",
             "website_pwa_chat/static/src/backend/support_request_button.xml",
         ],
         # The browser checks run by the HttpCase suite.
         "web.assets_tests": [
             "website_pwa_chat/static/tests/tours/support_request_discuss.js",
+            "website_pwa_chat/static/tests/tours/support_request_discuss_guest.js",
             "website_pwa_chat/static/tests/tours/support_window_size.js",
         ],
     },

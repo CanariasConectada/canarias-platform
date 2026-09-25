@@ -502,3 +502,45 @@ msgid ""
 "Support agents answer support conversations; they do not open one for "
 "themselves."
 msgstr "Gli operatori dell'assistenza rispondono alle conversazioni di assistenza; non ne aprono una per sé stessi."
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/backend/support_name_dialog.xml:0
+msgid "Who is asking?"
+msgstr "Chi sta chiedendo?"
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/backend/support_name_dialog.xml:0
+msgid "Tell us your name so the support team knows who they are talking to."
+msgstr "Dicci il tuo nome così il team di assistenza sa con chi sta parlando."
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/backend/support_name_dialog.xml:0
+msgid "Your name"
+msgstr "Il tuo nome"
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/backend/support_name_dialog.xml:0
+msgid "Please enter your name."
+msgstr "Inserisci il tuo nome."
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/backend/support_name_dialog.xml:0
+msgid "Email (optional)"
+msgstr "E-mail (facoltativa)"
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/backend/support_name_dialog.xml:0
+msgid "Open the conversation"
+msgstr "Apri la conversazione"
+
+#. module: website_pwa_chat
+#. odoo-python
+#: code:addons/website_pwa_chat/models/discuss_channel.py:0
+msgid "Please tell us your name so the support team knows who is asking."
+msgstr "Dicci il tuo nome così il team di assistenza sa chi sta chiedendo."
