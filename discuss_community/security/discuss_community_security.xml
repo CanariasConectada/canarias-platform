@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!--
+        GLOBAL rules (no groups) on purpose: group rules are OR-ed together,
+        so a narrowing rule attached to a group would be widened back by
+        core's own `base.group_user` rule. A global rule is AND-ed with
+        everything, and its domain exempts everybody who is not a community
+        guest with a trivially true branch.
+
+        What a community guest may read: the channels and conversations it is
+        a member of (its zone channel is one: `discuss_channel_zone` seats it
+        there) and the open public channels (`group_public_id` unset). Never
+        the staff channels "general" and "Administrators", even if seated
+        there before this rule existed.
+
+        `user.is_community_guest` is fixed for the life of an account, which
+        matters: the evaluated domain is cached per user
+        (`ir.rule._compute_domain`).
+    -->
+    <record id="rule_discuss_channel_community_guest" model="ir.rule">
+        <field name="name">discuss.channel: community guests only see their own and open channels</field>
+        <field name="model_id" ref="mail.model_discuss_channel"/>
+        <field name="domain_force">
+            [(1, "=", 1)] if not user.is_community_guest else [
+                ("id", "not in", user.community_hidden_channel_ids.ids),
+                "|", "|",
+                    ("is_member", "=", True),
+                    ("parent_channel_id.is_member", "=", True),
+                    "&amp;",
+                        ("channel_type", "=", "channel"),
+                        ("group_public_id", "=", False),
+            ]
+        </field>
+    </record>
+
+    <!--
+        Joining is creating one's own member row, and core's create rule lets
+        any holder of a channel's group join it: a guest IS `base.group_user`,
+        so without this it could join "general" by RPC even though it cannot
+        read it. Create only: reading and leaving members stays core's
+        business.
+    -->
+    <record id="rule_discuss_channel_member_community_guest_join" model="ir.rule">
+        <field name="name">discuss.channel.member: community guests only join open channels</field>
+        <field name="model_id" ref="mail.model_discuss_channel_member"/>
+        <field name="domain_force">
+            [(1, "=", 1)] if not user.is_community_guest else [
+                ("channel_id", "not in", user.community_hidden_channel_ids.ids),
+                "|",
+                    ("channel_id.channel_type", "!=", "channel"),
+                    ("channel_id.group_public_id", "=", False),
+            ]
+        </field>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="perm_create" eval="True"/>
+    </record>
+
+</odoo>

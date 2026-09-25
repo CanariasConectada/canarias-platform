@@ -1,0 +1,229 @@
+# Copyright 2026 Canarias Conectada
+# License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+from odoo.exceptions import AccessError
+from odoo.tests import HttpCase, TransactionCase, tagged
+from odoo.tools import mute_logger
+
+from .common import CommunityMixin
+
+
+class GuestProfileMixin(CommunityMixin):
+    @classmethod
+    def _setup_guest_profile_fixtures(cls):
+        cls._setup_community_fixtures()
+        cls.admin_channel = cls.env.ref("mail.channel_admin")
+        cls.odoobot = cls.env.ref("base.partner_root")
+        cls.guest = cls.env["res.users"]._create_community_guest(zone="guanarteme")
+
+
+@tagged("post_install", "-at_install")
+class TestCommunityGuestChannels(GuestProfileMixin, TransactionCase):
+    """What a community guest may read and join in Discuss."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls._setup_guest_profile_fixtures()
+
+    def _readable(self, user, channels):
+        return (
+            self.env["discuss.channel"]
+            .with_user(user)
+            .search([("id", "in", channels.ids)])
+        )
+
+    def test_guest_reads_own_and_open_channels_only(self):
+        """Member channels + open channels; not staff, not other zones."""
+        everything = self.zone_channels | self.employees_channel | self.admin_channel
+        readable = self._readable(self.guest, everything)
+        self.assertEqual(readable, self.channel_general | self.channel_guanarteme)
+
+    @mute_logger("odoo.addons.base.models.ir_rule", "odoo.orm.models")
+    def test_guest_cannot_read_general_even_when_seated(self):
+        """The legacy prod case: a guest seated in "general" before the fix."""
+        self.employees_channel.sudo()._add_members(
+            partners=self.guest.partner_id, post_joined_message=False
+        )
+        self.assertFalse(self._readable(self.guest, self.employees_channel))
+        with self.assertRaises(AccessError):
+            self.employees_channel.with_user(self.guest).read(["name"])
+
+    @mute_logger("odoo.addons.base.models.ir_rule", "odoo.orm.models")
+    def test_guest_cannot_join_general(self):
+        with self.assertRaises(AccessError):
+            self.employees_channel.with_user(self.guest).channel_join()
+        with self.assertRaises(AccessError):
+            self.env["discuss.channel.member"].with_user(self.guest).create(
+                {
+                    "channel_id": self.employees_channel.id,
+                    "partner_id": self.guest.partner_id.id,
+                }
+            )
+
+    def test_guest_can_join_open_channel(self):
+        """The join restriction is about staff channels, not joining at all."""
+        self.env["discuss.channel.member"].sudo().search(
+            [
+                ("channel_id", "=", self.channel_general.id),
+                ("partner_id", "=", self.guest.partner_id.id),
+            ]
+        ).unlink()
+        self.channel_general.with_user(self.guest).channel_join()
+        self.assertIn(self.guest.partner_id, self.channel_general.channel_partner_ids)
+
+    def test_employee_still_reads_and_joins_general(self):
+        """Non-guests are untouched by the guest rules."""
+        self.assertEqual(
+            self._readable(self.employee, self.employees_channel),
+            self.employees_channel,
+        )
+        self.env["discuss.channel.member"].sudo().search(
+            [
+                ("channel_id", "=", self.employees_channel.id),
+                ("partner_id", "=", self.employee.partner_id.id),
+            ]
+        ).unlink()
+        self.employees_channel.with_user(self.employee).channel_join()
+        self.assertIn(
+            self.employee.partner_id, self.employees_channel.channel_partner_ids
+        )
+
+    def test_registered_member_is_not_a_guest(self):
+        """A registered resident keeps core's channel access."""
+        self.assertFalse(self.member.is_community_guest)
+        self.assertIn(
+            self.channel_tamaraceite,
+            self._readable(self.member, self.zone_channels),
+        )
+
+    def test_guest_keeps_direct_chats(self):
+        """Conversations the guest is part of stay readable."""
+        chat = (
+            self.env["discuss.channel"]
+            .with_user(self.employee)
+            ._get_or_create_chat(partners_to=self.guest.partner_id.ids)
+        )
+        self.assertEqual(self._readable(self.guest, chat), chat)
+
+
+@tagged("post_install", "-at_install")
+class TestCommunityGuestProfile(GuestProfileMixin, TransactionCase):
+    """Menus, OdooBot and the one-time cleanup of existing guests."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls._setup_guest_profile_fixtures()
+        cls.config_menu = cls.env.ref("mail.menu_configuration")
+
+    def _visible_menus(self, user):
+        return self.env["ir.ui.menu"].with_user(user)._visible_menu_ids()
+
+    def test_guest_has_no_discuss_configuration_menu(self):
+        visible = self._visible_menus(self.guest)
+        self.assertIn(self.discuss_root.id, visible)
+        self.assertNotIn(self.config_menu.id, visible)
+        for child in self.config_menu.child_id:
+            self.assertNotIn(child.id, visible)
+
+    def test_configuration_menu_kept_for_non_guests(self):
+        """Guests only: no group was put on the core menu."""
+        self.assertFalse(self.config_menu.group_ids - self.internal_group)
+        self.assertIn(self.config_menu.id, self._visible_menus(self.employee))
+        self.assertIn(self.config_menu.id, self._visible_menus(self.member))
+
+    def _odoobot_chats(self, user):
+        return (
+            self.env["discuss.channel.member"]
+            .sudo()
+            .search(
+                [
+                    ("channel_id.channel_type", "=", "chat"),
+                    ("partner_id", "=", user.partner_id.id),
+                    ("channel_id.channel_member_ids.partner_id", "=", self.odoobot.id),
+                ]
+            )
+        )
+
+    def test_new_guest_is_never_onboarded_by_odoobot(self):
+        self.assertEqual(self.guest.odoobot_state, "disabled")
+        self.guest.with_user(self.guest)._on_webclient_bootstrap()
+        self.assertFalse(self._odoobot_chats(self.guest))
+
+    def test_legacy_guest_bootstrap_disables_odoobot(self):
+        self.guest.odoobot_state = "not_initialized"
+        self.guest.with_user(self.guest)._on_webclient_bootstrap()
+        self.assertEqual(self.guest.odoobot_state, "disabled")
+        self.assertFalse(self._odoobot_chats(self.guest))
+
+    def test_employee_still_onboarded_by_odoobot(self):
+        self.employee.odoobot_state = "not_initialized"
+        self.employee.with_user(self.employee)._on_webclient_bootstrap()
+        self.assertTrue(self._odoobot_chats(self.employee))
+
+    def test_cleanup_brings_legacy_guests_to_the_profile(self):
+        """What the 19.0.1.4.0 migration does to the guests already in prod."""
+        guest = self.guest
+        guest.odoobot_state = "not_initialized"
+        guest._init_odoobot()
+        self.employees_channel.sudo()._add_members(
+            partners=guest.partner_id, post_joined_message=False
+        )
+        self.employee.odoobot_state = "not_initialized"
+        self.employee._init_odoobot()
+        self.assertTrue(self._odoobot_chats(guest))
+
+        counters = self.env["res.users"]._cleanup_community_guests()
+
+        self.assertGreaterEqual(counters["staff_seats"], 1)
+        self.assertGreaterEqual(counters["odoobot_chats"], 1)
+        self.assertNotIn(guest.partner_id, self.employees_channel.channel_partner_ids)
+        self.assertFalse(self._odoobot_chats(guest))
+        self.assertEqual(guest.odoobot_state, "disabled")
+        # Guests keep their community seats; employees keep everything.
+        self.assertEqual(
+            self._zone_channels_of(guest),
+            self.channel_general | self.channel_guanarteme,
+        )
+        self.assertIn(
+            self.employee.partner_id, self.employees_channel.channel_partner_ids
+        )
+        self.assertTrue(self._odoobot_chats(self.employee))
+        # Idempotent.
+        again = self.env["res.users"]._cleanup_community_guests()
+        self.assertEqual(
+            again, {"staff_seats": 0, "odoobot_chats": 0, "odoobot_disabled": 0}
+        )
+
+
+@tagged("post_install", "-at_install")
+class TestCommunityGuestTour(GuestProfileMixin, HttpCase):
+    """The guest profile as rendered by the real web client."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls._setup_guest_profile_fixtures()
+        cls.guest.password = "dcm_guest_pwd"
+
+    def test_guest_discuss_profile_tour(self):
+        self.start_tour(
+            "/odoo/action-mail.action_discuss",
+            "discuss_community_guest_profile",
+            login=self.guest.login,
+        )
+
+    def test_employee_discuss_profile_tour(self):
+        # A small channel of its own: the stock header must be there, and a
+        # member list of hundreds of real accounts would only slow the tour.
+        channel = self.env["discuss.channel"].create(
+            {"name": "DCM Open Channel", "channel_type": "channel"}
+        )
+        channel._add_members(users=self.employee, post_joined_message=False)
+        self.start_tour(
+            "/odoo/action-mail.action_discuss?active_id=discuss.channel_%s"
+            % channel.id,
+            "discuss_community_employee_profile",
+            login="dcm_employee",
+        )

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<templates xml:space="preserve">
+
+    <t t-inherit="mail.DiscussSearch" t-inherit-mode="extension">
+        <xpath expr="//t[@t-if='store.self.main_user_id']" position="attributes">
+            <attribute name="t-if">store.self.main_user_id and !isCommunityGuest</attribute>
+        </xpath>
+    </t>
+
+</templates>
