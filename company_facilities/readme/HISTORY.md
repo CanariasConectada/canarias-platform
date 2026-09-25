@@ -1,3 +1,12 @@
+## 19.0.3.1.2 (2026-09-23)
+
+* Removed the frontend interaction that moved the facilities block right
+  above the "Subvenciones" band once the page had loaded. It dated from
+  19.0.3.0.0, when the block was layout content injected after the page;
+  since 19.0.3.1.0 the block is part of the homepage itself, before the
+  seals and the contact section, and the leftover script dragged it below
+  them a moment after every page load.
+
 ## 19.0.3.1.1 (2026-09-16)
 
 * On the company form, facilities are the last section of the Microsite

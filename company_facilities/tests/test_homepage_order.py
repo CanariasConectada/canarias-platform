@@ -182,3 +182,26 @@ class TestHomepageOrder(HttpCase):
         response = self.url_open("/", headers={"Host": "cf-order-test.example"})
         self.assertIn("CF-CONTACT-SECTION", response.text)
         self.assertNotIn("o_cf_facilities", response.text)
+
+
+@tagged("post_install", "-at_install")
+class TestNoClientSideReorder(HttpCase):
+    """The block keeps the place the homepage gives it (2026-09-23).
+
+    A leftover frontend interaction moved it above the funding strip once
+    the page had loaded, i.e. below the seals and the contact section.
+    """
+
+    def test_frontend_bundle_ships_no_facilities_script(self):
+        paths = [
+            path.lstrip("/")
+            for path, *_rest in self.env["ir.asset"]._get_asset_paths(
+                "web.assets_frontend", {}
+            )
+        ]
+        own = [p for p in paths if p.startswith("company_facilities/")]
+        self.assertTrue(own, "the facilities stylesheet should still ship")
+        self.assertFalse(
+            [p for p in own if p.endswith(".js")],
+            "no company_facilities script may reorder the homepage client side",
+        )
