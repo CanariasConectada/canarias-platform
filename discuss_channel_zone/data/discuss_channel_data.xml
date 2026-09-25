@@ -3,6 +3,9 @@
      License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
 <odoo>
     <!--
+        Names and descriptions are translatable (models/discuss_channel.py);
+        their translations live in i18n/, keyed by these xmlids.
+
         noupdate="1": these four channels carry conversations. A module update
         must never rewrite a name somebody renamed, and must NEVER reset
         `group_public_id` on a channel an administrator deliberately re-gated.
@@ -24,8 +27,9 @@
         <record id="channel_canarias" model="discuss.channel">
             <field name="name">Canarias Conectada</field>
             <field name="channel_type">channel</field>
-            <field name="description">Community channel of the whole platform.
-                Open to everyone, visitors included.</field>
+            <field
+                name="description"
+            >Community channel of the whole platform. Open to everyone, visitors included.</field>
             <field name="group_public_id" eval="False"/>
         </record>
 
@@ -38,24 +42,27 @@
         <record id="channel_guanarteme" model="discuss.channel">
             <field name="name">Guanarteme</field>
             <field name="channel_type">channel</field>
-            <field name="description">Neighbourhood channel of Guanarteme.
-                An account is required to take part.</field>
+            <field
+                name="description"
+            >Neighbourhood channel of Guanarteme. An account is required to take part.</field>
             <field name="group_public_id" ref="group_zone_channel_member"/>
         </record>
 
         <record id="channel_tamaraceite" model="discuss.channel">
             <field name="name">Tamaraceite</field>
             <field name="channel_type">channel</field>
-            <field name="description">Neighbourhood channel of Tamaraceite.
-                An account is required to take part.</field>
+            <field
+                name="description"
+            >Neighbourhood channel of Tamaraceite. An account is required to take part.</field>
             <field name="group_public_id" ref="group_zone_channel_member"/>
         </record>
 
         <record id="channel_lomolosfrailes" model="discuss.channel">
             <field name="name">Lomo los Frailes</field>
             <field name="channel_type">channel</field>
-            <field name="description">Neighbourhood channel of Lomo los
-                Frailes. An account is required to take part.</field>
+            <field
+                name="description"
+            >Neighbourhood channel of Lomo los Frailes. An account is required to take part.</field>
             <field name="group_public_id" ref="group_zone_channel_member"/>
         </record>
 
