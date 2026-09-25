@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website PWA Push",
-    "version": "19.0.1.0.1",
+    "version": "19.0.2.0.0",
     "category": "Website",
     "summary": "Web Push notifications for the public website app",
     # Odoo renders this with docutils on every install. Keep it valid RST:
@@ -29,6 +29,10 @@ What it adds:
 - iOS is told the truth: Safari only grants a subscription inside a PWA
   installed to the home screen, so an uninstalled iPhone gets the install
   instructions instead of a button that cannot work.
+- Subscriptions land on the worker that will handle them: internal users on
+  core's backend worker (scope /odoo), portal users and guests on the website
+  worker. An in-app prompt asks signed-in users for permission, and a tapped
+  notification opens the conversation even when the app shows the website.
 """,
     "author": "Canarias Conectada",
     "website": "https://github.com/CanariasConectada/canarias-platform",

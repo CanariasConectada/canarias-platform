@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Website Login Branding",
-    "version": "19.0.2.2.2",
+    "version": "19.0.2.3.0",
     "category": "Website",
     "summary": "Branded login card + anonymous portal guest access with Discuss & push",
     "description": """
@@ -18,6 +18,10 @@ in as an anonymous PORTAL user (via the /guest/enter controller) so they get a
 Discuss inbox and can receive web-push notifications. Repeat clicks are made
 idempotent by a signed reuse cookie, brand-new sessions are soft-capped against
 abuse, and idle empty guests are purged by a daily cron.
+
+Under the card, a "Download Canarias Conectada" block offers to install the
+app (Android install prompt, iOS "Add to Home Screen" steps) and, inside the
+installed app, a button that turns notifications on.
     """,
     "author": "MikeColangelo",
     "website": "https://github.com/CanariasConectada/canarias-platform",
@@ -25,6 +29,10 @@ abuse, and idle empty guests are purged by a daily cron.
         "website",
         "mail",
         "portal",
+        # The "Download Canarias Conectada" block on the auth pages reuses the
+        # install card and the notification card of the website app instead
+        # of carrying a copy of their scripts.
+        "website_pwa_push",
     ],
     "data": [
         "data/ir_cron.xml",

@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website PWA",
-    "version": "19.0.2.0.0",
+    "version": "19.0.3.0.0",
     "category": "Website",
     "summary": "Installable app for the public website, one per microsite",
     "description": """
@@ -24,6 +24,11 @@
           has no programmatic prompt).
         - A per-website switch, so the app can be enabled for one merchant and
           not another.
+        - A "Download Canarias Conectada" block that other pages (the login
+          page first) can include, driven by the same script as the snippet.
+        - A "Canarias Conectada" home entry in the backend systray and user
+          menu, so an internal user who opened Discuss inside the installed
+          app can get back to the website.
     """,
     "author": "MikeColangelo",
     "website": "https://github.com/CanariasConectada/canarias-platform",
@@ -42,6 +47,12 @@
         "web.assets_frontend": [
             "website_pwa/static/src/js/pwa_install.js",
             "website_pwa/static/src/scss/pwa_install.scss",
+        ],
+        # Loaded for every internal user: the way back from the backend to the
+        # public site is not a website-editor feature, it is navigation.
+        "web.assets_backend": [
+            "website_pwa/static/src/backend/home_systray.js",
+            "website_pwa/static/src/backend/home_systray.xml",
         ],
     },
     "installable": True,
