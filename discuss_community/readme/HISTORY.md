@@ -16,6 +16,11 @@
   own membership row (no roster of the community channel by RPC); in chats
   and groups it belongs to it reads the other members; nothing in the staff
   channels.
+- @-mention suggestions for guests (`get_mention_suggestions_from_channel`):
+  core filters by channel membership in raw SQL, past the member rules, so a
+  guest could list a whole roster. A guest is now offered only the people
+  who posted in a channel (plus itself), or the members of its own chats and
+  groups, and at most 8 suggestions per call.
 - Changing `is_community_guest` on an existing user clears the registry cache,
   so the cached rule domains follow.
 - Migration: existing guests leave "general", "Administrators" and their

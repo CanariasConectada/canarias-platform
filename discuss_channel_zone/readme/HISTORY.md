@@ -4,6 +4,8 @@
   unreleased build made them so and turned the columns into `jsonb`). The
   end-migration converts the columns back to plain text, keeping the `en_US`
   value, on the databases that got the unreleased build; a no-op elsewhere.
+  Only `en_US` survives that conversion: any other language written while
+  the columns were `jsonb` is dropped (lab only; production never had it).
 
 ## 19.0.1.1.0 (2026-09-25)
 

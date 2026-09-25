@@ -194,6 +194,73 @@ class TestCommunityGuestMembers(GuestProfileMixin, TransactionCase):
 
 
 @tagged("post_install", "-at_install")
+class TestCommunityGuestMentions(GuestProfileMixin, TransactionCase):
+    """@-mention suggestions must not leak a channel's roster to a guest."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls._setup_guest_profile_fixtures()
+        # The employee has spoken in the community channel; the resident
+        # member is seated there too but never posted.
+        cls.channel_general.with_user(cls.employee).message_post(
+            body="DCM hello neighbours",
+            message_type="comment",
+            subtype_xmlid="mail.mt_comment",
+        )
+        cls.chat = (
+            cls.env["discuss.channel"]
+            .with_user(cls.member)
+            ._get_or_create_chat(partners_to=cls.guest.partner_id.ids)
+        )
+
+    def _suggested(self, user, channel, search="", limit=1000):
+        result = (
+            self.env["res.partner"]
+            .with_user(user)
+            .get_mention_suggestions_from_channel(channel.id, search, limit=limit)
+        )
+        if not result:  # core answers [] for a channel it cannot find
+            return set()
+        return {row["id"] for row in result.get("res.partner", [])}
+
+    def test_guest_gets_only_authors_and_itself_in_a_channel(self):
+        suggested = self._suggested(self.guest, self.channel_general)
+        self.assertIn(self.employee.partner_id.id, suggested)
+        self.assertNotIn(self.member.partner_id.id, suggested)
+        self.assertLessEqual(suggested, self._authors() | {self.guest.partner_id.id})
+
+    def _authors(self):
+        messages = (
+            self.env["mail.message"]
+            .sudo()
+            .search(
+                [
+                    ("model", "=", "discuss.channel"),
+                    ("res_id", "=", self.channel_general.id),
+                    ("message_type", "=", "comment"),
+                ]
+            )
+        )
+        return set(messages.author_id.ids)
+
+    def test_guest_limit_is_capped(self):
+        self.assertLessEqual(len(self._suggested(self.guest, self.channel_general)), 8)
+
+    def test_guest_gets_the_members_of_its_chat(self):
+        self.assertIn(self.member.partner_id.id, self._suggested(self.guest, self.chat))
+
+    def test_guest_gets_nothing_from_a_channel_it_cannot_read(self):
+        self.assertFalse(self._suggested(self.guest, self.employees_channel))
+
+    def test_employee_still_gets_silent_members(self):
+        suggested = self._suggested(
+            self.employee, self.channel_general, search="DCM Member"
+        )
+        self.assertIn(self.member.partner_id.id, suggested)
+
+
+@tagged("post_install", "-at_install")
 class TestCommunityGuestProfile(GuestProfileMixin, TransactionCase):
     """Menus, OdooBot and the one-time cleanup of existing guests."""
 
