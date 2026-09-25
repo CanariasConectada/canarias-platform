@@ -1,3 +1,37 @@
+## 19.0.2.10.0 (2026-09-25)
+
+- One catalogue of microsite items per certification type, driven by the
+  questionnaire answers (client requests 6 and 7). `certification.highlight`
+  gains a *Trigger question* + *Minimum score* and *Trigger answers*: an item
+  without a trigger is always shown, an item with one only when the
+  company's awarding evaluation meets it (either trigger is enough). The
+  microsite no longer switches between "what the company scored well on" and
+  the curated list: it shows the untriggered items plus the triggered ones
+  that were met.
+- Seals without an evaluation (imported from the previous platform) cannot
+  meet any trigger. The new type option *Show every item without an
+  evaluation* (on by default) keeps what those microsites always showed, the
+  whole catalogue; off, they show only the untriggered items. Default on
+  because every Sostenibilidad seal in production is imported, and hiding
+  its whole list overnight would be a visible regression nobody asked for.
+- `certification.positive.item` is deprecated: its UI on the survey form is
+  gone, its model and table are kept. The migration turns every row into a
+  catalogue item of the survey's type, or folds it into the item already
+  triggered by the same question (the row's minimum score wins), and records
+  the target in `migrated_highlight_id`, so it is idempotent.
+- Silver grows from 8 to 11 items (personal attention, adapted products,
+  help at hand) and every one is backed by a Silver question at a full
+  "Sí"; Sostenibilidad gets an 11th (eco and local products). The existing
+  seeded items get their trigger from the migration only when they have
+  none. The Sostenibilidad items other than energy and waste stay always
+  shown until the owner maps them.
+- Headings default to "What this shop offers" / "Sustainable commitments of
+  this shop" (es: "Lo que este comercio ofrece" / "Compromisos sostenibles de
+  este comercio"); the migration fills them only where empty.
+- Icons must be a Font Awesome class (`fa-[a-z0-9-]+`) and are previewed in
+  the list; triggers must come from the type's questionnaire. The type tab
+  is renamed *Items shown on microsite* and explains the rules.
+
 ## 19.0.2.9.1 (2026-09-22)
 
 - The block closing a landing page lists the *other* published seals only,

@@ -17,7 +17,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-
 #. module: company_certification
 #: model_terms:ir.ui.view,arch_db:company_certification.certification_landing
 msgid "% de cumplimiento"
@@ -34,7 +33,9 @@ msgstr "Evaluaciones %s"
 #: code:addons/company_certification/wizards/certification_evaluation_start.py:0
 msgid ""
 "%s has no questionnaire configured yet. Please contact the administrator."
-msgstr "%s todavía no tiene cuestionario configurado. Ponte en contacto con la administración."
+msgstr ""
+"%s todavía no tiene cuestionario configurado. Ponte en contacto con la "
+"administración."
 
 #. module: company_certification
 #: model:survey.question,title:company_certification.sust_economy_q1
@@ -1826,7 +1827,8 @@ msgstr ""
 #: code:addons/company_certification/models/survey_user_input.py:0
 msgid ""
 "No questionnaire is configured for %s. Please contact the administrator."
-msgstr "No hay un cuestionario configurado para %s. Contacta con el administrador."
+msgstr ""
+"No hay un cuestionario configurado para %s. Contacta con el administrador."
 
 #. module: company_certification
 #: model_terms:survey.question,description:company_certification.silver_economy_q29
@@ -2496,7 +2498,9 @@ msgstr ""
 msgid ""
 "The shop the seal would belong to. It is the active company of your own "
 "account and cannot be chosen here."
-msgstr "El comercio al que pertenecería el sello. Es la compañía activa de tu propia cuenta y no se elige aquí."
+msgstr ""
+"El comercio al que pertenecería el sello. Es la compañía activa de tu propia"
+" cuenta y no se elige aquí."
 
 #. module: company_certification
 #. odoo-python
@@ -2510,7 +2514,9 @@ msgstr "Esta evaluación ya ha sido completada."
 msgid ""
 "This shop already sat the %(seal)s evaluation. The next attempt may be made "
 "from %(date)s."
-msgstr "Este comercio ya hizo la evaluación de %(seal)s. El siguiente intento se puede hacer a partir del %(date)s."
+msgstr ""
+"Este comercio ya hizo la evaluación de %(seal)s. El siguiente intento se "
+"puede hacer a partir del %(date)s."
 
 #. module: company_certification
 #: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
@@ -2674,7 +2680,9 @@ msgstr ""
 msgid ""
 "What stands between this shop and this evaluation right now, in the "
 "merchant's own words."
-msgstr "Qué impide ahora mismo que este comercio haga esta evaluación, dicho en sus propias palabras."
+msgstr ""
+"Qué impide ahora mismo que este comercio haga esta evaluación, dicho en sus "
+"propias palabras."
 
 #. module: company_certification
 #: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
@@ -2737,13 +2745,17 @@ msgstr "No puedes realizar una nueva evaluación hasta el %s."
 msgid ""
 "You need a company on your user profile to run a\n"
 "                       certification evaluation."
-msgstr "Necesitas una empresa asignada en tu perfil de usuario para realizar una evaluación de certificación."
+msgstr ""
+"Necesitas una empresa asignada en tu perfil de usuario para realizar una "
+"evaluación de certificación."
 
 #. module: company_certification
 #. odoo-python
 #: code:addons/company_certification/models/survey_user_input.py:0
 msgid "You need a company on your user profile to run an evaluation."
-msgstr "Necesitas una empresa asignada en tu perfil de usuario para realizar una evaluación."
+msgstr ""
+"Necesitas una empresa asignada en tu perfil de usuario para realizar una "
+"evaluación."
 
 #. module: company_certification
 #: model_terms:ir.ui.view,arch_db:company_certification.certification_cooldown
@@ -2754,7 +2766,8 @@ msgstr ""
 #. odoo-python
 #: code:addons/company_certification/wizards/certification_evaluation_start.py:0
 msgid "Your user profile has no shop, so there is nothing to certify."
-msgstr "Tu perfil de usuario no tiene comercio, así que no hay nada que certificar."
+msgstr ""
+"Tu perfil de usuario no tiene comercio, así que no hay nada que certificar."
 
 #. module: company_certification
 #: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
@@ -3038,3 +3051,286 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:company_certification.survey_fill_form_done_certification
 msgid "🎉 ¡Felicidades! Tu empresa ha obtenido el sello"
 msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_type__show_all_without_evaluation
+msgid ""
+"A seal imported from the previous platform has no evaluation, so no trigger "
+"can be checked for it. When set, such a seal shows the whole catalogue; when"
+" not, only the items without a trigger."
+msgstr ""
+"Un sello importado de la plataforma anterior no tiene evaluación, así que no"
+" se puede comprobar ningún disparador. Si está marcado, ese sello muestra el"
+" catálogo completo; si no, solo los elementos sin disparador."
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
+msgid ""
+"A seal with no evaluation (imported) shows\n"
+"                                        every item, or only the always-shown ones\n"
+"                                        if \"Show every item without an\n"
+"                                        evaluation\" is off."
+msgstr ""
+"Un sello sin evaluación (importado) muestra todos los elementos, o solo los "
+"siempre visibles si «Mostrar todos los elementos sin evaluación» está "
+"desmarcado."
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_highlight__is_baseline
+msgid "Always shown"
+msgstr "Siempre visible"
+
+#. module: company_certification
+#: model:certification.highlight,description:company_certification.highlight_sustainability_local
+msgid "Apuesta por lo ecológico y lo de proximidad."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,label:company_certification.highlight_silver_personal
+msgid "Atención personalizada"
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,label:company_certification.highlight_silver_help
+msgid "Ayuda siempre a mano"
+msgstr ""
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
+msgid "Both set: either one is enough."
+msgstr "Ambos definidos: basta con uno de los dos."
+
+#. module: company_certification
+#: model:certification.highlight,description:company_certification.highlight_silver_personal
+msgid "Cada cliente recibe un trato a su medida."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_positive_item__migrated_highlight_id
+msgid "Catalogue item this row was migrated into."
+msgstr "Elemento del catálogo al que se migró esta fila."
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_type__highlight_ids
+msgid ""
+"Catalogue of the icons a certified company can show under this seal. Items "
+"without a trigger are shown by every holder; items with a trigger question "
+"or trigger answers only when the company's evaluation meets them."
+msgstr ""
+"Catálogo de iconos que una empresa certificada puede mostrar bajo este "
+"sello. Los elementos sin disparador los muestran todos los titulares; los "
+"que tienen pregunta o respuestas disparadoras, solo cuando la evaluación de "
+"la empresa los cumple."
+
+#. module: company_certification
+#: model:ir.model,name:company_certification.model_certification_positive_item
+msgid "Certification Positive Item (deprecated)"
+msgstr "Elemento positivo de certificación (obsoleto)"
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_survey_survey__positive_item_ids
+msgid ""
+"Deprecated: replaced by the items of the certification type. Kept only so "
+"the migrated rows stay readable."
+msgstr ""
+"Obsoleto: sustituido por los elementos del tipo de certificación. Se "
+"conserva solo para que las filas migradas sigan siendo legibles."
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_highlight__icon
+msgid ""
+"Font Awesome 4 class shown next to the label, e.g. fa-wheelchair, fa-"
+"clock-o, fa-phone, fa-leaf. Lowercase letters, digits and hyphens only. The "
+"full list is at https://fontawesome.com/v4/icons/"
+msgstr ""
+"Clase de Font Awesome 4 mostrada junto a la etiqueta, p. ej. fa-wheelchair, "
+"fa-clock-o, fa-phone, fa-leaf. Solo minúsculas, dígitos y guiones. La lista "
+"completa está en https://fontawesome.com/v4/icons/"
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_type__amenities_title
+msgid ""
+"Heading above the item icons on the microsite. Falls back to a generic "
+"wording when empty."
+msgstr ""
+"Título sobre los iconos en el micrositio. Si está vacío se usa un texto "
+"genérico."
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
+msgid ""
+"How an item is chosen for a certified\n"
+"                                    company's microsite:"
+msgstr ""
+"Cómo se elige un elemento para el micrositio de una empresa certificada:"
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
+msgid ""
+"Icons are Font Awesome 4 names, e.g.\n"
+"                                    fa-wheelchair, fa-clock-o, fa-phone, fa-leaf."
+msgstr ""
+"Los iconos son nombres de Font Awesome 4, p. ej. fa-wheelchair, fa-clock-o, "
+"fa-phone, fa-leaf."
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__highlight_ids
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
+msgid "Items shown on microsite"
+msgstr "Elementos mostrados en el micrositio"
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_positive_item__migrated_highlight_id
+msgid "Migrated Highlight"
+msgstr "Elemento migrado"
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_highlight__min_score
+msgid "Minimum score"
+msgstr "Puntuación mínima"
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
+msgid ""
+"No trigger question and no trigger\n"
+"                                        answers: always shown."
+msgstr "Sin pregunta ni respuestas disparadoras: siempre visible."
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_highlight__is_baseline
+msgid "No trigger: every holder of the seal shows this item."
+msgstr "Sin disparador: todos los titulares del sello muestran este elemento."
+
+#. module: company_certification
+#: model:certification.highlight,description:company_certification.highlight_silver_help
+msgid "Pedir ayuda es fácil, en la tienda y en la web."
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,description:company_certification.highlight_silver_adapted
+msgid "Pensados para las necesidades reales de las personas mayores."
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_survey_survey__positive_item_ids
+msgid "Positive Items (deprecated)"
+msgstr "Elementos positivos (obsoleto)"
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_highlight__icon_preview
+msgid "Preview"
+msgstr "Vista previa"
+
+#. module: company_certification
+#: model:certification.highlight,label:company_certification.highlight_sustainability_local
+msgid "Productos ecológicos y locales"
+msgstr ""
+
+#. module: company_certification
+#: model:certification.highlight,label:company_certification.highlight_silver_adapted
+msgid "Productos o servicios adaptados"
+msgstr ""
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_highlight__min_score
+msgid ""
+"Score the answer to the trigger question must reach, e.g. 2 for a full 'Yes'"
+" in a No (0) / Partially (1) / Yes (2) question."
+msgstr ""
+"Puntuación que debe alcanzar la respuesta a la pregunta disparadora, p. ej. "
+"2 para un «Sí» completo en una pregunta No (0) / Parcialmente (1) / Sí (2)."
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_type__show_all_without_evaluation
+msgid "Show every item without an evaluation"
+msgstr "Mostrar todos los elementos sin evaluación"
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_highlight__answer_ids
+msgid ""
+"Show this item when any of these answers was selected in the company's "
+"evaluation. Works on its own or together with the trigger question: either "
+"one is enough."
+msgstr ""
+"Muestra este elemento si en la evaluación de la empresa se eligió alguna de "
+"estas respuestas. Funciona sola o junto con la pregunta disparadora: basta "
+"con una de las dos."
+
+#. module: company_certification
+#: model:ir.model.fields,help:company_certification.field_certification_highlight__question_id
+msgid ""
+"Show this item when the company scored at least the minimum score on this "
+"question. Leave both triggers empty to show the item to every holder of the "
+"seal."
+msgstr ""
+"Muestra este elemento si la empresa obtuvo al menos la puntuación mínima en "
+"esta pregunta. Deja ambos disparadores vacíos para mostrarlo a todos los "
+"titulares del sello."
+
+#. module: company_certification
+#: model:certification.type,amenities_title:company_certification.certification_type_sustainability
+msgid "Sustainable commitments of this shop"
+msgstr "Compromisos sostenibles de este comercio"
+
+#. module: company_certification
+#. odoo-python
+#: code:addons/company_certification/models/certification_highlight.py:0
+msgid ""
+"The icon '%(icon)s' is not a Font Awesome class. Use its name only, e.g. fa-"
+"wheelchair."
+msgstr ""
+"El icono «%(icon)s» no es una clase de Font Awesome. Usa solo su nombre, p. "
+"ej. fa-wheelchair."
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.survey_survey_view_form_certification
+msgid ""
+"The items shown on the microsite, and the answers that\n"
+"                        make them appear, are edited on the certification type\n"
+"                        (Items shown on microsite tab)."
+msgstr ""
+"Los elementos mostrados en el micrositio, y las respuestas que los hacen "
+"aparecer, se editan en el tipo de certificación (pestaña Elementos mostrados"
+" en el micrositio)."
+
+#. module: company_certification
+#. odoo-python
+#: code:addons/company_certification/models/certification_highlight.py:0
+msgid ""
+"The triggers of '%(label)s' must come from the questionnaire of %(type)s."
+msgstr ""
+"Los disparadores de «%(label)s» deben ser del cuestionario de %(type)s."
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_highlight__answer_ids
+msgid "Trigger answers"
+msgstr "Respuestas disparadoras"
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
+msgid ""
+"Trigger answers: shown when any of those\n"
+"                                        answers was selected."
+msgstr ""
+"Respuestas disparadoras: visible si se eligió alguna de esas respuestas."
+
+#. module: company_certification
+#: model:ir.model.fields,field_description:company_certification.field_certification_highlight__question_id
+msgid "Trigger question"
+msgstr "Pregunta disparadora"
+
+#. module: company_certification
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
+msgid ""
+"Trigger question: shown when the score on\n"
+"                                        that question reaches the minimum score\n"
+"                                        (e.g. 2 = a full \"Yes\")."
+msgstr ""
+"Pregunta disparadora: visible si la puntuación en esa pregunta alcanza la "
+"puntuación mínima (p. ej. 2 = un «Sí» completo)."
+
+#. module: company_certification
+#: model:certification.type,amenities_title:company_certification.certification_type_silver
+#: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
+msgid "What this shop offers"
+msgstr "Lo que este comercio ofrece"

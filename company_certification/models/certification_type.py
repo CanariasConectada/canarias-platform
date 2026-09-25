@@ -146,16 +146,24 @@ class CertificationType(models.Model):
     )
     amenities_title = fields.Char(
         translate=True,
-        help="Heading above the highlight icons on the microsite. Falls back "
+        help="Heading above the item icons on the microsite. Falls back "
         "to a generic wording when empty.",
     )
     highlight_ids = fields.One2many(
         "certification.highlight",
         "type_id",
-        string="Highlights",
-        help="What holding this seal means. Shown as an icon list on every "
-        "certified company's microsite when that company's own evaluation "
-        "highlights are not available.",
+        string="Items shown on microsite",
+        help="Catalogue of the icons a certified company can show under this "
+        "seal. Items without a trigger are shown by every holder; items with "
+        "a trigger question or trigger answers only when the company's "
+        "evaluation meets them.",
+    )
+    show_all_without_evaluation = fields.Boolean(
+        string="Show every item without an evaluation",
+        default=True,
+        help="A seal imported from the previous platform has no evaluation, "
+        "so no trigger can be checked for it. When set, such a seal shows "
+        "the whole catalogue; when not, only the items without a trigger.",
     )
     # Auto-generated backend menu ----------------------------------------
     menu_id = fields.Many2one("ir.ui.menu", readonly=True, copy=False)
@@ -176,7 +184,9 @@ class CertificationType(models.Model):
         for record in self:
             if not self._CODE_RE.match(record.code or ""):
                 raise ValidationError(
-                    _("The code must contain only lowercase letters, digits, hyphens and underscores.")
+                    _(
+                        "The code must contain only lowercase letters, digits, hyphens and underscores."
+                    )
                 )
 
     @api.model_create_multi
