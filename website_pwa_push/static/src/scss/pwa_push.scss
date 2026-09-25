@@ -8,3 +8,18 @@
     background-color: rgba(0, 0, 0, 0.03);
     border: 1px solid rgba(0, 0, 0, 0.08);
 }
+
+.o_pwa_push_prompt {
+    // Floating, because it has to be seen on whatever page the app opens,
+    // and above the phone's home indicator on devices that have one.
+    position: fixed;
+    left: 1rem;
+    right: 1rem;
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    z-index: 1055;
+    max-width: 26rem;
+    margin: 0 auto;
+    // Opaque here: over page content the neutral translucent card would be
+    // unreadable.
+    background-color: var(--body-bg, #ffffff);
+}
