@@ -1,6 +1,7 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 """The 19.0.2.10.0 move to one catalogue, and the seeded Silver catalogue."""
+from odoo.exceptions import ValidationError
 from odoo.tests import tagged
 
 from .common import CertificationCase
@@ -107,6 +108,75 @@ class TestItemsCatalogMigration(CertificationCase):
 
         self.assertEqual(access.question_id, q3)
 
+    def test_an_archived_match_gets_a_new_active_item(self):
+        archived = self.env["certification.highlight"].create(
+            {
+                "type_id": self.cert_type.id,
+                "label": "Archived wording",
+                "question_id": self.questions[0].id,
+                "min_score": 2,
+                "active": False,
+            }
+        )
+        item = self._positive_item(self.questions[0], "Still shown")
+
+        counts = self.env["certification.highlight"]._cc_fold_positive_items()
+
+        self.assertEqual(counts["created"], 1)
+        self.assertNotEqual(item.migrated_highlight_id, archived)
+        self.assertTrue(item.migrated_highlight_id.active)
+        self.assertFalse(archived.active)
+
+
+@tagged("post_install", "-at_install")
+class TestTriggerGuards(CertificationCase):
+    def _highlight(self, **values):
+        return self.env["certification.highlight"].create(
+            dict({"type_id": self.cert_type.id, "label": "Item"}, **values)
+        )
+
+    def test_an_empty_minimum_takes_the_best_answer_score(self):
+        created = self._highlight(question_id=self.questions[0].id)
+        self.assertEqual(created.min_score, 2)
+
+        written = self._highlight()
+        written.question_id = self.questions[1]
+        self.assertEqual(written.min_score, 2)
+
+        written.min_score = 0
+        self.assertEqual(written.min_score, 2, "0 would fire on a 'No'")
+
+    def test_an_explicit_minimum_is_kept(self):
+        self.assertEqual(
+            self._highlight(question_id=self.questions[0].id, min_score=1).min_score,
+            1,
+        )
+
+    def test_a_multiple_choice_question_cannot_be_a_trigger_question(self):
+        multiple = self.env["survey.question"].create(
+            {
+                "survey_id": self.survey.id,
+                "title": "Pick several",
+                "question_type": "multiple_choice",
+                "suggested_answer_ids": [
+                    (0, 0, {"value": "A", "answer_score": 1}),
+                    (0, 0, {"value": "B", "answer_score": 1}),
+                ],
+            }
+        )
+        with self.assertRaises(ValidationError):
+            self._highlight(question_id=multiple.id)
+        # Its answers are fine as trigger answers.
+        self._highlight(answer_ids=[(6, 0, multiple.suggested_answer_ids[:1].ids)])
+
+    def test_an_unscored_question_type_never_triggers(self):
+        answer = self._run_evaluation(3)
+        highlight = self._highlight(question_id=self.questions[0].id)
+        # Simulate a question whose type changed after the item was set up.
+        self.questions[0].question_type = "multiple_choice"
+
+        self.assertFalse(highlight._is_triggered_by(answer.user_input_line_ids))
+
 
 @tagged("post_install", "-at_install")
 class TestSeededSilverCatalogue(CertificationCase):
@@ -115,6 +185,39 @@ class TestSeededSilverCatalogue(CertificationCase):
     Runs on the seeded types, so it checks what a fresh database gets and
     what the migration left on an existing one.
     """
+
+    def test_seeded_items_carry_the_triggers_of_the_single_source(self):
+        """The data file and the migration both apply _CC_SEED_TRIGGERS."""
+        Highlight = self.env["certification.highlight"]
+        for xmlid, spec in Highlight._CC_SEED_TRIGGERS.items():
+            with self.subTest(item=xmlid):
+                highlight = self.env.ref("company_certification.%s" % xmlid)
+                values = Highlight._cc_seed_trigger_values(spec)
+                self.assertIsNotNone(values, "a question of the spec is missing")
+                if "question_id" in values:
+                    self.assertEqual(highlight.question_id.id, values["question_id"])
+                    self.assertEqual(highlight.min_score, values["min_score"])
+                else:
+                    self.assertEqual(
+                        highlight.answer_ids.ids, values["answer_ids"][0][2]
+                    )
+        # Every seeded item is covered: none is left always shown by mistake.
+        seeded = self.env["ir.model.data"].search(
+            [
+                ("module", "=", "company_certification"),
+                ("model", "=", "certification.highlight"),
+            ]
+        )
+        self.assertEqual(set(seeded.mapped("name")), set(Highlight._CC_SEED_TRIGGERS))
+
+    def test_signage_triggers_on_yes_to_signage_or_lighting(self):
+        signage = self.env.ref("company_certification.highlight_silver_signage")
+        q2 = self.env.ref("company_certification.silver_economy_q2")
+        q3 = self.env.ref("company_certification.silver_economy_q3")
+
+        self.assertFalse(signage.question_id)
+        self.assertEqual(signage.answer_ids.question_id, q2 | q3)
+        self.assertEqual(set(signage.answer_ids.mapped("answer_score")), {2})
 
     def test_silver_is_balanced_with_sustainability(self):
         silver = self.env.ref("company_certification.certification_type_silver")

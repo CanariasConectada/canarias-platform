@@ -14,6 +14,10 @@ _logger = logging.getLogger(__name__)
 # ``class`` attribute on public pages and into the backend preview.
 ICON_RE = re.compile(r"^fa-[a-z0-9-]+$")
 DEFAULT_ICON = "fa-check-circle"
+# Question types whose score is one number: "score >= min_score" means
+# something. A matrix or a multiple choice sums several answers, so a trigger
+# on them would fire on a partial set; use answer triggers there instead.
+SCORED_QUESTION_TYPES = ("simple_choice", "numerical_box")
 
 
 class CertificationHighlight(models.Model):
@@ -69,15 +73,17 @@ class CertificationHighlight(models.Model):
         "survey.question",
         string="Trigger question",
         ondelete="set null",
-        domain="[('survey_id', '=', survey_id), ('is_page', '=', False)]",
+        domain="[('survey_id', '=', survey_id), ('is_page', '=', False), "
+        "('question_type', 'in', %r)]" % (list(SCORED_QUESTION_TYPES),),
         help="Show this item when the company scored at least the minimum "
-        "score on this question. Leave both triggers empty to show the item "
-        "to every holder of the seal.",
+        "score on this question (single choice or numeric questions). Leave "
+        "both triggers empty to show the item to every holder of the seal.",
     )
     min_score = fields.Float(
         string="Minimum score",
         help="Score the answer to the trigger question must reach, e.g. 2 "
-        "for a full 'Yes' in a No (0) / Partially (1) / Yes (2) question.",
+        "for a full 'Yes' in a No (0) / Partially (1) / Yes (2) question. "
+        "Left at 0, it takes the question's best answer score.",
     )
     answer_ids = fields.Many2many(
         "survey.question.answer",
@@ -141,14 +147,51 @@ class CertificationHighlight(models.Model):
                         type=highlight.type_id.display_name,
                     )
                 )
+            if (
+                highlight.question_id
+                and highlight.question_id.question_type not in SCORED_QUESTION_TYPES
+            ):
+                raise ValidationError(
+                    _(
+                        "The trigger question of '%(label)s' must be a single "
+                        "choice or numeric question. For other questions, use "
+                        "trigger answers.",
+                        label=highlight.label,
+                    )
+                )
+
+    # A trigger question at min_score 0 would fire on any answer, "No"
+    # included. Wherever the value comes from (form, import, code, data), an
+    # empty minimum takes the question's best answer score.
+
+    @api.model
+    def _best_score(self, question):
+        scores = question.suggested_answer_ids.mapped("answer_score")
+        return max(scores) if scores else 0
 
     @api.onchange("question_id")
     def _onchange_question_id(self):
-        # Default to the best answer's score: a trigger at 0 would show the
-        # item to a company that answered "No".
         if self.question_id and not self.min_score:
-            scores = self.question_id.suggested_answer_ids.mapped("answer_score")
-            self.min_score = max(scores) if scores else 0
+            self.min_score = self._best_score(self.question_id)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        records._fill_empty_min_score()
+        return records
+
+    def write(self, vals):
+        result = super().write(vals)
+        if "question_id" in vals or "min_score" in vals:
+            self._fill_empty_min_score()
+        return result
+
+    def _fill_empty_min_score(self):
+        for highlight in self:
+            if highlight.question_id and not highlight.min_score:
+                best = self._best_score(highlight.question_id)
+                if best:
+                    highlight.min_score = best
 
     def _is_triggered_by(self, lines):
         """Whether the evaluation lines ``lines`` meet this item's triggers.
@@ -158,7 +201,9 @@ class CertificationHighlight(models.Model):
         about those.
         """
         self.ensure_one()
-        if self.question_id:
+        if self.question_id and self.question_id.question_type in (
+            SCORED_QUESTION_TYPES
+        ):
             question_lines = lines.filtered(
                 lambda line: line.question_id == self.question_id
             )
@@ -194,20 +239,84 @@ class CertificationHighlight(models.Model):
             "Compromisos sostenibles de este comercio",
         ),
     }
-    # Seeded items that existed before triggers did -> (question, min score).
-    # Only unambiguous matches between the item's wording and one question.
+    # THE source of the seeded items' triggers, for both paths: the data
+    # file calls _cc_link_seed_triggers() on install, and the 19.0.2.10.0
+    # migration calls it on update. The XML records carry no trigger fields.
+    #   "question": question xmlid, "min_score": threshold;
+    #   "best_answer_of": question xmlids whose top-scoring answer ("Sí")
+    #   become the item's trigger answers (any one is enough).
+    # Silver: a full "Sí" (2). Sostenibilidad: 1, the threshold the
+    # administrator had set on its positive items.
     _CC_SEED_TRIGGERS = {
-        "highlight_silver_access": ("silver_economy_q1", 2),
-        "highlight_silver_seating": ("silver_economy_q5", 2),
-        "highlight_silver_signage": ("silver_economy_q2", 2),
-        "highlight_silver_pace": ("silver_economy_q13", 2),
-        "highlight_silver_language": ("silver_economy_q14", 2),
-        "highlight_silver_support": ("silver_economy_q18", 2),
-        "highlight_silver_phone": ("silver_economy_q20", 2),
-        "highlight_silver_web": ("silver_economy_q7", 2),
-        # Bound by the administrator through the old positive items.
-        "highlight_sustainability_energy": ("sust_economy_q1", 1),
-        "highlight_sustainability_waste": ("sust_economy_q5", 1),
+        "highlight_silver_access": {"question": "silver_economy_q1", "min_score": 2},
+        "highlight_silver_seating": {"question": "silver_economy_q5", "min_score": 2},
+        "highlight_silver_signage": {
+            "best_answer_of": ["silver_economy_q2", "silver_economy_q3"]
+        },
+        "highlight_silver_pace": {"question": "silver_economy_q13", "min_score": 2},
+        "highlight_silver_language": {
+            "question": "silver_economy_q14",
+            "min_score": 2,
+        },
+        "highlight_silver_support": {
+            "question": "silver_economy_q18",
+            "min_score": 2,
+        },
+        "highlight_silver_phone": {"question": "silver_economy_q20", "min_score": 2},
+        "highlight_silver_web": {"question": "silver_economy_q7", "min_score": 2},
+        "highlight_silver_personal": {
+            "question": "silver_economy_q12",
+            "min_score": 2,
+        },
+        "highlight_silver_adapted": {
+            "question": "silver_economy_q29",
+            "min_score": 2,
+        },
+        "highlight_silver_help": {"question": "silver_economy_q10", "min_score": 2},
+        "highlight_sustainability_energy": {
+            "question": "sust_economy_q1",
+            "min_score": 1,
+        },
+        "highlight_sustainability_renewable": {
+            "question": "sust_economy_q3",
+            "min_score": 1,
+        },
+        "highlight_sustainability_waste": {
+            "question": "sust_economy_q5",
+            "min_score": 1,
+        },
+        "highlight_sustainability_water": {
+            "question": "sust_economy_q8",
+            "min_score": 1,
+        },
+        "highlight_sustainability_waste_food": {
+            "question": "sust_economy_q9",
+            "min_score": 1,
+        },
+        "highlight_sustainability_suppliers": {
+            "question": "sust_economy_q10",
+            "min_score": 1,
+        },
+        "highlight_sustainability_labour": {
+            "question": "sust_economy_q15",
+            "min_score": 1,
+        },
+        "highlight_sustainability_equality": {
+            "question": "sust_economy_q17",
+            "min_score": 1,
+        },
+        "highlight_sustainability_training": {
+            "question": "sust_economy_q18",
+            "min_score": 1,
+        },
+        "highlight_sustainability_governance": {
+            "question": "sust_economy_q12",
+            "min_score": 1,
+        },
+        "highlight_sustainability_local": {
+            "question": "sust_economy_q24",
+            "min_score": 1,
+        },
     }
 
     @api.model
@@ -236,23 +345,42 @@ class CertificationHighlight(models.Model):
         return done
 
     @api.model
+    def _cc_seed_trigger_values(self, spec):
+        """Write values of one ``_CC_SEED_TRIGGERS`` entry, or None if a
+        question it names is missing from this database."""
+
+        def question(xmlid):
+            return self.env.ref(
+                "company_certification.%s" % xmlid, raise_if_not_found=False
+            )
+
+        if "question" in spec:
+            trigger = question(spec["question"])
+            if not trigger:
+                return None
+            return {"question_id": trigger.id, "min_score": spec["min_score"]}
+        answers = self.env["survey.question.answer"]
+        for xmlid in spec["best_answer_of"]:
+            trigger = question(xmlid)
+            if not trigger or not trigger.suggested_answer_ids:
+                return None
+            answers |= trigger.suggested_answer_ids.sorted("answer_score")[-1]
+        return {"answer_ids": [(6, 0, answers.ids)]}
+
+    @api.model
     def _cc_link_seed_triggers(self):
+        """Give each seeded item its trigger, only where it has none."""
         done = 0
-        for xmlid, (question_xmlid, min_score) in self._CC_SEED_TRIGGERS.items():
+        for xmlid, spec in self._CC_SEED_TRIGGERS.items():
             highlight = self.env.ref(
                 "company_certification.%s" % xmlid, raise_if_not_found=False
             )
-            question = self.env.ref(
-                "company_certification.%s" % question_xmlid, raise_if_not_found=False
-            )
-            if (
-                not highlight
-                or not question
-                or not highlight._is_baseline()
-                or question.survey_id != highlight.type_id.survey_id
-            ):
+            if not highlight or not highlight._is_baseline():
                 continue
-            highlight.write({"question_id": question.id, "min_score": min_score})
+            values = self._cc_seed_trigger_values(spec)
+            if values is None:
+                continue
+            highlight.write(values)
             done += 1
         return done
 
@@ -260,8 +388,8 @@ class CertificationHighlight(models.Model):
     def _cc_fold_positive_items(self):
         """Turn each unmigrated positive item into a catalogue item.
 
-        An item of the same type already triggered by the same question is
-        reused (the positive item's minimum score wins: it is what the
+        An active item of the same type already triggered by the same
+        question is reused (the positive item's minimum score wins: it is what the
         administrator chose); otherwise a new item is created with the
         positive item's label (every translation), icon and sequence.
         """
@@ -285,13 +413,29 @@ class CertificationHighlight(models.Model):
                     item.id,
                 )
                 continue
-            highlight = self.with_context(active_test=False).search(
+            # Active items only: folding into an archived one would hide
+            # an item the old microsite showed. An archived match gets a new
+            # active sibling instead, and the log says so.
+            highlight = self.search(
                 [
                     ("type_id", "=", cert_type.id),
                     ("question_id", "=", item.question_id.id),
                 ],
                 limit=1,
             )
+            if not highlight and self.with_context(active_test=False).search_count(
+                [
+                    ("type_id", "=", cert_type.id),
+                    ("question_id", "=", item.question_id.id),
+                    ("active", "=", False),
+                ]
+            ):
+                _logger.warning(
+                    "Positive item %s: the catalogue item on the same question "
+                    "is archived; a new active item is created so the "
+                    "microsite keeps showing it.",
+                    item.id,
+                )
             if highlight:
                 if highlight.min_score != item.min_score:
                     highlight.min_score = item.min_score

@@ -20,11 +20,20 @@
   triggered by the same question (the row's minimum score wins), and records
   the target in `migrated_highlight_id`, so it is idempotent.
 - Silver grows from 8 to 11 items (personal attention, adapted products,
-  help at hand) and every one is backed by a Silver question at a full
-  "Sí"; Sostenibilidad gets an 11th (eco and local products). The existing
-  seeded items get their trigger from the migration only when they have
-  none. The Sostenibilidad items other than energy and waste stay always
-  shown until the owner maps them.
+  help at hand), every one backed by a Silver question at a full "Sí";
+  "Señalización e iluminación claras" shows on a "Sí" to signage (q2) or
+  lighting (q3), through trigger answers. Sostenibilidad gets an 11th item
+  (eco and local products) and all 11 are linked to their question at
+  score 1, the threshold its administrator had used.
+- The seeded triggers have one source, `certification.highlight.
+  _CC_SEED_TRIGGERS`: the data file applies it on install through a
+  `<function>` call and the migration on update, both only on items that
+  have no trigger yet. A test asserts the seeded items match it.
+- A trigger question must be a single choice or numeric question (a matrix
+  or multiple choice sums several answers); an empty minimum score takes
+  the question's best answer score on every create and write, so a trigger
+  never fires on a "No". The migration folds positive items into active
+  items only; an archived match gets a new active item and a warning.
 - Headings default to "What this shop offers" / "Sustainable commitments of
   this shop" (es: "Lo que este comercio ofrece" / "Compromisos sostenibles de
   este comercio"); the migration fills them only where empty.

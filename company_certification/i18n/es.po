@@ -3235,10 +3235,12 @@ msgstr ""
 #: model:ir.model.fields,help:company_certification.field_certification_highlight__min_score
 msgid ""
 "Score the answer to the trigger question must reach, e.g. 2 for a full 'Yes'"
-" in a No (0) / Partially (1) / Yes (2) question."
+" in a No (0) / Partially (1) / Yes (2) question. Left at 0, it takes the "
+"question's best answer score."
 msgstr ""
 "Puntuación que debe alcanzar la respuesta a la pregunta disparadora, p. ej. "
-"2 para un «Sí» completo en una pregunta No (0) / Parcialmente (1) / Sí (2)."
+"2 para un «Sí» completo en una pregunta No (0) / Parcialmente (1) / Sí (2). "
+"Si se deja en 0, toma la puntuación de la mejor respuesta de la pregunta."
 
 #. module: company_certification
 #: model:ir.model.fields,field_description:company_certification.field_certification_type__show_all_without_evaluation
@@ -3260,12 +3262,12 @@ msgstr ""
 #: model:ir.model.fields,help:company_certification.field_certification_highlight__question_id
 msgid ""
 "Show this item when the company scored at least the minimum score on this "
-"question. Leave both triggers empty to show the item to every holder of the "
-"seal."
+"question (single choice or numeric questions). Leave both triggers empty to "
+"show the item to every holder of the seal."
 msgstr ""
 "Muestra este elemento si la empresa obtuvo al menos la puntuación mínima en "
-"esta pregunta. Deja ambos disparadores vacíos para mostrarlo a todos los "
-"titulares del sello."
+"esta pregunta (preguntas de opción única o numéricas). Deja ambos "
+"disparadores vacíos para mostrarlo a todos los titulares del sello."
 
 #. module: company_certification
 #: model:certification.type,amenities_title:company_certification.certification_type_sustainability
@@ -3334,3 +3336,13 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:company_certification.certification_type_view_form
 msgid "What this shop offers"
 msgstr "Lo que este comercio ofrece"
+
+#. module: company_certification
+#: code:addons/company_certification/models/certification_highlight.py:0
+#, python-format
+msgid ""
+"The trigger question of '%(label)s' must be a single choice or numeric "
+"question. For other questions, use trigger answers."
+msgstr ""
+"La pregunta disparadora de «%(label)s» debe ser de opción única o numérica. "
+"Para otras preguntas, usa respuestas disparadoras."

@@ -9,20 +9,17 @@
          Economy scores accessibility, attention and product; Sostenibilidad
          scores resources, social impact and governance.
 
-         Each Silver item carries the questionnaire answer that makes it
-         appear (trigger question + minimum score 2, a full "Sí"): a company
-         only shows what its own evaluation backs. Sostenibilidad items are
-         linked only where the administrator had already bound a question
-         (minimum score 1, as set there); the others stay always shown until
-         the owner maps them. Seals without an evaluation (imported) show the
-         whole list, see certification.type.show_all_without_evaluation.
+         Triggers (which answer makes each item appear) are NOT set here:
+         the single source is certification.highlight._CC_SEED_TRIGGERS,
+         applied by the <function> call at the end of this file on install
+         and by the 19.0.2.10.0 migration on update. Seals without an
+         evaluation (imported) show the whole list, see
+         certification.type.show_all_without_evaluation.
 
          noupdate: created on install, never overwritten afterwards. These are
          editable content, and an administrator's rewording must survive the
-         next module update. Databases that already had the first eight
-         Silver items and the Sostenibilidad energy and waste items get their
-         triggers from the 19.0.2.10.0 migration, which only fills triggers
-         that are empty. -->
+         next module update. Linking only fills items that have no
+         trigger yet, so it never overwrites an administrator's choice. -->
     <data noupdate="1">
 
         <!-- Heading above the icons, per vertical: "what this shop offers"
@@ -42,8 +39,6 @@
             <field name="icon">fa-wheelchair</field>
             <field name="label">Acceso sin barreras</field>
             <field name="description">Entrada y recorrido cómodos, sin escalones ni estrecheces.</field>
-            <field name="question_id" ref="silver_economy_q1"/>
-            <field name="min_score">2</field>
         </record>
         <record id="highlight_silver_seating" model="certification.highlight">
             <field name="type_id" ref="certification_type_silver"/>
@@ -51,8 +46,6 @@
             <field name="icon">fa-bed</field>
             <field name="label">Espacio para descansar</field>
             <field name="description">Un sitio donde sentarse durante la visita.</field>
-            <field name="question_id" ref="silver_economy_q5"/>
-            <field name="min_score">2</field>
         </record>
         <record id="highlight_silver_signage" model="certification.highlight">
             <field name="type_id" ref="certification_type_silver"/>
@@ -60,8 +53,6 @@
             <field name="icon">fa-lightbulb-o</field>
             <field name="label">Señalización e iluminación claras</field>
             <field name="description">Se ve bien y se encuentra todo sin preguntar.</field>
-            <field name="question_id" ref="silver_economy_q2"/>
-            <field name="min_score">2</field>
         </record>
         <record id="highlight_silver_pace" model="certification.highlight">
             <field name="type_id" ref="certification_type_silver"/>
@@ -69,8 +60,6 @@
             <field name="icon">fa-clock-o</field>
             <field name="label">Atención sin prisas</field>
             <field name="description">El ritmo lo marca el cliente.</field>
-            <field name="question_id" ref="silver_economy_q13"/>
-            <field name="min_score">2</field>
         </record>
         <record id="highlight_silver_language" model="certification.highlight">
             <field name="type_id" ref="certification_type_silver"/>
@@ -78,8 +67,6 @@
             <field name="icon">fa-comments-o</field>
             <field name="label">Lenguaje claro y sencillo</field>
             <field name="description">Sin tecnicismos innecesarios.</field>
-            <field name="question_id" ref="silver_economy_q14"/>
-            <field name="min_score">2</field>
         </record>
         <record id="highlight_silver_support" model="certification.highlight">
             <field name="type_id" ref="certification_type_silver"/>
@@ -87,8 +74,6 @@
             <field name="icon">fa-life-ring</field>
             <field name="label">Acompañamiento en la compra</field>
             <field name="description">Ayuda cuando el proceso se complica.</field>
-            <field name="question_id" ref="silver_economy_q18"/>
-            <field name="min_score">2</field>
         </record>
         <record id="highlight_silver_phone" model="certification.highlight">
             <field name="type_id" ref="certification_type_silver"/>
@@ -96,8 +81,6 @@
             <field name="icon">fa-phone</field>
             <field name="label">Atención telefónica cercana</field>
             <field name="description">Se puede resolver todo por teléfono.</field>
-            <field name="question_id" ref="silver_economy_q20"/>
-            <field name="min_score">2</field>
         </record>
         <record id="highlight_silver_web" model="certification.highlight">
             <field name="type_id" ref="certification_type_silver"/>
@@ -105,8 +88,6 @@
             <field name="icon">fa-low-vision</field>
             <field name="label">Web fácil de leer</field>
             <field name="description">Texto grande y buen contraste.</field>
-            <field name="question_id" ref="silver_economy_q7"/>
-            <field name="min_score">2</field>
         </record>
 
         <record id="highlight_silver_personal" model="certification.highlight">
@@ -115,8 +96,6 @@
             <field name="icon">fa-user</field>
             <field name="label">Atención personalizada</field>
             <field name="description">Cada cliente recibe un trato a su medida.</field>
-            <field name="question_id" ref="silver_economy_q12"/>
-            <field name="min_score">2</field>
         </record>
         <record id="highlight_silver_adapted" model="certification.highlight">
             <field name="type_id" ref="certification_type_silver"/>
@@ -124,8 +103,6 @@
             <field name="icon">fa-shopping-basket</field>
             <field name="label">Productos o servicios adaptados</field>
             <field name="description">Pensados para las necesidades reales de las personas mayores.</field>
-            <field name="question_id" ref="silver_economy_q29"/>
-            <field name="min_score">2</field>
         </record>
         <record id="highlight_silver_help" model="certification.highlight">
             <field name="type_id" ref="certification_type_silver"/>
@@ -133,8 +110,6 @@
             <field name="icon">fa-handshake-o</field>
             <field name="label">Ayuda siempre a mano</field>
             <field name="description">Pedir ayuda es fácil, en la tienda y en la web.</field>
-            <field name="question_id" ref="silver_economy_q10"/>
-            <field name="min_score">2</field>
         </record>
 
         <!-- ============ Sostenibilidad ============ -->
@@ -144,8 +119,6 @@
             <field name="icon">fa-bolt</field>
             <field name="label">Eficiencia energética</field>
             <field name="description">Mide y reduce su consumo de energía.</field>
-            <field name="question_id" ref="sust_economy_q1"/>
-            <field name="min_score">1</field>
         </record>
         <record id="highlight_sustainability_renewable" model="certification.highlight">
             <field name="type_id" ref="certification_type_sustainability"/>
@@ -160,8 +133,6 @@
             <field name="icon">fa-recycle</field>
             <field name="label">Gestión de residuos</field>
             <field name="description">Separa y trata correctamente lo que desecha.</field>
-            <field name="question_id" ref="sust_economy_q5"/>
-            <field name="min_score">1</field>
         </record>
         <record id="highlight_sustainability_water" model="certification.highlight">
             <field name="type_id" ref="certification_type_sustainability"/>
@@ -219,9 +190,11 @@
             <field name="icon">fa-map-marker</field>
             <field name="label">Productos ecológicos y locales</field>
             <field name="description">Apuesta por lo ecológico y lo de proximidad.</field>
-            <field name="question_id" ref="sust_economy_q24"/>
-            <field name="min_score">1</field>
         </record>
+
+        <!-- Install only (noupdate): an update gets the same links from the
+             migration. -->
+        <function model="certification.highlight" name="_cc_link_seed_triggers"/>
 
     </data>
 </odoo>
