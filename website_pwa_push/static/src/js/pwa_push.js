@@ -21,7 +21,7 @@ export const BACKEND_WORKER_SCOPE = "/odoo";
 // The key core's web client keeps the last registered endpoint under
 // (mail/static/src/webclient/web/webclient.js). Kept in step so the web
 // client does not mistake our subscription for a lost one.
-const CORE_ENDPOINT_STORAGE_KEY = "mail.push.device_endpoint";
+export const CORE_ENDPOINT_STORAGE_KEY = "mail.push.device_endpoint";
 
 // "Not now" on the in-app prompt. Per device, and deliberately never sent to
 // the server: it is a display preference, not a consent record.
@@ -106,11 +106,24 @@ export function arrayBufferToBase64Url(buffer) {
  * `pushManager.subscribe` rejects on a registration without one, and a
  * registration made a moment ago usually has only an installing worker.
  */
-function whenActive(registration) {
+export function whenActive(registration) {
     if (registration.active) {
         return Promise.resolve(registration);
     }
     const worker = registration.installing || registration.waiting;
+    if (!worker) {
+        // Nothing will ever fire a statechange: waiting would hang the card
+        // forever. Only reachable when the browser dropped the worker between
+        // `register` resolving and this call (an update that failed to
+        // install, storage cleared meanwhile), so it gets its own message.
+        console.warn(
+            "PWA push: service worker registration has no worker to wait for",
+            registration.scope
+        );
+        return Promise.reject(
+            new Error("service worker registration has no installing, waiting or active worker")
+        );
+    }
     return new Promise((resolve, reject) => {
         worker.addEventListener("statechange", () => {
             if (worker.state === "activated") {
@@ -228,12 +241,20 @@ export class PWAPush extends Interaction {
         return Boolean(document.querySelector('meta[name="cc-pwa-push"]'));
     }
 
+    /**
+     * Reads the three APIs rather than testing for their names: an `in`
+     * check is true for an accessor that throws when read (some privacy
+     * modes and in-app browsers do exactly that), and the first real use
+     * would then throw out of `start`.
+     */
     isPushSupported() {
-        return (
-            "serviceWorker" in navigator &&
-            "PushManager" in window &&
-            "Notification" in window
-        );
+        try {
+            return Boolean(
+                navigator.serviceWorker && window.PushManager && window.Notification
+            );
+        } catch {
+            return false;
+        }
     }
 
     /**
@@ -346,6 +367,42 @@ export class PWAPush extends Interaction {
     }
 
     /**
+     * Retire a subscription this browser still holds on the WEBSITE worker.
+     *
+     * An internal user may have been subscribed there before this module
+     * routed them to the backend worker (or on a website with push on). With
+     * both alive every message arrives twice, once per worker. The browser
+     * side is unsubscribed and the server row removed through the public
+     * route, which only removes rows owned by the caller.
+     *
+     * `getRegistration("/")` answers the registration whose scope matches the
+     * site root, which can only be the website worker: "/odoo" does not
+     * match "/". Best effort: a failure here must not undo the backend
+     * subscription that just succeeded.
+     */
+    async dropWebsiteSubscription(backendEndpoint) {
+        try {
+            const registration = await this.waitFor(
+                navigator.serviceWorker.getRegistration("/")
+            );
+            if (!registration) {
+                return;
+            }
+            const subscription = await this.waitFor(
+                registration.pushManager.getSubscription()
+            );
+            if (!subscription || subscription.endpoint === backendEndpoint) {
+                return;
+            }
+            const endpoint = subscription.endpoint;
+            await this.waitFor(subscription.unsubscribe());
+            await this.waitFor(rpc("/mail/push/unsubscribe", {endpoint: endpoint}));
+        } catch (error) {
+            console.warn("PWA push: could not retire the website subscription", error);
+        }
+    }
+
+    /**
      * Subscribe this browser and hand the subscription to the server.
      *
      * @returns {Promise<boolean>} whether the server accepted a subscription
@@ -411,8 +468,15 @@ export class PWAPush extends Interaction {
                     keys: keys,
                     expiration_time: expirationTime,
                     vapid_public_key: key,
+                    // Which worker owns the subscription. The server keeps it
+                    // on the device row so it can drop an internal user's
+                    // leftover website-worker devices (mail_push_guest).
+                    worker: this.target,
                 })
             );
+            if (this.target === "backend") {
+                await this.dropWebsiteSubscription(endpoint);
+            }
             return true;
         } catch (error) {
             console.warn("PWA push: subscription failed", error);
@@ -457,7 +521,13 @@ export class PWAPushOpenChannel extends Interaction {
     static selector = "#wrapwrap";
 
     start() {
-        const container = navigator.serviceWorker;
+        let container = null;
+        try {
+            container = navigator.serviceWorker;
+        } catch {
+            // Some privacy modes and embedded browsers make the accessor
+            // itself throw. No worker, so no message to wait for.
+        }
         if (!container) {
             return;
         }

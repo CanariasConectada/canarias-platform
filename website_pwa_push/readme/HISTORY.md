@@ -23,3 +23,14 @@ DESCRIPTION.md ("Two workers, one origin"). Changes:
   hint was unreachable.
 - A subscription made with a rotated VAPID key is replaced instead of being
   registered as a device nothing can encrypt for.
+- No double notifications: after subscribing an internal user on the backend
+  worker, the browser's subscription on the website worker (if any) is
+  unsubscribed and its row removed through `/mail/push/unsubscribe`. The
+  subscribe call now sends `worker` so `mail_push_guest` can record it and
+  drop leftovers server side.
+- `whenActive` rejects with a clear error (and a distinct warning) when the
+  registration has no worker at all, instead of waiting forever.
+- The page scripts no longer throw when the Push API accessors are missing or
+  throw (privacy modes, in-app browsers): the login page keeps working.
+- `test_page_script_js.py` executes `pwa_push.js` in node against fake
+  registrations, PushManager and worker states.
