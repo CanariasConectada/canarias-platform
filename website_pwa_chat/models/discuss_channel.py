@@ -5,6 +5,7 @@ import logging
 from datetime import timedelta
 
 from odoo import _, api, fields, models
+from odoo.exceptions import AccessError
 from odoo.tools import format_datetime
 
 from odoo.addons.mail.tools.discuss import Store
@@ -53,6 +54,12 @@ DEFAULT_PURGE_IDENTIFIED_DAYS = 30
 # failed after the open, an identify form never followed by a message).
 PARAM_EMPTY_PURGE_HOURS = "website_pwa_chat.support_empty_purge_hours"
 DEFAULT_EMPTY_PURGE_HOURS = 1
+
+# How long a support conversation's name may get. The name is what an agent
+# scans down the Soporte drawer of the Discuss sidebar, so a visitor who types
+# a paragraph into the "your name" field must not push everything else off the
+# row. Long enough for "Soporte · " plus a full first and last name.
+SUPPORT_NAME_MAX = 64
 
 SUPPORT_WAITING = "waiting"
 SUPPORT_ANSWERED = "answered"
@@ -394,9 +401,7 @@ class DiscussChannel(models.Model):
             )
             .create(
                 {
-                    "name": _(
-                        "Soporte · %s", (partner.name or guest.name or _("Visitante"))
-                    ),
+                    "name": self._support_channel_name(partner.name or guest.name),
                     "channel_type": "group",
                     "support_key": key,
                     # Never on the public list: that flag is what `/chat` reads.
@@ -720,7 +725,130 @@ class DiscussChannel(models.Model):
         _partner, guest = self.env["res.partner"]._get_current_persona()
         if guest:
             guest.sudo().write({"name": name[:120]})
+        # And the conversation itself: the name is what the agent reads in
+        # the Soporte drawer and in the thread header, long before they open
+        # the backend queue where "Quién pregunta" used to be the only place
+        # it showed up.
+        self._support_refresh_name()
         return True
+
+    # ------------------------------------------------------------------
+    # Support: whose conversation it is, by name
+    # ------------------------------------------------------------------
+
+    @api.model
+    def _support_channel_name(self, requester):
+        """``Soporte · <requester>``, cut to a length the sidebar can show.
+
+        Cut on the whole name and not on the requester alone, so the limit
+        is one number whatever language the prefix was translated into.
+        """
+        name = _("Soporte · %s", (requester or "").strip() or _("Visitante"))
+        if len(name) > SUPPORT_NAME_MAX:
+            name = name[: SUPPORT_NAME_MAX - 1].rstrip() + "…"
+        return name
+
+    def _support_partner(self):
+        """The account this conversation belongs to, if it is one.
+
+        Read back out of ``support_key`` for the same reason as
+        ``_support_guest``: the members list also holds every agent.
+        """
+        self.ensure_one()
+        prefix = SUPPORT_KEY_PARTNER % ""
+        key = self.support_key or ""
+        if not key.startswith(prefix):
+            return self.env["res.partner"]
+        raw = key[len(prefix) :]
+        if not raw.isdigit():
+            return self.env["res.partner"]
+        return self.env["res.partner"].sudo().browse(int(raw)).exists()
+
+    def _support_requester_name(self):
+        """The best name we have for whoever asked, or False.
+
+        What they typed wins: a walk-in community guest is an account named
+        "Invitado 3f9a2c", and the name they gave is the one the agent can
+        actually greet them by. Then the account, then the guest cookie.
+        """
+        self.ensure_one()
+        if self.support_visitor_name:
+            return self.support_visitor_name
+        partner = self._support_partner()
+        if partner:
+            return partner.name
+        guest = self._support_guest()
+        if guest:
+            return guest.name
+        return False
+
+    def _support_refresh_name(self):
+        """Rename these conversations after whoever asked.
+
+        Written only when the name actually changes: every write on a
+        channel's name is broadcast to all its members' Discuss clients.
+        """
+        for channel in self.sudo().filtered("support_key"):
+            name = channel._support_channel_name(channel._support_requester_name())
+            if channel.name != name:
+                channel.name = name
+
+    # ------------------------------------------------------------------
+    # Support: asked for from inside Discuss
+    # ------------------------------------------------------------------
+
+    @api.model
+    def _support_is_agent(self, user=None):
+        """Whether this user is one of the people who answer.
+
+        Group membership rather than ``_support_agents()``: this runs on every
+        backend page load through ``session_info`` and only needs a yes or no
+        about one user, not the whole staff.
+        """
+        user = user or self.env.user
+        groups = user.sudo().all_group_ids
+        for xmlid in (SUPPORT_GROUP_XMLID, "base.group_system"):
+            group = self.env.ref(xmlid, raise_if_not_found=False)
+            if group and group in groups:
+                return True
+        return False
+
+    @api.model
+    def _support_can_request_from_discuss(self):
+        """Whether the "Request support" entry belongs in this user's Discuss.
+
+        Every internal account that does not answer support itself:
+        merchants, walk-in community guests, staff. An agent asking support
+        for help would open a conversation with themselves in it.
+        """
+        user = self.env.user
+        return user._is_internal() and not self._support_is_agent(user)
+
+    @api.model
+    def _support_request_from_discuss(self):
+        """Open (or reopen) the caller's support conversation from Discuss.
+
+        The SAME conversation the website button opens for this account --
+        ``_support_channel`` keys it on the partner either way -- so a
+        merchant who asked from their shop's website and then from the
+        backend is talking in one place, to the same seated agents.
+        """
+        if not self._support_can_request_from_discuss():
+            raise AccessError(
+                _(
+                    "Support agents answer support conversations; they do not "
+                    "open one for themselves."
+                )
+            )
+        channel = self._support_channel()
+        if channel.support_closed:
+            # Asking again is the clearest possible sign it is not over.
+            channel.sudo().support_closed = False
+        channel._support_refresh_name()
+        # A conversation unpinned in the past must come back to the caller's
+        # sidebar, or the click would open a thread they cannot find again.
+        channel.channel_pin(pinned=True)
+        return channel
 
     @api.model
     def _support_sync_agents(self):

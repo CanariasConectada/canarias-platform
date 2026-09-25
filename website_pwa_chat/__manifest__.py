@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website PWA Chat",
-    "version": "19.0.6.3.1",
+    "version": "19.0.6.4.0",
     "category": "Website",
     "summary": "Community chat page of the Canarias Conectada app, served "
     "inside the public website layout",
@@ -74,6 +74,15 @@
         # Direct messages list.
         "web.assets_backend": [
             "website_pwa_chat/static/src/backend/support_sidebar_category.js",
+            # "Request support" for everybody who is not an agent: merchants
+            # and walk-in guests live in the backend, not on the website.
+            "website_pwa_chat/static/src/backend/support_request_button.js",
+            "website_pwa_chat/static/src/backend/support_request_button.xml",
+        ],
+        # The browser checks run by the HttpCase suite.
+        "web.assets_tests": [
+            "website_pwa_chat/static/tests/tours/support_request_discuss.js",
+            "website_pwa_chat/static/tests/tours/support_window_size.js",
         ],
     },
     "installable": True,

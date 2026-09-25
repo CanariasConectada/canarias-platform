@@ -1,3 +1,21 @@
+## 19.0.6.4.0 (2026-09-25)
+
+- **Request support** from the backend Discuss sidebar, for every internal
+  user who is not a support agent (merchants, walk-in community guests). It
+  opens or reopens the same partner-keyed conversation the website button
+  opens, through the new `/website_pwa_chat/support/request` route. Agents
+  and administrators neither see it (`session_info`) nor may call it.
+- Support conversations are named after who is asking (`Soporte · <name>`,
+  at most 64 characters): the name typed on the identify card, else the
+  account, else the guest. Community guests (`Invitado …`) are now offered
+  the identify card. A migration renames the existing conversations.
+- The floating support window is larger: 26rem x 42rem on desktop, growing
+  upwards, and nearly full-screen below 576px. The page inside it fills the
+  frame and only the conversation scrolls. The identify card is more compact
+  in the frame.
+- New `i18n/es.po` for the strings written in English. The new strings are
+  also translated in de, en, fr, it, pl and pt.
+
 ## 19.0.6.3.1 (2026-09-09)
 
 - Support agents are appointed by ticking **Soporte: atender a los

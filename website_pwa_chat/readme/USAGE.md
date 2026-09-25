@@ -29,3 +29,20 @@ rendered by the server, not held in the browser.
 channels are renameable from the Discuss UI and a slug would rot on the first
 rename. `mail`'s own `/chat/<token>` routes are untouched: werkzeug matches the
 numeric segment against the `int` rule and everything else against core's.
+
+## Asking for support from Discuss
+
+Merchants, walk-in community guests and any other internal user who is not a
+support agent find a **Request support** button at the top of the Discuss
+sidebar. It opens their support conversation, the same one the website button
+opens for their account, with the same agents seated, or reopens it if it
+was closed. Agents and administrators do not see the button, and the route
+behind it refuses them.
+
+## Who is asking
+
+A support conversation is named `Soporte · <name>`, cut at 64 characters,
+so an agent can see who is asking in the Soporte drawer and in the thread
+header. The name is the one the visitor typed on the identify card, or else
+the account's name, or else the guest's. Walk-in community guests are
+accounts named "Invitado …", so they are shown the identify card as well.

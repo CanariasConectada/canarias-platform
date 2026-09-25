@@ -488,3 +488,17 @@ msgstr "Fermer le chat"
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
 msgid "Chat de soporte"
 msgstr "Chat d'assistance"
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/backend/support_request_button.xml:0
+msgid "Request support"
+msgstr "Demander de l'aide"
+
+#. module: website_pwa_chat
+#. odoo-python
+#: code:addons/website_pwa_chat/models/discuss_channel.py:0
+msgid ""
+"Support agents answer support conversations; they do not open one for "
+"themselves."
+msgstr "Les agents du support répondent aux conversations de support ; ils n'en ouvrent pas pour eux-mêmes."

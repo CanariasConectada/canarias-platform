@@ -152,16 +152,34 @@
     // Wrapped in calc() so the whole expression reaches the browser as CSS.
     // Bare min() is intercepted by Odoo's Sass compiler, whose own min()
     // cannot take a calc() argument and fails the ENTIRE frontend bundle.
-    width: calc(min(24rem, 100vw - 2rem));
+    //
+    // 26rem x 42rem since 19.0.6.4.0 (was 24rem x 34rem): at the old height
+    // the identify card and the composer left a sliver for the conversation
+    // itself. It now grows UPWARDS -- the bottom edge stays above the button
+    // -- until it is 1rem short of the top of the viewport.
+    width: calc(min(26rem, 100vw - 2rem));
     // The vh line is the fallback for browsers without dvh; the dvh line
     // wins where it is understood and tracks the real visible viewport
     // under mobile browser chrome.
-    height: calc(min(34rem, 100vh - 6.5rem));
-    height: calc(min(34rem, 100dvh - 6.5rem));
+    height: calc(min(42rem, 100vh - 5.5rem));
+    height: calc(min(42rem, 100dvh - 5.5rem));
     overflow: hidden;
     border-radius: 1rem;
     background: #fff;
     box-shadow: 0 0.75rem 2.5rem rgba(0, 0, 0, 0.28);
+
+    // On a phone a floating box is just a smaller screen: take nearly all of
+    // it. Pinned by its four edges rather than sized, so it follows the
+    // visible viewport as the browser chrome comes and goes, and kept clear
+    // of the notch and of the button underneath, which still closes it.
+    @include media-breakpoint-down(sm) {
+        top: calc(0.5rem + env(safe-area-inset-top, 0px));
+        right: 0.5rem;
+        bottom: calc(4.25rem + env(safe-area-inset-bottom, 0px));
+        left: 0.5rem;
+        width: auto;
+        height: auto;
+    }
 }
 
 .o_cc_chat_window_head {
@@ -198,4 +216,47 @@
 // paddings were designed for a full page, not a 24rem box.
 .o_cc_chat_framed {
     padding: 1rem !important;
+    // The page fills the frame exactly and the conversation takes whatever
+    // the heading, the identify card and the composer leave: the log is the
+    // one thing that scrolls. `60vh` (the full page's cap) inside a frame is
+    // 60% of the FRAME, which with the identify card open pushed the composer
+    // below the fold and gave the frame a second scrollbar of its own.
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    max-width: none;
+    // The fallback when even a minimal log does not fit (a very short
+    // landscape phone): the page scrolls rather than clipping the composer.
+    overflow-y: auto;
+
+    > * {
+        flex: 0 0 auto;
+    }
+
+    .o_cc_chat_messages {
+        flex: 1 1 auto;
+        min-height: 6rem;
+        max-height: none;
+    }
+
+    // The full page spaces its blocks for a desktop; in a 26rem window every
+    // one of those rems comes out of the conversation.
+    > .mt-3 {
+        margin-top: 0.5rem !important;
+    }
+
+    // The identify card stacks name, email and button on three rows below
+    // Bootstrap's `sm`, which the window always is: 330px of form above a
+    // conversation that had 96. Name and email share a row here.
+    .o_cc_chat_identify {
+        .card-body {
+            padding: 0.75rem;
+        }
+
+        .row > :nth-child(-n + 2) {
+            flex: 0 0 auto;
+            width: 50%;
+        }
+    }
 }
