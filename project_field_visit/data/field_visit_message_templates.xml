@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!-- Chatter note of one visit: the same shape every time, so the
+         history of a business reads like a logbook. -->
+    <template id="field_visit_message">
+        <div class="o_field_visit_message">
+            <p><strong>Field visit</strong> <t t-out="visit_date"/></p>
+            <ul>
+                <li>Consultant: <t t-out="consultant"/></li>
+                <li>Outcome: <t t-out="outcome"/></li>
+                <li t-if="stage">Moved to stage: <t t-out="stage"/></li>
+            </ul>
+            <p t-if="notes" style="white-space: pre-wrap;" t-out="notes"/>
+        </div>
+    </template>
+</odoo>

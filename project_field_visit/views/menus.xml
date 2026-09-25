@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <menuitem
+        id="menu_project_field_visit_import"
+        name="Import field visits"
+        parent="project.menu_project_config"
+        action="action_project_field_visit_import"
+        groups="project_field_visit.group_field_visit_manager"
+        sequence="50"
+    />
+</odoo>

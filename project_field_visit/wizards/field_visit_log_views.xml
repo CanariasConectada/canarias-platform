@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <record id="project_field_visit_log_view_form" model="ir.ui.view">
+        <field name="name">project.field.visit.log.form</field>
+        <field name="model">project.field.visit.log</field>
+        <field name="arch" type="xml">
+            <form string="Log visit">
+                <field name="task_id" invisible="1" />
+                <field name="project_id" invisible="1" />
+                <div class="h4 mb-3" invisible="not business_name">
+                    <field name="business_name" readonly="1" />
+                </div>
+                <group>
+                    <field name="visit_date" />
+                    <field name="user_id" options="{'no_open': True}" />
+                    <field name="outcome" widget="radio" />
+                    <field
+                        name="stage_id"
+                        options="{'no_create': True, 'no_open': True}"
+                    />
+                </group>
+                <field
+                    name="notes"
+                    placeholder="What happened, what was agreed, what is missing..."
+                />
+                <label for="attachment_ids" class="mt-3" />
+                <field name="attachment_ids" widget="many2many_binary" />
+                <footer>
+                    <button
+                        name="action_log_visit"
+                        type="object"
+                        string="Save visit"
+                        class="btn-primary"
+                        data-hotkey="q"
+                    />
+                    <button special="cancel" string="Cancel" data-hotkey="x" />
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>
