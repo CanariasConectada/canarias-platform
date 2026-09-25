@@ -33,7 +33,11 @@
   or multiple choice sums several answers); an empty minimum score takes
   the question's best answer score on every create and write, so a trigger
   never fires on a "No". The migration folds positive items into active
-  items only; an archived match gets a new active item and a warning.
+  items only; an archived match gets a new active item and a warning. A
+  legacy positive item at minimum score 0 is the one case where its score
+  does not carry over: it takes the question's best score, logged as a
+  warning (production has none). "Sí" answer triggers include every answer
+  tied at the top score.
 - Headings default to "What this shop offers" / "Sustainable commitments of
   this shop" (es: "Lo que este comercio ofrece" / "Compromisos sostenibles de
   este comercio"); the migration fills them only where empty.

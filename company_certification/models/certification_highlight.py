@@ -364,7 +364,11 @@ class CertificationHighlight(models.Model):
             trigger = question(xmlid)
             if not trigger or not trigger.suggested_answer_ids:
                 return None
-            answers |= trigger.suggested_answer_ids.sorted("answer_score")[-1]
+            # Every answer tied at the top score, not an arbitrary one.
+            best = max(trigger.suggested_answer_ids.mapped("answer_score"))
+            answers |= trigger.suggested_answer_ids.filtered(
+                lambda answer, best=best: answer.answer_score == best
+            )
         return {"answer_ids": [(6, 0, answers.ids)]}
 
     @api.model
@@ -392,6 +396,11 @@ class CertificationHighlight(models.Model):
         question is reused (the positive item's minimum score wins: it is what the
         administrator chose); otherwise a new item is created with the
         positive item's label (every translation), icon and sequence.
+
+        Exception to "the minimum score wins": a positive item at minimum
+        score 0 fired on any answer, "No" included. The catalogue does not
+        allow that (see ``_fill_empty_min_score``), so such an item ends up
+        at the question's best answer score, with a warning in the log.
         """
         folded = created = skipped = 0
         items = (
@@ -461,6 +470,17 @@ class CertificationHighlight(models.Model):
                 )
                 highlight.invalidate_recordset(["label"])
                 created += 1
+            if not item.min_score and highlight.min_score:
+                _logger.warning(
+                    "Positive item %s had minimum score 0 on question %s (%s), "
+                    "which fired on any answer; catalogue item %s uses the "
+                    "question's best score %s instead.",
+                    item.id,
+                    item.question_id.id,
+                    item.question_id.title,
+                    highlight.id,
+                    highlight.min_score,
+                )
             item.migrated_highlight_id = highlight
             _logger.info(
                 "Positive item %s (%s) migrated into catalogue item %s (%s).",

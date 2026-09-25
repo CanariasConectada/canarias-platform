@@ -108,6 +108,58 @@ class TestItemsCatalogMigration(CertificationCase):
 
         self.assertEqual(access.question_id, q3)
 
+    def test_a_legacy_minimum_of_zero_becomes_the_best_score(self):
+        created = self._positive_item(self.questions[1], "Any answer", min_score=0)
+        existing = self.env["certification.highlight"].create(
+            {
+                "type_id": self.cert_type.id,
+                "label": "Designed wording",
+                "question_id": self.questions[0].id,
+                "min_score": 1,
+            }
+        )
+        folded = self._positive_item(self.questions[0], "Any answer", min_score=0)
+
+        with self.assertLogs(
+            "odoo.addons.company_certification.models.certification_highlight",
+            level="WARNING",
+        ) as logs:
+            self.env["certification.highlight"]._cc_fold_positive_items()
+
+        self.assertEqual(created.migrated_highlight_id.min_score, 2)
+        self.assertEqual(folded.migrated_highlight_id, existing)
+        self.assertEqual(existing.min_score, 2, "a 'No' must never trigger it")
+        self.assertEqual(sum("had minimum score 0" in line for line in logs.output), 2)
+
+    def test_best_answer_of_takes_every_answer_tied_at_the_top(self):
+        question = self.env["survey.question"].create(
+            {
+                "survey_id": self.survey.id,
+                "title": "Two top answers",
+                "question_type": "simple_choice",
+                "suggested_answer_ids": [
+                    (0, 0, {"value": "No", "answer_score": 0}),
+                    (0, 0, {"value": "Yes", "answer_score": 2}),
+                    (0, 0, {"value": "Always", "answer_score": 2}),
+                ],
+            }
+        )
+        self.env["ir.model.data"].create(
+            {
+                "module": "company_certification",
+                "name": "test_tied_question",
+                "model": "survey.question",
+                "res_id": question.id,
+            }
+        )
+
+        values = self.env["certification.highlight"]._cc_seed_trigger_values(
+            {"best_answer_of": ["test_tied_question"]}
+        )
+
+        top = question.suggested_answer_ids.filtered(lambda a: a.answer_score == 2)
+        self.assertEqual(sorted(values["answer_ids"][0][2]), sorted(top.ids))
+
     def test_an_archived_match_gets_a_new_active_item(self):
         archived = self.env["certification.highlight"].create(
             {
