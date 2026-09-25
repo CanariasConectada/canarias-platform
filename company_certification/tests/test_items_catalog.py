@@ -24,7 +24,7 @@ class TestItemsCatalogMigration(CertificationCase):
         item = self._positive_item(self.questions[1], "Question 1 OK", icon="bad icon")
         Highlight = self.env["certification.highlight"]
 
-        counts = Highlight._cc_fold_positive_items()
+        counts = Highlight._cc_fold_positive_items(item)
 
         self.assertEqual(counts, {"folded": 0, "created": 1, "skipped": 0})
         highlight = item.migrated_highlight_id
@@ -34,6 +34,16 @@ class TestItemsCatalogMigration(CertificationCase):
         self.assertEqual(highlight.label, "Question 1 OK")
         # An icon the new validation would reject falls back to the default.
         self.assertEqual(highlight.icon, "fa-check-circle")
+
+    def test_a_scoped_fold_leaves_other_items_alone(self):
+        mine = self._positive_item(self.questions[1], "Mine")
+        other = self._positive_item(self.questions[0], "Other")
+
+        counts = self.env["certification.highlight"]._cc_fold_positive_items(mine)
+
+        self.assertEqual(counts, {"folded": 0, "created": 1, "skipped": 0})
+        self.assertTrue(mine.migrated_highlight_id)
+        self.assertFalse(other.migrated_highlight_id)
 
     def test_an_item_on_an_already_triggered_question_is_folded(self):
         existing = self.env["certification.highlight"].create(
@@ -46,7 +56,7 @@ class TestItemsCatalogMigration(CertificationCase):
         )
         item = self._positive_item(self.questions[0], "Admin wording", min_score=1)
 
-        counts = self.env["certification.highlight"]._cc_fold_positive_items()
+        counts = self.env["certification.highlight"]._cc_fold_positive_items(item)
 
         self.assertEqual(counts["folded"], 1)
         self.assertEqual(item.migrated_highlight_id, existing)
@@ -124,7 +134,9 @@ class TestItemsCatalogMigration(CertificationCase):
             "odoo.addons.company_certification.models.certification_highlight",
             level="WARNING",
         ) as logs:
-            self.env["certification.highlight"]._cc_fold_positive_items()
+            self.env["certification.highlight"]._cc_fold_positive_items(
+                created | folded
+            )
 
         self.assertEqual(created.migrated_highlight_id.min_score, 2)
         self.assertEqual(folded.migrated_highlight_id, existing)
@@ -172,7 +184,7 @@ class TestItemsCatalogMigration(CertificationCase):
         )
         item = self._positive_item(self.questions[0], "Still shown")
 
-        counts = self.env["certification.highlight"]._cc_fold_positive_items()
+        counts = self.env["certification.highlight"]._cc_fold_positive_items(item)
 
         self.assertEqual(counts["created"], 1)
         self.assertNotEqual(item.migrated_highlight_id, archived)

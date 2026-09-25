@@ -3,8 +3,10 @@
 
 import json
 import re
+from unittest.mock import patch
 
 from odoo.tests import HttpCase, tagged
+from odoo.tests import common as test_common
 from odoo.tools import file_open
 
 from odoo.addons.website_pwa.controllers.main import SERVICE_WORKER_PATH
@@ -136,6 +138,18 @@ class TestQuickAccessBlock(HttpCase):
 
 @tagged("post_install", "-at_install")
 class TestBackendHomeEntry(HttpCase):
+    def setUp(self):
+        super().setUp()
+        # No screencast: the page keeps repainting up to the moment the
+        # harness closes Chrome, and with screencasts on (CI and the lab) a
+        # frame acknowledged on the closing socket fails the test with a
+        # BrokenPipeError AFTER the browser check has already succeeded.
+        self.startPatcher(
+            patch.object(
+                test_common, "Screencaster", lambda *args: test_common.NoScreencast()
+            )
+        )
+
     def _asset_paths(self, bundle):
         ir_asset = self.env["ir.asset"]
         return [

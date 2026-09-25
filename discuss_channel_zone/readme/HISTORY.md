@@ -1,3 +1,9 @@
+## 19.0.1.1.2 (2026-09-25)
+
+- Tests: activate es_ES in the display tests instead of skipping (or failing
+  with "Invalid language code") on a fresh database that only has en_US. The
+  seeded texts are code translations, read from `i18n/es.po`.
+
 ## 19.0.1.1.1 (2026-09-25)
 
 - Channel names and descriptions are no longer translatable fields (an

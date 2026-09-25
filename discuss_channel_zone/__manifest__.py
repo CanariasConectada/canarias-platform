@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Discuss Channel Zone",
-    "version": "19.0.1.1.1",
+    "version": "19.0.1.1.2",
     "category": "Discuss",
     "summary": "Community chat channels seeded per commercial zone, with "
     "membership derived from each user's zone",

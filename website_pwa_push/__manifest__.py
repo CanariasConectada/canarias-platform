@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website PWA Push",
-    "version": "19.0.2.0.0",
+    "version": "19.0.2.0.1",
     "category": "Website",
     "summary": "Web Push notifications for the public website app",
     # Odoo renders this with docutils on every install. Keep it valid RST:

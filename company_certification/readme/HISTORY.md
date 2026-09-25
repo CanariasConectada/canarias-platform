@@ -1,3 +1,11 @@
+## 19.0.2.10.1 (2026-09-25)
+
+- `_cc_fold_positive_items` takes an optional recordset of positive items, so
+  the tests fold only their own rows. A fresh database with demo data already
+  holds an unmigrated positive item (`demo_positive_item_access`, loaded after
+  install, where the migration never runs), which skewed the counts in CI. The
+  migration still folds every unmigrated row.
+
 ## 19.0.2.10.0 (2026-09-25)
 
 - One catalogue of microsite items per certification type, driven by the

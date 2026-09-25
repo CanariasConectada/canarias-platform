@@ -38,7 +38,10 @@ class TestSeededChannelDisplay(TransactionCase):
         cls.Channel = cls.env["discuss.channel"]
         cls.channel_canarias = cls.env.ref("discuss_channel_zone.channel_canarias")
         cls.channel_canarias.write({"description": CANARIAS_EN})
-        cls.es_active = bool(cls.env["res.lang"].search_count([("code", "=", "es_ES")]))
+        # A fresh CI database only has en_US. The seeded texts are code
+        # translations (read from i18n/es.po on disk), so activating the
+        # language is enough for them to show.
+        cls.env["res.lang"]._activate_lang("es_ES")
 
     def _store_values(self, channel, lang):
         result = (
@@ -65,8 +68,6 @@ class TestSeededChannelDisplay(TransactionCase):
         )
 
     def test_store_payload_is_translated_for_seeded_channel(self):
-        if not self.es_active:
-            self.skipTest("es_ES is not installed in this database")
         values = self._store_values(self.channel_canarias, "es_ES")
         self.assertEqual(values["description"], CANARIAS_ES)
         self.assertEqual(values["name"], "Canarias Conectada")
@@ -81,8 +82,6 @@ class TestSeededChannelDisplay(TransactionCase):
 
     def test_seeded_description_matches_with_legacy_indentation(self):
         """Prod stores the text with the XML indentation of 19.0.1.0.0."""
-        if not self.es_active:
-            self.skipTest("es_ES is not installed in this database")
         self.channel_canarias.description = (
             "Community channel of the whole platform.\n"
             "                Open to everyone, visitors included."

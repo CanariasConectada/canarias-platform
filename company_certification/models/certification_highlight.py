@@ -389,8 +389,11 @@ class CertificationHighlight(models.Model):
         return done
 
     @api.model
-    def _cc_fold_positive_items(self):
+    def _cc_fold_positive_items(self, items=None):
         """Turn each unmigrated positive item into a catalogue item.
+
+        ``items`` limits the run to those positive items (still only the
+        unmigrated ones); by default every unmigrated item is processed.
 
         An active item of the same type already triggered by the same
         question is reused (the positive item's minimum score wins: it is what the
@@ -403,10 +406,13 @@ class CertificationHighlight(models.Model):
         at the question's best answer score, with a warning in the log.
         """
         folded = created = skipped = 0
+        domain = [("migrated_highlight_id", "=", False)]
+        if items is not None:
+            domain.append(("id", "in", items.ids))
         items = (
             self.env["certification.positive.item"]
             .with_context(active_test=False)
-            .search([("migrated_highlight_id", "=", False)], order="id")
+            .search(domain, order="id")
         )
         for item in items:
             cert_type = item.survey_id.certification_type_id or self.env[

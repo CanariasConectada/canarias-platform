@@ -1,3 +1,9 @@
+## 19.0.1.4.1 (2026-09-25)
+
+- Tests: the Discuss tours run without a screencast. Discuss keeps repainting
+  until Chrome closes, and an acknowledged frame on the closing socket failed
+  the test with a BrokenPipeError after the tour had succeeded.
+
 ## 19.0.1.4.0 (2026-09-25)
 
 - Discuss guest profile for community guests (`is_community_guest`):

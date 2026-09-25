@@ -1,3 +1,8 @@
+## 19.0.2.0.1 (2026-09-25)
+
+- Tests: the routing browser tests run without a screencast, so a frame
+  acknowledged while Chrome closes cannot fail them after the check succeeded.
+
 ## 19.0.2.0.0 (2026-09-25)
 
 Push was not reaching the installed app. Root cause and evidence are in
