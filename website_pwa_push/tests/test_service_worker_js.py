@@ -169,6 +169,30 @@ class TestServiceWorkerJS(HttpCase):
                 "event": "push",
                 "payload": {"title": "m", "options": {"data": CHANNEL_SUB}},
             },
+            # A payload that asks to be silent, and one with its own buzz.
+            {
+                "name": "payload_silent",
+                "event": "push",
+                "payload": {
+                    "title": "m",
+                    "options": {"data": CHANNEL_SUB, "silent": True},
+                },
+            },
+            {
+                "name": "payload_vibrate",
+                "event": "push",
+                "payload": {
+                    "title": "m",
+                    "options": {"data": CHANNEL_SUB, "vibrate": [300]},
+                },
+            },
+            # An open page hears about the notification (foreground chime).
+            {
+                "name": "push_with_open_page",
+                "event": "push",
+                "payload": {"title": "m", "options": {"data": CHANNEL_SUB}},
+                "windowClients": [ORIGIN + "/chat/soporte"],
+            },
             # A cross-origin URL must not even choose the PATH we navigate to.
             {
                 "name": "foreign_url",
@@ -297,18 +321,71 @@ class TestServiceWorkerJS(HttpCase):
         sin `tag`, o `actions` que no es una secuencia. El respaldo del título
         genérico solo cubría el payload ILEGIBLE.
         """
-        for case in ("renotify_without_tag", "actions_not_a_sequence"):
-            with self.subTest(case=case):
-                observed = self.cases[case]
-                self.assertEqual(
-                    len(observed["attempts"]),
-                    2,
-                    "el primer intento tiene que fallar y provocar el respaldo",
-                )
-                self.assertFalse(observed["attempts"][0]["ok"])
-                self.assertEqual(
-                    [shown["title"] for shown in observed["shown"]], ["Nuevo mensaje"]
-                )
+        observed = self.cases["actions_not_a_sequence"]
+        self.assertEqual(
+            len(observed["attempts"]),
+            2,
+            "el primer intento tiene que fallar y provocar el respaldo",
+        )
+        self.assertFalse(observed["attempts"][0]["ok"])
+        self.assertEqual(
+            [shown["title"] for shown in observed["shown"]], ["Nuevo mensaje"]
+        )
+        # Even the fallback is never silent.
+        self.assertIs(observed["shown"][0]["options"]["silent"], False)
+
+    def test_renotify_without_a_tag_is_dropped_not_fatal(self):
+        """`renotify` sin `tag` hace que el navegador RECHACE el aviso.
+
+        El worker lo quita cuando no hay tag, así que el aviso real (con su
+        título) sale al primer intento en vez de caer al genérico.
+        """
+        observed = self.cases["renotify_without_tag"]
+        self.assertEqual(len(observed["attempts"]), 1)
+        self.assertTrue(observed["attempts"][0]["ok"])
+        self.assertEqual(observed["shown"][0]["title"], "Hola")
+        self.assertNotIn("renotify", observed["shown"][0]["options"])
+        self.assertIs(observed["shown"][0]["options"]["silent"], False)
+
+    # ------------------------------------------------------------------
+    # Nunca en silencio (petición del cliente, 2026-09-26)
+    # ------------------------------------------------------------------
+
+    def test_a_tagged_notification_renotifies_and_is_not_silent(self):
+        """Mismo tag = el aviso REEMPLAZA al anterior, y sin `renotify` el
+        reemplazo llega callado: sólo sonaba el primer mensaje de una ráfaga.
+        """
+        options = self.cases["channel_tag"]["shown"][0]["options"]
+        self.assertEqual(options["tag"], "cc-push-discuss.channel-7")
+        self.assertIs(options["renotify"], True)
+        self.assertIs(options["silent"], False)
+        self.assertEqual(options["vibrate"], [120, 60, 120])
+
+    def test_a_payload_cannot_make_the_push_silent(self):
+        options = self.cases["payload_silent"]["shown"][0]["options"]
+        self.assertIs(options["silent"], False)
+        self.assertIs(options["renotify"], True)
+
+    def test_a_payload_vibration_pattern_is_kept(self):
+        options = self.cases["payload_vibrate"]["shown"][0]["options"]
+        self.assertEqual(options["vibrate"], [300])
+
+    def test_open_pages_are_told_a_notification_was_shown(self):
+        """Mismo mensaje que el worker de core: la página toca su campanita."""
+        posted = self.cases["push_with_open_page"]["posted"]
+        self.assertEqual(
+            posted,
+            [
+                {
+                    "url": ORIGIN + "/chat/soporte",
+                    "message": {
+                        "type": "notification-displayed",
+                        "payload": {"model": "discuss.channel", "res_id": 7},
+                    },
+                }
+            ],
+        )
+        self.assertFalse(self.cases["push_with_open_page"]["errors"])
 
     def test_an_unreadable_payload_still_shows_a_notification(self):
         """El push sin cuerpo legible tampoco puede quedarse en silencio."""
