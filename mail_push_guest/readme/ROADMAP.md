@@ -9,13 +9,6 @@
   `discuss_channel._notify_by_web_push_prepare_payload`), which a guest cannot
   open. A service worker for guests has to map the notification to
   `/discuss/channel/<res_id>` itself.
-- **One language per notification.** A single payload is built for all the
-  guest devices of a channel and rendered in the environment's language — the
-  poster's. Per-language rendering is what core's `payload_by_lang` is for, and
-  that path indexes the dict with `device.partner_id.lang`, which for a
-  partner-less device evaluates to `False` and raises. Doing it properly means
-  grouping guest devices by `mail.guest.lang` and sending one payload per
-  group; it is not done here.
 - **The allowlist is a maintenance obligation.** `PUSH_ENDPOINT_ALLOWED_HOSTS`
   is a list of vendor hostnames, not a standard. A new browser, or a vendor
   moving domains, means real subscriptions are refused until somebody updates

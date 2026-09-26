@@ -5,5 +5,6 @@ from . import (
     test_support_chat,
     test_support_discuss,
     test_support_queue,
+    test_translations,
     test_website_pwa_chat,
 )

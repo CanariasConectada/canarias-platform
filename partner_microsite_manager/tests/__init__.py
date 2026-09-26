@@ -12,6 +12,7 @@ from . import (
     test_opening_hours,
     test_opening_slots,
     test_partner_microsite_button,
+    test_translations,
     test_view_scoping,
     test_website_logo,
 )

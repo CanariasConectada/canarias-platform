@@ -1,3 +1,9 @@
+## 19.0.1.5.1 (2026-09-26)
+
+- i18n: all .po files regenerated from a fresh export (two missing model
+  entries added); test that the banner strings are served to the browser in
+  Spanish (`#. odoo-javascript` entries).
+
 ## 19.0.1.5.0 (2026-09-25)
 
 - The Discuss notifications banner now VALIDATES instead of reading the
