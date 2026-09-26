@@ -24,8 +24,16 @@ import {shouldChimeForChannelMessage} from "./message_chime_rules";
  * twice for one message.
  */
 patch(SoundEffects.prototype, {
-    play(soundEffectName, {loop = false} = {}) {
-        if (soundEffectName === "new-message" && !loop && !chime.take()) {
+    play(soundEffectName, {loop = false, ccKind = "message"} = {}) {
+        // Only MESSAGE chimes share the throttle. Another kind (a new order,
+        // website_sale_merchant_alert) says so in `ccKind` and throttles
+        // itself: a chat burst must never swallow it.
+        if (
+            soundEffectName === "new-message" &&
+            !loop &&
+            ccKind === "message" &&
+            !chime.take()
+        ) {
             return;
         }
         return super.play(...arguments);

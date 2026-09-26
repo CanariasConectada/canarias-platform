@@ -11,5 +11,6 @@ from . import (
     test_discuss_layout,
     test_message_chime_js,
     test_notification_banner_js,
+    test_order_chime_js,
     test_translations,
 )
