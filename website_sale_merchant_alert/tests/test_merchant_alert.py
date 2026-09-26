@@ -1,8 +1,13 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3 - See http://www.gnu.org/licenses/agpl-3.0.html
 
+import json
+from unittest.mock import patch
+
 from odoo.tests import new_test_user, tagged
 from odoo.tests.common import TransactionCase
+
+from odoo.addons.website_sale_merchant_alert.models.sale_order import SaleOrder
 
 
 @tagged("post_install", "-at_install")
@@ -28,6 +33,60 @@ class TestMerchantAlert(TransactionCase):
         cls.product = cls.env["product.product"].create(
             {"name": "Alert Product", "list_price": 10.0}
         )
+        cls.env["res.lang"]._activate_lang("es_ES")
+        cls.staff.partner_id.lang = "es_ES"
+        # A merchant whose main company is another shop.
+        cls.other_company = cls.env["res.company"].create({"name": "Other Shop"})
+        cls.allowed_staff = new_test_user(
+            cls.env,
+            login="alert_allowed_staff",
+            groups="base.group_user",
+            company_id=cls.other_company.id,
+            company_ids=[(6, 0, (cls.company | cls.other_company).ids)],
+        )
+        cls.other_staff = new_test_user(
+            cls.env,
+            login="alert_other_staff",
+            groups="base.group_user",
+            company_id=cls.other_company.id,
+            company_ids=[(6, 0, cls.other_company.ids)],
+        )
+        cls.platform_admin = new_test_user(
+            cls.env,
+            login="alert_platform_admin",
+            groups="base.group_user,base.group_system",
+            company_id=cls.other_company.id,
+            company_ids=[(6, 0, (cls.company | cls.other_company).ids)],
+        )
+        cls.portal_user = new_test_user(
+            cls.env,
+            login="alert_portal",
+            groups="base.group_portal",
+            company_id=cls.company.id,
+            company_ids=[(6, 0, cls.company.ids)],
+        )
+        config = cls.env["ir.config_parameter"].sudo()
+        config.set_param("mail.web_push_vapid_private_key", "test-private")
+        config.set_param("mail.web_push_vapid_public_key", "test-public")
+        cls.devices = {}
+        for user in (
+            cls.staff,
+            cls.allowed_staff,
+            cls.other_staff,
+            cls.platform_admin,
+            cls.portal_user,
+        ):
+            cls.devices[user] = (
+                cls.env["mail.push.device"]
+                .sudo()
+                .create(
+                    {
+                        "partner_id": user.partner_id.id,
+                        "endpoint": f"https://push.example.com/{user.login}",
+                        "keys": json.dumps({"p256dh": "x", "auth": "y"}),
+                    }
+                )
+            )
 
     def _make_order(self, website=None):
         return (
@@ -73,3 +132,104 @@ class TestMerchantAlert(TransactionCase):
         ).sudo().unlink()
         order.action_confirm()
         self.assertEqual(order.state, "sale")
+
+    def _pushes(self, user=None):
+        domain = [("payload", "like", "order-")]
+        if user:
+            domain.append(("mail_push_device_id", "=", self.devices[user].id))
+        return self.env["mail.push"].sudo().search(domain)
+
+    def test_confirmed_website_order_pushes_the_shop_in_its_language(self):
+        order = self._make_order(website=self.website)
+        with patch.object(
+            type(self.env["mail.thread"]), "_web_push_send_notification"
+        ) as direct:
+            order.action_confirm()
+        direct.assert_not_called()  # queued, never sent inside the checkout
+        self.assertTrue(order.merchant_alert_sent)
+        push = self._pushes(self.staff)
+        self.assertEqual(len(push), 1)
+        payload = json.loads(push.payload)
+        self.assertEqual(payload["title"], f"Nuevo pedido {order.name}")
+        self.assertIn("Alert Shop", payload["options"]["body"])
+        self.assertIn("Buyer", payload["options"]["body"])
+        self.assertIn("10,00", payload["options"]["body"])
+        self.assertEqual(payload["options"]["tag"], f"order-{order.id}")
+        self.assertTrue(payload["options"]["renotify"])
+        self.assertFalse(payload["options"]["silent"])
+        self.assertFalse(payload["options"]["requireInteraction"])
+        self.assertTrue(payload["options"]["icon"])
+        data = payload["options"]["data"]
+        self.assertEqual((data["model"], data["res_id"]), ("sale.order", order.id))
+        self.assertEqual(data["url"], f"/odoo/orders/{order.id}")
+        # A merchant who has the shop as an allowed company hears too.
+        self.assertTrue(self._pushes(self.allowed_staff))
+
+    def test_other_companies_admins_and_portal_get_nothing(self):
+        order = self._make_order(website=self.website)
+        order.action_confirm()
+        self.assertTrue(self._pushes(self.staff))
+        self.assertFalse(self._pushes(self.other_staff))
+        self.assertFalse(self._pushes(self.platform_admin))
+        self.assertFalse(self._pushes(self.portal_user))
+
+    def test_backend_order_does_not_push(self):
+        order = self._make_order(website=None)
+        order.action_confirm()
+        self.assertFalse(order.merchant_alert_sent)
+        self.assertFalse(self._pushes())
+
+    def test_a_push_failure_never_breaks_the_confirmation(self):
+        order = self._make_order(website=self.website)
+        with (
+            patch.object(
+                SaleOrder, "_merchant_alert_push_payload", side_effect=RuntimeError
+            ),
+            self.assertLogs(
+                "odoo.addons.website_sale_merchant_alert.models.sale_order", "ERROR"
+            ),
+        ):
+            order.action_confirm()
+        self.assertEqual(order.state, "sale")
+        self.assertFalse(self._pushes())
+        # The mail went out all the same.
+        self.assertTrue(
+            self.env["mail.mail"]
+            .sudo()
+            .search([("email_to", "like", "shop@alert.example.com")])
+        )
+
+    def test_no_double_alert(self):
+        order = self._make_order(website=self.website)
+        order.action_confirm()
+        order._action_cancel()
+        order.action_draft()
+        order.action_confirm()
+        self.assertEqual(len(self._pushes(self.staff)), 1)
+
+    def test_payment_that_leaves_a_quotation_alerts_once(self):
+        order = self._make_order(website=self.website)
+        provider = self.env["payment.provider"].create(
+            {"name": "Test transfer", "company_id": self.company.id}
+        )
+        method = self.env["payment.method"].search(
+            [("code", "=", "unknown")], limit=1
+        ) or self.env["payment.method"].search([], limit=1)
+        tx = self.env["payment.transaction"].create(
+            {
+                "provider_id": provider.id,
+                "payment_method_id": method.id,
+                "amount": order.amount_total,
+                "currency_id": order.currency_id.id,
+                "partner_id": self.buyer.id,
+                "reference": f"{order.name}-test",
+                "sale_order_ids": [(6, 0, order.ids)],
+                "state": "pending",
+            }
+        )
+        tx._post_process()
+        self.assertNotEqual(order.state, "sale")
+        self.assertTrue(order.merchant_alert_sent)
+        self.assertEqual(len(self._pushes(self.staff)), 1)
+        order.action_confirm()
+        self.assertEqual(len(self._pushes(self.staff)), 1)
