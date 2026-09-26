@@ -14,6 +14,18 @@
   still-linked and server errors each get their own next step. Motivated by
   the 2026-09-26 incident: an iPhone with permission granted and no device
   row on the server.
+- Root cause of the 2026-09-26 incident, confirmed in production: device 4
+  (Apple endpoint) belonged to partner 6 and was written at 18:55:54, the
+  moment of the "guest" registration. The installed iOS app was still logged
+  in as that account, so every registration re-confirmed ITS row, silently,
+  and nothing was ever stored for the guest. The validating banner makes that
+  visible ("linked to another account") and fixes it with a fresh endpoint.
+- Community channels ("Canarias Conectada" and the three zone channels) now
+  push every PUBLISHED message to every member whose member and user
+  notification preferences are both unset (core's default there is
+  "mentions only"). Explicit "mentions" / "nothing" choices are kept; no
+  member row is written. Held moderated messages push to nobody; they are
+  pushed when a moderator approves them, through core `message_post`.
 - Fix: Discuss no longer shrinks to its content next to the banner (the
   wrapper row let core's Discuss root take `flex: 0 1 auto`, leaving an empty
   band on the right). Browser tour checks the width with the banner shown and
