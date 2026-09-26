@@ -3,6 +3,7 @@
 
 import json
 import logging
+from datetime import timedelta
 from urllib.parse import urlsplit
 
 from odoo import api, fields, models
@@ -100,6 +101,24 @@ WORKER_WEBSITE = "website"
 WORKER_BACKEND = "backend"
 WORKERS = (WORKER_WEBSITE, WORKER_BACKEND)
 
+# Answers of `cc_push_status`, the check behind the Discuss validation banner.
+PUSH_STATUS_REGISTERED = "registered"
+PUSH_STATUS_NOT_REGISTERED = "not_registered"
+PUSH_STATUS_OWNED_BY_OTHER = "owned_by_other"
+
+# Answers of `cc_push_test`.
+PUSH_TEST_SENT = "sent"
+PUSH_TEST_RATE_LIMITED = "rate_limited"
+PUSH_TEST_NO_DEVICE = "no_device"
+
+# One test push per user and per this many seconds. It pushes only to the
+# caller's own devices, so this is about not letting a stuck client (or a
+# click-happy person) hammer the push services from this server's address.
+PUSH_TEST_INTERVAL_SECONDS = 60
+
+# Title of the test push. The platform name, deliberately not translated.
+PUSH_TEST_TITLE = "Canarias Conectada"
+
 
 class MailPushDevice(models.Model):
     """Push devices that may belong to a guest instead of a partner.
@@ -150,6 +169,13 @@ class MailPushDevice(models.Model):
         help="Service worker that owns the subscription: the website's "
         "(scope /) or the backend's (scope /odoo). Empty on devices "
         "registered before this was recorded.",
+    )
+
+    cc_test_push_dt = fields.Datetime(
+        string="Last test push",
+        readonly=True,
+        help="When the owner last asked for a test notification from the "
+        "Discuss validation banner. Used to rate-limit `cc_push_test`.",
     )
 
     _persona_not_both = models.Constraint(
@@ -828,3 +854,119 @@ class MailPushDevice(models.Model):
             return False
         devices.unlink()
         return True
+
+    # ------------------------------------------------------------------
+    # Validation (the Discuss "notifications are active" banner)
+    #
+    # WHY THIS EXISTS: every registration door above is silent on refusal
+    # by design (see `_may_claim_device`), and core's own door returns None
+    # whatever happened. So a browser could hold permission AND a
+    # subscription while the server holds no row for it, and nothing on the
+    # client could tell. Production incident of 2026-09-26: a community guest
+    # on an iPhone was told notifications were on (the banner only read
+    # `Notification.permission`) and no device row existed for them.
+    #
+    # These two methods let the authenticated web client ASK instead of
+    # assume. They are reached over `/web/dataset/call_kw`, i.e. by any
+    # authenticated account; neither reveals anything about another persona.
+    # ------------------------------------------------------------------
+
+    @api.model
+    def cc_push_status(self, endpoint=None):
+        """Is `endpoint` registered for the CURRENT user?
+
+        The caller is the browser that holds `endpoint` (it read it from its
+        own `PushSubscription`), so answering "somebody else owns it" tells it
+        nothing it could not already infer, and it is what lets the client fix
+        a shared device (unsubscribe and resubscribe, which yields a fresh
+        endpoint nobody owns). WHO owns it is never returned.
+
+        A row the caller may claim but does not own yet (the guest -> login
+        upgrade of `_may_claim_device`) answers `not_registered`: the next
+        registration will carry it over, so the client should register, not
+        report a conflict.
+
+        :param str endpoint: `PushSubscription.endpoint` of this browser
+        :returns: "registered", "not_registered" or "owned_by_other"
+        """
+        if (
+            not endpoint
+            or not isinstance(endpoint, str)
+            or len(endpoint) > MAX_ENDPOINT_LENGTH
+            or self.env.user._is_public()
+        ):
+            return PUSH_STATUS_NOT_REGISTERED
+        partner = self.env.user.partner_id
+        # sudo: mail.push.device is a base.group_system model; ownership is
+        # decided below, and only a status string leaves this method.
+        device = self.sudo().search([("endpoint", "=", endpoint)], limit=1)
+        if not device:
+            return PUSH_STATUS_NOT_REGISTERED
+        if device.partner_id == partner:
+            return PUSH_STATUS_REGISTERED
+        if self._may_claim_device(device, partner=partner):
+            return PUSH_STATUS_NOT_REGISTERED
+        return PUSH_STATUS_OWNED_BY_OTHER
+
+    @api.model
+    def cc_push_test(self):
+        """Send a real test notification to the current user's own devices.
+
+        Goes through core's sender (`mail.thread._web_push_send_notification`,
+        which wraps `mail/tools/web_push.py`), so the test exercises the exact
+        path a message takes: VAPID signing, payload encryption, the push
+        service round trip, and the unlinking of a device whose push service
+        answers 404/410. Only devices whose `partner_id` is the caller's
+        partner are ever selected.
+
+        Rate-limited to one call per `PUSH_TEST_INTERVAL_SECONDS` per user.
+        The row lock makes two concurrent calls of the same user queue on each
+        other instead of both passing the check.
+
+        :returns: dict with `status` ("sent", "rate_limited" or "no_device")
+            and, for "sent", the number of `devices` targeted
+        """
+        if self.env.user._is_public():
+            return {"status": PUSH_TEST_NO_DEVICE}
+        partner = self.env.user.partner_id
+        # sudo: same as `cc_push_status`; the domain is the ownership rule.
+        devices_su = self.sudo().search([("partner_id", "=", partner.id)])
+        if not devices_su:
+            return {"status": PUSH_TEST_NO_DEVICE}
+        self.env.cr.execute(
+            "SELECT id FROM mail_push_device WHERE id IN %s FOR UPDATE",
+            [tuple(devices_su.ids)],
+        )
+        devices_su.invalidate_recordset(["cc_test_push_dt"])
+        now = fields.Datetime.now()
+        threshold = now - timedelta(seconds=PUSH_TEST_INTERVAL_SECONDS)
+        if any(
+            device.cc_test_push_dt and device.cc_test_push_dt > threshold
+            for device in devices_su
+        ):
+            return {"status": PUSH_TEST_RATE_LIMITED}
+        ir_params_su = self.env["ir.config_parameter"].sudo()
+        private_key = ir_params_su.get_param("mail.web_push_vapid_private_key")
+        public_key = ir_params_su.get_param("mail.web_push_vapid_public_key")
+        if not private_key or not public_key:
+            return {"status": PUSH_TEST_NO_DEVICE}
+        devices_su.write({"cc_test_push_dt": now})
+        payload = {
+            "title": PUSH_TEST_TITLE,
+            "options": {
+                "body": self.env._("Notifications are active on this device ✓"),
+                "icon": "/web/static/img/odoo-icon-192x192.png",
+                "tag": "cc-push-test",
+                # Empty model/res_id: no open thread matches it, so core's
+                # web client never swallows the notification as "already
+                # on screen" (mail/static/src/core/common/store_service.js).
+                "data": {"model": "", "res_id": ""},
+            },
+        }
+        count = len(devices_su)
+        # `payload=`, never `payload_by_lang=`: same reason as in
+        # discuss_channel.py (the sender indexes that dict by partner lang).
+        partner.sudo()._web_push_send_notification(
+            devices_su, private_key, public_key, payload=payload
+        )
+        return {"status": PUSH_TEST_SENT, "devices": count}

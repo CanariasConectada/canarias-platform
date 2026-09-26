@@ -121,3 +121,21 @@ msgstr ""
 #: model:ir.model.fields.selection,name:mail_push_guest.selection__mail_push_device__cc_worker__website
 msgid "Website worker"
 msgstr "Service worker del sitio web"
+
+#. module: mail_push_guest
+#: model:ir.model.fields,field_description:mail_push_guest.field_mail_push_device__cc_test_push_dt
+msgid "Last test push"
+msgstr "Último aviso de prueba"
+
+#. module: mail_push_guest
+#: model:ir.model.fields,help:mail_push_guest.field_mail_push_device__cc_test_push_dt
+msgid ""
+"When the owner last asked for a test notification from the Discuss "
+"validation banner. Used to rate-limit `cc_push_test`."
+msgstr "Cuándo pidió el titular por última vez una notificación de prueba desde el aviso de validación de Conversaciones. Se usa para limitar la frecuencia de «cc_push_test»."
+
+#. module: mail_push_guest
+#. odoo-python
+#: code:addons/mail_push_guest/models/mail_push_device.py:0
+msgid "Notifications are active on this device ✓"
+msgstr "Las notificaciones están activas en este dispositivo ✓"
