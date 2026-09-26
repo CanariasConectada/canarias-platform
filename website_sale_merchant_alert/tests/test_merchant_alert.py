@@ -160,6 +160,7 @@ class TestMerchantAlert(TransactionCase):
         self.assertEqual(payload["options"]["tag"], f"order-{order.id}")
         self.assertTrue(payload["options"]["renotify"])
         self.assertFalse(payload["options"]["silent"])
+        self.assertEqual(payload["options"]["vibrate"], [120, 60, 120])
         self.assertFalse(payload["options"]["requireInteraction"])
         self.assertTrue(payload["options"]["icon"])
         data = payload["options"]["data"]

@@ -1,3 +1,9 @@
+## 19.0.1.2.0 (2026-09-26)
+
+- The order push vibrates on Android (`[120, 60, 120]`).
+- The open web client chimes when core's backend worker shows a new-order
+  push (core only sounded for Discuss records).
+
 ## 19.0.1.1.0 (2026-09-25)
 
 - Web push to the phone of every shop user with a registered device when
