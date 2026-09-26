@@ -1,3 +1,25 @@
+## 19.0.1.5.0 (2026-09-25)
+
+- The Discuss notifications banner now VALIDATES instead of reading the
+  browser permission: on every Discuss load it asks the server
+  (`mail.push.device.cc_push_status`) whether this device's subscription on
+  core's backend worker is registered for the current user, and shows
+  "Notifications are not active on this device" whenever it is not.
+  "Activate and verify" asks for permission (inside the tap, as iOS
+  requires), subscribes with the VAPID key, registers the device, re-checks
+  it and sends a real test notification (`cc_push_test`). A subscription
+  linked to another account is replaced by a fresh one (unsubscribe and
+  subscribe again), which proves possession without weakening the
+  anti-hijack rule. Denied, unsupported (iOS outside the home-screen app),
+  still-linked and server errors each get their own next step. Motivated by
+  the 2026-09-26 incident: an iPhone with permission granted and no device
+  row on the server.
+- Fix: Discuss no longer shrinks to its content next to the banner (the
+  wrapper row let core's Discuss root take `flex: 0 1 auto`, leaving an empty
+  band on the right). Browser tour checks the width with the banner shown and
+  hidden, and the member panel for administrators.
+- Depends on `mail_push_guest`.
+
 ## 19.0.1.4.1 (2026-09-25)
 
 - Tests: the Discuss tours run without a screencast. Discuss keeps repainting

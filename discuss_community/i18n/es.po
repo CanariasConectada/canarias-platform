@@ -65,12 +65,6 @@ msgid "Display Name"
 msgstr "Nombre mostrado"
 
 #. module: discuss_community
-#. odoo-javascript
-#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
-msgid "Enable notifications"
-msgstr "Activar notificaciones"
-
-#. module: discuss_community
 #: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
 msgid "Enter as guest"
 msgstr "Entrar como invitado"
@@ -115,12 +109,6 @@ msgid "Menu"
 msgstr "Menú"
 
 #. module: discuss_community
-#. odoo-javascript
-#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
-msgid "Notifications are blocked."
-msgstr "Las notificaciones están bloqueadas."
-
-#. module: discuss_community
 #: model:res.groups,comment:discuss_community.group_community_member
 msgid ""
 "Residents and walk-in guests of the community\n"
@@ -145,24 +133,6 @@ msgstr ""
 "canales para invitados; vacío para quien no es invitado de la comunidad."
 
 #. module: discuss_community
-#. odoo-javascript
-#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
-msgid ""
-"To be told about new messages, allow notifications for this site in your "
-"browser settings (the icon next to the address bar) or in your device "
-"settings, then reload the page."
-msgstr ""
-"Para enterarte de los mensajes nuevos, permite las notificaciones de este "
-"sitio en los ajustes del navegador (el icono junto a la barra de "
-"direcciones) o en los ajustes del dispositivo, y vuelve a cargar la página."
-
-#. module: discuss_community
-#. odoo-javascript
-#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
-msgid "Turn on notifications."
-msgstr "Activa las notificaciones."
-
-#. module: discuss_community
 #: model:ir.model,name:discuss_community.model_res_users
 msgid "User"
 msgstr "Usuario"
@@ -175,12 +145,6 @@ msgstr ""
 "Con una cuenta conservas tu nombre y tus conversaciones en cada visita."
 
 #. module: discuss_community
-#. odoo-javascript
-#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
-msgid "You will know when someone answers you, even with this page closed."
-msgstr "Sabrás cuándo alguien te responde, incluso con esta página cerrada."
-
-#. module: discuss_community
 #: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
 msgid ""
 "Your current account is not a community account. Log out first, then come "
@@ -188,3 +152,93 @@ msgid ""
 msgstr ""
 "Tu cuenta actual no es una cuenta de la comunidad. Cierra sesión primero y "
 "vuelve a entrar como invitado o crea una cuenta de la comunidad."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "✓ Notifications active on this device."
+msgstr "✓ Notificaciones activas en este dispositivo."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "We sent you a test notification."
+msgstr "Te hemos enviado una notificación de prueba."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "Activating and verifying notifications…"
+msgstr "Activando y comprobando las notificaciones…"
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "Notifications are blocked on this device."
+msgstr "Las notificaciones están bloqueadas en este dispositivo."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "On iPhone or iPad: Settings › Notifications › this app › Allow Notifications. On Android: long-press the app icon › App info › Notifications, or in Chrome tap the icon next to the address › Permissions › Notifications. Then reload this page."
+msgstr "En iPhone o iPad: Ajustes › Notificaciones › esta app › Permitir notificaciones. En Android: mantén pulsado el icono de la app › Información de la app › Notificaciones, o en Chrome toca el icono junto a la dirección › Permisos › Notificaciones. Después vuelve a cargar esta página."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "Notifications are not active on this device."
+msgstr "Las notificaciones no están activas en este dispositivo."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "This device is linked to another account. Log in with that account and turn notifications off there, or remove the app and install it again."
+msgstr "Este dispositivo está vinculado a otra cuenta. Entra con esa cuenta y desactiva allí las notificaciones, o elimina la app y vuelve a instalarla."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "This device is linked to another account. Tap “Activate and verify” to link it to yours."
+msgstr "Este dispositivo está vinculado a otra cuenta. Toca «Activar y comprobar» para vincularlo a la tuya."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "On iPhone and iPad, notifications only work in the app installed on the home screen (Share › Add to Home Screen) and need iOS 16.4 or later. Open the app from its icon and come back here."
+msgstr "En iPhone y iPad, las notificaciones solo funcionan en la app instalada en la pantalla de inicio (Compartir › Añadir a pantalla de inicio) y necesitan iOS 16.4 o posterior. Abre la app desde su icono y vuelve aquí."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "This browser cannot receive notifications. Use an up-to-date Chrome, Edge, Firefox or Safari, or install the app on your phone."
+msgstr "Este navegador no puede recibir notificaciones. Usa Chrome, Edge, Firefox o Safari actualizados, o instala la app en tu móvil."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "Notifications are not configured on the server yet. Please tell an administrator."
+msgstr "Las notificaciones aún no están configuradas en el servidor. Avisa a un administrador."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "The server did not save this device. Try again; if it keeps failing, tell an administrator."
+msgstr "El servidor no ha guardado este dispositivo. Vuelve a intentarlo; si sigue fallando, avisa a un administrador."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "The server answered with an error:"
+msgstr "El servidor ha respondido con un error:"
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "Activate them to know when someone answers you, even with the app closed."
+msgstr "Actívalas para saber cuándo alguien te responde, incluso con la app cerrada."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "Activate and verify"
+msgstr "Activar y comprobar"
