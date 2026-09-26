@@ -6,5 +6,6 @@ from . import (
     test_push_endpoint_allowlist,
     test_push_notification,
     test_push_routes,
+    test_push_validation,
     test_push_worker_origin,
 )

@@ -1,3 +1,14 @@
+## 19.0.1.2.0 (2026-09-25)
+
+- `mail.push.device.cc_push_status(endpoint)`: tells the authenticated web
+  client whether its own subscription is `registered` for the current user,
+  `not_registered`, or `owned_by_other` (never who owns it). Every
+  registration door stays silent on refusal; this is the question the client
+  can now ask afterwards.
+- `mail.push.device.cc_push_test()`: sends a real test web push through
+  core's sender to the current user's own devices only, at most once a
+  minute per user (`cc_test_push_dt`).
+
 ## 19.0.1.1.0 (2026-09-25)
 
 - `mail.push.device.cc_worker` records which service worker owns a device:

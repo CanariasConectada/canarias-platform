@@ -119,3 +119,21 @@ msgstr "Este visitante já tem o número máximo de dispositivos de notificaçã
 #: model:ir.model.fields.selection,name:mail_push_guest.selection__mail_push_device__cc_worker__website
 msgid "Website worker"
 msgstr "Service worker do site"
+
+#. module: mail_push_guest
+#: model:ir.model.fields,field_description:mail_push_guest.field_mail_push_device__cc_test_push_dt
+msgid "Last test push"
+msgstr "Última notificação de teste"
+
+#. module: mail_push_guest
+#: model:ir.model.fields,help:mail_push_guest.field_mail_push_device__cc_test_push_dt
+msgid ""
+"When the owner last asked for a test notification from the Discuss "
+"validation banner. Used to rate-limit `cc_push_test`."
+msgstr "Quando o titular pediu pela última vez uma notificação de teste a partir do aviso de validação do Discuss. Usado para limitar a frequência de «cc_push_test»."
+
+#. module: mail_push_guest
+#. odoo-python
+#: code:addons/mail_push_guest/models/mail_push_device.py:0
+msgid "Notifications are active on this device ✓"
+msgstr "As notificações estão ativas neste dispositivo ✓"

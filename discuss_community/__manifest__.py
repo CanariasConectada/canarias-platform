@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Discuss Community",
-    "version": "19.0.1.4.1",
+    "version": "19.0.1.5.0",
     "category": "Discuss",
     "summary": "Community members (residents and walk-in guests) as internal "
     "users whose whole backend is Discuss",
@@ -49,6 +49,10 @@
         # `odoobot_state` and the first-load OdooBot onboarding this module
         # switches off for guests.
         "mail_bot",
+        # `mail.push.device.cc_push_status` / `cc_push_test` and the
+        # `/mail/push/subscribe` route the notifications banner validates and
+        # registers the device through.
+        "mail_push_guest",
     ],
     "data": [
         "security/discuss_community_groups.xml",
@@ -59,7 +63,8 @@
     "assets": {
         # The guest profile of Discuss (hidden calls, member list and header
         # actions; the community channel opened on arrival) and the
-        # notifications banner every user sees until they allow them.
+        # notifications banner, shown to every user until the server confirms
+        # this device is registered for them.
         "web.assets_backend": [
             "discuss_community/static/src/backend/**/*",
         ],
