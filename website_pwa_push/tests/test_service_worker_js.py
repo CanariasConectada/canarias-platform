@@ -190,7 +190,10 @@ class TestServiceWorkerJS(HttpCase):
             {
                 "name": "push_with_open_page",
                 "event": "push",
-                "payload": {"title": "m", "options": {"data": CHANNEL_SUB}},
+                "payload": {
+                    "title": "m",
+                    "options": {"data": dict(CHANNEL_SUB, author_partner_id=42)},
+                },
                 "windowClients": [ORIGIN + "/chat/soporte"],
             },
             # A cross-origin URL must not even choose the PATH we navigate to.
@@ -380,7 +383,12 @@ class TestServiceWorkerJS(HttpCase):
                     "url": ORIGIN + "/chat/soporte",
                     "message": {
                         "type": "notification-displayed",
-                        "payload": {"model": "discuss.channel", "res_id": 7},
+                        "payload": {
+                            "model": "discuss.channel",
+                            "res_id": 7,
+                            "author_partner_id": 42,
+                            "author_guest_id": False,
+                        },
                     },
                 }
             ],

@@ -9,6 +9,10 @@
   pages (core's own message), and the new page script `push_chime.js` plays
   the foreground chime unless the page shows that conversation with focus,
   or Android with permission already sounds the notification.
+- The page chime never plays for the visitor's own message: the worker
+  passes on the author ids of the payload, compared with `user.partnerId`
+  and, for a guest, the new `cc_guest_id` of the frontend session info (the
+  visitor's own guest, proven by the `dgid` cookie).
 
 ## 19.0.2.0.2 (2026-09-26)
 

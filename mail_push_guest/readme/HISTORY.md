@@ -13,6 +13,9 @@
   seconds across the tabs and frames of an origin, never for the listener's
   own message or the conversation on screen, muted by core's own "message
   sound" preference (default on).
+- Message push payloads name their author in `data` (`author_partner_id`,
+  `author_guest_id`, ids only), so an open page can skip the chime for its
+  own message.
 
 ## 19.0.1.2.1 (2026-09-26)
 
