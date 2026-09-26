@@ -5,7 +5,9 @@
   message of a community channel for members without a setting of their
   own. Through core's `_playSound` (the "message sound" switch, main tab
   only, Android left to the push). Core's own "new-message" plays share the
-  2-second throttle, so no message rings twice.
+  2-second throttle, so no message rings twice. Only MESSAGE plays are
+  throttled: a play tagged with another `ccKind` (a new order) passes, so a
+  chat chime can never swallow an order chime.
 - `session_info` carries `community_channel_ids`.
 
 ## 19.0.1.5.1 (2026-09-26)
