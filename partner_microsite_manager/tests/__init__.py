@@ -13,4 +13,5 @@ from . import (
     test_opening_slots,
     test_partner_microsite_button,
     test_view_scoping,
+    test_website_logo,
 )

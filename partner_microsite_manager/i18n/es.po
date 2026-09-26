@@ -207,6 +207,7 @@ msgstr "Entrega / Envío"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_logo_form
 msgid "Discard"
 msgstr "Descartar"
 
@@ -577,6 +578,7 @@ msgstr "Sábado"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_logo_form
 msgid "Save"
 msgstr "Guardar"
 
@@ -604,6 +606,7 @@ msgstr "Título de servicios"
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__company_id
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_logo_form
 msgid "Shop"
 msgstr "Tienda"
 
@@ -999,3 +1002,39 @@ msgstr "https://www.ejemplo.com"
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 msgid "Name on the microsite"
 msgstr "Nombre en el microsite"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: model:ir.actions.server,name:partner_microsite_manager.action_own_website_logo
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__logo
+#: model:ir.ui.menu,name:partner_microsite_manager.menu_own_website_logo
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_logo_form
+#: code:addons/partner_microsite_manager/wizards/microsite_content_editor.py:0
+msgid "Website logo"
+msgstr "Logo del sitio web"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_microsite_content_editor__logo
+msgid "Shown in the header of your website. Recommended: a PNG with a transparent background (JPG also works), wider than tall, for example 400 x 120 pixels, and no more than 512 pixels on either side. Larger images are scaled down."
+msgstr "Se muestra en la cabecera de tu sitio web. Recomendado: un PNG con fondo transparente (también vale JPG), más ancho que alto, por ejemplo 400 x 120 píxeles, y no más de 512 píxeles por lado. Las imágenes más grandes se reducen."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_logo_form
+msgid "Shown in the header of every page of your website. Recommended: a PNG with a transparent background (JPG also works), wider than tall (for example 400 x 120 pixels) and no larger than 512 pixels on either side."
+msgstr "Se muestra en la cabecera de todas las páginas de tu sitio web. Recomendado: un PNG con fondo transparente (también vale JPG), más ancho que alto (por ejemplo 400 x 120 píxeles) y no más de 512 píxeles por lado."
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/wizards/microsite_content_editor.py:0
+msgid "Your account is not linked to a shop with its own site, so there is no website logo to change."
+msgstr "Tu cuenta no está vinculada a un comercio con sitio propio, así que no hay logo del sitio web que cambiar."
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__editable_company_ids
+msgid "Editable Company"
+msgstr "Comercios editables"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__can_pick_company
+msgid "Can Pick Company"
+msgstr "Puede elegir comercio"
