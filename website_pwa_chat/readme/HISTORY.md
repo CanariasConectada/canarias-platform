@@ -4,7 +4,9 @@
   (bus), unless the visitor is looking at it (page visible and focused; the
   floating window counts as not looking while the shop around it has the
   focus). Throttled and muted through `mail_push_guest`'s shared chime, now
-  a dependency.
+  a dependency. Deploy note: `mail_push_guest` is already installed in
+  production, so `-u website_pwa_chat` needs nothing else; a database
+  without it installs it on the update.
 - Message-sound switch (bell) next to the chat title; it stores the same
   preference as the backend's Discuss "message sound".
 
