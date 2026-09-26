@@ -9,6 +9,7 @@ from . import (
     test_community_members,
     test_community_security,
     test_discuss_layout,
+    test_message_chime_js,
     test_notification_banner_js,
     test_translations,
 )
