@@ -5,5 +5,6 @@ from . import (
     test_page_script_js,
     test_push_routing,
     test_service_worker_js,
+    test_translations,
     test_website_pwa_push,
 )

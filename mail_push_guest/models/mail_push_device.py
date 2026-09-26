@@ -951,10 +951,13 @@ class MailPushDevice(models.Model):
         if not private_key or not public_key:
             return {"status": PUSH_TEST_NO_DEVICE}
         devices_su.write({"cc_test_push_dt": now})
+        # The recipient's language, not the request's: the text is read on
+        # the phone, by the partner the devices belong to.
+        reader_env = self.with_context(lang=partner.lang or self.env.lang).env
         payload = {
             "title": PUSH_TEST_TITLE,
             "options": {
-                "body": self.env._("Notifications are active on this device ✓"),
+                "body": reader_env._("Notifications are active on this device ✓"),
                 "icon": "/web/static/img/odoo-icon-192x192.png",
                 "tag": "cc-push-test",
                 # Empty model/res_id: no open thread matches it, so core's

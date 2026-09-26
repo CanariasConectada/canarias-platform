@@ -1,3 +1,13 @@
+## 19.0.6.4.1 (2026-09-26)
+
+- i18n: `es.po` held only the Discuss dialog strings, so the website support
+  bubble showed the English of `en.po` ("Close the chat", "Talk to support")
+  to Spanish readers, and the dialog's "Cancel" had no entry. All .po files
+  regenerated from a fresh export against the source terms; de, fr, it, pl
+  and pt gain the missing user-facing strings. The migration reloads es_ES
+  with overwrite, because a regular update keeps the stale English value as
+  an "existing translation".
+
 ## 19.0.6.4.0 (2026-09-25)
 
 - **Request support** from the backend Discuss sidebar, for every internal

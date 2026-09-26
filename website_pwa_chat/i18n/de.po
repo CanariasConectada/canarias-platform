@@ -37,6 +37,26 @@ msgid ""
 "<i class=\"fa fa-check me-1\" title=\"Identificado\" role=\"img\" aria-"
 "label=\"Identificado\"/>"
 msgstr ""
+"<i class=\"fa fa-check me-1\" title=\"Identifiziert\" role=\"img\" aria-"
+"label=\"Identifiziert\"/>"
+
+#. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
+msgid ""
+"<i class=\"fa fa-comments\" aria-hidden=\"true\"/>\n"
+"                        <span class=\"o_cc_chat_fab_text\">Soporte</span>"
+msgstr ""
+"<i class=\"fa fa-comments\" aria-hidden=\"true\"/> <span "
+"class=\"o_cc_chat_fab_text\">Support</span>"
+
+#. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
+msgid ""
+"<i class=\"fa fa-comments\" aria-hidden=\"true\"/>\n"
+"                    <span class=\"o_cc_chat_fab_text\">Soporte</span>"
+msgstr ""
+"<i class=\"fa fa-comments\" aria-hidden=\"true\"/> <span "
+"class=\"o_cc_chat_fab_text\">Support</span>"
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
@@ -44,6 +64,18 @@ msgid ""
 "<i class=\"fa fa-user-o me-1\" title=\"Identificarse\" role=\"img\" aria-"
 "label=\"Identificarse\"/>"
 msgstr ""
+"<i class=\"fa fa-user-o me-1\" title=\"Identifizieren\" role=\"img\" aria-"
+"label=\"Identifizieren\"/>"
+
+#. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
+msgid ""
+"<span class=\"fw-bold\">\n"
+"                            <i class=\"fa fa-comments me-2\" aria-hidden=\"true\"/>Soporte\n"
+"                        </span>"
+msgstr ""
+"<span class=\"fw-bold\"> <i class=\"fa fa-comments me-2\" aria-"
+"hidden=\"true\"/>Support </span>"
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_index
@@ -60,11 +92,16 @@ msgid ""
 "                                </small>\n"
 "                            </span>"
 msgstr ""
+"<span class=\"o_cc_chat_support_icon\" aria-hidden=\"true\"> <i class=\"fa "
+"fa-life-ring\"/> </span> <span> <span class=\"fw-bold d-block\">Mit dem "
+"Support sprechen</span> <small class=\"text-muted\"> Ein privates Gespräch "
+"mit dir. Schreib uns, wann immer du uns brauchst, und wir antworten dir "
+"genau hier. </small> </span>"
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.discuss_channel_support_view_search
 msgid "Abiertas"
-msgstr ""
+msgstr "Offen"
 
 #. module: website_pwa_chat
 #. odoo-python
@@ -81,19 +118,30 @@ msgid ""
 msgstr ""
 
 #. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/backend/support_name_dialog.xml:0
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#. module: website_pwa_chat
 #: model:ir.model.fields.selection,name:website_pwa_chat.selection__discuss_channel__support_state__closed
 msgid "Cerrada"
-msgstr ""
+msgstr "Geschlossen"
 
 #. module: website_pwa_chat
 #: model:ir.model.fields,field_description:website_pwa_chat.field_discuss_channel__support_closed
 msgid "Cerrada a mano o por inactividad"
-msgstr ""
+msgstr "Manuell oder wegen Inaktivität geschlossen"
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.discuss_channel_support_view_list
 msgid "Cerrar"
-msgstr ""
+msgstr "Schließen"
+
+#. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
+msgid "Cerrar el chat"
+msgstr "Chat schließen"
 
 #. module: website_pwa_chat
 #: model:ir.model.fields,field_description:website_pwa_chat.field_website__chat_enabled
@@ -101,9 +149,14 @@ msgid "Chat de la comunidad"
 msgstr "Community-Chat"
 
 #. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
+msgid "Chat de soporte"
+msgstr "Support-Chat"
+
+#. module: website_pwa_chat
 #: model:ir.actions.server,name:website_pwa_chat.ir_cron_support_gc_ir_actions_server
 msgid "Chat: cerrar y borrar las conversaciones de soporte antiguas"
-msgstr ""
+msgstr "Chat: alte Support-Gespräche schließen und löschen"
 
 #. module: website_pwa_chat
 #: model:ir.actions.server,name:website_pwa_chat.ir_cron_support_sync_agents_ir_actions_server
@@ -124,12 +177,15 @@ msgid ""
 "                            mensajes se publican al momento y entras además en\n"
 "                            el canal de tu barrio. Es gratis y se hace en un\n"
 "                            minuto."
-msgstr "Mit einem Konto müssten Sie nicht warten: Ihre Nachrichten werden im Moment gepostet und Sie betreten den Kanal Ihrer Nachbarschaft. Es ist kostenlos und in einer Minute fertig."
+msgstr ""
+"Mit einem Konto müssten Sie nicht warten: Ihre Nachrichten werden im Moment "
+"gepostet und Sie betreten den Kanal Ihrer Nachbarschaft. Es ist kostenlos "
+"und in einer Minute fertig."
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.discuss_channel_support_view_list
 msgid "Conversación"
-msgstr ""
+msgstr "Gespräch"
 
 #. module: website_pwa_chat
 #: model:ir.model.fields,field_description:website_pwa_chat.field_discuss_channel__support_key
@@ -144,9 +200,10 @@ msgstr "E-Mail (optional)"
 #. module: website_pwa_chat
 #: model:ir.model.fields,field_description:website_pwa_chat.field_discuss_channel__support_visitor_email
 msgid "Correo de contacto"
-msgstr ""
+msgstr "Kontakt-E-Mail"
 
 #. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_index
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_pending
 msgid "Crear mi cuenta"
@@ -155,13 +212,20 @@ msgstr "Mein Konto erstellen"
 #. module: website_pwa_chat
 #: model:ir.model,name:website_pwa_chat.model_discuss_channel
 msgid "Discussion Channel"
-msgstr ""
+msgstr "Diskussionskanal"
 
 #. module: website_pwa_chat
 #: model:ir.model.fields,field_description:website_pwa_chat.field_discuss_channel__display_name
+#: model:ir.model.fields,field_description:website_pwa_chat.field_ir_http__display_name
 #: model:ir.model.fields,field_description:website_pwa_chat.field_website__display_name
 msgid "Display Name"
-msgstr ""
+msgstr "Anzeigename"
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/backend/support_name_dialog.xml:0
+msgid "Email (optional)"
+msgstr "E-Mail (optional)"
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_index
@@ -170,7 +234,10 @@ msgid ""
 "                                    cuenta. Si te registras, entras además en\n"
 "                                    el canal de tu barrio y tus mensajes se\n"
 "                                    publican al instante."
-msgstr "Auf dem allgemeinen Kanal können Sie ohne Konto schreiben. Wenn Sie sich registrieren, geben Sie auch Ihren Nachbarschaftskanal ein und Ihre Nachrichten werden sofort veröffentlicht."
+msgstr ""
+"Auf dem allgemeinen Kanal können Sie ohne Konto schreiben. Wenn Sie sich "
+"registrieren, geben Sie auch Ihren Nachbarschaftskanal ein und Ihre "
+"Nachrichten werden sofort veröffentlicht."
 
 #. module: website_pwa_chat
 #: model:ir.model.fields,field_description:website_pwa_chat.field_discuss_channel__website_chat_published
@@ -184,10 +251,22 @@ msgstr "Link zur Community"
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
+msgid "Enviar"
+msgstr "Senden"
+
+#. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
+msgid "Escribe tu mensaje…"
+msgstr "Schreiben Sie Ihre Nachricht…"
+
+#. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
 msgid ""
 "Escribes como visitante: alguien del equipo lee\n"
 "                                tu mensaje antes de publicarlo."
-msgstr "Schreiben Sie als Besucher: Jemand im Team liest Ihre Nachricht vor der Veröffentlichung."
+msgstr ""
+"Schreiben Sie als Besucher: Jemand im Team liest Ihre Nachricht vor der "
+"Veröffentlichung."
 
 #. module: website_pwa_chat
 #. odoo-javascript
@@ -196,6 +275,8 @@ msgid ""
 "Esta vez no hemos podido publicar tu mensaje. Puedes escribir otro cuando "
 "quieras."
 msgstr ""
+"Diesmal konnten wir deine Nachricht nicht veröffentlichen. Du kannst "
+"jederzeit eine neue schreiben."
 
 #. module: website_pwa_chat
 #. odoo-javascript
@@ -204,12 +285,14 @@ msgid ""
 "Esta vez no hemos podido publicar tu mensaje: %s. Puedes escribir otro "
 "cuando quieras."
 msgstr ""
+"Diesmal konnten wir deine Nachricht nicht veröffentlichen: %s. Du kannst "
+"jederzeit eine neue schreiben."
 
 #. module: website_pwa_chat
 #: model:ir.model.fields,field_description:website_pwa_chat.field_discuss_channel__support_state
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.discuss_channel_support_view_search
 msgid "Estado"
-msgstr ""
+msgstr "Status"
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
@@ -217,11 +300,18 @@ msgid "Guardar"
 msgstr "Speichern"
 
 #. module: website_pwa_chat
+#: model:ir.model,name:website_pwa_chat.model_ir_http
+msgid "HTTP Routing"
+msgstr "HTTP-Routing"
+
+#. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_index
 msgid ""
 "Habla con tu barrio y con toda Canarias Conectada.\n"
 "                        Elige un canal para empezar."
-msgstr "Sprechen Sie mit Ihrer Nachbarschaft und allen verbundenen Kanarischen Inseln. Wählen Sie einen Kanal, um damit zu beginnen."
+msgstr ""
+"Sprechen Sie mit Ihrer Nachbarschaft und allen verbundenen Kanarischen "
+"Inseln. Wählen Sie einen Kanal, um damit zu beginnen."
 
 #. module: website_pwa_chat
 #. odoo-python
@@ -230,21 +320,21 @@ msgid "Hablamos con %s."
 msgstr "Wir sprechen mit %s."
 
 #. module: website_pwa_chat
-#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_index
-#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_pending
-msgid "Ya tengo cuenta"
-msgstr "Ich habe bereits ein Konto"
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
+msgid "Hablar con soporte"
+msgstr "Mit dem Support sprechen"
 
 #. module: website_pwa_chat
 #: model:ir.model.fields,field_description:website_pwa_chat.field_discuss_channel__id
+#: model:ir.model.fields,field_description:website_pwa_chat.field_ir_http__id
 #: model:ir.model.fields,field_description:website_pwa_chat.field_website__id
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.discuss_channel_support_view_search
 msgid "Identificación"
-msgstr ""
+msgstr "Identifizierung"
 
 #. module: website_pwa_chat
 #: model:ir.model.fields,help:website_pwa_chat.field_discuss_channel__support_key
@@ -263,7 +353,13 @@ msgstr "Nachbarschaftskanäle sind für Nachbarn und Unternehmen mit"
 #. module: website_pwa_chat
 #: model_terms:ir.actions.act_window,help:website_pwa_chat.action_discuss_channel_support
 msgid "Nadie está esperando"
-msgstr ""
+msgstr "Niemand wartet"
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/js/community_chat.js:0
+msgid "No hemos podido abrir la conversación. Inténtalo otra vez."
+msgstr "Wir konnten das Gespräch nicht öffnen. Bitte versuche es noch einmal."
 
 #. module: website_pwa_chat
 #. odoo-javascript
@@ -272,45 +368,60 @@ msgid "No hemos podido enviar tu mensaje. Inténtalo otra vez."
 msgstr "Wir konnten deine Nachricht nicht senden. Bitte versuche es erneut."
 
 #. module: website_pwa_chat
-#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
-msgid "Todavía no hay mensajes. Escribe el primero."
-msgstr "Noch keine Nachrichten. Schreibe den ersten."
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/backend/support_name_dialog.xml:0
+msgid "Open the conversation"
+msgstr "Unterhaltung öffnen"
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/backend/support_name_dialog.xml:0
+msgid "Please enter your name."
+msgstr "Bitte geben Sie Ihren Namen ein."
+
+#. module: website_pwa_chat
+#. odoo-python
+#: code:addons/website_pwa_chat/models/discuss_channel.py:0
+msgid "Please tell us your name so the support team knows who is asking."
+msgstr ""
+"Bitte nennen Sie uns Ihren Namen, damit das Support-Team weiß, wer fragt."
 
 #. module: website_pwa_chat
 #: model:ir.model.fields,field_description:website_pwa_chat.field_discuss_channel__support_visitor_name
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.discuss_channel_support_view_list
 msgid "Quién pregunta"
-msgstr ""
+msgstr "Wer fragt"
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.discuss_channel_support_view_list
 msgid "Reabrir"
-msgstr ""
+msgstr "Wieder öffnen"
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/backend/support_request_button.xml:0
+msgid "Request support"
+msgstr "Support anfordern"
 
 #. module: website_pwa_chat
 #: model:ir.model.fields.selection,name:website_pwa_chat.selection__discuss_channel__support_state__answered
 msgid "Respondida"
-msgstr ""
+msgstr "Beantwortet"
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.discuss_channel_support_view_search
 msgid "Respondidas"
-msgstr ""
+msgstr "Beantwortet"
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.discuss_channel_support_view_search
 msgid "Se identificaron"
-msgstr ""
+msgstr "Haben sich identifiziert"
 
 #. module: website_pwa_chat
 #: model:ir.model.fields,field_description:website_pwa_chat.field_discuss_channel__support_identified
 msgid "Se identificó"
-msgstr ""
-
-#. module: website_pwa_chat
-#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
-msgid "Enviar"
-msgstr "Senden"
+msgstr "Hat sich identifiziert"
 
 #. module: website_pwa_chat
 #: model:ir.model.fields,help:website_pwa_chat.field_discuss_channel__support_closed
@@ -323,15 +434,18 @@ msgstr ""
 #: model:ir.model.fields.selection,name:website_pwa_chat.selection__discuss_channel__support_state__waiting
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.discuss_channel_support_view_search
 msgid "Sin responder"
-msgstr ""
+msgstr "Unbeantwortet"
 
 #. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/backend/support_sidebar_category.js:0
 #: model:ir.actions.act_window,name:website_pwa_chat.action_discuss_channel_support
 #: model:ir.ui.menu,name:website_pwa_chat.menu_discuss_channel_support
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.discuss_channel_support_view_list
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.discuss_channel_support_view_search
 msgid "Soporte"
-msgstr ""
+msgstr "Support"
 
 #. module: website_pwa_chat
 #. odoo-python
@@ -345,6 +459,23 @@ msgid "Soporte: atender a los visitantes"
 msgstr "Support: Besucher betreuen"
 
 #. module: website_pwa_chat
+#. odoo-python
+#: code:addons/website_pwa_chat/models/discuss_channel.py:0
+msgid ""
+"Support agents answer support conversations; they do not open one for "
+"themselves."
+msgstr ""
+"Support-Mitarbeitende beantworten Support-Unterhaltungen; sie eröffnen keine"
+" für sich selbst."
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/backend/support_name_dialog.xml:0
+msgid "Tell us your name so the support team knows who they are talking to."
+msgstr ""
+"Nennen Sie uns Ihren Namen, damit das Support-Team weiß, mit wem es spricht."
+
+#. module: website_pwa_chat
 #: model:ir.model.fields,help:website_pwa_chat.field_discuss_channel__support_identified
 msgid ""
 "The visitor told us their name. That is what buys their conversation the "
@@ -352,11 +483,27 @@ msgid ""
 msgstr ""
 
 #. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
+msgid "Todavía no hay mensajes. Escribe el primero."
+msgstr "Noch keine Nachrichten. Schreibe den ersten."
+
+#. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_index
 msgid ""
 "Todavía no hay ningún canal disponible. Vuelve a\n"
 "                            intentarlo en un rato."
-msgstr "Noch ist kein Kanal verfügbar. Versuchen Sie es in einer Weile noch einmal."
+msgstr ""
+"Noch ist kein Kanal verfügbar. Versuchen Sie es in einer Weile noch einmal."
+
+#. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
+msgid "Tu mensaje"
+msgstr "Ihre Nachricht"
+
+#. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_pending
+msgid "Tu mensaje está en revisión"
+msgstr "Ihre Nachricht wird überprüft"
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
@@ -381,7 +528,7 @@ msgstr "Besucher"
 #. module: website_pwa_chat
 #: model:ir.model,name:website_pwa_chat.model_website
 msgid "Website"
-msgstr ""
+msgstr "Website"
 
 #. module: website_pwa_chat
 #: model:ir.model.fields,help:website_pwa_chat.field_discuss_channel__website_chat_published
@@ -419,9 +566,19 @@ msgid ""
 msgstr ""
 
 #. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/backend/support_name_dialog.xml:0
+msgid "Who is asking?"
+msgstr "Wer fragt?"
+
+#. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
-msgid "Escribe tu mensaje…"
-msgstr "Schreiben Sie Ihre Nachricht…"
+msgid ""
+"Y con una cuenta, ni eso: tus mensajes se\n"
+"                                    publican al instante, sin esperar revisión."
+msgstr ""
+"Und mit einem Konto nicht einmal das: Ihre Nachrichten werden sofort "
+"veröffentlicht, ohne auf eine Prüfung zu warten."
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_pending
@@ -429,91 +586,17 @@ msgid ""
 "Ya lo tenemos. Antes de publicarlo lo lee una persona\n"
 "                        del equipo, para que este sea un sitio en el que\n"
 "                        apetezca entrar. Solemos hacerlo en menos de"
-msgstr "Wir haben es bekommen. Bevor Sie es veröffentlichen, lesen Sie es einer Person des Teams, also ist dies eine Website, auf der Sie eintreten möchten. Lass es uns in weniger als"
-
-#. module: website_pwa_chat
-#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
-msgid "Tu mensaje"
-msgstr "Ihre Nachricht"
-
-#. module: website_pwa_chat
-#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_pending
-msgid "Tu mensaje está en revisión"
-msgstr "Ihre Nachricht wird überprüft"
-
-#. module: website_pwa_chat
-#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_pending
-msgid ""
-"minutos; en cuanto esté,\n"
-"                        aparecerá aquí sin que tengas que recargar nada."
-msgstr "minuten; wenn es ist, wird es hier erscheinen, ohne etwas tragen zu müssen."
-
-#. module: website_pwa_chat
-#. odoo-python
-#: code:addons/website_pwa_chat/controllers/main.py:0
-msgid ""
-"¿Cómo te llamas? Así sabemos con quién hablamos y guardamos esta "
-"conversación %(identified)s días en vez de %(anonymous)s."
-msgstr "Wie heißen Sie? So wissen wir, mit wem wir sprechen, und wir bewahren dieses Gespräch %(identified)s Tage statt %(anonymous)s auf."
-
-#. module: website_pwa_chat
-#: model:ir.model.fields,field_description:website_pwa_chat.field_discuss_channel__support_last_message_date
-#: model_terms:ir.ui.view,arch_db:website_pwa_chat.discuss_channel_support_view_search
-msgid "Último mensaje"
 msgstr ""
+"Wir haben es bekommen. Bevor Sie es veröffentlichen, lesen Sie es einer "
+"Person des Teams, also ist dies eine Website, auf der Sie eintreten möchten."
+" Lass es uns in weniger als"
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
-msgid "← Todos los canales"
-msgstr "← Alle Kanäle"
-
-#. module: website_pwa_chat
-#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
-msgid ""
-"Y con una cuenta, ni eso: tus mensajes se\n"
-"                                    publican al instante, sin esperar revisión."
-msgstr "Und mit einem Konto nicht einmal das: Ihre Nachrichten werden sofort veröffentlicht, ohne auf eine Prüfung zu warten."
-
-#. module: website_pwa_chat
-#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
-msgid "Hablar con soporte"
-msgstr "Mit dem Support sprechen"
-
-#. module: website_pwa_chat
-#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
-msgid "Cerrar el chat"
-msgstr "Chat schließen"
-
-#. module: website_pwa_chat
-#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
-msgid "Chat de soporte"
-msgstr "Support-Chat"
-
-#. module: website_pwa_chat
-#. odoo-javascript
-#: code:addons/website_pwa_chat/static/src/backend/support_request_button.xml:0
-msgid "Request support"
-msgstr "Support anfordern"
-
-#. module: website_pwa_chat
-#. odoo-python
-#: code:addons/website_pwa_chat/models/discuss_channel.py:0
-msgid ""
-"Support agents answer support conversations; they do not open one for "
-"themselves."
-msgstr "Support-Mitarbeitende beantworten Support-Unterhaltungen; sie eröffnen keine für sich selbst."
-
-#. module: website_pwa_chat
-#. odoo-javascript
-#: code:addons/website_pwa_chat/static/src/backend/support_name_dialog.xml:0
-msgid "Who is asking?"
-msgstr "Wer fragt?"
-
-#. module: website_pwa_chat
-#. odoo-javascript
-#: code:addons/website_pwa_chat/static/src/backend/support_name_dialog.xml:0
-msgid "Tell us your name so the support team knows who they are talking to."
-msgstr "Nennen Sie uns Ihren Namen, damit das Support-Team weiß, mit wem es spricht."
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_index
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_pending
+msgid "Ya tengo cuenta"
+msgstr "Ich habe bereits ein Konto"
 
 #. module: website_pwa_chat
 #. odoo-javascript
@@ -522,25 +605,30 @@ msgid "Your name"
 msgstr "Ihr Name"
 
 #. module: website_pwa_chat
-#. odoo-javascript
-#: code:addons/website_pwa_chat/static/src/backend/support_name_dialog.xml:0
-msgid "Please enter your name."
-msgstr "Bitte geben Sie Ihren Namen ein."
-
-#. module: website_pwa_chat
-#. odoo-javascript
-#: code:addons/website_pwa_chat/static/src/backend/support_name_dialog.xml:0
-msgid "Email (optional)"
-msgstr "E-Mail (optional)"
-
-#. module: website_pwa_chat
-#. odoo-javascript
-#: code:addons/website_pwa_chat/static/src/backend/support_name_dialog.xml:0
-msgid "Open the conversation"
-msgstr "Unterhaltung öffnen"
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_pending
+msgid ""
+"minutos; en cuanto esté,\n"
+"                        aparecerá aquí sin que tengas que recargar nada."
+msgstr ""
+"minuten; wenn es ist, wird es hier erscheinen, ohne etwas tragen zu müssen."
 
 #. module: website_pwa_chat
 #. odoo-python
-#: code:addons/website_pwa_chat/models/discuss_channel.py:0
-msgid "Please tell us your name so the support team knows who is asking."
-msgstr "Bitte nennen Sie uns Ihren Namen, damit das Support-Team weiß, wer fragt."
+#: code:addons/website_pwa_chat/controllers/main.py:0
+msgid ""
+"¿Cómo te llamas? Así sabemos con quién hablamos y guardamos esta "
+"conversación %(identified)s días en vez de %(anonymous)s."
+msgstr ""
+"Wie heißen Sie? So wissen wir, mit wem wir sprechen, und wir bewahren dieses"
+" Gespräch %(identified)s Tage statt %(anonymous)s auf."
+
+#. module: website_pwa_chat
+#: model:ir.model.fields,field_description:website_pwa_chat.field_discuss_channel__support_last_message_date
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.discuss_channel_support_view_search
+msgid "Último mensaje"
+msgstr "Letzte Nachricht"
+
+#. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
+msgid "← Todos los canales"
+msgstr "← Alle Kanäle"

@@ -1,3 +1,8 @@
+## 19.0.3.0.2 (2026-09-26)
+
+- Tests: Spanish of the systray entry (browser translations) and of the
+  "Download Canarias Conectada" card (view terms).
+
 ## 19.0.3.0.1 (2026-09-25)
 
 - Tests: the backend home entry browser test runs without a screencast; a

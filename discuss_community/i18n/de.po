@@ -15,6 +15,27 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "Activate and verify"
+msgstr "Aktivieren und prüfen"
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid ""
+"Activate them to know when someone answers you, even with the app closed."
+msgstr ""
+"Aktiviere sie, um zu erfahren, wenn dir jemand antwortet, auch wenn die App "
+"geschlossen ist."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "Activating and verifying notifications…"
+msgstr "Benachrichtigungen werden aktiviert und geprüft …"
+
+#. module: discuss_community
 #: model:ir.model.fields,help:discuss_community.field_res_users__is_community_guest
 msgid ""
 "Anonymous throwaway account created from the community page's 'Enter as "
@@ -41,6 +62,16 @@ msgid "Community Member"
 msgstr "Community-Mitglied"
 
 #. module: discuss_community
+#: model:ir.model,name:discuss_community.model_res_partner
+msgid "Contact"
+msgstr "Kontakt"
+
+#. module: discuss_community
+#: model:ir.model,website_form_label:discuss_community.model_res_partner
+msgid "Create a Customer"
+msgstr "Einen Kunden anlegen"
+
+#. module: discuss_community
 #: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
 msgid "Create my account"
 msgstr "Mein Konto erstellen"
@@ -59,6 +90,7 @@ msgstr "Diskussionskanal"
 #: model:ir.model.fields,field_description:discuss_community.field_discuss_channel__display_name
 #: model:ir.model.fields,field_description:discuss_community.field_ir_http__display_name
 #: model:ir.model.fields,field_description:discuss_community.field_ir_ui_menu__display_name
+#: model:ir.model.fields,field_description:discuss_community.field_res_partner__display_name
 #: model:ir.model.fields,field_description:discuss_community.field_res_users__display_name
 msgid "Display Name"
 msgstr "Anzeigename"
@@ -88,6 +120,7 @@ msgstr "Vorerst ausblenden"
 #: model:ir.model.fields,field_description:discuss_community.field_discuss_channel__id
 #: model:ir.model.fields,field_description:discuss_community.field_ir_http__id
 #: model:ir.model.fields,field_description:discuss_community.field_ir_ui_menu__id
+#: model:ir.model.fields,field_description:discuss_community.field_res_partner__id
 #: model:ir.model.fields,field_description:discuss_community.field_res_users__id
 msgid "ID"
 msgstr "ID"
@@ -106,6 +139,55 @@ msgstr "Abmelden und fortfahren"
 #: model:ir.model,name:discuss_community.model_ir_ui_menu
 msgid "Menu"
 msgstr "Menü"
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "Notifications are blocked on this device."
+msgstr "Benachrichtigungen sind auf diesem Gerät blockiert."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "Notifications are not active on this device."
+msgstr "Benachrichtigungen sind auf diesem Gerät nicht aktiv."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid ""
+"Notifications are not configured on the server yet. Please tell an "
+"administrator."
+msgstr ""
+"Benachrichtigungen sind auf dem Server noch nicht eingerichtet. Bitte "
+"informiere einen Administrator."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid ""
+"On iPhone and iPad, notifications only work in the app installed on the home"
+" screen (Share › Add to Home Screen) and need iOS 16.4 or later. Open the "
+"app from its icon and come back here."
+msgstr ""
+"Auf iPhone und iPad funktionieren Benachrichtigungen nur in der auf dem "
+"Home-Bildschirm installierten App (Teilen › Zum Home-Bildschirm) und "
+"erfordern iOS 16.4 oder neuer. Öffne die App über ihr Symbol und komm "
+"hierher zurück."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid ""
+"On iPhone or iPad: Settings › Notifications › this app › Allow "
+"Notifications. On Android: long-press the app icon › App info › "
+"Notifications, or in Chrome tap the icon next to the address › Permissions ›"
+" Notifications. Then reload this page."
+msgstr ""
+"Auf iPhone oder iPad: Einstellungen › Mitteilungen › diese App › "
+"Mitteilungen erlauben. Auf Android: App-Symbol gedrückt halten › App-Info › "
+"Benachrichtigungen, oder in Chrome auf das Symbol neben der Adresse tippen ›"
+" Berechtigungen › Benachrichtigungen. Danach diese Seite neu laden."
 
 #. module: discuss_community
 #: model:res.groups,comment:discuss_community.group_community_member
@@ -132,9 +214,63 @@ msgstr ""
 "gelesen; leer für alle, die kein Community-Gast sind."
 
 #. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "The server answered with an error:"
+msgstr "Der Server hat mit einem Fehler geantwortet:"
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid ""
+"The server did not save this device. Try again; if it keeps failing, tell an"
+" administrator."
+msgstr ""
+"Der Server hat dieses Gerät nicht gespeichert. Versuche es erneut; wenn es "
+"weiterhin fehlschlägt, informiere einen Administrator."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid ""
+"This browser cannot receive notifications. Use an up-to-date Chrome, Edge, "
+"Firefox or Safari, or install the app on your phone."
+msgstr ""
+"Dieser Browser kann keine Benachrichtigungen empfangen. Verwende ein "
+"aktuelles Chrome, Edge, Firefox oder Safari, oder installiere die App auf "
+"deinem Handy."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid ""
+"This device is linked to another account. Log in with that account and turn "
+"notifications off there, or remove the app and install it again."
+msgstr ""
+"Dieses Gerät ist mit einem anderen Konto verknüpft. Melde dich mit diesem "
+"Konto an und schalte dort die Benachrichtigungen aus, oder entferne die App "
+"und installiere sie neu."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid ""
+"This device is linked to another account. Tap “Activate and verify” to link "
+"it to yours."
+msgstr ""
+"Dieses Gerät ist mit einem anderen Konto verknüpft. Tippe auf „Aktivieren "
+"und prüfen“, um es mit deinem zu verknüpfen."
+
+#. module: discuss_community
 #: model:ir.model,name:discuss_community.model_res_users
 msgid "User"
 msgstr "Benutzer"
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "We sent you a test notification."
+msgstr "Wir haben dir eine Testbenachrichtigung geschickt."
 
 #. module: discuss_community
 #: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
@@ -158,87 +294,3 @@ msgstr ""
 #: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
 msgid "✓ Notifications active on this device."
 msgstr "✓ Benachrichtigungen auf diesem Gerät aktiv."
-
-#. module: discuss_community
-#. odoo-javascript
-#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
-msgid "We sent you a test notification."
-msgstr "Wir haben dir eine Testbenachrichtigung geschickt."
-
-#. module: discuss_community
-#. odoo-javascript
-#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
-msgid "Activating and verifying notifications…"
-msgstr "Benachrichtigungen werden aktiviert und geprüft …"
-
-#. module: discuss_community
-#. odoo-javascript
-#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
-msgid "Notifications are blocked on this device."
-msgstr "Benachrichtigungen sind auf diesem Gerät blockiert."
-
-#. module: discuss_community
-#. odoo-javascript
-#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
-msgid "On iPhone or iPad: Settings › Notifications › this app › Allow Notifications. On Android: long-press the app icon › App info › Notifications, or in Chrome tap the icon next to the address › Permissions › Notifications. Then reload this page."
-msgstr "Auf iPhone oder iPad: Einstellungen › Mitteilungen › diese App › Mitteilungen erlauben. Auf Android: App-Symbol gedrückt halten › App-Info › Benachrichtigungen, oder in Chrome auf das Symbol neben der Adresse tippen › Berechtigungen › Benachrichtigungen. Danach diese Seite neu laden."
-
-#. module: discuss_community
-#. odoo-javascript
-#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
-msgid "Notifications are not active on this device."
-msgstr "Benachrichtigungen sind auf diesem Gerät nicht aktiv."
-
-#. module: discuss_community
-#. odoo-javascript
-#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
-msgid "This device is linked to another account. Log in with that account and turn notifications off there, or remove the app and install it again."
-msgstr "Dieses Gerät ist mit einem anderen Konto verknüpft. Melde dich mit diesem Konto an und schalte dort die Benachrichtigungen aus, oder entferne die App und installiere sie neu."
-
-#. module: discuss_community
-#. odoo-javascript
-#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
-msgid "This device is linked to another account. Tap “Activate and verify” to link it to yours."
-msgstr "Dieses Gerät ist mit einem anderen Konto verknüpft. Tippe auf „Aktivieren und prüfen“, um es mit deinem zu verknüpfen."
-
-#. module: discuss_community
-#. odoo-javascript
-#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
-msgid "On iPhone and iPad, notifications only work in the app installed on the home screen (Share › Add to Home Screen) and need iOS 16.4 or later. Open the app from its icon and come back here."
-msgstr "Auf iPhone und iPad funktionieren Benachrichtigungen nur in der auf dem Home-Bildschirm installierten App (Teilen › Zum Home-Bildschirm) und erfordern iOS 16.4 oder neuer. Öffne die App über ihr Symbol und komm hierher zurück."
-
-#. module: discuss_community
-#. odoo-javascript
-#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
-msgid "This browser cannot receive notifications. Use an up-to-date Chrome, Edge, Firefox or Safari, or install the app on your phone."
-msgstr "Dieser Browser kann keine Benachrichtigungen empfangen. Verwende ein aktuelles Chrome, Edge, Firefox oder Safari, oder installiere die App auf deinem Handy."
-
-#. module: discuss_community
-#. odoo-javascript
-#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
-msgid "Notifications are not configured on the server yet. Please tell an administrator."
-msgstr "Benachrichtigungen sind auf dem Server noch nicht eingerichtet. Bitte informiere einen Administrator."
-
-#. module: discuss_community
-#. odoo-javascript
-#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
-msgid "The server did not save this device. Try again; if it keeps failing, tell an administrator."
-msgstr "Der Server hat dieses Gerät nicht gespeichert. Versuche es erneut; wenn es weiterhin fehlschlägt, informiere einen Administrator."
-
-#. module: discuss_community
-#. odoo-javascript
-#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
-msgid "The server answered with an error:"
-msgstr "Der Server hat mit einem Fehler geantwortet:"
-
-#. module: discuss_community
-#. odoo-javascript
-#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
-msgid "Activate them to know when someone answers you, even with the app closed."
-msgstr "Aktiviere sie, um zu erfahren, wenn dir jemand antwortet, auch wenn die App geschlossen ist."
-
-#. module: discuss_community
-#. odoo-javascript
-#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
-msgid "Activate and verify"
-msgstr "Aktivieren und prüfen"

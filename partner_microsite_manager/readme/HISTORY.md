@@ -1,3 +1,11 @@
+## 19.0.2.11.1 (2026-09-26)
+
+- i18n: the website logo form stayed in English in Spanish: its help text
+  was in `es.po` on one line, and a view term only matches with its exact
+  whitespace. All .po files regenerated from a fresh export (Spanish now
+  complete; de, fr, it, pl and pt get every entry, with the logo form,
+  contact form labels, weekdays and opening status translated).
+
 ## 19.0.2.11.0 (2026-09-25)
 
 * Website > Site > Content > "Website logo" (client request: "No hay un

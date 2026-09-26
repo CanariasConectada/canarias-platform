@@ -1,3 +1,13 @@
+## 19.0.1.2.1 (2026-09-26)
+
+- Pushes are written in the reader's language. Core builds one payload in
+  the poster's environment, so its translatable parts (attachment wording,
+  "%(author)s in %(channel)s") reached a Spanish phone in English whenever
+  the poster's language was English. Partner recipients are now grouped by
+  their language and core's step runs once per group in that language;
+  guest devices are grouped by `mail.guest.lang` the same way. The test
+  push body (`cc_push_test`) uses the owner's language, not the request's.
+
 ## 19.0.1.2.0 (2026-09-25)
 
 - `mail.push.device.cc_push_status(endpoint)`: tells the authenticated web

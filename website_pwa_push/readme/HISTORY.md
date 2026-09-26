@@ -1,3 +1,7 @@
+## 19.0.2.0.2 (2026-09-26)
+
+- Tests: Spanish of the notification prompt (view terms).
+
 ## 19.0.2.0.1 (2026-09-25)
 
 - Tests: the routing browser tests run without a screencast, so a frame

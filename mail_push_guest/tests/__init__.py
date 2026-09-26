@@ -4,6 +4,7 @@
 from . import (
     test_push_device_persona,
     test_push_endpoint_allowlist,
+    test_push_language,
     test_push_notification,
     test_push_routes,
     test_push_validation,
