@@ -4,7 +4,7 @@
 {
     "name": "Website Sale Merchant Alert",
     "summary": "Email and push-notify the shop when their website receives an order",
-    "version": "19.0.1.1.0",
+    "version": "19.0.1.1.1",
     "author": "Canarias Conectada",
     "website": "https://github.com/CanariasConectada/canarias-platform",
     "category": "Website",

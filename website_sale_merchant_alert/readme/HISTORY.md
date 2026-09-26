@@ -1,3 +1,8 @@
+## 19.0.1.1.1 (2026-09-25)
+
+- Test fix: the pending-payment test builds its provider and payment
+  method like core's `PaymentCommon`, so it passes on a fresh database.
+
 ## 19.0.1.1.0 (2026-09-25)
 
 - Web push to the phone of every shop user with a registered device when

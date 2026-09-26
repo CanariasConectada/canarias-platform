@@ -223,12 +223,19 @@ class TestMerchantAlert(TransactionCase):
 
     def test_payment_that_leaves_a_quotation_alerts_once(self):
         order = self._make_order(website=self.website)
+        # Built like payment's own PaymentCommon: the "unknown" method is
+        # shipped by payment itself (archived, so a search would miss it)
+        # and exists on any database, fresh CI ones included.
+        method = self.env.ref("payment.payment_method_unknown")
         provider = self.env["payment.provider"].create(
-            {"name": "Test transfer", "company_id": self.company.id}
+            {
+                "name": "Test transfer",
+                "code": "none",
+                "state": "test",
+                "company_id": self.company.id,
+                "payment_method_ids": [(6, 0, method.ids)],
+            }
         )
-        method = self.env["payment.method"].search(
-            [("code", "=", "unknown")], limit=1
-        ) or self.env["payment.method"].search([], limit=1)
         tx = self.env["payment.transaction"].create(
             {
                 "provider_id": provider.id,
