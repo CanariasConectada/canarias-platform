@@ -3,6 +3,7 @@
 
 import json
 
+from odoo.addons.mail_push_guest.models.mail_thread import PUSH_VIBRATE_PATTERN
 from odoo.addons.website_pwa.controllers.main import WebsitePWA
 
 # Public page of a discuss channel: `/discuss/channel/<int:channel_id>`,
@@ -54,6 +55,7 @@ const PUSH_CHANNEL_PATH = %(channel_path)s;
 const PUSH_FALLBACK_URL = %(fallback_url)s;
 const PUSH_SUBSCRIBE_URL = %(subscribe_url)s;
 const PUSH_GENERIC_TITLE = %(generic_title)s;
+const PUSH_VIBRATE = %(vibrate)s;
 
 /**
  * Public page a notification should open.
@@ -101,9 +103,11 @@ function pushTargetUrl(data) {
  * Tag that makes a burst collapse into one notification.
  *
  * Same conversation, same tag: the phone replaces the previous notification
- * instead of stacking twenty of them while somebody types. `renotify` is left
- * unset on purpose, so the replacement is silent -- one buzz per conversation,
- * not one per message.
+ * instead of stacking twenty of them while somebody types. The push handler
+ * sets `renotify` next to it: a replacement WITHOUT it is shown silently, and
+ * the owner asked for every message to be heard (2026-09-26). The phone's
+ * own notification sound is the only one a web push can make -- browsers
+ * ignore the `sound` option -- so the job here is to never be silent.
  *
  * No tag when the payload names no record: an empty tag would collapse
  * unrelated notifications into a single one nobody can read.
@@ -163,12 +167,22 @@ self.addEventListener("push", (event) => {
     const tag = pushTag(options.data);
     if (tag) {
         options.tag = tag;
+        // Without it the replacement of a same-tag notification makes no
+        // sound and no vibration: only the first message of a burst is heard.
+        options.renotify = true;
     } else {
         // The contract of `pushTag` is "no record, no tag". A tag the payload
         // supplied itself must not survive that, or unrelated notifications
         // collapse into a single one nobody can read -- the exact outcome the
-        // empty return exists to prevent.
+        // empty return exists to prevent. `renotify` goes with it: without a
+        // tag the browser REJECTS the notification.
         delete options.tag;
+        delete options.renotify;
+    }
+    // Never silent, whatever the payload says.
+    options.silent = false;
+    if (!("vibrate" in options)) {
+        options.vibrate = PUSH_VIBRATE;
     }
     const title = (payload && payload.title) || PUSH_GENERIC_TITLE;
     // A REJECTED `showNotification` handed to `waitUntil` shows NOTHING, and
@@ -180,11 +194,43 @@ self.addEventListener("push", (event) => {
     // generic-title fallback above only covers an UNREADABLE payload; this
     // covers a readable but hostile one.
     event.waitUntil(
-        pushShowNotification(title, options).catch(() =>
-            pushShowNotification(PUSH_GENERIC_TITLE, {})
-        )
+        pushShowNotification(title, options)
+            .catch(() =>
+                pushShowNotification(PUSH_GENERIC_TITLE, {
+                    silent: false,
+                    vibrate: PUSH_VIBRATE,
+                })
+            )
+            .then(() => pushTellPages(options.data))
     );
 });
+
+/**
+ * Tell the open pages of this origin that a notification was shown.
+ *
+ * Same message core's backend worker posts (`notification-displayed`,
+ * mail/static/src/service_worker.js), so a page listening for one hears the
+ * other too. The website pages use it to play their foreground chime; an
+ * app in the background runs no page script and simply hears the phone.
+ * Never allowed to fail the push: the notification is already on screen.
+ */
+async function pushTellPages(data) {
+    try {
+        const windowClients = await self.clients.matchAll({
+            type: "window",
+            includeUncontrolled: true,
+        });
+        const payload = {
+            model: (data && data.model) || "",
+            res_id: (data && data.res_id) || "",
+        };
+        for (const client of windowClients) {
+            client.postMessage({type: "notification-displayed", payload});
+        }
+    } catch (error) {
+        console.error("[website_pwa_push] could not reach the open pages", error);
+    }
+}
 
 self.addEventListener("notificationclick", (event) => {
     event.notification.close();
@@ -378,4 +424,5 @@ class WebsitePWAPush(WebsitePWA):
             "fallback_url": FALLBACK_URL,
             "subscribe_url": SUBSCRIBE_URL,
             "generic_title": GENERIC_TITLE,
+            "vibrate": PUSH_VIBRATE_PATTERN,
         }

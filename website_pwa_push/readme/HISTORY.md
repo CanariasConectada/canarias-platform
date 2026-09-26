@@ -1,3 +1,15 @@
+## 19.0.2.1.0 (2026-09-26)
+
+- The website worker never shows a push silently: `renotify: true` next to
+  the per-conversation `tag` (a same-tag replacement used to arrive without
+  sound), `silent: false` whatever the payload says, a default Android
+  vibration, and `renotify` dropped when there is no tag (the browser would
+  reject it). The generic fallback notification is not silent either.
+- After showing a push the worker posts `notification-displayed` to the open
+  pages (core's own message), and the new page script `push_chime.js` plays
+  the foreground chime unless the page shows that conversation with focus,
+  or Android with permission already sounds the notification.
+
 ## 19.0.2.0.2 (2026-09-26)
 
 - Tests: Spanish of the notification prompt (view terms).
