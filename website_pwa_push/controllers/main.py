@@ -220,9 +220,13 @@ async function pushTellPages(data) {
             type: "window",
             includeUncontrolled: true,
         });
+        // The author ids let a page skip the chime for its own message
+        // (mail_push_guest puts them in `data`).
         const payload = {
             model: (data && data.model) || "",
             res_id: (data && data.res_id) || "",
+            author_partner_id: (data && data.author_partner_id) || false,
+            author_guest_id: (data && data.author_guest_id) || false,
         };
         for (const client of windowClients) {
             client.postMessage({type: "notification-displayed", payload});

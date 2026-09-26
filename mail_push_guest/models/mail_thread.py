@@ -43,6 +43,33 @@ def make_push_payload_audible(payload):
 class MailThread(models.AbstractModel):
     _inherit = "mail.thread"
 
+    def _notify_by_web_push_prepare_payload(
+        self, message, msg_vals=False, force_record_name=False
+    ):
+        """Name the author in `data`, so an open page can tell its own message.
+
+        The server never pushes a message to its author, but a page that
+        chimes on "a notification was shown" (website_pwa_push's
+        `push_chime.js`) should not have to trust that. Ids only: the name is
+        already in the title.
+        """
+        payload = super()._notify_by_web_push_prepare_payload(
+            message, msg_vals=msg_vals, force_record_name=force_record_name
+        )
+        msg_vals = msg_vals or {}
+        author_id = (
+            msg_vals["author_id"] if "author_id" in msg_vals else message.author_id.id
+        )
+        author_guest_id = (
+            msg_vals["author_guest_id"]
+            if "author_guest_id" in msg_vals
+            else message.author_guest_id.id
+        )
+        data = payload.setdefault("options", {}).setdefault("data", {})
+        data["author_partner_id"] = author_id or False
+        data["author_guest_id"] = author_guest_id or False
+        return payload
+
     def _web_push_truncate_payload(self, payload):
         """Add the audible options BEFORE core measures the payload.
 

@@ -75,7 +75,12 @@ class TestPushAudible(MailPushGuestMixin, TransactionCase):
         self.assertIn(self.device_guest_b.endpoint, pushed)
         # Core's channel payload has no tag: each message is its own
         # notification, so no `renotify`.
-        self._assert_audible(pushed[self.device_guest_b.endpoint])
+        payload = pushed[self.device_guest_b.endpoint]
+        self._assert_audible(payload)
+        self.assertEqual(
+            payload["options"]["data"]["author_partner_id"], self.partner_author.id
+        )
+        self.assertFalse(payload["options"]["data"]["author_guest_id"])
 
     @mute_logger("odoo.addons.mail.models.mail_thread")
     def test_partner_channel_push_is_audible(self):
@@ -97,7 +102,11 @@ class TestPushAudible(MailPushGuestMixin, TransactionCase):
             )
         )
         self.assertIn(self.device_partner_author.endpoint, pushed)
-        self._assert_audible(pushed[self.device_partner_author.endpoint])
+        payload = pushed[self.device_partner_author.endpoint]
+        self._assert_audible(payload)
+        # The author travels in `data` for the page's own-message guard.
+        self.assertEqual(payload["options"]["data"]["author_guest_id"], self.guest_b.id)
+        self.assertFalse(payload["options"]["data"]["author_partner_id"])
 
     def test_test_push_is_audible(self):
         with patch.object(mail_thread, "push_to_end_point") as mocked_push:
