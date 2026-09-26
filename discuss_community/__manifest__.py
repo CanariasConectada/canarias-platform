@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Discuss Community",
-    "version": "19.0.1.5.1",
+    "version": "19.0.1.6.0",
     "category": "Discuss",
     "summary": "Community members (residents and walk-in guests) as internal "
     "users whose whole backend is Discuss",

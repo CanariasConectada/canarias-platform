@@ -579,3 +579,14 @@ class TestWebsiteChat(WebsiteChatMixin, HttpCase):
         response = self.url_open("/chat/%s" % self.channel_general.id)
         self.assertIn("papas arrugadas para todos", response.text)
         self.assertNotIn(UNDER_REVIEW, response.text)
+
+    def test_chat_page_carries_the_message_sound_switch(self):
+        """The mute switch of the foreground chime sits in the page header.
+
+        Hidden until the script labels it: without the script there is no
+        sound to switch off.
+        """
+        # The support page: the one chat page no redirect bridge retires.
+        response = self.url_open("/chat/soporte")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("o_cc_chat_sound", response.text)

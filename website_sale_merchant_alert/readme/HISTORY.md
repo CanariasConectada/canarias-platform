@@ -1,3 +1,12 @@
+## 19.0.1.2.0 (2026-09-26)
+
+- The order push vibrates on Android (`[120, 60, 120]`).
+- The open web client chimes when core's backend worker shows a new-order
+  push (core only sounded for Discuss records), with core's checks (message
+  sound switch, main tab, Android left to the push) and a throttle of its
+  own: two orders within 2 seconds chime once, and a chat chime never
+  swallows an order one.
+
 ## 19.0.1.1.1 (2026-09-25)
 
 - Test fix: the pending-payment test builds its provider and payment

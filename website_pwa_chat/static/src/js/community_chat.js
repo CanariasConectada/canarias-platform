@@ -5,6 +5,8 @@ import {registry} from "@web/core/registry";
 import {Interaction} from "@web/public/interaction";
 import {rpc} from "@web/core/network/rpc";
 import {_t} from "@web/core/l10n/translation";
+import {isAndroid} from "@web/core/browser/feature_detection";
+import {chime, pageInView} from "@mail_push_guest/js/chime";
 
 // The two bus notifications this page listens to.
 //
@@ -46,6 +48,7 @@ export class CommunityChat extends Interaction {
         this.pendingZoneEl = this.el.querySelector(".o_cc_chat_pending_zone");
         this.inputEl = this.el.querySelector(".o_cc_chat_input");
         this.errorEl = this.el.querySelector(".o_cc_chat_error");
+        this.soundEl = this.el.querySelector(".o_cc_chat_sound");
         this.lastMessageId = this.readLastMessageId();
         this.isSending = false;
         this.listening = false;
@@ -80,7 +83,52 @@ export class CommunityChat extends Interaction {
         // is the only reliable way to say "someone is here" regardless of
         // which of the platform's 218 hosts is doing the framing.
         this.addListener(this.inputEl, "input", () => this.notifyParentActivity());
+        if (this.soundEl) {
+            this.addListener(this.soundEl, "click", () => {
+                chime.muted = !chime.muted;
+                this.renderSoundToggle();
+            });
+            this.renderSoundToggle();
+        }
         this.scrollToBottom();
+    }
+
+    /**
+     * The mute switch. Same stored preference as the "message sound" of the
+     * backend's Discuss settings (see `@mail_push_guest/js/chime`), so one
+     * choice holds for both. Only shown once this script runs: without it
+     * there is nothing to mute.
+     */
+    renderSoundToggle() {
+        const muted = chime.muted;
+        const label = muted ? _t("Turn on message sound") : _t("Mute message sound");
+        this.soundEl.classList.remove("d-none");
+        this.soundEl.setAttribute("aria-pressed", muted ? "true" : "false");
+        this.soundEl.setAttribute("title", label);
+        this.soundEl.setAttribute("aria-label", label);
+        const iconEl = document.createElement("i");
+        iconEl.className = `fa ${muted ? "fa-bell-slash" : "fa-bell"}`;
+        iconEl.setAttribute("aria-hidden", "true");
+        this.soundEl.replaceChildren(iconEl);
+    }
+
+    /**
+     * A short chime for a message somebody else wrote.
+     *
+     * Not while the visitor is looking at this very conversation (page
+     * visible AND focused; inside the floating window the focus is usually
+     * on the shop around it, which counts as not looking). Not on Android
+     * with notifications granted: the push notification sounds there, and
+     * follows the phone's silent mode -- core's own rule.
+     */
+    chimeFor(messages) {
+        if (!messages.some((message) => !message.mine)) {
+            return;
+        }
+        if (isAndroid() && window.Notification?.permission === "granted") {
+            return;
+        }
+        chime.ring({inView: pageInView()});
     }
 
     notifyParentActivity() {
@@ -111,7 +159,7 @@ export class CommunityChat extends Interaction {
         const bus = this.services.bus_service;
         this.onNewMessage = (payload) => {
             if (payload.id === this.channelId) {
-                this.refreshMessages();
+                this.refreshMessages({ring: true});
             }
         };
         this.onAuthorStatus = (payload) => {
@@ -211,7 +259,7 @@ export class CommunityChat extends Interaction {
     // Reading
     // ------------------------------------------------------------------
 
-    async refreshMessages() {
+    async refreshMessages({ring = false} = {}) {
         const result = await this.waitFor(
             rpc("/website_pwa_chat/messages", {
                 channel_id: this.channelId,
@@ -219,11 +267,12 @@ export class CommunityChat extends Interaction {
             })
         );
         this.protectSyncAfterAsync(() => {
-            for (const message of result.messages) {
-                this.appendMessage(message);
-            }
-            if (result.messages.length) {
+            const added = result.messages.filter((message) => this.appendMessage(message));
+            if (added.length) {
                 this.scrollToBottom();
+            }
+            if (ring) {
+                this.chimeFor(added);
             }
         })();
     }
@@ -253,7 +302,7 @@ export class CommunityChat extends Interaction {
         if (this.el.querySelector(`[data-message-id="${message.id}"]`)) {
             // The doorbell can ring twice for the same message (two tabs, a
             // reconnect replaying notifications). Ids make that harmless.
-            return;
+            return false;
         }
         const emptyEl = this.messagesEl.querySelector(".o_cc_chat_empty");
         if (emptyEl) {
@@ -285,6 +334,7 @@ export class CommunityChat extends Interaction {
         messageEl.append(metaEl, bodyEl);
         this.messagesEl.append(messageEl);
         this.lastMessageId = Math.max(this.lastMessageId, message.id);
+        return true;
     }
 
     showRejection(reason) {

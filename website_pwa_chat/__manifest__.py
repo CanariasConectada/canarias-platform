@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website PWA Chat",
-    "version": "19.0.6.4.1",
+    "version": "19.0.6.5.0",
     "category": "Website",
     "summary": "Community chat page of the Canarias Conectada app, served "
     "inside the public website layout",
@@ -50,6 +50,10 @@
         # onto every website of the platform. `discuss_channel_zone` drags
         # `mail` in anyway, but not `bus`, so it is declared here.
         "bus",
+        # The foreground chime (`@mail_push_guest/js/chime`): one throttle and
+        # one mute switch shared with the push listener of website_pwa_push
+        # and with the backend's Discuss.
+        "mail_push_guest",
     ],
     "data": [
         # The support group is referenced by the cron's own reasoning and by

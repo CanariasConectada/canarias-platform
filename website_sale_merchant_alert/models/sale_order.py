@@ -209,8 +209,12 @@ class SaleOrder(models.Model):
                 "body": body,
                 "icon": self._merchant_alert_push_icon(),
                 "tag": f"order-{order.id}",
+                # Same tag for a second alert about the same order: without
+                # `renotify` the replacement would arrive silently.
                 "renotify": True,
                 "silent": False,
+                # Android only; ignored elsewhere.
+                "vibrate": [120, 60, 120],
                 "requireInteraction": False,
                 "data": {
                     # Core's backend worker opens /odoo/<model>/<res_id>;

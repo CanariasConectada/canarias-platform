@@ -627,3 +627,15 @@ msgstr "Ostatnia wiadomość"
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
 msgid "← Todos los canales"
 msgstr "← Wszystkie kanały"
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/js/community_chat.js:0
+msgid "Mute message sound"
+msgstr "Wycisz dźwięk wiadomości"
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/js/community_chat.js:0
+msgid "Turn on message sound"
+msgstr "Włącz dźwięk wiadomości"

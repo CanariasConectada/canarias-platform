@@ -22,6 +22,13 @@ class IrHttp(models.AbstractModel):
         user = self.env.user
         is_guest = bool(user.is_community_guest)
         info["is_community_guest"] = is_guest
+        # For the foreground chime (static/src/backend/message_chime.js): in
+        # these channels a member without a setting of their own hears every
+        # message, as the server pushes it (discuss_channel_notify.py). Ids
+        # of four seeded channels; no content.
+        info["community_channel_ids"] = sorted(
+            self.env["discuss.channel"]._community_channel_ids()
+        )
         if is_guest:
             channel = self.env["res.users"]._community_default_channel()
             info["community_default_channel_id"] = channel.id or False
