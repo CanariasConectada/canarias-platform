@@ -68,3 +68,13 @@ msgstr "Mentions légales"
 #: code:addons/partner_microsite_manager/wizards/microsite_content_editor.py:0
 msgid "Page content of the shops"
 msgstr "Contenu de page des commerces"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: model:ir.actions.server,name:partner_microsite_manager.action_own_website_logo
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__logo
+#: model:ir.ui.menu,name:partner_microsite_manager.menu_own_website_logo
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_logo_form
+#: code:addons/partner_microsite_manager/wizards/microsite_content_editor.py:0
+msgid "Website logo"
+msgstr "Logo du site web"

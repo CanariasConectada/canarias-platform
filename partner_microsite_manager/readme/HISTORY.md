@@ -1,3 +1,17 @@
+## 19.0.2.11.0 (2026-09-25)
+
+* Website > Site > Content > "Website logo" (client request: "No hay un
+  espacio en sitio web para cambiar el logo del sitio web ... desde la parte
+  de contenido de sitio web"). A small form of the page content editor that
+  shows the shop's current logo and uploads a new one; an owner of several
+  shops picks which one. The same field is on the Cover tab of "Page
+  content". The logo is written to the company with sudo, scoped by
+  `_resolve_target_company`, and the existing company-to-website mirror
+  updates `website.logo` on every site of that shop. The `website` ACL is
+  not opened and no record rule is added. Only a real change is written; an
+  SVG logo (core refuses SVG uploads to non-administrators) is not loaded
+  into the form.
+
 ## 19.0.2.10.0 (2026-09-21)
 
 * The dynamic microsite homepage shows the certification seals between the

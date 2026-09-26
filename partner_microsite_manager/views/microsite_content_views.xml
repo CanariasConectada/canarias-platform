@@ -36,6 +36,8 @@
                         <page string="Cover" name="cover">
                             <group>
                                 <group string="Header">
+                                    <field name="logo" widget="image"
+                                           options="{'size': [0, 90]}"/>
                                     <field name="microsite_button_text"/>
                                     <field name="microsite_hero_image" widget="image"/>
                                 </group>
@@ -122,6 +124,47 @@
                 </sheet>
                 <footer>
                     <button name="action_save" type="object" string="Save"
+                            class="btn-primary"/>
+                    <button string="Discard" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- The website logo alone (client request 2026-09-25: "habilítalo para
+         que podamos hacerlo desde la parte de contenido de sitio web").
+         Same transient as the page content editor, so the shop is resolved
+         and checked the same way; its own Save writes the logo and nothing
+         else, because this form does not carry the other fields. -->
+    <record id="view_microsite_logo_form" model="ir.ui.view">
+        <field name="name">microsite.content.editor.logo.form</field>
+        <field name="model">microsite.content.editor</field>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <form string="Website logo">
+                <sheet>
+                    <field name="editable_company_ids" invisible="1"/>
+                    <field name="can_pick_company" invisible="1"/>
+                    <group>
+                        <field name="company_id" string="Shop"
+                               readonly="0" required="1"
+                               invisible="not can_pick_company"
+                               domain="[('id', 'in', editable_company_ids)]"
+                               options="{'no_create': True, 'no_open': True}"/>
+                        <field name="website_url" readonly="1"
+                               invisible="not website_url"/>
+                        <field name="logo" widget="image"
+                               options="{'size': [0, 120]}"/>
+                    </group>
+                    <p class="text-muted">
+                        Shown in the header of every page of your website.
+                        Recommended: a PNG with a transparent background (JPG
+                        also works), wider than tall (for example 400 x 120
+                        pixels) and no larger than 512 pixels on either side.
+                    </p>
+                </sheet>
+                <footer>
+                    <button name="action_save_logo" type="object" string="Save"
                             class="btn-primary"/>
                     <button string="Discard" class="btn-secondary" special="cancel"/>
                 </footer>
@@ -233,5 +276,25 @@
               action="action_own_microsite_content"
               groups="website.group_website_restricted_editor"
               sequence="4"/>
+
+    <!-- Website › Site › Content, where the client asked for it. Neither
+         `website.menu_site` nor `website.menu_content` carries a group, so
+         they show for anyone who can see one of their children, and this
+         entry is one. Same server-action pattern as "Page content": any
+         internal user may run it, the code resolves the shop. -->
+    <record id="action_own_website_logo" model="ir.actions.server">
+        <field name="name">Website logo</field>
+        <field name="model_id" ref="model_microsite_content_editor"/>
+        <field name="state">code</field>
+        <field name="group_ids" eval="[(6, 0, [ref('base.group_user')])]"/>
+        <field name="code">action = model.action_open_website_logo()</field>
+    </record>
+
+    <menuitem id="menu_own_website_logo"
+              name="Website logo"
+              parent="website.menu_content"
+              action="action_own_website_logo"
+              groups="website.group_website_restricted_editor"
+              sequence="5"/>
 
 </odoo>

@@ -1,11 +1,14 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import base64
+import binascii
 import re
 from urllib.parse import urlsplit
 
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError, ValidationError
+from odoo.tools.mimetypes import guess_mimetype
 
 from ..models.microsite_opening_slot import WEEKDAY_SELECTION, slot_problem_message
 from ..tools.opening_hours import (
@@ -75,6 +78,22 @@ _ALLOWED_WEBSITE_SCHEMES = ("http", "https")
 _URL_SCHEME_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9+.-]*:(?!\d)")
 
 
+def _is_svg(value):
+    """Whether a base64 binary value holds an SVG document."""
+    try:
+        raw = base64.b64decode(_as_bytes(value))
+    except (binascii.Error, ValueError):
+        return False
+    return guess_mimetype(raw, default="").startswith("image/svg")
+
+
+def _as_bytes(value):
+    """Binary values arrive as ``bytes`` or ``str``; compare them as bytes."""
+    if isinstance(value, str):
+        return value.encode()
+    return value or b""
+
+
 class MicrositeContentEditor(models.TransientModel):
     """The merchant's own screen for the content of their page.
 
@@ -113,6 +132,30 @@ class MicrositeContentEditor(models.TransientModel):
         help="Where the page this screen edits can be seen.",
     )
 
+    # Client request 2026-09-25: "No hay un espacio en sitio web para
+    # cambiar el logo del sitio web". The header shows ``website.logo``, a
+    # field merchants cannot write (they are restricted editors, not
+    # designers, and ``website`` must not be opened to them). The logo is
+    # written to the COMPANY instead, and ``res.company.write`` mirrors it
+    # onto every website of that shop. Not in ``CONTENT_FIELDS``: it is read
+    # website-first and only written when it actually changed.
+    logo = fields.Image(
+        string="Website logo",
+        max_width=512,
+        max_height=512,
+        attachment=False,
+        help="Shown in the header of your website. Recommended: a PNG with a "
+        "transparent background (JPG also works), wider than tall, for "
+        "example 400 x 120 pixels, and no more than 512 pixels on either "
+        "side. Larger images are scaled down.",
+    )
+    # The shops this user may choose from on the logo screen; the selector
+    # is only shown when there is more than one.
+    editable_company_ids = fields.Many2many(
+        comodel_name="res.company",
+        compute="_compute_editable_company_ids",
+    )
+    can_pick_company = fields.Boolean(compute="_compute_editable_company_ids")
     microsite_name = fields.Char(string="Trade name")
     microsite_button_text = fields.Char(string="Cover button")
     microsite_hero_image = fields.Image(string="Cover image")
@@ -312,11 +355,93 @@ class MicrositeContentEditor(models.TransientModel):
         for name in SOCIAL_FIELDS:
             values[name] = (website and website[name]) or source[name] or False
         values["company_website"] = source.website or False
+        values["logo"] = self._current_logo(source)
         values["opening_slot_ids"] = [
-            (0, 0, {"weekday": str(weekday), "open_time": open_time, "close_time": close_time})
+            (
+                0,
+                0,
+                {
+                    "weekday": str(weekday),
+                    "open_time": open_time,
+                    "close_time": close_time,
+                },
+            )
             for weekday, open_time, close_time in self._load_opening_slots(source)
         ]
         return values
+
+    @api.model
+    def _current_logo(self, company):
+        """The logo this screen opens with: what the shop's header shows,
+        the website's logo first and the company's as the fallback.
+
+        An SVG is skipped: core refuses SVG in a binary field to anyone who
+        is not an administrator ("Only admins can upload SVG files"), and
+        Odoo's own placeholder logo on a new website is one. The screen then
+        opens on the company's logo, or empty, and the merchant uploads a
+        PNG or JPG.
+        """
+        candidates = (company.website_id and company.website_id.logo, company.logo)
+        for value in candidates:
+            if value and not _is_svg(value):
+                return value
+        return False
+
+    def _compute_editable_company_ids(self):
+        companies = self.env["res.company"]._get_editable_microsite_companies()
+        for editor in self:
+            editor.editable_company_ids = companies
+            editor.can_pick_company = len(companies) > 1
+
+    @api.onchange("company_id")
+    def _onchange_company_id_logo(self):
+        """Picking another shop on the logo screen shows THAT shop's logo.
+
+        The id is resolved like every other on this screen: a shop outside
+        the caller's set is refused, never silently swapped.
+        """
+        for editor in self:
+            if not editor.company_id:
+                continue
+            company = self._resolve_target_company(editor.company_id.id)
+            editor.logo = self._current_logo(company)
+            editor.website_url = company.website_id.domain or ""
+
+    @api.model
+    def action_open_website_logo(self):
+        """What the "Website logo" menu opens: the logo-only form.
+
+        Starts on the session shop when the caller may edit it, otherwise on
+        the first shop they own; the form offers the others when there are
+        several. Whoever has no shop at all gets the same message as the
+        "Page content" menu.
+        """
+        Company = self.env["res.company"]
+        editable = Company._get_editable_microsite_companies()
+        if not editable:
+            raise UserError(
+                _(
+                    "Your account is not linked to a shop with its own site, "
+                    "so there is no website logo to change."
+                )
+            )
+        start = self.env.company if self.env.company in editable else editable[:1]
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Website logo"),
+            "res_model": self._name,
+            "view_mode": "form",
+            "views": [
+                (
+                    self.env.ref(
+                        "partner_microsite_manager.view_microsite_logo_form"
+                    ).id,
+                    "form",
+                )
+            ],
+            "target": "new",
+            "context": {"microsite_company_id": start.id},
+        }
 
     @api.model
     def _load_opening_slots(self, company):
@@ -419,6 +544,7 @@ class MicrositeContentEditor(models.TransientModel):
         company.write(
             dict(payload, **social_payload, **self._save_opening_slots(company))
         )
+        self._save_logo(company)
         # The website side wins in the footer, so it has to receive the same
         # value -- including an emptied one, or the old link keeps rendering.
         if company.website_id:
@@ -431,6 +557,46 @@ class MicrositeContentEditor(models.TransientModel):
         # to an hour and called it "no se modifica". ``templates`` is the
         # group that container belongs to (``registry._CACHES_BY_KEY``).
         self.env.registry.clear_cache("templates")
+        return {"type": "ir.actions.act_window_close"}
+
+    def _save_logo(self, company):
+        """Write the logo to the shop when, and only when, it changed.
+
+        Compared with the shop's current logo as THIS field would have stored
+        it (scaled to 512 px), so opening and saving the screen never
+        rewrites -- and never downsizes -- a logo nobody touched. An emptied
+        field is not a change either: a site without a logo shows Odoo's
+        placeholder, which nobody asked for; and a screen that opened empty
+        (the shop only had an SVG, see ``_current_logo``) must not clear it.
+
+        ``company`` comes from ``_resolve_target_company`` (already sudo);
+        the company write mirrors the logo onto every website of the shop.
+        """
+        self.ensure_one()
+        new_logo = self.logo
+        if not new_logo:
+            return False
+        current = self._current_logo(company)
+        field = self._fields["logo"]
+        if _as_bytes(new_logo) == _as_bytes(field._image_process(current, self.env)):
+            return False
+        company.write({"logo": new_logo})
+        return True
+
+    def action_save_logo(self):
+        """Save button of the logo-only form: the logo and nothing else.
+
+        The full ``action_save`` would write every field of the whitelist,
+        and this form does not carry them. The shop is re-resolved from the
+        selector first (the one the user may have changed), then from the
+        context the screen opened with.
+        """
+        self.ensure_one()
+        company = self._resolve_target_company(
+            self.company_id.id or self.env.context.get("microsite_company_id")
+        )
+        if self._save_logo(company):
+            self.env.registry.clear_cache("templates")
         return {"type": "ir.actions.act_window_close"}
 
     def _save_opening_slots(self, company):
