@@ -5,4 +5,14 @@
     // Let the Discuss panes scroll inside the remaining height instead of
     // pushing the page down by the banner's height.
     min-height: 0;
+
+    // The body is a flex ROW and core's Discuss root
+    // (mail/static/src/core/web/discuss_patch.xml) has neither `flex-grow`
+    // nor `w-100`: as a flex item it defaulted to `0 1 auto` and shrank to
+    // its content, leaving an empty band on the right of Discuss (regression
+    // of 19.0.1.4.0). It must take the whole width.
+    > * {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
 }
