@@ -1,3 +1,13 @@
+## 19.0.6.5.0 (2026-09-26)
+
+- Foreground chime when somebody else's message arrives in the open chat
+  (bus), unless the visitor is looking at it (page visible and focused; the
+  floating window counts as not looking while the shop around it has the
+  focus). Throttled and muted through `mail_push_guest`'s shared chime, now
+  a dependency.
+- Message-sound switch (bell) next to the chat title; it stores the same
+  preference as the backend's Discuss "message sound".
+
 ## 19.0.6.4.1 (2026-09-26)
 
 - i18n: `es.po` held only the Discuss dialog strings, so the website support

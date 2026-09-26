@@ -651,3 +651,15 @@ msgstr "Último mensaje"
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
 msgid "← Todos los canales"
 msgstr "← Todos los canales"
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/js/community_chat.js:0
+msgid "Mute message sound"
+msgstr "Silenciar el sonido de los mensajes"
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/js/community_chat.js:0
+msgid "Turn on message sound"
+msgstr "Activar el sonido de los mensajes"

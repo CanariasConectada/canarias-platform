@@ -192,8 +192,19 @@
                          exists: the first message opens it (no `channel`,
                          no `data-channel-id`), so the heading needs a name
                          of its own. -->
-                    <h1 class="h4 mb-1" t-if="channel" t-out="channel.name" />
-                    <h1 class="h4 mb-1" t-else="">Soporte</h1>
+                    <!-- The message-sound switch. No text of its own: the
+                         script labels it and reveals it, because without
+                         the script there is no sound to switch. -->
+                    <div class="d-flex align-items-start gap-2">
+                        <div class="flex-grow-1">
+                            <h1 class="h4 mb-1" t-if="channel" t-out="channel.name" />
+                            <h1 class="h4 mb-1" t-else="">Soporte</h1>
+                        </div>
+                        <button
+                            type="button"
+                            class="o_cc_chat_sound btn btn-link btn-sm text-muted p-1 d-none"
+                        />
+                    </div>
                     <p class="text-muted small" t-out="channel.description" />
 
                     <div class="o_cc_chat_messages mt-3">

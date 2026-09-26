@@ -21,3 +21,19 @@ class TestWebTranslations(TransactionCase):
         self.assertEqual(messages.get("Request support"), "Solicitar soporte")
         self.assertEqual(messages.get("Who is asking?"), "¿Quién pregunta?")
         self.assertEqual(messages.get("Cancel"), "Cancelar")
+
+    def test_sound_switch_strings_are_served_in_spanish(self):
+        """The chat page's message-sound switch is labelled from JS."""
+        self.env["res.lang"]._activate_lang("es_ES")
+        messages = {
+            message["id"]: message["string"]
+            for message in code_translations.get_web_translations(
+                "website_pwa_chat", "es_ES"
+            )["messages"]
+        }
+        self.assertEqual(
+            messages.get("Mute message sound"), "Silenciar el sonido de los mensajes"
+        )
+        self.assertEqual(
+            messages.get("Turn on message sound"), "Activar el sonido de los mensajes"
+        )
