@@ -4,6 +4,8 @@
 import json
 import logging
 
+from psycopg2.errors import SerializationFailure
+
 from odoo import fields, models
 from odoo.tools import format_amount
 
@@ -35,18 +37,41 @@ class SaleOrder(models.Model):
         that leaves the order unconfirmed, like a wire transfer). The flag is
         what keeps an on-site payment, which goes through both, from alerting
         twice.
+
+        The flag is only set once the alert went out: a failed alert rolls
+        back with its savepoint and leaves the order open to the next
+        trigger. The row is locked before the flag is re-read, so two
+        workers finishing the same checkout (a provider webhook and the
+        browser coming back) cannot both alert.
         """
         for order in self.filtered(
             lambda o: o.website_id and not o.merchant_alert_sent
         ):
-            order.sudo().merchant_alert_sent = True
             try:
                 with self.env.cr.savepoint():
+                    self.env.cr.execute(
+                        "SELECT merchant_alert_sent FROM sale_order"
+                        " WHERE id = %s FOR UPDATE",
+                        (order.id,),
+                    )
+                    row = self.env.cr.fetchone()
+                    if row and row[0]:
+                        continue
                     order._merchant_alert()
+                    order.sudo().merchant_alert_sent = True
+            except SerializationFailure:
+                # Another transaction updated the order meanwhile: it is the
+                # one finishing this checkout, and alerting, not this one.
+                _logger.info(
+                    "Merchant alert for %s left to a concurrent transaction.",
+                    order.name,
+                )
+                order.invalidate_recordset(["merchant_alert_sent"])
             except Exception:  # noqa: BLE001 - never break a checkout for a mail
                 _logger.exception(
                     "Merchant alert failed for %s; the order stands.", order.name
                 )
+                order.invalidate_recordset(["merchant_alert_sent"])
 
     def _merchant_alert_recipients(self):
         """Internal users who work for the order's shop.

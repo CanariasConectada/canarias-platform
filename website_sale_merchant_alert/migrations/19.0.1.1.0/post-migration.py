@@ -6,13 +6,16 @@ def migrate(cr, version):
     """Website orders confirmed before the flag existed were already alerted.
 
     Without this, cancelling one and confirming it again would alert the
-    shop a second time.
+    shop a second time. Cancelled orders count too: nothing in Odoo 19
+    reliably tells a cancelled confirmed order from a cancelled cart
+    (``date_order`` is also the cart date), and prod has no cancelled
+    website order at the time of this migration.
     """
     cr.execute(
         """
         UPDATE sale_order
            SET merchant_alert_sent = TRUE
          WHERE website_id IS NOT NULL
-           AND state = 'sale'
+           AND state IN ('sale', 'cancel')
         """
     )
