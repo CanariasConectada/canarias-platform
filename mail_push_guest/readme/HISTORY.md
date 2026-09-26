@@ -1,3 +1,19 @@
+## 19.0.1.3.0 (2026-09-26)
+
+- No web push leaves the server silent: every payload gets `silent: false`,
+  an Android vibration pattern (`[120, 60, 120]`, kept if the payload has
+  its own) and `renotify: true` when it carries a `tag` (only then: with no
+  tag the browser rejects the notification). Applied in `mail.thread`
+  before core truncates the payload (so the 4 KB limit still holds) and
+  again at `_web_push_send_notification`, the one door every push goes
+  through: core's partner pushes, guest pushes, call invitations and
+  `cc_push_test`, direct or queued.
+- Shared foreground chime (`@mail_push_guest/js/chime`, in the backend and
+  frontend bundles): core's "new message" sound, at most once every 2
+  seconds across the tabs and frames of an origin, never for the listener's
+  own message or the conversation on screen, muted by core's own "message
+  sound" preference (default on).
+
 ## 19.0.1.2.1 (2026-09-26)
 
 - Pushes are written in the reader's language. Core builds one payload in

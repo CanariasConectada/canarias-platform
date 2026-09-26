@@ -12,6 +12,8 @@ from odoo.http import request
 
 from odoo.addons.mail.tools.jwt import InvalidVapidError
 
+from .mail_thread import PUSH_VIBRATE_PATTERN
+
 _logger = logging.getLogger(__name__)
 
 # Hosts a browser subscription endpoint may legitimately point at.
@@ -960,6 +962,12 @@ class MailPushDevice(models.Model):
                 "body": reader_env._("Notifications are active on this device ✓"),
                 "icon": "/web/static/img/odoo-icon-192x192.png",
                 "tag": "cc-push-test",
+                # A second test within the same tag REPLACES the first one;
+                # without `renotify` that replacement is silent, and a test
+                # that makes no sound tests nothing the user cares about.
+                "renotify": True,
+                "silent": False,
+                "vibrate": list(PUSH_VIBRATE_PATTERN),
                 # Empty model/res_id: no open thread matches it, so core's
                 # web client never swallows the notification as "already
                 # on screen" (mail/static/src/core/common/store_service.js).
