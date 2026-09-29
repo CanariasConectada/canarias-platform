@@ -1,3 +1,30 @@
+## 19.0.1.7.0 (2026-09-29)
+
+- Guests entering from a commercial-zone site are seated in that zone's
+  channel again. The arrival zone of a website now reads the company's
+  `zone_company_key` ("Zona Comercial Guanarteme" and its siblings) before
+  `commercial_zone`, which is `canarias` on those companies, so every guest
+  from a zone site landed in the general channel only. A returning guest
+  with no neighbourhood adopts the one of the zone site it enters through.
+- Community guests see the four community channels in the Channels view
+  (general plus the three neighbourhood channels, which are gated on
+  `group_zone_channel_member`) and can join and leave each one: new
+  non-stored `res.users.community_channel_ids`, read by the guest channel
+  and join rules. Staff channels stay hidden and unjoinable, and guests
+  still only read their own member row in a channel.
+- Guests are self-managed for `discuss_channel_zone`: seated on arrival,
+  never unseated by the sync or the nightly reconciliation afterwards.
+- Migration: seats the existing guests in the general channel and their
+  zone channel when missing (idempotent, adds only).
+- The daily guest cleanup now removes every guest inactive for more than
+  `discuss_community.guest_inactivity_days` (system parameter, default 7).
+  Last activity is the latest of the last login, the last authored message,
+  the last presence and the account creation. Channel memberships and push
+  devices are deleted; the user is deleted (archived if that fails); the
+  partner is deleted, or archived when it authored messages so they stay
+  readable. Only `is_community_guest` accounts are touched; counts are
+  logged.
+
 ## 19.0.1.6.0 (2026-09-26)
 
 - Foreground chime in the backend for the messages core does not sound for

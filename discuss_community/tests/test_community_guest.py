@@ -74,41 +74,130 @@ class TestCommunityGuestModel(CommunityMixin, TransactionCase):
             self.channel_general | self.channel_lomo,
         )
 
-    def test_gc_removes_idle_silent_guest(self):
-        """Idle past the window and never spoke: the account evaporates."""
+    def _gc(self):
+        return self.env["res.users"]._gc_community_guests()
+
+    def test_gc_removes_an_inactive_guest(self):
+        """Inactive past the window: user, partner, seats and devices go."""
+        guest = self.env["res.users"]._create_community_guest(zone="guanarteme")
+        partner = guest.partner_id
+        self.env["mail.push.device"].sudo().create(
+            {
+                "partner_id": partner.id,
+                "endpoint": "https://push.example.com/dcm",
+                "keys": '{"p256dh": "x", "auth": "y"}',
+            }
+        )
+        self._backdate(guest)
+        counters = self._gc()
+        self.assertGreaterEqual(counters["users_removed"], 1)
+        self.assertFalse(guest.exists(), "the inactive guest must be removed")
+        self.assertFalse(partner.exists(), "its partner has nothing to keep")
+        self.assertFalse(
+            self.env["discuss.channel.member"]
+            .sudo()
+            .search([("partner_id", "=", partner.id)])
+        )
+        self.assertFalse(
+            self.env["mail.push.device"]
+            .sudo()
+            .search([("partner_id", "=", partner.id)])
+        )
+
+    def test_gc_keeps_an_active_guest(self):
+        """An old account with recent activity (a login) is kept."""
         guest = self.env["res.users"]._create_community_guest()
         self._backdate(guest)
-        removed = self.env["res.users"]._gc_community_guests()
-        self.assertGreaterEqual(removed, 1)
-        self.assertFalse(guest.exists(), "the idle silent guest must be purged")
+        self.env["res.users.log"].with_user(guest).sudo().create({})
+        self._gc()
+        self.assertTrue(guest.exists())
+        self.assertTrue(guest.active)
 
-    def test_gc_keeps_a_guest_who_posted(self):
-        """A guest with a message in a conversation is not disposable.
-
-        Deleting the author of messages other residents can still read would
-        amputate the conversation; "posted a comment" is this module's
-        definition of "worth keeping", the mirror of the branding module's
-        "placed an order".
-        """
+    def test_gc_keeps_a_guest_with_recent_presence(self):
         guest = self.env["res.users"]._create_community_guest()
-        self.channel_general.sudo().message_post(
+        self._backdate(guest)
+        self.env["mail.presence"].sudo().create(
+            {"user_id": guest.id, "last_poll": fields.Datetime.now()}
+        )
+        self._gc()
+        self.assertTrue(guest.active)
+
+    def test_gc_keeps_messages_readable(self):
+        """A guest who posted: the account goes, the author partner is only
+        archived, and the message stays readable with its author."""
+        guest = self.env["res.users"]._create_community_guest()
+        message = self.channel_general.sudo().message_post(
             body="still here",
             author_id=guest.partner_id.id,
             message_type="comment",
         )
+        self.env.cr.execute(
+            "UPDATE mail_message SET date = %s WHERE id = %s",
+            (fields.Datetime.now() - timedelta(days=30), message.id),
+        )
+        message.invalidate_recordset(["date"])
+        partner = guest.partner_id
         self._backdate(guest)
-        self.env["res.users"]._gc_community_guests()
-        self.assertTrue(guest.exists(), "a guest who posted must survive the GC")
+        self._gc()
+        self.assertFalse(guest.exists().filtered("active"), "the account goes")
+        self.assertTrue(partner.exists(), "the author partner must stay")
+        self.assertFalse(partner.active, "the author partner is archived")
+        read = message.with_user(self.employee).read(["body", "author_id"])[0]
+        self.assertEqual(read["author_id"][0], partner.id)
+        self.assertIn("still here", str(read["body"]))
+
+    def test_gc_never_touches_a_merchant(self):
+        """Only community guests are swept, however idle anybody else is."""
+        company = self.env["res.company"].create(
+            {"name": "DCM Shop", "commercial_zone": "guanarteme"}
+        )
+        merchant = (
+            self.env["res.users"]
+            .with_context(no_reset_password=True)
+            .create(
+                {
+                    "name": "DCM Merchant",
+                    "login": "dcm_merchant",
+                    "company_id": company.id,
+                    "company_ids": [(6, 0, company.ids)],
+                    "group_ids": [(6, 0, self.portal_group.ids)],
+                }
+            )
+        )
+        for user in (merchant, self.member, self.employee):
+            self._backdate(user)
+        self._gc()
+        for user in (merchant, self.member, self.employee):
+            self.assertTrue(user.exists() and user.active)
+            self.assertTrue(user.partner_id.active)
 
     def test_gc_never_touches_a_young_guest(self):
-        """An account younger than the window is kept even with no logins.
-
-        A guest created moments ago has no login log yet and would look
-        "idle" to a naive query; age is the guard.
-        """
+        """An account younger than the window is kept even with no logins."""
         guest = self.env["res.users"]._create_community_guest()
-        self.env["res.users"]._gc_community_guests()
+        self._gc()
         self.assertTrue(guest.exists())
+
+    def test_gc_is_idempotent(self):
+        guest = self.env["res.users"]._create_community_guest()
+        self._backdate(guest)
+        self._gc()
+        second = self._gc()
+        self.assertEqual(second["users_removed"], 0)
+        self.assertEqual(second["users_archived"], 0)
+        self.assertEqual(second["partners_archived"], 0)
+
+    def test_gc_window_comes_from_the_parameter(self):
+        icp = self.env["ir.config_parameter"].sudo()
+        guest = self.env["res.users"]._create_community_guest()
+        self._backdate(guest, days=10)
+        icp.set_param("discuss_community.guest_inactivity_days", "30")
+        self._gc()
+        self.assertTrue(guest.exists(), "10 days idle is inside a 30-day window")
+        icp.set_param("discuss_community.guest_inactivity_days", "nonsense")
+        self.assertEqual(self.env["res.users"]._community_guest_inactivity_days(), 7)
+        icp.set_param("discuss_community.guest_inactivity_days", "7")
+        self._gc()
+        self.assertFalse(guest.exists())
 
     def test_gc_ignores_the_portal_guest_population(self):
         """Each GC sweeps its own flock.

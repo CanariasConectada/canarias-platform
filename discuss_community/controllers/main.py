@@ -51,6 +51,13 @@ def _arrival_zone(controller):
     (``res_company_zone``); ``canarias`` -- the platform's own sites -- means
     "no neighbourhood" and lands the user in the general channel only.
 
+    The zone of a company is its ``zone_company_key`` when it IS a
+    commercial-zone company (``zone_company_ownership``: "Zona Comercial
+    Guanarteme" and its siblings, whose own ``commercial_zone`` is the
+    platform-wide ``canarias``), else its ``commercial_zone`` (a merchant).
+    Reading ``commercial_zone`` alone put every guest who walked in through a
+    zone site in the general channel only.
+
     Resolution: ``request.website`` when the route is website-bound (both
     routes below and ``/web/signup`` are), else ``website_login_company``'s
     ``_find_login_website`` -- the Host-header-safe resolver, available on the
@@ -65,7 +72,19 @@ def _arrival_zone(controller):
     company = website.sudo().company_id if website else None
     if not company:
         return False
-    return request.env["res.company"].sudo()._normalise_zone(company.commercial_zone)
+    return _company_zone(company)
+
+
+def _company_zone(company):
+    """The normalised zone of ``company``: its zone key first, see above."""
+    zone_key = (
+        company.zone_company_key if "zone_company_key" in company._fields else False
+    )
+    return (
+        company.env["res.company"]
+        .sudo()
+        ._normalise_zone(zone_key or company.commercial_zone)
+    )
 
 
 class CommunitySignup(AuthSignupHome):
@@ -169,6 +188,12 @@ class CommunityAccess(Home):
                 return request.redirect("/")
             zone = _arrival_zone(self)
             user = request.env["res.users"].sudo()._create_community_guest(zone=zone)
+        else:
+            # A returning guest that has no neighbourhood yet takes the one of
+            # the zone site it walks in through now (the write seats it; the
+            # sync only ever ADDS seats for a guest). A guest that already has
+            # a neighbourhood keeps it.
+            user.sudo()._community_guest_adopt_zone(_arrival_zone(self))
 
         # Fresh throwaway password on every entry; never stored or logged.
         password = secrets.token_urlsafe(24)

@@ -105,6 +105,23 @@ msgid "HTTP Routing"
 msgstr "Encaminhamento HTTP"
 
 #. module: discuss_community
+#: model:ir.model.fields,field_description:discuss_community.field_res_users__community_channel_ids
+msgid "Joinable Community Channels"
+msgstr "Canais da comunidade disponíveis"
+
+#. module: discuss_community
+#: model:ir.model.fields,help:discuss_community.field_res_users__community_channel_ids
+msgid ""
+"Community channels a community guest may see and join or leave at will: the "
+"platform-wide channel and the neighbourhood channels. Read by the guest "
+"channel record rules; empty for everybody who is not a community guest."
+msgstr ""
+"Canais da comunidade que um convidado da comunidade pode ver e aos quais "
+"pode aderir ou sair quando quiser: o canal de toda a plataforma e os canais "
+"de bairro. Lido pelas regras de registo dos canais para convidados; vazio "
+"para quem não é convidado da comunidade."
+
+#. module: discuss_community
 #: model:ir.model.fields,field_description:discuss_community.field_res_users__community_hidden_channel_ids
 msgid "Hidden Staff Channels"
 msgstr "Canais da equipa ocultos"
