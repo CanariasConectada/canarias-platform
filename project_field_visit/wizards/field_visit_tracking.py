@@ -97,11 +97,15 @@ DATE_HEADERS = {
     "proximavisita",
 }
 DATE_ROUND = re.compile(r"^(\d+a?)?(vuelta|visita)s?$")
-# A sheet with one of these headers holds credentials: never read it.
-SECRET_HEADERS = {"password", "contrasena", "contrasenas", "clave", "claves", "pass"}
-SECRET_TITLE = re.compile(r"contrasen|password|clave")
-# Personal identifiers are not copied to the task.
-IGNORED_HEADERS = {"nif", "cif", "nifcif", "cifnif", "dni", "nie"}
+# Headers are matched on their normalized words, default-deny: a column that
+# looks like a credential makes the whole sheet unreadable; one that looks
+# like a personal identifier is skipped. Both are listed in the summary.
+SECRET_WORD = re.compile(r"contrasen|passw|pwd|credencial")
+SECRET_TOKENS = {"clave", "claves", "pin", "pass", "password", "passwords"}
+LOGIN_TOKENS = {"login", "user", "username"}
+PRIVATE_TOKEN = re.compile(r"^(n|no|num|numero|nro)?(nif|cif|dni|nie|nifcif|cifnif)$")
+PRIVATE_TOKENS = {"iban", "ccc", "tarjeta", "nss", "nacimiento", "pasaporte"}
+SECRET_TITLE = re.compile(r"contrasen|passw|clave|credencial")
 GENERIC_HEADER = re.compile(r"^(column|columna|col|unnamed|campo)( \d+)*$")
 
 # Task properties the tracking format may add to a phase: name -> label.
@@ -116,6 +120,39 @@ STANDARD_KEYS = ("address", "phone", "email", "zone", "contact", "consultant")
 
 def is_secret_sheet(title):
     return bool(SECRET_TITLE.search(normalize(title)))
+
+
+def is_secret_header(value):
+    """A header naming credentials (password, access key, PIN, login)."""
+    words = header_words(value)
+    tokens = set(words.split())
+    return bool(
+        SECRET_WORD.search(words.replace(" ", ""))
+        or tokens & SECRET_TOKENS
+        or tokens & LOGIN_TOKENS
+        or words == "usuario"
+        or words.startswith("usuario ")
+    )
+
+
+def is_private_header(value):
+    """A header naming a personal identifier (NIF/CIF/DNI/NIE, IBAN...)."""
+    words = header_words(value)
+    tokens = words.split()
+    if PRIVATE_TOKEN.match(words.replace(" ", "")):
+        return True
+    if any(PRIVATE_TOKEN.match(token) for token in tokens):
+        return True
+    if any(
+        PRIVATE_TOKEN.match(a + b) for a, b in zip(tokens, tokens[1:], strict=False)
+    ):
+        return True
+    return bool(set(tokens) & PRIVATE_TOKENS) or "seguridad social" in words
+
+
+def secret_headers(row):
+    """Credential-looking cells of a row (header text only)."""
+    return [clean(cell) for cell in row or [] if is_secret_header(cell)]
 
 
 def property_label(header):
@@ -137,14 +174,16 @@ def tracking_layout(row):
     cells = [(col, words, raw) for col, words, raw in cells if words]
     if len(cells) < MIN_HEADER_CELLS:
         return None
-    layout = {"dates": {}, "props": {}, "secret": False}
+    layout = {"dates": {}, "props": {}, "secret": False, "ignored": []}
     names = {}
     for col, words, raw in cells:
         key = words.replace(" ", "")
-        if key in SECRET_HEADERS:
+        if is_secret_header(raw):
             layout["secret"] = True
+            layout["ignored"].append(clean(raw))
             continue
-        if key in IGNORED_HEADERS:
+        if is_private_header(raw):
+            layout["ignored"].append(clean(raw))
             continue
         if _alias_match(words, CONTACT_ALIASES):
             layout.setdefault("contact", col)
@@ -179,6 +218,8 @@ def tracking_layout(row):
         return None
     ranks = sorted(names)
     layout["name"] = names[ranks[0]]
+    # Only a bare "Nombre": business or person? Decided on its values.
+    layout["bare_name"] = ranks == [len(NAME_ALIASES) - 1] and "contact" not in layout
     # A plain "Nombre" next to a more specific business column is a person.
     if len(ranks) > 1 and ranks[-1] == len(NAME_ALIASES) - 1:
         layout.setdefault("contact", names[ranks[-1]])

@@ -219,6 +219,8 @@ class TestFieldVisitTracking(FieldVisitCase):
         self.assertIn("Sheet 'los que faltan' skipped", summary)
         self.assertIn("Estado de visita", summary)
         self.assertNotIn("Zzfv Secret Shop", summary)
+        self.assertIn("Authoritative sheet (its values win): 'MASTER '", summary)
+        self.assertNotIn("not the largest one", summary)
         self.assertFalse(self._tasks())
         self.assertEqual(self.project.task_properties_definition, definition)
 
@@ -277,7 +279,9 @@ class TestFieldVisitTracking(FieldVisitCase):
         )
         # Typed in Odoo by the consultants after the first import.
         bakery.field_visit_phone = "611 111 111"
-        bakery.task_properties = dict(self._props(bakery), training="yes")
+        bakery.task_properties = dict(
+            self._props(bakery), training="yes", fv_visit_status="VISITADO"
+        )
         messages = self._tasks().message_ids
         wizard = self._import()
         self.assertIn("Tasks updated: 3", wizard.summary)
@@ -285,7 +289,24 @@ class TestFieldVisitTracking(FieldVisitCase):
         self.assertEqual(self._tasks().message_ids, messages, "no duplicated notes")
         self.assertEqual(bakery.field_visit_phone, "611 111 111")
         self.assertEqual(self._props(bakery)["training"], "yes")
+        self.assertEqual(
+            self._props(bakery)["fv_visit_status"], "VISITADO", "edit survives"
+        )
         self.assertEqual(len(self._reminders(bakery)), 1)
+        # The manager explicitly lets the sheet win.
+        wizard = self.env["project.field.visit.import"].create(
+            {
+                "project_id": self.project.id,
+                "file": workbook(self.sheets),
+                "filename": "listado.xlsx",
+                "dry_run": False,
+                "overwrite_values": True,
+            }
+        )
+        wizard.action_import()
+        self.assertEqual(self._props(bakery)["fv_visit_status"], "FORMADO")
+        self.assertEqual(bakery.field_visit_phone, "928000001")
+        self.assertEqual(self._props(bakery)["training"], "yes", "not in the sheet")
 
     def test_reminder_follows_date_and_assignees(self):
         task = self.env["project.task"].create(
@@ -415,3 +436,89 @@ class TestFieldVisitTracking(FieldVisitCase):
         self.assertIn("Matched to a task already in the phase: 1", wizard.summary)
         self.assertEqual(self._tasks(), task)
         self.assertEqual(task.field_visit_phone, "600 000 003")
+
+    def test_privacy_columns_are_never_read(self):
+        secrets = [
+            "Clave de acceso",
+            "Contraseña web",
+            "Usuario/contraseña",
+            "PIN",
+            "Password web",
+        ]
+        private = ["Nº CIF", "DNI/NIE", "NIF/CIF", "N.I.F."]
+        sheets = [
+            (
+                "MASTER",
+                [
+                    ["Nombre comercial", "ZONA", *private],
+                    ["Zzfv Bakery Demo", "G", "B00000001", "00000000T", "X", "Y"],
+                ],
+            )
+        ]
+        for i, header in enumerate(secrets):
+            sheets.append(
+                (
+                    f"S{i}",
+                    [
+                        ["Nombre comercial", "ZONA", header],
+                        [f"Zzfv Secret {i}", "G", "hunter2"],
+                    ],
+                )
+            )
+        # A credential header ABOVE the table skips the sheet as well.
+        sheets.append(
+            (
+                "logins",
+                [
+                    ["Usuario", "Contraseña"],
+                    ["Nombre comercial", "ZONA", "TLF"],
+                    ["Zzfv Secret Above", "G", "600"],
+                ],
+            )
+        )
+        wizard = self._import(sheets=sheets)
+        summary = wizard.summary
+        self.assertIn("Columns ignored for privacy (never read):", summary)
+        for i, header in enumerate(secrets):
+            self.assertIn(f"- S{i}: {header}", summary)
+            self.assertIn(f"Sheet 'S{i}' skipped: it holds credentials.", summary)
+        for header in private:
+            self.assertIn(f"- MASTER: {header}", summary)
+        self.assertIn("- logins: Usuario", summary)
+        tasks = self._tasks()
+        self.assertEqual(len(tasks), 1)
+        self.assertNotIn("Secret", " ".join(tasks.mapped("name")))
+        stored = str(tasks.read(["task_properties"])[0]["task_properties"])
+        for value in ("B00000001", "00000000T", "hunter2"):
+            self.assertNotIn(value, stored)
+            self.assertNotIn(value, summary)
+        names = [p["string"] for p in self.project.task_properties_definition]
+        self.assertFalse(set(names) & set(private + secrets))
+
+    def test_bare_nombre_of_people_is_not_a_business(self):
+        sheets = self.sheets + [
+            (
+                "contactos",
+                [
+                    ["Nombre", "ZONA", "TLF"],
+                    ["Maria Zzfvperez", "G", "600"],
+                    ["Juan Zzfvlopez", "G", "601"],
+                    ["Zzfv Bakery Demo", "G", "602"],
+                ],
+            )
+        ]
+        wizard = self._import(sheets=sheets, dry_run=True)
+        self.assertIn("Sheet 'contactos' skipped: no business column", wizard.summary)
+        self.assertIn("Sheet 'MASTER ': 3 business rows.", wizard.summary)
+        self.assertIn("Businesses (rows of several sheets merged): 3", wizard.summary)
+
+    def test_all_visits_for_managers_only(self):
+        menu = self.env.ref("project_field_visit.menu_field_visit_all_visits")
+        mine = self.env.ref("project_field_visit.menu_field_visit_my_visits")
+        Menu = self.env["ir.ui.menu"]
+        visible = Menu.with_user(self.consultant)._visible_menu_ids()
+        self.assertIn(mine.id, visible)
+        self.assertNotIn(menu.id, visible)
+        self.consultant.group_ids = [(4, self.env.ref(MANAGER).id)]
+        Menu.env.registry.clear_cache()
+        self.assertIn(menu.id, Menu.with_user(self.consultant)._visible_menu_ids())

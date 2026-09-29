@@ -63,6 +63,12 @@ msgid "Assigned to a consultant user: %s"
 msgstr "Asignados a un usuario consultor: %s"
 
 #. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Authoritative sheet (its values win): '%s'"
+msgstr "Hoja de referencia (sus valores prevalecen): '%s'"
+
+#. module: project_field_visit
 #: model_terms:ir.ui.view,arch_db:project_field_visit.project_field_visit_import_view_form
 msgid "Back"
 msgstr "Volver"
@@ -132,6 +138,18 @@ msgstr ""
 "la que las movieron los consultores."
 
 #. module: project_field_visit
+#: model:ir.model.fields,help:project_field_visit.field_project_field_visit_import__overwrite_values
+msgid ""
+"By default a re-import only fills what is empty on the tasks, so what the "
+"consultants typed in Odoo wins. Tick it when the sheet must win (checklist "
+"values, contact details, planned date)."
+msgstr ""
+"Por defecto, una nueva importación solo rellena lo que está vacío en las "
+"tareas, así que prevalece lo que los consultores escribieron en Odoo. "
+"Márquelo cuando deba prevalecer la hoja (valores de la lista de "
+"comprobación, datos de contacto, fecha prevista)."
+
+#. module: project_field_visit
 #: model_terms:ir.ui.view,arch_db:project_field_visit.project_field_visit_log_view_form
 msgid "Cancel"
 msgstr "Cancelar"
@@ -146,6 +164,12 @@ msgstr "Primero elija o cree el proyecto de la fase."
 #: model_terms:ir.ui.view,arch_db:project_field_visit.project_field_visit_import_view_form
 msgid "Close"
 msgstr "Cerrar"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Columns ignored for privacy (never read):"
+msgstr "Columnas ignoradas por privacidad (nunca se leen):"
 
 #. module: project_field_visit
 #: model:ir.model,name:project_field_visit.model_res_company
@@ -550,6 +574,13 @@ msgstr ""
 "'Comercio (razón social)' o 'Nombre comercial', y 'Subdominio'."
 
 #. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "No sheet of the file has a column with the business names."
+msgstr ""
+"Ninguna hoja del archivo tiene una columna con los nombres de los negocios."
+
+#. module: project_field_visit
 #: model_terms:ir.actions.act_window,help:project_field_visit.action_field_visit_my_visits
 msgid "No visits assigned to you"
 msgstr "No tiene visitas asignadas"
@@ -614,6 +645,11 @@ msgstr "Resultado"
 #: model_terms:ir.ui.view,arch_db:project_field_visit.field_visit_message
 msgid "Outcome:"
 msgstr "Resultado:"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_import__overwrite_values
+msgid "Overwrite values from the spreadsheet"
+msgstr "Sobrescribir con los valores de la hoja"
 
 #. module: project_field_visit
 #: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_import__project_id
@@ -698,6 +734,16 @@ msgstr "Hoja '%(sheet)s': %(rows)s filas de negocios."
 #: code:addons/project_field_visit/wizards/field_visit_import.py:0
 msgid "Sheet '%s' skipped: it holds credentials."
 msgstr "Hoja '%s' omitida: contiene credenciales."
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid ""
+"Sheet '%s' skipped: no business column (its 'Nombre' does not name known "
+"businesses; rename it 'Nombre comercial' if it does)."
+msgstr ""
+"Hoja '%s' omitida: no tiene columna de negocio (su 'Nombre' no corresponde a"
+" negocios conocidos; renómbrela 'Nombre comercial' si los contiene)."
 
 #. module: project_field_visit
 #. odoo-python
@@ -902,6 +948,17 @@ msgid ""
 msgstr ""
 "Visita los negocios de la plataforma: ve los proyectos de visitas de campo y"
 " registra las visitas."
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid ""
+"Warning: the authoritative sheet is not the largest one ('%(largest)s' has "
+"%(rows)s rows). Move the master list first in the workbook if it is not."
+msgstr ""
+"Aviso: la hoja de referencia no es la más grande ('%(largest)s' tiene "
+"%(rows)s filas). Si no es el listado maestro, muévalo al principio del "
+"libro."
 
 #. module: project_field_visit
 #. odoo-python

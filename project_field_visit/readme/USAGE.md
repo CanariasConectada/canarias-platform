@@ -18,9 +18,20 @@ sheets) is imported the same way, into the same phase project: each business
 gets its address, zone, contact, phone, planned visit and follow-up columns.
 Import it after the checklist so both land on the same tasks.
 
+Headers are matched by their text. Columns that look like credentials
+(password, *clave*, PIN, user login) make the whole sheet skipped, and
+personal identifiers (NIF/CIF/DNI/NIE, IBAN...) are never read; the summary
+lists them under *Columns ignored for privacy*. A sheet whose only name column
+is a bare *Nombre* is read only when at least half of its names are known
+businesses; otherwise rename the column *Nombre comercial*. Rows of one
+business in several sheets are merged in sheet order: keep the master list
+first. A re-import only fills what is empty on the tasks; tick *Overwrite
+values from the spreadsheet* when the sheet must win.
+
 Every day, *Project > Field visits > My visits* lists the businesses assigned
 to you with their address (*Map* opens Google Maps), phone and planned visit;
-switch to the calendar to see the week. The planned date of a task is a
+switch to the calendar to see the week. Managers also get *All visits*,
+grouped by zone. The planned date of a task is a
 reminder in your activities; *Log visit* can set the next one.
 
 For the next phase, create a new project, enable *Door-to-door field

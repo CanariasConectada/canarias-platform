@@ -149,6 +149,12 @@ class ProjectFieldVisitImport(models.TransientModel):
         help="Read the spreadsheet and report what would happen, without "
         "changing anything.",
     )
+    overwrite_values = fields.Boolean(
+        string="Overwrite values from the spreadsheet",
+        help="By default a re-import only fills what is empty on the tasks, "
+        "so what the consultants typed in Odoo wins. Tick it when the sheet "
+        "must win (checklist values, contact details, planned date).",
+    )
     update_stages = fields.Boolean(
         string="Move existing tasks to the spreadsheet section",
         help="By default a re-import leaves existing tasks in the stage the "
@@ -253,51 +259,57 @@ class ProjectFieldVisitImport(models.TransientModel):
         sheet. Anything else is read as the consultants' *tracking list*:
         every sheet with a business-name header is read and merged.
 
-        :return: (format, records, skipped, sheet notes)
+        :return: (format, records, skipped, info) where ``info`` holds the
+            sheet notes, the columns ignored for privacy and the sizes of
+            the sheets read (tracking list only).
         """
         _ = self.env._
-        records, skipped, notes, first, found = [], 0, [], True, False
+        info = {"notes": [], "ignored": [], "sheets": []}
+        sheets, first = [], True
         for title, rows in self._iter_sheets():
             if tracking.is_secret_sheet(title):
                 # Never read: the client keeps credentials in the workbook.
-                notes.append(_("Sheet '%s' skipped: it holds credentials.", title))
+                info["notes"].append(
+                    _("Sheet '%s' skipped: it holds credentials.", title)
+                )
                 continue
             head = list(itertools.islice(rows, tracking.HEADER_SCAN))
             if first:
                 first = False
-                if self._checklist_columns(head) is not None:
+                if not tracking.secret_headers(head[0] if head else []) and (
+                    self._checklist_columns(head) is not None
+                ):
                     checklist, skipped = self._parse_rows(itertools.chain(head, rows))
-                    return "checklist", checklist, skipped, []
-            layout, start = None, 0
+                    return "checklist", checklist, skipped, info
+            layout, start, secret = None, 0, []
             for start, row in enumerate(head, start=1):
+                # Default-deny: a credential-looking cell above or in the
+                # header row makes the whole sheet unreadable.
+                secret += tracking.secret_headers(row)
                 layout = tracking.tracking_layout(row)
-                if layout:
+                if layout or secret:
                     break
+            if secret or (layout and layout["secret"]):
+                info["notes"].append(
+                    _("Sheet '%s' skipped: it holds credentials.", title)
+                )
+                columns = secret or layout["ignored"]
+                info["ignored"] += [f"{title}: {column}" for column in columns]
+                continue
             if not layout:
-                notes.append(
+                info["notes"].append(
                     _(
                         "Sheet '%s' skipped: no header with a business name column.",
                         title,
                     )
                 )
                 continue
-            if layout["secret"]:
-                notes.append(_("Sheet '%s' skipped: it holds credentials.", title))
-                continue
-            found = True
+            info["ignored"] += [f"{title}: {column}" for column in layout["ignored"]]
             sheet_records, sheet_skipped = tracking.parse_tracking_rows(
                 itertools.chain(head[start:], rows), layout, title
             )
-            records += sheet_records
-            skipped += sheet_skipped
-            notes.append(
-                _(
-                    "Sheet '%(sheet)s': %(rows)s business rows.",
-                    sheet=title,
-                    rows=len(sheet_records),
-                )
-            )
-        if not found:
+            sheets.append((title, layout, sheet_records, sheet_skipped))
+        if not sheets:
             raise UserError(
                 _(
                     "No header row found. A phase checklist needs the columns "
@@ -307,7 +319,83 @@ class ProjectFieldVisitImport(models.TransientModel):
                     "columns ('Zona', 'TLF', 'Dirección', 'Correo'...)."
                 )
             )
-        return "tracking", records, skipped, notes
+        known = self._known_business_keys(
+            [
+                r
+                for _t, layout, recs, _s in sheets
+                if not layout["bare_name"]
+                for r in recs
+            ]
+        )
+        records, skipped = [], 0
+        for title, layout, sheet_records, sheet_skipped in sheets:
+            if layout["bare_name"] and not self._names_look_like_businesses(
+                sheet_records, known
+            ):
+                info["notes"].append(
+                    _(
+                        "Sheet '%s' skipped: no business column (its 'Nombre' "
+                        "does not name known businesses; rename it 'Nombre "
+                        "comercial' if it does).",
+                        title,
+                    )
+                )
+                continue
+            records += sheet_records
+            skipped += sheet_skipped
+            info["sheets"].append((title, len(sheet_records)))
+            info["notes"].append(
+                _(
+                    "Sheet '%(sheet)s': %(rows)s business rows.",
+                    sheet=title,
+                    rows=len(sheet_records),
+                )
+            )
+        if not info["sheets"]:
+            raise UserError(
+                _("No sheet of the file has a column with the business names.")
+            )
+        return "tracking", records, skipped, info
+
+    def _known_business_keys(self, definite_records):
+        """Name keys of the businesses the file can be checked against.
+
+        Platform companies, the tasks and prospects of the phase, and the
+        rows of the sheets whose business column is unambiguous.
+        """
+        _by_slug, by_name, archived = self._matching_index(self.project_id)
+        keys = set(by_name) | archived
+        Task = self.env["project.task"].with_context(active_test=False)
+        for task in Task.search([("project_id", "=", self.project_id.id)]):
+            keys |= {name_key(task.name), name_key(task.sudo().business_name)}
+        keys |= {name_key(r["trade_name"]) for r in definite_records}
+        keys.discard("")
+        return keys
+
+    @api.model
+    def _names_look_like_businesses(self, records, known, sample=200):
+        """Whether a bare "Nombre" column names businesses, not people.
+
+        At least half of its (distinct) values must be known business
+        names, exactly or nearly.
+        """
+        names = list(dict.fromkeys(name_key(r["trade_name"]) for r in records))
+        names = [n for n in names if n][:sample]
+        if not names:
+            return False
+        known_list = list(known)
+        hits = sum(
+            1
+            for name in names
+            if name in known
+            or (
+                len(name) >= 4
+                and difflib.get_close_matches(
+                    name, known_list, n=1, cutoff=FUZZY_CUTOFF
+                )
+            )
+        )
+        return hits * 2 >= len(names)
 
     @api.model
     def _checklist_columns(self, rows):
@@ -606,12 +694,12 @@ class ProjectFieldVisitImport(models.TransientModel):
         self.env["project.task"]._check_field_visit_access(MANAGER_GROUP)
         if not self.project_id:
             raise UserError(self.env._("Choose or create the phase project first."))
-        file_format, records, skipped, notes = self._read_sheets()
+        file_format, records, skipped, info = self._read_sheets()
         if file_format == "checklist":
             self.summary = self._run_import(records, skipped, self.dry_run)
         else:
             self.summary = self._run_tracking_import(
-                records, skipped, notes, self.dry_run
+                records, skipped, info, self.dry_run
             )
         self.state = "done"
         return self._reopen()
@@ -751,7 +839,9 @@ class ProjectFieldVisitImport(models.TransientModel):
         display = record["trade_name"] or record["legal_name"]
         vals = {}
         if props:
-            vals["task_properties"] = self._merged_properties(task, props)
+            vals["task_properties"] = self._merged_properties(
+                task, props, self.overwrite_values
+            )
         stage = stages.get(record["section"])
         if company:
             vals["business_company_id"] = company.id
@@ -793,12 +883,13 @@ class ProjectFieldVisitImport(models.TransientModel):
             task.field_visit_import_observations = observations
 
     @api.model
-    def _merged_properties(self, task, values):
-        """Property values of ``task`` updated with ``values``.
+    def _merged_properties(self, task, values, overwrite=False):
+        """Property values of ``task`` completed with ``values``.
 
-        Writing a dict replaces every value of the task: the values that do
-        not come from this sheet (another sheet, or typed by a consultant)
-        are carried over.
+        Writing a dict replaces every value of the task, so the current
+        values are carried over. Like the task fields, a sheet value only
+        fills an unset property unless ``overwrite``: what a consultant
+        typed in Odoo survives a re-import.
         """
         if not task:
             return dict(values)
@@ -810,8 +901,14 @@ class ProjectFieldVisitImport(models.TransientModel):
             elif prop.get("type") in ("many2many", "tags") and value:
                 value = [v[0] if isinstance(v, list | tuple) else v for v in value]
             current[prop["name"]] = value
-        current.update(values)
+        for name, value in values.items():
+            if overwrite or self._is_unset(current.get(name)):
+                current[name] = value
         return current
+
+    @staticmethod
+    def _is_unset(value):
+        return value is None or value is False or value == "" or value == []
 
     @api.model
     def _prospect_partner(self, record):
@@ -1037,7 +1134,7 @@ class ProjectFieldVisitImport(models.TransientModel):
             group["planned"] = self._planned_visit(record["dates"])
         return list(groups.values()), list(review.values())
 
-    def _run_tracking_import(self, records, skipped, sheet_notes, dry_run):
+    def _run_tracking_import(self, records, skipped, info, dry_run):
         """Create or update one task per business from the tracking list."""
         self.ensure_one()
         project = self.project_id
@@ -1109,7 +1206,7 @@ class ProjectFieldVisitImport(models.TransientModel):
             len(groups),
             counts,
             [d["string"] for d in new_definitions],
-            sheet_notes,
+            info,
             unmatched,
             review,
         )
@@ -1137,19 +1234,26 @@ class ProjectFieldVisitImport(models.TransientModel):
             if website:
                 vals["business_website_id"] = website.id
         if task:
+            overwrite = self.overwrite_values
             vals.update(
                 {
                     name: value
                     for name, value in standard.items()
-                    if value and not task[name]
+                    if value and (overwrite or not task[name]) and value != task[name]
                 }
             )
-            if planned and (not task.date_deadline or planned > task.date_deadline):
+            if planned and (
+                not task.date_deadline
+                or planned > task.date_deadline
+                or (overwrite and planned != task.date_deadline)
+            ):
                 vals["date_deadline"] = planned
             if user and user not in task.user_ids:
                 vals["user_ids"] = [Command.link(user.id)]
             if props:
-                vals["task_properties"] = self._merged_properties(task, props)
+                vals["task_properties"] = self._merged_properties(
+                    task, props, overwrite
+                )
             task.write(vals)
         else:
             vals.update({name: value for name, value in standard.items() if value})
@@ -1178,7 +1282,7 @@ class ProjectFieldVisitImport(models.TransientModel):
         businesses,
         counts,
         new_properties,
-        sheet_notes,
+        info,
         unmatched,
         review,
     ):
@@ -1211,8 +1315,27 @@ class ProjectFieldVisitImport(models.TransientModel):
                 if dry_run
                 else _("New task fields: %s", joined)
             )
-        if sheet_notes:
-            lines += ["", _("Sheets:")] + [f"- {note}" for note in sheet_notes]
+        sheets = info["sheets"]
+        if len(sheets) > 1:
+            # Rows of one business are merged in sheet order: the first
+            # sheet's values win over the next ones.
+            lines.append(_("Authoritative sheet (its values win): '%s'", sheets[0][0]))
+            largest = max(sheets, key=lambda sheet: sheet[1])
+            if largest[1] > sheets[0][1]:
+                lines.append(
+                    _(
+                        "Warning: the authoritative sheet is not the largest one "
+                        "('%(largest)s' has %(rows)s rows). Move the master list "
+                        "first in the workbook if it is not.",
+                        largest=largest[0],
+                        rows=largest[1],
+                    )
+                )
+        if info["notes"]:
+            lines += ["", _("Sheets:")] + [f"- {note}" for note in info["notes"]]
+        if info["ignored"]:
+            lines += ["", _("Columns ignored for privacy (never read):")]
+            lines += [f"- {column}" for column in info["ignored"]]
         if review:
             lines += [
                 "",

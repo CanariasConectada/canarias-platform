@@ -9,12 +9,18 @@
   (``date_deadline``) and the number of rounds the *Intentos de contacto*
   property; every other named column becomes a task property of the phase.
   Same matching and review list as the checklist, plus rows naming a task
-  already in the phase. Contact fields, date and assignee only fill blanks
-  on re-import. Sheets with credentials and personal ID columns are never
-  read into Odoo.
+  already in the phase. A bare *Nombre* column is taken as the business only
+  when at least half of its values are known business names. On re-import,
+  contact fields, date, assignee and properties only fill what is empty,
+  unless *Overwrite values from the spreadsheet* is ticked. Default-deny
+  privacy: a credential-looking header (password, *clave*, PIN, login) in or
+  above the header row skips the sheet, personal identifiers (NIF/CIF/DNI/
+  NIE, IBAN...) are skipped; both are listed in the summary, which also names
+  the authoritative (first) sheet.
 * Re-imports keep the property values that do not come from the sheet (both
   formats); imported tasks are no longer assigned to the importing manager.
-* Daily views: *Project > Field visits > My visits / All visits* with a list
+* Daily views: *Project > Field visits > My visits* (and *All visits* for
+  managers only) with a list
   of whom to visit (zone, address, Google Maps link, contact, phone, planned
   visit, last visit, *Log visit* button), kanban and calendar; *My visits*
   filter and *Zone* grouping in the task search.
