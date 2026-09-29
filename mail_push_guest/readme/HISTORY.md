@@ -1,3 +1,15 @@
+## 19.0.1.3.1 (2026-09-29)
+
+- Registering the same endpoint twice at once is no longer an error. The
+  Discuss banner's "Activate and verify" (`/mail/push/subscribe`) and core's
+  web client (`register_devices`, woken by the same permission grant) both
+  inserted the row, and the loser got "The endpoint must be unique". Both
+  doors now insert inside a savepoint: a conflicting row visible to the
+  transaction goes through the usual ownership rule (same persona: success;
+  another persona: the same silent refusal), and a row committed by a
+  concurrent transaction raises `ConcurrencyError`, so Odoo replays the
+  request, which then finds the row.
+
 ## 19.0.1.3.0 (2026-09-26)
 
 - No web push leaves the server silent: every payload gets `silent: false`,
