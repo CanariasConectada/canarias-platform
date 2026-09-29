@@ -31,6 +31,8 @@ FOREIGN = EP % "foreign"
 FRESH = EP % "fresh"
 FRESH2 = EP % "fresh2"
 
+UNIQUE_ERROR = "No se puede completar la operación: El punto de conexión debe ser único"
+
 CASES = [
     # ---- silent check -------------------------------------------------
     {
@@ -138,6 +140,28 @@ CASES = [
         "permission": "granted",
         "newEndpoints": [FRESH],
         "server": {"fail": {"/mail/push/subscribe": "too many devices"}},
+    },
+    # 2026-09-29: the banner's registration loses the race against core's
+    # `register_devices` (same endpoint, same moment).
+    {
+        "name": "activate_conflict_but_registered",
+        "action": "activate",
+        "permission": "granted",
+        "newEndpoints": [FRESH],
+        "server": {
+            "failOnce": {"/mail/push/subscribe": [UNIQUE_ERROR]},
+            "status": {FRESH: "registered"},
+        },
+    },
+    {
+        "name": "activate_conflict_retried",
+        "action": "activate",
+        "permission": "granted",
+        "newEndpoints": [FRESH],
+        "server": {
+            "failOnce": {"/mail/push/subscribe": [UNIQUE_ERROR]},
+            "status": {FRESH: ["not_registered", "registered"]},
+        },
     },
     {
         "name": "activate_no_key",
@@ -339,6 +363,32 @@ class TestNotificationBannerJS(TransactionCase):
         self.assertState("activate_no_key", "error", "no_key")
         self.assertState("activate_ios_safari", "error", "unsupported_ios")
         self.assertEqual(self._log("activate_ios_safari"), [])
+
+    def test_activate_conflict_with_the_row_already_ours_is_a_success(self):
+        """A failed registration is re-checked before it is reported."""
+        self.assertState("activate_conflict_but_registered", "success", "tested")
+        log = self._log("activate_conflict_but_registered")
+        self.assertEqual(log.count("rpc:/mail/push/subscribe"), 1)
+        self.assertNotIn("sleep:500", log)
+        self.assertEqual(
+            self.cases["activate_conflict_but_registered"]["storage"],
+            {"mail.push.device_endpoint": FRESH},
+        )
+
+    def test_activate_conflict_is_retried_once(self):
+        self.assertState("activate_conflict_retried", "success", "tested")
+        log = self._log("activate_conflict_retried")
+        self.assertEqual(log.count("rpc:/mail/push/subscribe"), 2)
+        self.assertEqual(log.count("subscribed-endpoint:%s|backend" % FRESH), 1)
+        self.assertLess(
+            log.index("sleep:500"), log.index("subscribed-endpoint:%s|backend" % FRESH)
+        )
+
+    def test_activate_persistent_error_is_reported_after_one_retry(self):
+        log = self._log("activate_server_error")
+        self.assertEqual(log.count("rpc:/mail/push/subscribe"), 2)
+        self.assertIn("sleep:500", log)
+        self.assertNotIn("rpc:cc_push_test", log)
 
     def test_activate_rate_limited_test_is_still_a_success(self):
         self.assertState("activate_rate_limited_test", "success")

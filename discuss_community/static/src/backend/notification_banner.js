@@ -28,6 +28,11 @@ export const STATUS_REGISTERED = "registered";
 export const STATUS_NOT_REGISTERED = "not_registered";
 export const STATUS_OWNED_BY_OTHER = "owned_by_other";
 
+/**
+ * Pause before the one retry of a failed registration (see `register`).
+ */
+export const REGISTER_RETRY_DELAY_MS = 500;
+
 /** How long the success message stays before the banner hides itself. */
 export const SUCCESS_HIDE_DELAY_MS = 6000;
 
@@ -118,6 +123,7 @@ function errorMessage(error) {
  * @param {Object} env.localStorage
  * @param {Function} env.isIOS
  * @param {Function} env.isStandalone
+ * @param {Function} [env.sleep] (ms) => Promise; defaults to a setTimeout
  */
 export class PushValidator {
     constructor(env) {
@@ -153,6 +159,12 @@ export class PushValidator {
 
     status(endpoint) {
         return this.callKw("cc_push_status", {endpoint});
+    }
+
+    sleep(ms) {
+        return this.env.sleep
+            ? this.env.sleep(ms)
+            : new Promise((resolve) => globalThis.setTimeout(resolve, ms));
     }
 
     /**
@@ -233,15 +245,43 @@ export class PushValidator {
         return subscription;
     }
 
+    /**
+     * Store this browser's subscription for the current user.
+     *
+     * A failure is not taken at its word: the permission grant that
+     * "Activate and verify" asks for also wakes core's web client, which
+     * registers the same endpoint at the same moment, and the loser of that
+     * race may get a transient "endpoint must be unique" error (client
+     * report of 2026-09-29; the server now replays such a request, this is
+     * the belt to that brace). So on any failure: if the server already
+     * holds the endpoint for this user, that is the success we wanted;
+     * otherwise try once more after a short pause, and only a second
+     * failure is reported.
+     */
     async register(subscription, key) {
         const {endpoint, keys, expirationTime} = subscription.toJSON();
-        await this.env.rpc("/mail/push/subscribe", {
-            endpoint,
-            keys,
-            expiration_time: expirationTime,
-            vapid_public_key: key,
-            worker: "backend",
-        });
+        const subscribe = () =>
+            this.env.rpc("/mail/push/subscribe", {
+                endpoint,
+                keys,
+                expiration_time: expirationTime,
+                vapid_public_key: key,
+                worker: "backend",
+            });
+        try {
+            await subscribe();
+        } catch (error) {
+            let status = null;
+            try {
+                status = await this.status(endpoint);
+            } catch {
+                // Fall through to the retry.
+            }
+            if (status !== STATUS_REGISTERED) {
+                await this.sleep(REGISTER_RETRY_DELAY_MS);
+                await subscribe();
+            }
+        }
         try {
             // Keeps core's web client from sending a stale previousEndpoint.
             this.env.localStorage.setItem(CORE_ENDPOINT_STORAGE_KEY, endpoint);
