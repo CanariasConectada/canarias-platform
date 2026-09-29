@@ -23,7 +23,15 @@
   devices are deleted; the user is deleted (archived if that fails); the
   partner is deleted, or archived when it authored messages so they stay
   readable. Only `is_community_guest` accounts are touched; counts are
-  logged.
+  logged. At most `discuss_community.guest_cleanup_batch_size` (default
+  200) guests per run; the cron commits through the `ir.cron` progress API
+  and is looped while more remain.
+- Security: a guest can no longer seat itself in somebody else's `group`
+  conversation (support conversations, private groups) by creating its own
+  member row. The guest join rule now allows: open and community channels
+  (and their threads), chats, rows for OTHER people in a group it belongs
+  to, and any row in a group it created. Its own support conversation
+  (seated with sudo), DMs and being invited by others are unaffected.
 
 ## 19.0.1.6.0 (2026-09-26)
 
