@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Discuss Channel Zone",
-    "version": "19.0.1.1.2",
+    "version": "19.0.1.2.0",
     "category": "Discuss",
     "summary": "Community chat channels seeded per commercial zone, with "
     "membership derived from each user's zone",
@@ -13,9 +13,10 @@
         membership of them in sync with each user's zone.
 
         A merchant's zone comes from their company. A resident with no business
-        picks their own. Nobody joins or leaves by hand: membership is a
-        function of the account, reconciled on create, on the writes that can
-        change the answer, and nightly.
+        picks their own. Membership is a function of the account, reconciled
+        on create, on the writes that can change the answer, and nightly;
+        only the users a dependent module declares self-managed (the
+        community guests) join and leave by hand after their first seat.
     """,
     "author": "Canarias Conectada",
     "website": "https://github.com/CanariasConectada/canarias-platform",

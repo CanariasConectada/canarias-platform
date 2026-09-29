@@ -1,6 +1,8 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+from unittest.mock import patch
+
 from odoo.tests import TransactionCase, tagged
 
 from .common import ZoneChannelMixin
@@ -270,3 +272,56 @@ class TestZoneSync(ZoneChannelMixin, TransactionCase):
 
         self.env["res.users"]._cron_sync_zone_channels()
         self.assertFalse(self._members_of(self.public_user))
+
+
+@tagged("post_install", "-at_install")
+class TestZoneSelfManaged(ZoneChannelMixin, TransactionCase):
+    """Self-managed users are seated, then left to choose their channels."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls._setup_zone_fixtures()
+
+    def _patch_self_managed(self, users):
+        Users = type(self.env["res.users"])
+        return patch.object(
+            Users,
+            "_zone_self_managed_users",
+            lambda recs: recs & users,
+        )
+
+    def test_sync_never_unseats_a_self_managed_user(self):
+        """A joined channel stays and a zone change only adds a seat."""
+        self.channel_guanarteme.sudo()._add_members(
+            partners=self.resident.partner_id, post_joined_message=False
+        )
+        with self._patch_self_managed(self.resident):
+            counters = self.resident._sync_zone_channels()
+            self.assertEqual(counters["removed"], 0)
+            self.resident.chat_zone = "lomolosfrailes"
+        self.assertChannels(
+            self.resident,
+            self.channel_general
+            | self.channel_guanarteme
+            | self.channel_tamaraceite
+            | self.channel_lomo,
+        )
+
+    def test_cron_skips_self_managed_users(self):
+        """A channel the user left does not come back overnight."""
+        self.Member.sudo().search(
+            [
+                ("channel_id", "=", self.channel_tamaraceite.id),
+                ("partner_id", "=", self.resident.partner_id.id),
+            ]
+        ).unlink()
+        with self._patch_self_managed(self.resident):
+            self.env["res.users"]._cron_sync_zone_channels()
+        self.assertChannels(self.resident, self.channel_general)
+
+    def test_hook_is_empty_by_default(self):
+        """Without an override everybody stays function-managed."""
+        self.assertFalse(
+            (self.resident | self.merchant | self.staff)._zone_self_managed_users()
+        )
