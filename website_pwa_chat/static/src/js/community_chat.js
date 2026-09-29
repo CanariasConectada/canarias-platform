@@ -49,6 +49,10 @@ export class CommunityChat extends Interaction {
         this.inputEl = this.el.querySelector(".o_cc_chat_input");
         this.errorEl = this.el.querySelector(".o_cc_chat_error");
         this.soundEl = this.el.querySelector(".o_cc_chat_sound");
+        this.composerEl = this.el.querySelector(".o_cc_chat_composer");
+        // The support line's "who are you" form: only there for an anonymous
+        // visitor who has not answered yet.
+        this.identifyEl = this.el.querySelector(".o_cc_chat_identify");
         this.lastMessageId = this.readLastMessageId();
         this.isSending = false;
         this.listening = false;
@@ -63,10 +67,20 @@ export class CommunityChat extends Interaction {
         if (this.channelId) {
             this.listen();
         }
-        this.addListener(this.el, "submit", (event) => {
+        // On the composer, not on the whole page: the identify form lives
+        // on the same page, and a listener on the root caught ITS submit too,
+        // cancelled it and sent the composer instead -- the name was never
+        // saved.
+        this.addListener(this.composerEl, "submit", (event) => {
             event.preventDefault();
             this.send();
         });
+        if (this.identifyEl) {
+            this.addListener(this.identifyEl, "submit", (event) => {
+                event.preventDefault();
+                this.identify();
+            });
+        }
         // Enter sends, Shift+Enter breaks the line. On a phone the send
         // button is right there, so this is for the people on a keyboard.
         this.addListener(this.inputEl, "keydown", (event) => {
@@ -250,9 +264,61 @@ export class CommunityChat extends Interaction {
             // Published straight away: NEW_MESSAGE will bring it, but the
             // author should not have to wait for a round trip on the bus.
             this.refreshMessages();
+            // Now that the visitor has said what they need, and not before,
+            // ask who they are -- one optional line under the conversation.
+            this.revealIdentify();
         } else {
             this.refreshPending();
         }
+    }
+
+    // ------------------------------------------------------------------
+    // Identifying (support line, anonymous visitors only)
+    // ------------------------------------------------------------------
+
+    revealIdentify() {
+        if (this.identifyEl && this.identifyEl.classList.contains("d-none")) {
+            this.protectSyncAfterAsync(() => {
+                this.identifyEl.classList.remove("d-none");
+                this.scrollToBottom();
+            })();
+        }
+    }
+
+    /**
+     * Save the name in place. Posting the form reloaded the whole window,
+     * which blinked, lost the scroll position and re-ran the frame's layout;
+     * the route behind it stays as the no-script fallback.
+     */
+    async identify() {
+        const form = this.identifyEl;
+        const name = (form.elements.name.value || "").trim();
+        if (!name) {
+            form.elements.name.focus();
+            return;
+        }
+        let result = null;
+        try {
+            result = await this.waitFor(
+                rpc("/website_pwa_chat/support/identify", {
+                    name: name,
+                    email: (form.elements.email.value || "").trim(),
+                })
+            );
+        } catch (error) {
+            this.showError(error.data?.message || error.message);
+            return;
+        }
+        if (!result || !result.identified) {
+            return;
+        }
+        this.protectSyncAfterAsync(() => {
+            const thanksEl = document.createElement("p");
+            thanksEl.className = "small text-muted mt-2 mb-0 o_cc_chat_identified";
+            thanksEl.textContent = _t("Thanks, %s.", name);
+            form.replaceWith(thanksEl);
+            this.identifyEl = null;
+        })();
     }
 
     // ------------------------------------------------------------------
@@ -278,6 +344,10 @@ export class CommunityChat extends Interaction {
     }
 
     async refreshPending() {
+        // The support line has no held messages and no zone to show them in.
+        if (!this.pendingZoneEl) {
+            return;
+        }
         const result = await this.waitFor(
             rpc("/website_pwa_chat/pending", {channel_id: this.channelId})
         );
@@ -338,6 +408,9 @@ export class CommunityChat extends Interaction {
     }
 
     showRejection(reason) {
+        if (!this.pendingZoneEl) {
+            return;
+        }
         const noticeEl = document.createElement("div");
         noticeEl.className = "alert alert-secondary mt-3 o_cc_chat_rejected";
         noticeEl.setAttribute("role", "status");

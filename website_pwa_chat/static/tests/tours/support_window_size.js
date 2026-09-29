@@ -5,7 +5,8 @@ import {registry} from "@web/core/registry";
 
 /**
  * The floating support window is big enough to read, on a desktop and on a
- * phone, and the page inside it does not scroll on its own.
+ * phone, the page inside it does not scroll on its own, and it is a support
+ * chat and nothing else: no publishing, no review, no channel list.
  *
  * Sizes are asserted in rem so the check does not depend on the theme's root
  * font size. The browser size comes from the HttpCase class that runs it.
@@ -93,4 +94,136 @@ registry.category("web_tour.tours").add("website_pwa_chat_support_window_size", 
             run: checkFrameDoesNotScroll,
         },
     ],
+});
+
+/**
+ * Client feedback 2026-09-29: "support mixed with messages to publish".
+ * Support publishes nothing, so nothing in the window may talk about review,
+ * publishing, registering to skip a queue, or the community channels. Checked
+ * on what is RENDERED and visible, which is what the visitor reads.
+ */
+function checkNoCommunityUi() {
+    const doc = document.querySelector(".o_cc_chat_window_frame").contentDocument;
+    const forbidden = [
+        ".o_cc_chat_pending_zone",
+        ".o_cc_chat_pending",
+        ".o_cc_chat_hint",
+        ".o_cc_chat_rejected",
+        ".o_cc_chat_identify_signup",
+        ".o_cc_chat_channels",
+        "a[href*='/web/signup']",
+        "a[href$='/chat']",
+        "h1",
+    ];
+    for (const selector of forbidden) {
+        if (doc.querySelector(selector)) {
+            throw new Error(`The support window shows ${selector}`);
+        }
+    }
+    const text = doc.body.innerText.toLowerCase();
+    for (const word of ["revisión", "publica", "review", "publish"]) {
+        if (text.includes(word)) {
+            throw new Error(`The support window talks about "${word}": ${text}`);
+        }
+    }
+    for (const selector of ["#website_cookies_bar", ".o_frontend_to_backend_nav"]) {
+        const el = doc.querySelector(selector);
+        if (el && el.getClientRects().length) {
+            throw new Error(`The page chrome ${selector} is visible inside the window`);
+        }
+    }
+    if (doc.querySelectorAll(".o_cc_chat_composer").length !== 1) {
+        throw new Error("The support window must have exactly one composer");
+    }
+}
+
+function supportSimpleSteps({anonymous}) {
+    const body = "Hola, no encuentro cómo cambiar el horario";
+    return [
+        {
+            content: "Open the support window",
+            trigger: ".o_cc_chat_fab",
+            run: "click",
+        },
+        {
+            content: "The support page has loaded inside it",
+            trigger: ":iframe .o_cc_chat_framed .o_cc_chat_composer",
+        },
+        {
+            content: "Nobody has written yet: no name is asked",
+            trigger: ":iframe .o_cc_chat_framed:not(:has(.o_cc_chat_identify:not(.d-none)))",
+        },
+        {
+            content: "Only the conversation and the composer",
+            trigger: ".o_cc_chat_window:not(.d-none)",
+            run: checkNoCommunityUi,
+        },
+        {
+            content: "Write the question",
+            trigger: ":iframe .o_cc_chat_input",
+            run: `edit ${body}`,
+        },
+        {
+            content: "Send it",
+            trigger: ":iframe .o_cc_chat_send",
+            run: "click",
+        },
+        {
+            content: "It is in the conversation straight away, never held",
+            trigger: `:iframe .o_cc_chat_message:contains(${body})`,
+        },
+        anonymous
+            ? {
+                  content: "Now, and only now, the one-line name question",
+                  trigger: ":iframe .o_cc_chat_identify:not(.d-none) input[name=name]",
+              }
+            : {
+                  content: "A logged-in user is never asked for a name",
+                  trigger: ":iframe .o_cc_chat_framed:not(:has(.o_cc_chat_identify))",
+              },
+        {
+            content: "Still nothing of the community after the first message",
+            trigger: ".o_cc_chat_window:not(.d-none)",
+            run: checkNoCommunityUi,
+        },
+        {
+            content: "And still nothing scrolls but the conversation",
+            trigger: ".o_cc_chat_window:not(.d-none)",
+            run: checkFrameDoesNotScroll,
+        },
+        ...(anonymous
+            ? [
+                  {
+                      content: "Give a name",
+                      trigger: ":iframe .o_cc_chat_identify input[name=name]",
+                      run: "edit Lucía",
+                  },
+                  {
+                      content: "Save it in place",
+                      trigger: ":iframe .o_cc_chat_identify button[type=submit]",
+                      run: "click",
+                  },
+                  {
+                      content: "Thanked in place, and the question is gone",
+                      trigger: ":iframe .o_cc_chat_identified:contains(Lucía)",
+                  },
+                  {
+                      content: "No form left behind",
+                      trigger: ":iframe .o_cc_chat_framed:not(:has(.o_cc_chat_identify))",
+                  },
+                  {
+                      content: "The conversation survived the save",
+                      trigger: `:iframe .o_cc_chat_message:contains(${body})`,
+                  },
+              ]
+            : []),
+    ];
+}
+
+registry.category("web_tour.tours").add("website_pwa_chat_support_simple_anonymous", {
+    steps: () => supportSimpleSteps({anonymous: true}),
+});
+
+registry.category("web_tour.tours").add("website_pwa_chat_support_simple_user", {
+    steps: () => supportSimpleSteps({anonymous: false}),
 });

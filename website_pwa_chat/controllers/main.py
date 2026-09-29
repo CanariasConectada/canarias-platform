@@ -96,18 +96,19 @@ class WebsiteChat(http.Controller):
         day behind. The page renders with no channel and the composer's first
         message opens it through ``/website_pwa_chat/support/open``.
 
-        The page rendered is the ordinary conversation page. Support is a
-        conversation; it deserves the composer, the held-message notice and
-        the live catch-up that every other conversation has, not a second
-        implementation of them.
+        The page rendered is the conversation template, with ``is_support``
+        switching off everything that belongs to the community channels: the
+        channel list link, the description, the "held for review" card and
+        the invitation to register. Support publishes nothing; it is a
+        private line to the team, and the page says only that.
 
         ``frame=1`` is that same page dressed for the floating window: the
         button on every site opens it in an <iframe> instead of navigating
         away. One template, one controller -- the flag only strips the site
         chrome (``no_header``/``no_footer`` are ``web.frontend_layout``'s own
         switches) and tells the template it is inside the window, so the
-        conversation, the composer, the moderation notice and the identify
-        card are THE ones the full page has, not a copy that drifts.
+        conversation, the composer and the identify line are THE ones the
+        full page has, not a copy that drifts.
         """
         website = request.env["website"]._chat_current()
         if not website:
@@ -132,11 +133,16 @@ class WebsiteChat(http.Controller):
             {
                 "channel": channel,
                 "messages": channel._website_chat_message_values(messages),
-                "pending": channel._website_chat_pending() if channel else [],
+                # Nothing on the support line is ever held for review.
+                "pending": [],
                 "is_support": True,
                 "chat_in_frame": framed,
                 "no_header": framed,
                 "no_footer": framed,
+                # Lets the stylesheet silence what the site layout adds to
+                # every page (cookie bar, backend shortcut): inside the window
+                # they belong to the page around it, not to the conversation.
+                "body_classname": "o_cc_chat_in_frame" if framed else "",
                 **self._chat_identify_values(channel),
                 **self._chat_visitor_values("/chat/soporte"),
             },
@@ -225,43 +231,41 @@ class WebsiteChat(http.Controller):
         )
         return {"channel_id": channel.id}
 
-    def _chat_identify_values(self, channel):
-        """What the "who are you" card needs to render, or not render.
+    @http.route(
+        "/website_pwa_chat/support/identify",
+        type="jsonrpc",
+        auth="public",
+        website=True,
+    )
+    @add_guest_to_context
+    def chat_support_identify_inline(self, name=None, email=None):
+        """The identify line, sent in place from the floating window.
 
-        The retention windows are read from the same parameters the sweep
-        obeys, so the promise on the page and the promise the platform keeps
-        are ONE number. Restating "7 days" in the copy would have been warmer
-        to write and wrong the first time somebody widened the window.
+        The same thing as ``/chat/soporte/identificarme`` without the
+        redirect: reloading the page to save a name made the whole window
+        blink and jump back to the top. Same trust model -- the conversation
+        comes from the session, the caller contributes a name and an email.
         """
-        anonymous, identified = self._chat_identify_days()
-        user = request.env.user
-        return {
-            # A logged-in visitor already told us who they are by logging in
-            # -- except a walk-in community guest, whose account is named
-            # "Invitado 3f9a2c" and says nothing about who is behind it.
-            "show_identify": not channel.support_identified
-            and (
-                user._is_public()
-                or request.env["discuss.channel"]._support_is_community_guest(user)
-            ),
-            "identify_pitch": _(
-                "¿Cómo te llamas? Así sabemos con quién hablamos y guardamos "
-                "esta conversación %(identified)s días en vez de "
-                "%(anonymous)s.",
-                identified=identified,
-                anonymous=anonymous,
-            ),
-            "identify_greeting": _(
-                "Hablamos con %s.", channel.support_visitor_name or ""
-            ),
-        }
+        if not request.env["website"]._chat_current():
+            return {"identified": False}
+        self._chat_ensure_guest()
+        channel = request.env["discuss.channel"]._support_channel()
+        if channel:
+            channel._support_identify(name, email)
+        return {"identified": bool(channel and channel.support_identified)}
 
-    @staticmethod
-    def _chat_identify_days():
-        _close, anonymous, identified = request.env[
-            "discuss.channel"
-        ]._support_retention_days()
-        return anonymous, identified
+    def _chat_identify_values(self, channel):
+        """Whether the "who are you" line is shown at all.
+
+        Only to an ANONYMOUS visitor who has not answered yet. A logged-in
+        account already says who it is; a walk-in community guest gives a
+        name in the Discuss "Request support" dialog, and asking again on the
+        website stacked a second form over the conversation.
+        """
+        return {
+            "show_identify": not channel.support_identified
+            and request.env.user._is_public(),
+        }
 
     @http.route(
         "/chat/<int:channel_id>",
@@ -327,8 +331,6 @@ class WebsiteChat(http.Controller):
                 # is read: a template that depends on evaluation order is a
                 # template that breaks the day somebody reorders the test.
                 "show_identify": False,
-                "identify_pitch": "",
-                "identify_greeting": "",
                 # Community channels render as full pages only; the floating
                 # window is the support line's door, not theirs.
                 "chat_in_frame": False,
