@@ -23,6 +23,10 @@ import {Interaction} from "@web/public/interaction";
 // a guest conversation left dangling, on every one of the 218 sites.
 const IDLE_TIMEOUT_MS = 60 * 60 * 1000;
 
+// On <body> while the window is open. The stylesheet uses it to put the
+// site's cookie bar -- and nothing else -- underneath the window.
+const OPEN_BODY_CLASS = "o_cc_support_open";
+
 export class SupportWindow extends Interaction {
     static selector = ".o_cc_chat_fab_zone";
 
@@ -94,7 +98,10 @@ export class SupportWindow extends Interaction {
                 this.armIdleTimer();
             }
         });
-        this.registerCleanup(() => this.clearIdleTimer());
+        this.registerCleanup(() => {
+            this.clearIdleTimer();
+            this.el.ownerDocument.body.classList.remove(OPEN_BODY_CLASS);
+        });
     }
 
     armIdleTimer() {
@@ -143,6 +150,7 @@ export class SupportWindow extends Interaction {
             this.frameEl.setAttribute("src", this.frameEl.dataset.src);
         }
         this.windowEl.classList.remove("d-none");
+        this.el.ownerDocument.body.classList.add(OPEN_BODY_CLASS);
         this.fabEl.setAttribute("aria-expanded", "true");
         // The frame is another document, so focus lands on its body: enough
         // for a keyboard user to Tab straight into the conversation.
@@ -152,6 +160,7 @@ export class SupportWindow extends Interaction {
 
     close(auto = false) {
         this.windowEl.classList.add("d-none");
+        this.el.ownerDocument.body.classList.remove(OPEN_BODY_CLASS);
         this.fabEl.setAttribute("aria-expanded", "false");
         // Hand focus back to the button that opened it, so closing with
         // Escape does not drop a keyboard user at the top of the page. Not

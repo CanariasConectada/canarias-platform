@@ -245,8 +245,14 @@ class WebsiteChat(http.Controller):
         redirect: reloading the page to save a name made the whole window
         blink and jump back to the top. Same trust model -- the conversation
         comes from the session, the caller contributes a name and an email.
+
+        Anonymous callers only, like the line itself: a logged-in account is
+        named after the account, and a walk-in community guest gives a name
+        in the Discuss dialog (``/website_pwa_chat/support/request``).
         """
         if not request.env["website"]._chat_current():
+            return {"identified": False}
+        if not request.env.user._is_public():
             return {"identified": False}
         self._chat_ensure_guest()
         channel = request.env["discuss.channel"]._support_channel()

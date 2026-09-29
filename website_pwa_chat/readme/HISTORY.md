@@ -11,10 +11,14 @@
   that scroll, and one composer row ("Write your question…", bell, Send)
   pinned at the bottom. The site's cookie bar and the backend shortcut no
   longer render inside the frame.
-- The window sits above the site's cookie bar (z-index 1056, was 1030): the
-  bar is a Bootstrap modal (1055) pinned to the bottom and covered the
-  composer, on a phone the whole bottom third of the window, until the
-  visitor answered it. The floating button stays at 1030.
+- While the window is open (`body.o_cc_support_open`, toggled by
+  support_window.js) the site's cookie bar drops under it: the bar is a
+  Bootstrap modal (1055) pinned to the bottom and covered the composer, on a
+  phone the whole bottom third of the window, until the visitor answered it.
+  Only the cookie bar is lowered; the window stays at 1030, below every
+  other dialog.
+- `/website_pwa_chat/support/identify` answers anonymous callers only, like
+  the line that calls it.
 - The identify card became one optional line (name, optional email, Save),
   shown only to anonymous visitors and only after their first message. It
   saves in place through the new `/website_pwa_chat/support/identify` route

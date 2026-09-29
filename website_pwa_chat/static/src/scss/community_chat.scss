@@ -146,13 +146,10 @@
     position: fixed;
     right: 1rem;
     bottom: 4.5rem;
-    // Above the site's cookie bar, which is a Bootstrap modal (1055) pinned
-    // to the bottom of the page: at 1030 it covered the composer (on a phone
-    // the whole bottom third of the window) for exactly the visitor who most
-    // needs support, the first-time anonymous one. The window is only there
-    // because the visitor opened it; the button underneath stays at 1030,
-    // below every dialog.
-    z-index: 1056;
+    // Below every Bootstrap modal (1055), so a blocking dialog always wins.
+    // The one modal that must NOT win is the cookie bar: see
+    // `body.o_cc_support_open` below.
+    z-index: 1030;
     display: flex;
     flex-direction: column;
     // Wrapped in calc() so the whole expression reaches the browser as CSS.
@@ -278,4 +275,15 @@ body.o_cc_chat_in_frame {
     .o_frontend_to_backend_nav {
         display: none !important;
     }
+}
+
+// While the support window is open, the site's cookie bar -- a discrete
+// Bootstrap modal (1055, core `website.cookies_bar`) pinned to the bottom of
+// the page -- goes underneath it. Otherwise it covers the composer (on a
+// phone the whole bottom third of the window) for exactly the visitor who
+// most needs support, the first-time anonymous one. Only the cookie bar is
+// lowered: every other dialog still sits above the window. The class is
+// toggled by support_window.js on open and close.
+body.o_cc_support_open #website_cookies_bar .modal {
+    z-index: 1029;
 }

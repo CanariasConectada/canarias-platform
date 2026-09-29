@@ -271,13 +271,11 @@ class TestSupportChannelName(SupportDiscussMixin, HttpCase):
         self.authenticate(walk_in.login, walk_in.login)
 
         # Client feedback 2026-09-29: no second form on the website. The
-        # guest gives a name in the Discuss dialog; what they type there, or
-        # anywhere else it is sent from, names the conversation.
+        # guest gives a name in the Discuss dialog, and that names the
+        # conversation.
         page = self.url_open("/chat/soporte?frame=1")
         self.assertNotIn('class="o_cc_chat_identify', page.text)
-        self.make_jsonrpc_request(
-            "/website_pwa_chat/support/identify", {"name": "Carmen la del kiosco"}
-        )
+        self.make_jsonrpc_request(REQUEST_URL, {"name": "Carmen la del kiosco"})
 
         channel = self._support_of(walk_in)
         self.assertEqual(len(channel), 1)
@@ -288,6 +286,24 @@ class TestSupportChannelName(SupportDiscussMixin, HttpCase):
         self.authenticate(self.merchant.login, self.merchant.login)
         page = self.url_open("/chat/soporte")
         self.assertNotIn('class="o_cc_chat_identify', page.text)
+
+    def test_the_inline_identify_route_refuses_logged_in_users(self):
+        """The website's name line is for anonymous visitors only, on the
+        server as in the page: an account keeps its own name."""
+        self.authenticate(self.merchant.login, self.merchant.login)
+        channel = (
+            self.env["discuss.channel"]
+            .with_user(self.merchant)
+            ._support_request_from_discuss()
+        )
+        result = self.make_jsonrpc_request(
+            "/website_pwa_chat/support/identify", {"name": "Otro nombre"}
+        )
+        self.assertEqual(result, {"identified": False})
+        channel.invalidate_recordset()
+        self.assertFalse(channel.support_identified)
+        self.assertNotIn("Otro nombre", channel.name)
+        self.assertIn(self.merchant.partner_id.name, channel.name)
 
     def test_a_long_name_is_cut_to_what_the_sidebar_can_show(self):
         channel = (
@@ -393,17 +409,18 @@ class SupportWindowMixin(SupportDiscussMixin):
         self.addCleanup(self.registry.clear_cache, "templates")
         return "/wpc-size-page"
 
-    def _run_window_tour(self, tour, login=None):
+    def _run_window_tour(self, tour, login=None, cookies_bar=False):
         # The site's own default language, so no language redirect happens:
         # on a multi-language database the browser's Accept-Language sends
         # every URL through /xx/, and website_pwa's service-worker
         # registration then fails with "script resource is behind a
         # redirect", which the browser test counts as a failure of its own.
         website = self.env["website"].get_current_website()
-        # The site's cookie bar is a modal at the bottom of the page and sits
-        # over the window's composer until it is answered; a tour may not
-        # click through a modal. It is the page's business, not the chat's.
-        website.cookies_bar = False
+        # The site's cookie bar is a visible modal until it is answered, and
+        # a tour may not act inside the frame while one is up. The size tour
+        # keeps it, to prove it goes under the open window; the tours that
+        # type into the window switch it off.
+        website.cookies_bar = cookies_bar
         self.start_tour(
             self._plain_page(),
             tour,
@@ -419,7 +436,7 @@ class TestSupportWindowSizeDesktop(SupportWindowMixin, HttpCase):
     browser_size = "1366x900"
 
     def test_the_window_is_sized_to_be_read(self):
-        self._run_window_tour("website_pwa_chat_support_window_size")
+        self._run_window_tour("website_pwa_chat_support_window_size", cookies_bar=True)
 
 
 @tagged("post_install", "-at_install")

@@ -72,16 +72,71 @@ function checkFrameDoesNotScroll() {
     }
 }
 
+/**
+ * The site's cookie bar is a Bootstrap modal (1055) pinned to the bottom of
+ * the page. While the window is open it must sit UNDER the window -- the
+ * composer is what it used to cover -- and it must be the only modal that
+ * does: the window itself stays below Bootstrap's modal layer, so any real
+ * dialog still wins. Once the window closes the bar gets its place back.
+ *
+ * The tour engine refuses actions on anything outside a visible modal, so
+ * "usable" is asserted the way a finger would find it: the point at the
+ * centre of the composer belongs to the window's frame, not to the bar.
+ */
+function cookieBarModal() {
+    return document.querySelector("#website_cookies_bar .modal");
+}
+
+function checkCookieBarUnderWindow() {
+    const bar = cookieBarModal();
+    const windowEl = document.querySelector(".o_cc_chat_window");
+    const frame = windowEl.querySelector(".o_cc_chat_window_frame");
+    const barZ = parseInt(getComputedStyle(bar).zIndex, 10);
+    const windowZ = parseInt(getComputedStyle(windowEl).zIndex, 10);
+    if (!(barZ < windowZ)) {
+        throw new Error(`Cookie bar (${barZ}) is not below the window (${windowZ})`);
+    }
+    if (!(windowZ < 1055)) {
+        throw new Error(`The window (${windowZ}) climbed over Bootstrap's modal layer`);
+    }
+    const composer = frame.contentDocument
+        .querySelector(".o_cc_chat_composer")
+        .getBoundingClientRect();
+    const box = frame.getBoundingClientRect();
+    const x = box.left + composer.left + composer.width / 2;
+    const y = box.top + composer.top + composer.height / 2;
+    const hit = document.elementFromPoint(x, y);
+    if (hit !== frame) {
+        throw new Error(
+            `The composer is covered at (${x}, ${y}) by ${hit && hit.outerHTML.slice(0, 120)}`
+        );
+    }
+}
+
+function checkCookieBarRestored() {
+    const barZ = parseInt(getComputedStyle(cookieBarModal()).zIndex, 10);
+    if (barZ < 1055) {
+        throw new Error(`The cookie bar stayed lowered (${barZ}) after closing`);
+    }
+}
+
+// Triggers start with "body" where they act: the cookie bar is a visible
+// modal on this page, and the tour engine exempts only such triggers from
+// its "do not act below a modal" rule.
 registry.category("web_tour.tours").add("website_pwa_chat_support_window_size", {
     steps: () => [
         {
+            content: "The site's cookie bar is up, waiting for an answer",
+            trigger: "body #website_cookies_bar .modal.show",
+        },
+        {
             content: "Open the support window",
-            trigger: ".o_cc_chat_fab",
+            trigger: "body .o_cc_chat_fab",
             run: "click",
         },
         {
             content: "The window is open and sized to be read",
-            trigger: ".o_cc_chat_window:not(.d-none)",
+            trigger: "body .o_cc_chat_window:not(.d-none)",
             run: checkWindowSize,
         },
         {
@@ -90,8 +145,23 @@ registry.category("web_tour.tours").add("website_pwa_chat_support_window_size", 
         },
         {
             content: "Nothing inside the window scrolls but the conversation",
-            trigger: ".o_cc_chat_window:not(.d-none)",
+            trigger: "body .o_cc_chat_window:not(.d-none)",
             run: checkFrameDoesNotScroll,
+        },
+        {
+            content: "The cookie bar, and only it, sits under the open window",
+            trigger: "body.o_cc_support_open .o_cc_chat_window:not(.d-none)",
+            run: checkCookieBarUnderWindow,
+        },
+        {
+            content: "Close the window",
+            trigger: "body .o_cc_chat_window_close",
+            run: "click",
+        },
+        {
+            content: "The cookie bar is back on top",
+            trigger: "body:not(.o_cc_support_open) .o_cc_chat_window.d-none:not(:visible)",
+            run: checkCookieBarRestored,
         },
     ],
 });
