@@ -161,6 +161,7 @@ class TestFieldVisitImport(FieldVisitCase):
         wizard = self._import()
         tasks = self._tasks()
         self.assertEqual(len(tasks), 4)
+        self.assertFalse(tasks.user_ids, "the importing manager is not assigned")
         by_company = {t.business_company_id: t for t in tasks}
         bakery = by_company[self.business]
         self.assertEqual(

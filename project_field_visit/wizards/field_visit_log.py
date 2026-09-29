@@ -1,7 +1,7 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import api, fields, models
+from odoo import Command, api, fields, models
 from odoo.tools.misc import format_datetime
 
 from ..models.project_task import VISIT_OUTCOMES
@@ -37,6 +37,11 @@ class ProjectFieldVisitLog(models.TransientModel):
         string="Move to stage",
         domain="[('project_ids', 'in', project_id)]",
         help="Leave empty to keep the task where it is.",
+    )
+    next_visit_date = fields.Datetime(
+        string="Next visit",
+        help="Planned date of the next visit: it becomes the task date and a "
+        "reminder in the assigned consultants' activities.",
     )
     notes = fields.Text()
     attachment_ids = fields.Many2many(
@@ -95,5 +100,12 @@ class ProjectFieldVisitLog(models.TransientModel):
         }
         if self.stage_id:
             vals["stage_id"] = self.stage_id.id
+        # This visit is done; the next one, if planned, gets its reminder
+        # from the new task date (whoever logs it is assigned when nobody is).
+        task._field_visit_done_reminders(self.user_id)
+        if self.next_visit_date:
+            vals["date_deadline"] = self.next_visit_date
+            if not task.user_ids:
+                vals["user_ids"] = [Command.link(self.user_id.id)]
         task.write(vals)
         return {"type": "ir.actions.act_window_close"}

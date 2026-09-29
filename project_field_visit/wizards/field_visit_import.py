@@ -3,20 +3,23 @@
 
 import base64
 import csv
+import datetime
 import difflib
 import io
+import itertools
 import logging
 import re
-import unicodedata
 from collections import defaultdict
 from urllib.parse import urlsplit
 
 from markupsafe import Markup, escape
 
-from odoo import api, fields, models
+from odoo import Command, api, fields, models
 from odoo.exceptions import UserError
 
-from ..models.project_task import MANAGER_GROUP
+from ..models.project_task import CONSULTANT_GROUP, MANAGER_GROUP
+from . import field_visit_tracking as tracking
+from .sheet_utils import as_int, clean, normalize
 
 _logger = logging.getLogger(__name__)
 
@@ -76,15 +79,7 @@ REVIEW_CUTOFF = 0.8
 MAX_FILE_BYTES = 10 * 1024 * 1024
 MAX_ROWS = 5000
 MAX_COLUMNS = 60
-
-
-def normalize(value):
-    """Casefolded text without accents, extra spaces or trailing blanks."""
-    if value is None:
-        return ""
-    text = unicodedata.normalize("NFKD", str(value))
-    text = "".join(ch for ch in text if not unicodedata.combining(ch))
-    return " ".join(text.casefold().split())
+MAX_SHEETS = 30
 
 
 def name_key(value):
@@ -101,18 +96,6 @@ def subdomain_slug(value):
     if "://" in text:
         text = urlsplit(text).hostname or ""
     return text.split("/")[0].split(".")[0]
-
-
-def as_int(value):
-    """Whole number of a cell, numeric or text (CSV); ``None`` otherwise."""
-    if isinstance(value, bool):
-        return None
-    if isinstance(value, int | float):
-        return int(value)
-    text = clean(value)
-    if re.fullmatch(r"\d+(\.0+)?", text):
-        return int(float(text))
-    return None
 
 
 def names_agree(keys, company_key):
@@ -138,12 +121,6 @@ def names_agree(keys, company_key):
         if difflib.SequenceMatcher(None, key, company_key).ratio() >= FUZZY_CUTOFF:
             return True
     return False
-
-
-def clean(value):
-    if value is None:
-        return ""
-    return " ".join(str(value).split())
 
 
 def stage_label(value):
@@ -207,29 +184,16 @@ class ProjectFieldVisitImport(models.TransientModel):
             columns=MAX_COLUMNS,
         )
 
-    def _iter_rows(self):
-        """Rows of the first sheet, streamed, as lists of cell values."""
+    def _iter_sheets(self):
+        """``(title, rows)`` of every sheet; rows are streamed lists of cells.
+
+        A .csv file is one sheet. The limits apply to each sheet, checked
+        before its content is read.
+        """
         content = self._file_content()
         if (self.filename or "").lower().endswith(".csv"):
-            rows = self._iter_csv(content)
-        else:
-            rows = self._iter_xlsx(content)
-        for count, row in enumerate(rows, start=1):
-            if count > MAX_ROWS or len(row) > MAX_COLUMNS:
-                raise UserError(self._too_many_message())
-            yield row
-
-    @api.model
-    def _iter_csv(self, content):
-        text = content.decode("utf-8-sig")
-        try:
-            dialect = csv.Sniffer().sniff(text[:4096], delimiters=",;\t")
-        except csv.Error:
-            dialect = csv.excel
-        for row in csv.reader(io.StringIO(text), dialect):
-            yield row
-
-    def _iter_xlsx(self, content):
+            yield clean(self.filename), self._limited(self._iter_csv(content))
+            return
         if openpyxl is None:
             raise UserError(
                 self.env._(
@@ -246,19 +210,121 @@ class ProjectFieldVisitImport(models.TransientModel):
                 self.env._("This file could not be read as an .xlsx spreadsheet.")
             ) from error
         try:
-            sheet = book.worksheets[0]
-            # The declared dimension is cheap to check; the streamed count
-            # in _iter_rows catches a file that lies about it.
-            if (sheet.max_row or 0) > MAX_ROWS or (sheet.max_column or 0) > MAX_COLUMNS:
+            if len(book.worksheets) > MAX_SHEETS:
                 raise UserError(self._too_many_message())
-            for row in sheet.iter_rows(values_only=True, max_col=MAX_COLUMNS + 1):
-                # Trailing empty cells are padding, not columns.
-                values = list(row)
-                while values and values[-1] is None:
-                    values.pop()
-                yield values
+            for sheet in book.worksheets:
+                yield sheet.title, self._limited(self._iter_xlsx_sheet(sheet))
         finally:
             book.close()
+
+    def _limited(self, rows):
+        for count, row in enumerate(rows, start=1):
+            if count > MAX_ROWS or len(row) > MAX_COLUMNS:
+                raise UserError(self._too_many_message())
+            yield row
+
+    @api.model
+    def _iter_csv(self, content):
+        text = content.decode("utf-8-sig")
+        try:
+            dialect = csv.Sniffer().sniff(text[:4096], delimiters=",;\t")
+        except csv.Error:
+            dialect = csv.excel
+        for row in csv.reader(io.StringIO(text), dialect):
+            yield row
+
+    def _iter_xlsx_sheet(self, sheet):
+        # The declared dimension is cheap to check; the streamed count in
+        # _limited catches a file that lies about it.
+        if (sheet.max_row or 0) > MAX_ROWS or (sheet.max_column or 0) > MAX_COLUMNS:
+            raise UserError(self._too_many_message())
+        for row in sheet.iter_rows(values_only=True, max_col=MAX_COLUMNS + 1):
+            # Trailing empty cells are padding, not columns.
+            values = list(row)
+            while values and values[-1] is None:
+                values.pop()
+            yield values
+
+    def _read_sheets(self):
+        """Business rows of the file, in one of the two known formats.
+
+        The *checklist* (phase I evidence list: one sheet, numbered rows,
+        section rows, a *Subdominio* column) is recognised on the first
+        sheet. Anything else is read as the consultants' *tracking list*:
+        every sheet with a business-name header is read and merged.
+
+        :return: (format, records, skipped, sheet notes)
+        """
+        _ = self.env._
+        records, skipped, notes, first, found = [], 0, [], True, False
+        for title, rows in self._iter_sheets():
+            if tracking.is_secret_sheet(title):
+                # Never read: the client keeps credentials in the workbook.
+                notes.append(_("Sheet '%s' skipped: it holds credentials.", title))
+                continue
+            head = list(itertools.islice(rows, tracking.HEADER_SCAN))
+            if first:
+                first = False
+                if self._checklist_columns(head) is not None:
+                    checklist, skipped = self._parse_rows(itertools.chain(head, rows))
+                    return "checklist", checklist, skipped, []
+            layout, start = None, 0
+            for start, row in enumerate(head, start=1):
+                layout = tracking.tracking_layout(row)
+                if layout:
+                    break
+            if not layout:
+                notes.append(
+                    _(
+                        "Sheet '%s' skipped: no header with a business name column.",
+                        title,
+                    )
+                )
+                continue
+            if layout["secret"]:
+                notes.append(_("Sheet '%s' skipped: it holds credentials.", title))
+                continue
+            found = True
+            sheet_records, sheet_skipped = tracking.parse_tracking_rows(
+                itertools.chain(head[start:], rows), layout, title
+            )
+            records += sheet_records
+            skipped += sheet_skipped
+            notes.append(
+                _(
+                    "Sheet '%(sheet)s': %(rows)s business rows.",
+                    sheet=title,
+                    rows=len(sheet_records),
+                )
+            )
+        if not found:
+            raise UserError(
+                _(
+                    "No header row found. A phase checklist needs the columns "
+                    "'Comercio (razón social)' or 'Nombre comercial', and "
+                    "'Subdominio'; a tracking list needs a business name column "
+                    "('Nombre', 'Nombre comercial'...) and contact or follow-up "
+                    "columns ('Zona', 'TLF', 'Dirección', 'Correo'...)."
+                )
+            )
+        return "tracking", records, skipped, notes
+
+    @api.model
+    def _checklist_columns(self, rows):
+        """Columns of the checklist header among ``rows``, or ``None``."""
+        for row in rows:
+            found = {}
+            for col, cell in enumerate(row):
+                text = normalize(cell)
+                for prefix, key in HEADERS:
+                    if text.startswith(prefix) and key not in found:
+                        found[key] = col
+                        break
+            if "subdomain" in found and (
+                "legal_name" in found or "trade_name" in found
+            ):
+                return found
+        return None
 
     @api.model
     def _parse_rows(self, rows):
@@ -270,18 +336,9 @@ class ProjectFieldVisitImport(models.TransientModel):
         """
         rows = iter(rows)
         columns = None
-        for _index, row in zip(range(15), rows, strict=False):
-            found = {}
-            for col, cell in enumerate(row):
-                text = normalize(cell)
-                for prefix, key in HEADERS:
-                    if text.startswith(prefix) and key not in found:
-                        found[key] = col
-                        break
-            if "subdomain" in found and (
-                "legal_name" in found or "trade_name" in found
-            ):
-                columns = found
+        for _index, row in zip(range(tracking.HEADER_SCAN), rows, strict=False):
+            columns = self._checklist_columns([row])
+            if columns is not None:
                 break
         if columns is None:
             raise UserError(
@@ -549,8 +606,13 @@ class ProjectFieldVisitImport(models.TransientModel):
         self.env["project.task"]._check_field_visit_access(MANAGER_GROUP)
         if not self.project_id:
             raise UserError(self.env._("Choose or create the phase project first."))
-        records, skipped = self._parse_rows(self._iter_rows())
-        self.summary = self._run_import(records, skipped, self.dry_run)
+        file_format, records, skipped, notes = self._read_sheets()
+        if file_format == "checklist":
+            self.summary = self._run_import(records, skipped, self.dry_run)
+        else:
+            self.summary = self._run_tracking_import(
+                records, skipped, notes, self.dry_run
+            )
         self.state = "done"
         return self._reopen()
 
@@ -689,7 +751,7 @@ class ProjectFieldVisitImport(models.TransientModel):
         display = record["trade_name"] or record["legal_name"]
         vals = {}
         if props:
-            vals["task_properties"] = props
+            vals["task_properties"] = self._merged_properties(task, props)
         stage = stages.get(record["section"])
         if company:
             vals["business_company_id"] = company.id
@@ -704,6 +766,8 @@ class ProjectFieldVisitImport(models.TransientModel):
             vals.update(
                 name=record["trade_name"] or company.name or display,
                 project_id=self.project_id.id,
+                # Not the importing manager: consultants are assigned later.
+                user_ids=[Command.set([])],
             )
             if stage:
                 vals["stage_id"] = stage.id
@@ -712,7 +776,13 @@ class ProjectFieldVisitImport(models.TransientModel):
                 vals["business_partner_id"] = partner.id
                 vals["field_visit_import_key"] = f"partner:{partner.id}"
             task = Task.create(vals)
-        observations = str(record.get("observations") or "").strip()
+        self._post_observations(task, record.get("observations"))
+        return task
+
+    @api.model
+    def _post_observations(self, task, observations):
+        """Post the sheet's notes once; a changed note is posted again."""
+        observations = str(observations or "").strip()
         if observations and observations != (
             task.field_visit_import_observations or ""
         ):
@@ -721,7 +791,27 @@ class ProjectFieldVisitImport(models.TransientModel):
                 subtype_xmlid="mail.mt_note",
             )
             task.field_visit_import_observations = observations
-        return task
+
+    @api.model
+    def _merged_properties(self, task, values):
+        """Property values of ``task`` updated with ``values``.
+
+        Writing a dict replaces every value of the task: the values that do
+        not come from this sheet (another sheet, or typed by a consultant)
+        are carried over.
+        """
+        if not task:
+            return dict(values)
+        current = {}
+        for prop in task.read(["task_properties"])[0]["task_properties"]:
+            value = prop.get("value")
+            if prop.get("type") == "many2one" and isinstance(value, list | tuple):
+                value = value[0] if value else False
+            elif prop.get("type") in ("many2many", "tags") and value:
+                value = [v[0] if isinstance(v, list | tuple) else v for v in value]
+            current[prop["name"]] = value
+        current.update(values)
+        return current
 
     @api.model
     def _prospect_partner(self, record):
@@ -782,4 +872,354 @@ class ProjectFieldVisitImport(models.TransientModel):
             lines += [f"- {name}" for name in unmatched]
         if warnings:
             lines += ["", _("Warnings:")] + [f"- {w}" for w in warnings]
+        return "\n".join(lines)
+
+    # ------------------------------------------------------------------
+    # Tracking list (second format)
+    # ------------------------------------------------------------------
+    @api.model
+    def _consultant_index(self):
+        """Field consultants by full name and by first name."""
+        group = self.env.ref(CONSULTANT_GROUP).sudo()
+        users = group.all_user_ids.filtered(lambda u: u.active and not u.share)
+        by_name, by_first = defaultdict(set), defaultdict(set)
+        for user in users:
+            name = normalize(user.name)
+            if name:
+                by_name[name].add(user.id)
+                by_first[name.split()[0]].add(user.id)
+        return dict(by_name), dict(by_first)
+
+    @api.model
+    def _match_consultant(self, value, index):
+        """The consultant a sheet names, when exactly one user fits."""
+        by_name, by_first = index
+        text = normalize(value)
+        if not text:
+            return self.env["res.users"]
+        ids = by_name.get(text) or (
+            by_first.get(text) if len(text.split()) == 1 else None
+        )
+        if ids and len(ids) == 1:
+            return self.env["res.users"].browse(next(iter(ids)))
+        return self.env["res.users"]
+
+    @api.model
+    def _planned_visit(self, dates):
+        """Latest visit round of a row, at noon so no timezone moves its day."""
+        if not dates:
+            return False
+        return datetime.datetime.combine(max(dates), datetime.time(12, 0))
+
+    def _tracking_definitions(self, groups):
+        """Property definitions the rows need, and the missing ones.
+
+        :return: (types by property name, new definitions to append)
+        """
+        project = self.project_id
+        known = {
+            prop["name"]: prop["type"]
+            for prop in (project.task_properties_definition or [])
+        }
+        values, labels = defaultdict(list), {}
+        for group in groups:
+            for prop, value in group["props"].items():
+                values[prop].append(value)
+                labels.setdefault(prop, group["labels"][prop])
+        new = []
+        for prop, prop_values in values.items():
+            if prop in known:
+                continue
+            if prop == tracking.ATTEMPTS_PROPERTY[0]:
+                prop_type = "integer"
+            else:
+                prop_type = tracking.property_type(prop_values)
+            known[prop] = prop_type
+            new.append(
+                {
+                    "name": prop,
+                    "string": labels[prop],
+                    "type": prop_type,
+                    "view_in_cards": prop
+                    in (tracking.VISIT_STATUS[0], tracking.ATTEMPTS_PROPERTY[0]),
+                }
+            )
+        return known, new
+
+    @api.model
+    def _task_name_index(self, existing):
+        """Tasks already in the phase by name key.
+
+        The checklist names a business by its subdomain and legal name; the
+        tracking list only by the name the consultants use. A row naming a
+        task of the phase (its title or its business) is that task.
+        """
+        index = defaultdict(set)
+        for task in existing.values():
+            for name in (task.name, task.sudo().business_name):
+                key = name_key(name)
+                if key:
+                    index[key].add(task.id)
+        return {key: ids for key, ids in index.items()}
+
+    @api.model
+    def _match_existing_task(self, record, index):
+        """The one task of the phase a row names, exactly or nearly."""
+        Task = self.env["project.task"]
+        key = name_key(record["trade_name"] or record["legal_name"])
+        if not key:
+            return Task
+        ids = index.get(key)
+        if not ids and len(key) >= 4:
+            close = difflib.get_close_matches(
+                key, list(index), n=2, cutoff=FUZZY_CUTOFF
+            )
+            ids = index[close[0]] if len(close) == 1 else None
+        if ids and len(ids) == 1:
+            return Task.browse(next(iter(ids)))
+        return Task
+
+    def _group_tracking_rows(self, records, index, existing, consultants):
+        """Match every row and fold the rows of one business together.
+
+        :return: (groups in sheet order, review lines)
+        """
+        groups, review = {}, {}
+        task_names = self._task_name_index(existing)
+        for record in records:
+            display = record["trade_name"]
+            company, website, method, reason = self._match_business(record, index)
+            prospect = self.env["res.partner"]
+            if not company and not reason:
+                task = self._match_existing_task(record, task_names)
+                if task:
+                    company = task.business_company_id
+                    prospect = task.business_partner_id if not company else prospect
+                    method = "task"
+            if not company and not prospect and not reason:
+                prospect, reason = self._match_prospect(
+                    record, self._known_prospects(existing)
+                )
+            if reason:
+                review.setdefault(display, f"{display} ({record['sheet']}): {reason}")
+                continue
+            if company:
+                key = f"company:{company.id}"
+            elif prospect:
+                key = f"partner:{prospect.id}"
+            else:
+                key = "new:%s" % name_key(display)
+            if key in groups:
+                tracking.merge_tracking(groups[key]["record"], record)
+                continue
+            groups[key] = {
+                "key": key,
+                "record": record,
+                "company": company,
+                "website": website,
+                "method": method or "prospect",
+            }
+        for group in groups.values():
+            record = group["record"]
+            user = self._match_consultant(record["consultant"], consultants)
+            group["user"] = user
+            props = dict(record["props"])
+            labels = dict(record["labels"])
+            if record["consultant"] and not user:
+                props[tracking.CONSULTANT_PROPERTY[0]] = record["consultant"]
+                labels[tracking.CONSULTANT_PROPERTY[0]] = tracking.CONSULTANT_PROPERTY[
+                    1
+                ]
+            if record["dates"]:
+                props[tracking.ATTEMPTS_PROPERTY[0]] = len(record["dates"])
+                labels[tracking.ATTEMPTS_PROPERTY[0]] = tracking.ATTEMPTS_PROPERTY[1]
+            group["props"], group["labels"] = props, labels
+            group["planned"] = self._planned_visit(record["dates"])
+        return list(groups.values()), list(review.values())
+
+    def _run_tracking_import(self, records, skipped, sheet_notes, dry_run):
+        """Create or update one task per business from the tracking list."""
+        self.ensure_one()
+        project = self.project_id
+        Task = self.env["project.task"].with_context(
+            active_test=False, mail_create_nolog=True
+        )
+        index = self._matching_index(project)
+        existing = self._existing_tasks(Task, project)
+        groups, review = self._group_tracking_rows(
+            records, index, existing, self._consultant_index()
+        )
+        types, new_definitions = self._tracking_definitions(groups)
+        if new_definitions and not dry_run:
+            project.task_properties_definition = (
+                project.task_properties_definition or []
+            ) + new_definitions
+        counts = dict.fromkeys(
+            (
+                "created",
+                "updated",
+                "subdomain",
+                "name",
+                "fuzzy",
+                "task",
+                "prospect",
+                "consultant",
+                "consultant_text",
+                "planned",
+            ),
+            0,
+        )
+        unmatched = []
+        for group in groups:
+            company, record = group["company"], group["record"]
+            counts[group["method"]] += 1
+            counts["consultant"] += bool(group["user"])
+            counts["consultant_text"] += bool(
+                record["consultant"] and not group["user"]
+            )
+            counts["planned"] += bool(group["planned"])
+            if not company:
+                unmatched.append(record["trade_name"])
+            task = existing.get(group["key"])
+            if company and not task:
+                former, _reason = self._match_prospect(
+                    record, self._known_prospects(existing)
+                )
+                task = former and existing.pop(f"partner:{former.id}")
+            counts["updated" if task else "created"] += 1
+            if dry_run:
+                continue
+            props = {
+                prop: tracking.property_value(value, types[prop])
+                for prop, value in group["props"].items()
+                if types.get(prop) in ("char", "boolean", "date", "integer")
+            }
+            task = self._save_tracking_task(Task, task, group, props)
+            existing[
+                (
+                    f"company:{company.id}"
+                    if company
+                    else f"partner:{task.business_partner_id.id}"
+                )
+            ] = task
+        return self._tracking_summary(
+            dry_run,
+            len(records),
+            skipped,
+            len(groups),
+            counts,
+            [d["string"] for d in new_definitions],
+            sheet_notes,
+            unmatched,
+            review,
+        )
+
+    def _save_tracking_task(self, Task, task, group, props):
+        """Write one business of the tracking list on its task.
+
+        Contact fields, the planned date and the assignee only fill what is
+        empty (or move the date later): what the consultants changed in the
+        task wins over the sheet. Properties take the sheet's values.
+        """
+        record, company, website = group["record"], group["company"], group["website"]
+        standard = {
+            "field_visit_address": record["address"],
+            "field_visit_phone": record["phone"],
+            "field_visit_email": record["email"],
+            "field_visit_contact_name": record["contact"],
+            "field_visit_zone": record["zone"],
+        }
+        planned, user = group["planned"], group["user"]
+        vals = {}
+        if company:
+            vals["business_company_id"] = company.id
+            vals["field_visit_import_key"] = f"company:{company.id}"
+            if website:
+                vals["business_website_id"] = website.id
+        if task:
+            vals.update(
+                {
+                    name: value
+                    for name, value in standard.items()
+                    if value and not task[name]
+                }
+            )
+            if planned and (not task.date_deadline or planned > task.date_deadline):
+                vals["date_deadline"] = planned
+            if user and user not in task.user_ids:
+                vals["user_ids"] = [Command.link(user.id)]
+            if props:
+                vals["task_properties"] = self._merged_properties(task, props)
+            task.write(vals)
+        else:
+            vals.update({name: value for name, value in standard.items() if value})
+            vals.update(
+                name=record["trade_name"] or company.name,
+                project_id=self.project_id.id,
+                user_ids=[Command.set(user.ids)],
+            )
+            if planned:
+                vals["date_deadline"] = planned
+            if props:
+                vals["task_properties"] = props
+            if not company:
+                partner = self._prospect_partner(record)
+                vals["business_partner_id"] = partner.id
+                vals["field_visit_import_key"] = f"partner:{partner.id}"
+            task = Task.create(vals)
+        self._post_observations(task, record["observations"])
+        return task
+
+    def _tracking_summary(
+        self,
+        dry_run,
+        total,
+        skipped,
+        businesses,
+        counts,
+        new_properties,
+        sheet_notes,
+        unmatched,
+        review,
+    ):
+        _ = self.env._
+        lines = [
+            _("DRY RUN: nothing was changed.") if dry_run else _("Import finished."),
+            _("Format: consultants' tracking list."),
+            _("Business rows read: %s", total),
+            _("Rows skipped (no name): %s", skipped),
+            _("Businesses (rows of several sheets merged): %s", businesses),
+            _("Tasks created: %s", counts["created"]),
+            _("Tasks updated: %s", counts["updated"]),
+            _("Matched by subdomain: %s", counts["subdomain"]),
+            _("Matched by exact name: %s", counts["name"]),
+            _("Matched by similar name: %s", counts["fuzzy"]),
+            _("Matched to a task already in the phase: %s", counts["task"]),
+            _("Not on the platform (prospect contacts): %s", counts["prospect"]),
+            _("To review (not imported): %s", len(review)),
+            _("Assigned to a consultant user: %s", counts["consultant"]),
+            _(
+                "Consultant kept as text (no matching user): %s",
+                counts["consultant_text"],
+            ),
+            _("With a planned visit date: %s", counts["planned"]),
+        ]
+        if new_properties:
+            joined = ", ".join(new_properties)
+            lines.append(
+                _("Task fields that would be added: %s", joined)
+                if dry_run
+                else _("New task fields: %s", joined)
+            )
+        if sheet_notes:
+            lines += ["", _("Sheets:")] + [f"- {note}" for note in sheet_notes]
+        if review:
+            lines += [
+                "",
+                _("To review (fix the sheet or the company, then re-import):"),
+            ]
+            lines += [f"- {line}" for line in review]
+        if unmatched:
+            lines += ["", _("Businesses without a platform company:")]
+            lines += [f"- {name}" for name in unmatched]
         return "\n".join(lines)

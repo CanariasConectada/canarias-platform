@@ -15,8 +15,13 @@ companies of the platform.
 - **Field visits** smart buttons on the company and on the contact list the
   tasks of that business across every phase.
 - **Spreadsheet import.** The phase I spreadsheet (one section per status)
-  becomes stages, tasks and checklist values; re-importing updates the same
-  tasks.
+  becomes stages, tasks and checklist values; the consultants' tracking list
+  (several sheets, recognised by their headers) adds address, zone, contact,
+  planned visit, assignee and its follow-up columns as properties.
+  Re-importing updates the same tasks.
+- **The consultant's day.** *My visits* (list, kanban, calendar) with the
+  address and a Google Maps link, and a reminder activity on each planned
+  visit.
 
 The visited business usually belongs to another company than the consultant.
 Its name and microsite URL are stored on the task, so a consultant limited to

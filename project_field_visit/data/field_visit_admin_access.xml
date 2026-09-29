@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo noupdate="1">
+    <!-- At install only: the platform administrators become field visit
+         managers unless somebody was appointed already. Upgrades of an
+         installed database do the same once in migrations/19.0.1.2.0. -->
+    <function model="project.project" name="_field_visit_grant_admins" />
+</odoo>
