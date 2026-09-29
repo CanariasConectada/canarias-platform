@@ -23,6 +23,13 @@ companies of the platform.
   address and a Google Maps link, and a reminder activity on each planned
   visit.
 
+**Known limitation.** Access is per programme, not per consultant: a
+*Field visit consultant* can open every task of the field-visit projects
+(the record rule does not narrow them to their own assignments). The menus
+steer consultants to *My visits* and keep *All visits* for managers, which
+is enough for a small team that works the whole list together; a team that
+must not see each other's businesses needs an assignee-based record rule.
+
 The visited business usually belongs to another company than the consultant.
 Its name and microsite URL are stored on the task, so a consultant limited to
 the programme company reads the task without reading the business records.

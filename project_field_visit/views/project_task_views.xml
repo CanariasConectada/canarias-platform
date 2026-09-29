@@ -250,6 +250,12 @@
         <field name="domain">[('is_field_visit_project', '=', True)]</field>
         <field name="search_view_id" ref="project.view_task_search_form" />
         <field name="context">{'search_default_groupby_field_visit_zone': 1}</field>
+        <!-- Every business with its contact details: the programme's
+             managers only. Consultants work from "My visits". -->
+        <field
+            name="group_ids"
+            eval="[(4, ref('project_field_visit.group_field_visit_manager'))]"
+        />
         <field
             name="view_ids"
             eval="[(5, 0, 0),

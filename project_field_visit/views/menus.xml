@@ -19,6 +19,7 @@
             id="menu_field_visit_all_visits"
             name="All visits"
             action="action_field_visit_all_visits"
+            groups="project_field_visit.group_field_visit_manager"
             sequence="2"
         />
         <menuitem
