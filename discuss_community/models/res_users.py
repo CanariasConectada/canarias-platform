@@ -24,6 +24,10 @@ DISCUSS_ACTION_XMLID = "mail.action_discuss"
 # week of inactivity"). The system parameter overrides the default.
 COMMUNITY_GUEST_STALE_DAYS = 7
 GUEST_INACTIVITY_DAYS_PARAM = "discuss_community.guest_inactivity_days"
+# At most this many guests are removed per cron run; the cron is looped by
+# the ``ir.cron`` progress API while more remain.
+COMMUNITY_GUEST_CLEANUP_BATCH = 200
+GUEST_CLEANUP_BATCH_PARAM = "discuss_community.guest_cleanup_batch_size"
 
 # The staff channels ``mail`` seeds: "general" (every employee) and
 # "Administrators". A community guest is internal, so core would let it read
@@ -79,6 +83,13 @@ class ResUsers(models.Model):
         "rules; empty for everybody who is not a community guest.",
     )
 
+    # Both computed channel lists below feed ``ir.rule`` domains, and
+    # ``ir.rule._compute_domain`` is ormcached per uid. They must only depend
+    # on things that never change for a given user (``is_community_guest``,
+    # which ``write`` guards with a registry cache clear, and channels
+    # resolved by xmlid). Never make them depend on mutable per-user state
+    # (zone, memberships, groups) without clearing the registry cache on
+    # every change of it, or the rules keep applying stale ids.
     community_channel_ids = fields.Many2many(
         comodel_name="discuss.channel",
         string="Joinable Community Channels",
@@ -466,6 +477,16 @@ class ResUsers(models.Model):
     # ------------------------------------------------------------------
 
     @api.model
+    def _community_positive_int_param(self, key, default):
+        """A positive integer system parameter, ``default`` when it is not."""
+        raw = self.env["ir.config_parameter"].sudo().get_param(key, default)
+        try:
+            value = int(raw)
+        except (TypeError, ValueError):
+            value = 0
+        return value if value > 0 else default
+
+    @api.model
     def _community_guest_inactivity_days(self):
         """The inactivity window in days, from the system parameter.
 
@@ -473,16 +494,9 @@ class ResUsers(models.Model):
         parameter is missing or not a positive integer, so a typo can never
         turn the sweep into "remove every guest now".
         """
-        raw = (
-            self.env["ir.config_parameter"]
-            .sudo()
-            .get_param(GUEST_INACTIVITY_DAYS_PARAM, COMMUNITY_GUEST_STALE_DAYS)
+        return self._community_positive_int_param(
+            GUEST_INACTIVITY_DAYS_PARAM, COMMUNITY_GUEST_STALE_DAYS
         )
-        try:
-            days = int(raw)
-        except (TypeError, ValueError):
-            days = 0
-        return days if days > 0 else COMMUNITY_GUEST_STALE_DAYS
 
     def _community_guest_last_activity(self):
         """``{user_id: datetime}``: the last sign of life of each user.
@@ -554,23 +568,44 @@ class ResUsers(models.Model):
         last_activity = guests._community_guest_last_activity()
         stale = guests.filtered(
             lambda user: (last_activity.get(user.id) or user.create_date) < cutoff
+        ).sorted("id")
+        batch_size = self._community_positive_int_param(
+            GUEST_CLEANUP_BATCH_PARAM, COMMUNITY_GUEST_CLEANUP_BATCH
         )
-        for guest in stale:
+        batch = stale[:batch_size]
+        processed = 0
+        for guest in batch:
             try:
                 with self.env.cr.savepoint():
                     guest._community_guest_remove(counters)
+                    processed += 1
             except Exception:  # noqa: BLE001 - skip, keep sweeping
                 _logger.exception(
                     "discuss_community: could not remove guest %s", guest.id
                 )
+        counters["remaining"] = len(stale) - len(batch)
         _logger.info(
             "discuss_community: guest cleanup (%(days)s days inactive): "
-            "%(stale)s stale of %(guests)s guests; users removed %(users_removed)s, "
-            "archived %(users_archived)s; partners removed %(partners_removed)s, "
+            "%(batch)s of %(stale)s stale guests (%(guests)s guests) this run, "
+            "%(remaining)s left; users removed %(users_removed)s, archived "
+            "%(users_archived)s; partners removed %(partners_removed)s, "
             "archived %(partners_archived)s; %(memberships)s memberships and "
             "%(devices)s push devices deleted",
-            dict(counters, days=days, stale=len(stale), guests=len(guests)),
+            dict(
+                counters,
+                days=days,
+                batch=len(batch),
+                stale=len(stale),
+                guests=len(guests),
+            ),
         )
+        if self.env.context.get("cron_id"):
+            # Commits this batch; with ``remaining`` > 0 the cron runner loops
+            # the job again (and stops if a run processes nothing, so guests
+            # that cannot be removed never make it spin).
+            self.env["ir.cron"]._commit_progress(
+                processed, remaining=counters["remaining"]
+            )
         return counters
 
     def _community_guest_remove(self, counters):

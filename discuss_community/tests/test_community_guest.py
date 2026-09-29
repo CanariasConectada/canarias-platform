@@ -186,6 +186,34 @@ class TestCommunityGuestModel(CommunityMixin, TransactionCase):
         self.assertEqual(second["users_archived"], 0)
         self.assertEqual(second["partners_archived"], 0)
 
+    def test_gc_is_batched(self):
+        """At most the batch size per run; the rest is left for the next."""
+        icp = self.env["ir.config_parameter"].sudo()
+        icp.set_param("discuss_community.guest_cleanup_batch_size", "1")
+        guests = self.env["res.users"]._create_community_guest()
+        guests |= self.env["res.users"]._create_community_guest()
+        stale_before = self._stale_count()
+        for guest in guests:
+            self._backdate(guest)
+        first = self._gc()
+        self.assertEqual(first["users_removed"] + first["users_archived"], 1)
+        self.assertEqual(first["remaining"], stale_before + 1)
+        while self._gc()["remaining"]:
+            pass
+        self.assertFalse(guests.exists().filtered("active"))
+
+    def _stale_count(self):
+        """How many guests the next sweep would find stale."""
+        Users = self.env["res.users"]
+        cutoff = fields.Datetime.now() - timedelta(
+            days=Users._community_guest_inactivity_days()
+        )
+        guests = Users.sudo().search([("is_community_guest", "=", True)])
+        last = guests._community_guest_last_activity()
+        return len(
+            guests.filtered(lambda u: (last.get(u.id) or u.create_date) < cutoff)
+        )
+
     def test_gc_window_comes_from_the_parameter(self):
         icp = self.env["ir.config_parameter"].sudo()
         guest = self.env["res.users"]._create_community_guest()
