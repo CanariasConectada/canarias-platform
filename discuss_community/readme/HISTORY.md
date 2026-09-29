@@ -29,7 +29,7 @@
 - Security: a guest can no longer seat itself in somebody else's `group`
   conversation (support conversations, private groups) by creating its own
   member row. The guest join rule now allows: open and community channels
-  (and their threads), chats, rows for OTHER people in a group it belongs
+  (and their threads), chats it created itself, rows for OTHER people in a group it belongs
   to, and any row in a group it created. Its own support conversation
   (seated with sudo), DMs and being invited by others are unaffected.
 

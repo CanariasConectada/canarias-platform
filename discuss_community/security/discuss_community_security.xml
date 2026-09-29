@@ -50,8 +50,12 @@
           * `channel`: its row in the open channels and in the four community
             channels (and their threads). Core's create rules already refuse
             a row for somebody else in a `channel`.
-          * `chat`: a direct conversation (`_get_or_create_chat`); core caps a
-            chat at two members.
+          * `chat`: only rows in a chat it created itself
+            (`_get_or_create_chat` seats both members as the creator). Core's
+            two-member cap is not enough: once the other party leaves, a
+            foreign chat has one member left and anybody could sit down in
+            it and read the history. A DM started by somebody else is seated
+            with THAT user's rights, so it is unaffected.
           * `group`: a row for SOMEBODY ELSE in a group it belongs to
             (inviting), or any row in a group it created itself
             (`_create_group` seats its creator as that user). Never a
@@ -77,7 +81,9 @@
                         ("channel_id.group_public_id", "=", False),
                     ("channel_id", "in", user.community_channel_ids.ids),
                     ("channel_id.parent_channel_id", "in", user.community_channel_ids.ids),
-                    ("channel_id.channel_type", "=", "chat"),
+                    "&amp;",
+                        ("channel_id.channel_type", "=", "chat"),
+                        ("channel_id.create_uid", "=", user.id),
                     "&amp;", "&amp;",
                         ("channel_id.channel_type", "=", "group"),
                         ("is_self", "=", False),

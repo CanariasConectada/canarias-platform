@@ -63,6 +63,52 @@ class TestCommunityGuestJoin(CommunityMixin, TransactionCase):
         )
         self.assertNotIn(self.guest.partner_id, chat.sudo().channel_partner_ids)
 
+    @mute_logger("odoo.addons.base.models.ir_rule", "odoo.orm.models")
+    def test_guest_cannot_join_a_foreign_chat_left_by_one_party(self):
+        """The two-member cap no longer protects a chat once one party left."""
+        chat = self.Channel.with_user(self.employee)._get_or_create_chat(
+            partners_to=self.member.partner_id.ids
+        )
+        chat.with_user(self.member).action_unfollow()
+        self.assertEqual(len(chat.sudo().channel_member_ids), 1)
+        with self.assertRaises(AccessError):
+            self._self_join(chat)
+        self.assertNotIn(self.guest.partner_id, chat.sudo().channel_partner_ids)
+
+    def test_employee_starts_a_direct_chat_with_the_guest(self):
+        chat = self.Channel.with_user(self.employee)._get_or_create_chat(
+            partners_to=self.guest.partner_id.ids
+        )
+        self.assertEqual(
+            chat.sudo().channel_partner_ids,
+            self.guest.partner_id | self.employee.partner_id,
+        )
+        chat.with_user(self.guest).message_post(
+            body="hello", message_type="comment", subtype_xmlid="mail.mt_comment"
+        )
+
+    def test_guest_leaves_its_own_chat_and_is_written_to_again(self):
+        """Leaving then receiving a message errors nowhere; writing back
+        again opens a conversation the guest is in."""
+        chat = self.Channel.with_user(self.guest)._get_or_create_chat(
+            partners_to=self.employee.partner_id.ids
+        )
+        chat.with_user(self.guest).action_unfollow()
+        self.assertNotIn(self.guest.partner_id, chat.sudo().channel_partner_ids)
+        chat.with_user(self.employee).message_post(
+            body="are you there?",
+            message_type="comment",
+            subtype_xmlid="mail.mt_comment",
+        )
+        again = self.Channel.with_user(self.employee)._get_or_create_chat(
+            partners_to=self.guest.partner_id.ids
+        )
+        self.assertIn(self.guest.partner_id, again.sudo().channel_partner_ids)
+        again_guest = self.Channel.with_user(self.guest)._get_or_create_chat(
+            partners_to=self.employee.partner_id.ids
+        )
+        self.assertEqual(again_guest, again)
+
     def test_guest_requests_its_own_support(self):
         if not hasattr(self.Channel, "_support_channel"):
             self.skipTest("website_pwa_chat is not installed")
