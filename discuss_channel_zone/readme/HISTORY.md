@@ -1,3 +1,11 @@
+## 19.0.1.2.0 (2026-09-29)
+
+- New hook `res.users._zone_self_managed_users` (empty by default): those
+  users are seated like everybody else but never unseated by
+  `_sync_zone_channels`, and the nightly reconciliation skips them, so they
+  can join and leave the community channels themselves.
+  `discuss_community` returns its guests.
+
 ## 19.0.1.1.2 (2026-09-25)
 
 - Tests: activate es_ES in the display tests instead of skipping (or failing

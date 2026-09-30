@@ -4,7 +4,9 @@
 from . import (
     test_community_channel_notify,
     test_community_guest,
+    test_community_guest_join,
     test_community_guest_profile,
+    test_community_guest_zones,
     test_community_http,
     test_community_members,
     test_community_security,

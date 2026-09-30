@@ -6,6 +6,7 @@ import secrets
 from datetime import timedelta
 
 from odoo import Command, api, fields, models
+from odoo.tools import SQL
 
 # The non-routable domain guest logins live under. Imported, not copied: the
 # guarantee ("no mail server is authoritative for it, a stray notification can
@@ -18,10 +19,15 @@ _logger = logging.getLogger(__name__)
 # The Discuss client action every community member lands on after login.
 DISCUSS_ACTION_XMLID = "mail.action_discuss"
 
-# A community guest is purged once it has been idle this long AND never posted
-# a message. Same window as website_login_branding's portal guests: the two
-# populations should age out at the same speed.
+# A community guest is removed once it has been inactive this long (owner
+# decision of 2026-09-29: "guests only exist while they have no more than one
+# week of inactivity"). The system parameter overrides the default.
 COMMUNITY_GUEST_STALE_DAYS = 7
+GUEST_INACTIVITY_DAYS_PARAM = "discuss_community.guest_inactivity_days"
+# At most this many guests are removed per cron run; the cron is looped by
+# the ``ir.cron`` progress API while more remain.
+COMMUNITY_GUEST_CLEANUP_BATCH = 200
+GUEST_CLEANUP_BATCH_PARAM = "discuss_community.guest_cleanup_batch_size"
 
 # The staff channels ``mail`` seeds: "general" (every employee) and
 # "Administrators". A community guest is internal, so core would let it read
@@ -76,6 +82,42 @@ class ResUsers(models.Model):
         "when seated there by mistake. Read by the guest channel record "
         "rules; empty for everybody who is not a community guest.",
     )
+
+    # Both computed channel lists below feed ``ir.rule`` domains, and
+    # ``ir.rule._compute_domain`` is ormcached per uid. They must only depend
+    # on things that never change for a given user (``is_community_guest``,
+    # which ``write`` guards with a registry cache clear, and channels
+    # resolved by xmlid). Never make them depend on mutable per-user state
+    # (zone, memberships, groups) without clearing the registry cache on
+    # every change of it, or the rules keep applying stale ids.
+    community_channel_ids = fields.Many2many(
+        comodel_name="discuss.channel",
+        string="Joinable Community Channels",
+        compute="_compute_community_channel_ids",
+        help="Community channels a community guest may see and join or leave "
+        "at will: the platform-wide channel and the neighbourhood channels. "
+        "Read by the guest channel record rules; empty for everybody who is "
+        "not a community guest.",
+    )
+
+    @api.depends("is_community_guest")
+    def _compute_community_channel_ids(self):
+        """The four community channels, for guests only.
+
+        The neighbourhood channels are gated on
+        ``discuss_channel_zone.group_zone_channel_member``, so the "open
+        channels" branch of the guest rules does not cover them; this list
+        does. Non-stored for the same reason as the hidden staff channels.
+        """
+        channels = (
+            self.env["discuss.channel"]
+            .sudo()
+            .browse(sorted(self.env["discuss.channel"]._community_channel_ids()))
+        )
+        for user in self:
+            user.community_channel_ids = (
+                channels if user.is_community_guest else self.env["discuss.channel"]
+            )
 
     @api.depends("is_community_guest")
     def _compute_community_hidden_channel_ids(self):
@@ -277,6 +319,58 @@ class ResUsers(models.Model):
         )
 
     # ------------------------------------------------------------------
+    # Community channels: seated on arrival, then the guest's own choice
+    # ------------------------------------------------------------------
+
+    def _zone_self_managed_users(self):
+        """Community guests choose their channels after the first seat.
+
+        ``discuss_channel_zone`` seats them in the general channel and in the
+        channel of their zone when they are created (or when their zone
+        changes) and never unseats them afterwards, so they can join and leave
+        each community channel from the Channels view.
+        """
+        return super()._zone_self_managed_users() | self.filtered("is_community_guest")
+
+    def _community_guest_adopt_zone(self, zone):
+        """Give a guest with no neighbourhood the one of ``zone``.
+
+        Called on every entry through the guest door. Only a real
+        neighbourhood is adopted, and only by a guest that has none yet
+        (empty or the platform-wide ``canarias``): a guest's zone is never
+        moved from one neighbourhood to another behind its back.
+        """
+        general = "canarias"
+        normalised = self.env["res.company"].sudo()._normalise_zone(zone)
+        if normalised == general:
+            return self.browse()
+        guests = self.filtered(
+            lambda user: user.is_community_guest
+            and (user.chat_zone or general) == general
+        )
+        if guests:
+            guests.sudo().write({"chat_zone": normalised})
+        return guests
+
+    @api.model
+    def _seat_community_guests(self):
+        """Seat every active guest in its community channels. Idempotent.
+
+        Adds the general channel and the guest's zone channel when missing,
+        and nothing else (guests are self-managed: nothing is removed). Run
+        once by the 19.0.1.7.0 migration for the guests created while the
+        zone of a zone site was not detected.
+        """
+        guests = self.sudo().search([("is_community_guest", "=", True)])
+        counters = guests._sync_zone_channels()
+        _logger.info(
+            "discuss_community: seated %s guests, %s seats added",
+            len(guests),
+            counters["added"],
+        )
+        return counters
+
+    # ------------------------------------------------------------------
     # The guest profile: no OdooBot, no staff channels
     # ------------------------------------------------------------------
 
@@ -383,74 +477,196 @@ class ResUsers(models.Model):
     # ------------------------------------------------------------------
 
     @api.model
-    def _gc_community_guests(self):
-        """Delete idle, silent community guests. Returns the number removed.
+    def _community_positive_int_param(self, key, default):
+        """A positive integer system parameter, ``default`` when it is not."""
+        raw = self.env["ir.config_parameter"].sudo().get_param(key, default)
+        try:
+            value = int(raw)
+        except (TypeError, ValueError):
+            value = 0
+        return value if value > 0 else default
 
-        Same sweep as ``website_login_branding._gc_platform_guests`` (idleness
-        read from ``login_date`` the way core does it, never delete an account
-        younger than the window, one savepoint per deletion so a single
-        undeletable row cannot roll back the sweep), over THIS module's
-        population and with THIS module's definition of "worth keeping":
-        a guest who posted a message is a participant in a conversation, and
-        conversations are not ours to amputate.
+    @api.model
+    def _community_guest_inactivity_days(self):
+        """The inactivity window in days, from the system parameter.
+
+        ``discuss_community.guest_inactivity_days``; the default (7) when the
+        parameter is missing or not a positive integer, so a typo can never
+        turn the sweep into "remove every guest now".
         """
-        cutoff = fields.Datetime.now() - timedelta(days=COMMUNITY_GUEST_STALE_DAYS)
-        guests = self.sudo().search([("is_community_guest", "=", True)])
-        if not guests:
-            return 0
-
-        recent = self.sudo().search(
-            [
-                ("is_community_guest", "=", True),
-                ("login_date", ">=", cutoff),
-            ]
-        )
-        stale = guests - recent
-        stale = stale.filtered(
-            lambda user: user.create_date and user.create_date < cutoff
+        return self._community_positive_int_param(
+            GUEST_INACTIVITY_DAYS_PARAM, COMMUNITY_GUEST_STALE_DAYS
         )
 
-        removed = 0
-        for guest in stale:
-            if guest._community_guest_has_data():
-                continue
-            try:
-                with self.env.cr.savepoint():
-                    guest.sudo().unlink()
-                    removed += 1
-            except Exception:  # noqa: BLE001 - skip, keep sweeping
-                _logger.exception(
-                    "discuss_community: could not purge guest %s", guest.id
-                )
-        _logger.info(
-            "discuss_community: guest GC removed %s of %s stale guests",
-            removed,
-            len(stale),
-        )
-        return removed
+    def _community_guest_last_activity(self):
+        """``{user_id: datetime}``: the last sign of life of each user.
 
-    def _community_guest_has_data(self):
-        """Whether this guest is worth keeping despite being idle.
-
-        "Has posted a message" is the community equivalent of the branding
-        module's "has placed an order": the guest took part in a conversation,
-        and deleting the account would orphan the authorship of messages other
-        residents can still read. ``message_type = 'comment'`` on purpose --
-        notifications and tracking rows are things done TO the account, not
-        BY it.
+        The latest of the last login (``res.users.log``), the last message
+        authored, the last presence (``mail.presence`` poll or activity) and
+        the account creation, so an account younger than the window is never
+        seen as inactive.
         """
-        self.ensure_one()
-        partner = self.partner_id
-        if not partner:
-            return False
-        return bool(
-            self.env["mail.message"]
-            .sudo()
-            .search_count(
-                [
-                    ("author_id", "=", partner.id),
-                    ("message_type", "=", "comment"),
-                ],
-                limit=1,
+        if not self:
+            return {}
+        self.env.flush_all()
+        self.env.cr.execute(
+            SQL(
+                """
+                SELECT u.id,
+                       GREATEST(u.create_date, l.last_login, m.last_message,
+                                p.last_poll, p.last_presence)
+                  FROM res_users u
+             LEFT JOIN (SELECT create_uid, MAX(create_date) AS last_login
+                          FROM res_users_log
+                         WHERE create_uid = ANY(%(user_ids)s)
+                      GROUP BY create_uid) l ON l.create_uid = u.id
+             LEFT JOIN (SELECT author_id, MAX(date) AS last_message
+                          FROM mail_message
+                         WHERE author_id = ANY(%(partner_ids)s)
+                      GROUP BY author_id) m ON m.author_id = u.partner_id
+             LEFT JOIN mail_presence p ON p.user_id = u.id
+                 WHERE u.id = ANY(%(user_ids)s)
+                """,
+                user_ids=self.ids,
+                partner_ids=self.partner_id.ids,
             )
         )
+        return dict(self.env.cr.fetchall())
+
+    @api.model
+    def _gc_community_guests(self):
+        """Remove the community guests inactive for longer than the window.
+
+        Only ``is_community_guest`` accounts, and only active ones (an
+        archived guest was already handled, which keeps the sweep
+        idempotent). For each one, in its own savepoint so one failure never
+        rolls back the sweep:
+
+        * its channel memberships and push devices are deleted;
+        * the user is deleted, or archived when the delete fails (a foreign
+          key somewhere);
+        * its partner is deleted when nothing else needs it, and ARCHIVED when
+          it authored messages (they stay readable, author included) or when
+          the delete fails.
+
+        Returns the counters it logs.
+        """
+        counters = dict.fromkeys(
+            (
+                "users_removed",
+                "users_archived",
+                "partners_removed",
+                "partners_archived",
+                "memberships",
+                "devices",
+            ),
+            0,
+        )
+        days = self._community_guest_inactivity_days()
+        cutoff = fields.Datetime.now() - timedelta(days=days)
+        guests = self.sudo().search([("is_community_guest", "=", True)])
+        last_activity = guests._community_guest_last_activity()
+        stale = guests.filtered(
+            lambda user: (last_activity.get(user.id) or user.create_date) < cutoff
+        ).sorted("id")
+        batch_size = self._community_positive_int_param(
+            GUEST_CLEANUP_BATCH_PARAM, COMMUNITY_GUEST_CLEANUP_BATCH
+        )
+        batch = stale[:batch_size]
+        processed = 0
+        for guest in batch:
+            try:
+                with self.env.cr.savepoint():
+                    guest._community_guest_remove(counters)
+                    processed += 1
+            except Exception:  # noqa: BLE001 - skip, keep sweeping
+                _logger.exception(
+                    "discuss_community: could not remove guest %s", guest.id
+                )
+        counters["remaining"] = len(stale) - len(batch)
+        _logger.info(
+            "discuss_community: guest cleanup (%(days)s days inactive): "
+            "%(batch)s of %(stale)s stale guests (%(guests)s guests) this run, "
+            "%(remaining)s left; users removed %(users_removed)s, archived "
+            "%(users_archived)s; partners removed %(partners_removed)s, "
+            "archived %(partners_archived)s; %(memberships)s memberships and "
+            "%(devices)s push devices deleted",
+            dict(
+                counters,
+                days=days,
+                batch=len(batch),
+                stale=len(stale),
+                guests=len(guests),
+            ),
+        )
+        if self.env.context.get("cron_id"):
+            # Commits this batch; with ``remaining`` > 0 the cron runner loops
+            # the job again (and stops if a run processes nothing, so guests
+            # that cannot be removed never make it spin).
+            self.env["ir.cron"]._commit_progress(
+                processed, remaining=counters["remaining"]
+            )
+        return counters
+
+    def _community_guest_remove(self, counters):
+        """Remove one inactive guest (see ``_gc_community_guests``)."""
+        self.ensure_one()
+        if not self.is_community_guest:  # never anybody else, whatever called
+            return
+        guest = self.sudo()
+        partner = guest.partner_id
+        members = (
+            self.env["discuss.channel.member"]
+            .sudo()
+            .search([("partner_id", "=", partner.id)])
+        )
+        counters["memberships"] += len(members)
+        members.unlink()
+        devices = (
+            self.env["mail.push.device"]
+            .sudo()
+            .search([("partner_id", "=", partner.id)])
+        )
+        counters["devices"] += len(devices)
+        devices.unlink()
+
+        user_removed = False
+        try:
+            with self.env.cr.savepoint():
+                guest.unlink()
+                user_removed = True
+        except Exception:  # noqa: BLE001 - archive instead
+            _logger.info(
+                "discuss_community: guest %s cannot be deleted, archiving it",
+                guest.id,
+            )
+        if user_removed:
+            counters["users_removed"] += 1
+        else:
+            guest.write({"active": False})
+            counters["users_archived"] += 1
+
+        partner = partner.with_context(active_test=False).exists()
+        if not partner or (partner.user_ids - guest):
+            return
+        has_messages = bool(
+            self.env["mail.message"]
+            .sudo()
+            .search_count([("author_id", "=", partner.id)], limit=1)
+        )
+        if user_removed and not has_messages:
+            try:
+                with self.env.cr.savepoint():
+                    partner.unlink()
+                    counters["partners_removed"] += 1
+                    return
+            except Exception:  # noqa: BLE001 - archive instead
+                _logger.info(
+                    "discuss_community: partner %s of guest %s cannot be "
+                    "deleted, archiving it",
+                    partner.id,
+                    self.id,
+                )
+        if partner.active:
+            partner.write({"active": False})
+        counters["partners_archived"] += 1

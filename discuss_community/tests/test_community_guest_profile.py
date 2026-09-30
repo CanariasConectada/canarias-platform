@@ -4,8 +4,9 @@
 from unittest.mock import patch
 
 from odoo.exceptions import AccessError
-from odoo.tests import HttpCase, TransactionCase, tagged
+from odoo.tests import HttpCase, TransactionCase
 from odoo.tests import common as test_common
+from odoo.tests import tagged
 from odoo.tools import mute_logger
 
 from .common import CommunityMixin
@@ -36,11 +37,11 @@ class TestCommunityGuestChannels(GuestProfileMixin, TransactionCase):
             .search([("id", "in", channels.ids)])
         )
 
-    def test_guest_reads_own_and_open_channels_only(self):
-        """Member channels + open channels; not staff, not other zones."""
+    def test_guest_reads_own_and_community_channels_only(self):
+        """Every community channel (to join or leave it); never staff ones."""
         everything = self.zone_channels | self.employees_channel | self.admin_channel
         readable = self._readable(self.guest, everything)
-        self.assertEqual(readable, self.channel_general | self.channel_guanarteme)
+        self.assertEqual(readable, self.zone_channels)
 
     @mute_logger("odoo.addons.base.models.ir_rule", "odoo.orm.models")
     def test_guest_cannot_read_general_even_when_seated(self):
