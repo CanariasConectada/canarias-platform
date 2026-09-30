@@ -8,6 +8,7 @@ from . import (
     test_community_guest_profile,
     test_community_guest_zones,
     test_community_http,
+    test_community_member_parity,
     test_community_members,
     test_community_security,
     test_discuss_layout,

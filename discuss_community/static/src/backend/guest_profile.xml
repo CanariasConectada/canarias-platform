@@ -5,7 +5,7 @@
 
     <t t-inherit="mail.DiscussSearch" t-inherit-mode="extension">
         <xpath expr="//t[@t-if='store.self.main_user_id']" position="attributes">
-            <attribute name="t-if">store.self.main_user_id and !isCommunityGuest</attribute>
+            <attribute name="t-if">store.self.main_user_id and !isCommunityMember</attribute>
         </xpath>
     </t>
 

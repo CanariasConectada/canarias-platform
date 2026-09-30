@@ -30,13 +30,11 @@ class IrUiMenu(models.Model):
     @api.model
     def _visible_menu_ids(self, debug=False):
         visible = super()._visible_menu_ids(debug=debug)
-        user = self.env.user
-        if not user.has_group("discuss_community.group_community_member"):
-            return visible
-        # Never strip an administrator: if staff ever ends up holding the
-        # community group (a support login, a misconfigured role), a locked
-        # Settings menu must not be the way anybody finds out.
-        if user.has_group("base.group_system"):
+        # Never strip an administrator, a merchant or a zone manager: if staff
+        # ever ends up holding the community group (a support login, a
+        # misconfigured role), a locked Settings menu must not be the way
+        # anybody finds out. ``is_community_member`` encodes both halves.
+        if not self.env.user.is_community_member:
             return visible
         discuss_root = self.env.ref("mail.menu_root_discuss", raise_if_not_found=False)
         if not discuss_root:
@@ -44,20 +42,19 @@ class IrUiMenu(models.Model):
             # empty backend.
             return visible
         allowed = self.sudo().search([("id", "child_of", discuss_root.id)])
-        if user.is_community_guest:
-            allowed -= self._community_guest_hidden_menus()
+        allowed -= self._community_guest_hidden_menus()
         return frozenset(visible & set(allowed.ids))
 
     @api.model
     def _community_guest_hidden_menus(self):
-        """Discuss menus a community GUEST does not get, children included.
+        """Discuss menus a community member does not get, children included.
 
         Only the Discuss "Configuration" subtree (notification settings,
         voice & video, canned responses, roles): it configures the staff side
-        of Discuss and has nothing a throwaway visitor account can use.
-        Filtered here and not with ``group_ids`` on the menu, because a group
-        on a core menu would hide it from EVERY user outside that group --
-        merchants and registered residents included.
+        of Discuss and has nothing a resident or a guest can use. Filtered
+        here and not with ``group_ids`` on the menu, because a group on a
+        core menu would hide it from EVERY user outside that group --
+        merchants and staff included.
         """
         config = self.env.ref("mail.menu_configuration", raise_if_not_found=False)
         if not config:

@@ -15,7 +15,7 @@ GUEST_MENTION_CTX = "community_guest_mention_partner_ids"
 
 
 class ResPartner(models.Model):
-    """Keep channel rosters out of a community guest's @-mention suggestions.
+    """Keep channel rosters out of a community member's @-mention suggestions.
 
     Core's ``get_mention_suggestions_from_channel`` filters partners with
     ``("channel_ids", "in", channel)``, a many2many condition compiled
@@ -37,7 +37,7 @@ class ResPartner(models.Model):
     @api.readonly
     @api.model
     def get_mention_suggestions_from_channel(self, channel_id, search, limit=8):
-        if not self.env.user.is_community_guest:
+        if not self.env.user.is_community_member:
             return super().get_mention_suggestions_from_channel(
                 channel_id, search, limit=limit
             )

@@ -35,8 +35,26 @@ GUEST_CLEANUP_BATCH_PARAM = "discuss_community.guest_cleanup_batch_size"
 # of both.
 STAFF_CHANNEL_XMLIDS = ("mail.channel_all_employees", "mail.channel_admin")
 
-# The one channel a community guest opens on after login.
+# The one channel a community member opens on after login.
 COMMUNITY_DEFAULT_CHANNEL_XMLID = "discuss_channel_zone.channel_canarias"
+
+# The marker group of the community population.
+COMMUNITY_MEMBER_GROUP_XMLID = "discuss_community.group_community_member"
+
+# Holders of any of these groups are never treated as community members, even
+# when they also hold the community group: administrators, merchants
+# ("Comercios") and zone managers ("Gestor ZCA") keep the full backend, every
+# channel and every roster. The last two are soft references: their modules
+# are not dependencies of this one.
+COMMUNITY_EXEMPT_GROUP_XMLIDS = (
+    "base.group_system",
+    "merchant_group.group_merchant",
+    "zca_manager_group.group_zca_manager",
+)
+
+# Channels restricted to this group are staff channels: a community member is
+# internal, so core would let it read and join every one of them.
+STAFF_CHANNEL_GROUP_XMLID = "base.group_user"
 
 
 class ResUsers(models.Model):
@@ -74,40 +92,106 @@ class ResUsers(models.Model):
         "by hand.",
     )
 
+    # Every computed field below feeds ``ir.rule`` domains, and
+    # ``ir.rule._compute_domain`` is ormcached per uid. They depend only on
+    # the user's groups (core clears the registry cache on every
+    # ``group_ids`` write, ``res.users._get_invalidation_fields``) and on
+    # records resolved by xmlid. Never make them depend on other mutable
+    # per-user state (zone, memberships) without clearing the registry cache
+    # on every change of it, or the rules keep applying stale ids.
+    is_community_member = fields.Boolean(
+        string="Community Member",
+        compute="_compute_is_community_member",
+        compute_sudo=True,
+        help="Holds the Community Member group and is neither an "
+        "administrator, a merchant nor a zone manager. Guests and "
+        "registered residents alike; the switch every community behaviour "
+        "(record rules, menus, channels, landing) pivots on.",
+    )
+
     community_hidden_channel_ids = fields.Many2many(
         comodel_name="discuss.channel",
         string="Hidden Staff Channels",
         compute="_compute_community_hidden_channel_ids",
-        help="Staff channels a community guest may never read or join, even "
-        "when seated there by mistake. Read by the guest channel record "
-        "rules; empty for everybody who is not a community guest.",
+        help="Staff channels a community member may never read or join, even "
+        "when seated there by mistake. Read by the community record rules; "
+        "empty for everybody who is not a community member.",
     )
 
-    # Both computed channel lists below feed ``ir.rule`` domains, and
-    # ``ir.rule._compute_domain`` is ormcached per uid. They must only depend
-    # on things that never change for a given user (``is_community_guest``,
-    # which ``write`` guards with a registry cache clear, and channels
-    # resolved by xmlid). Never make them depend on mutable per-user state
-    # (zone, memberships, groups) without clearing the registry cache on
-    # every change of it, or the rules keep applying stale ids.
+    community_staff_group_ids = fields.Many2many(
+        comodel_name="res.groups",
+        string="Staff Channel Groups",
+        compute="_compute_community_hidden_channel_ids",
+        help="Groups whose restricted channels are staff channels for a "
+        "community member (the employee group). Read by the community "
+        "record rules; empty for everybody who is not a community member.",
+    )
+
     community_channel_ids = fields.Many2many(
         comodel_name="discuss.channel",
         string="Joinable Community Channels",
         compute="_compute_community_channel_ids",
-        help="Community channels a community guest may see and join or leave "
-        "at will: the platform-wide channel and the neighbourhood channels. "
-        "Read by the guest channel record rules; empty for everybody who is "
-        "not a community guest.",
+        help="Community channels a community member may see and join or "
+        "leave at will: the platform-wide channel and the neighbourhood "
+        "channels. Read by the community record rules; empty for everybody "
+        "who is not a community member.",
     )
 
-    @api.depends("is_community_guest")
+    @api.depends("all_group_ids")
+    def _compute_is_community_member(self):
+        for user in self:
+            user.is_community_member = user._is_community_member()
+
+    def _is_community_member(self):
+        """Whether ``self`` (one user) gets the community profile.
+
+        THE single definition of the population: holds
+        ``group_community_member`` and none of the exempt groups
+        (administrators, merchants, zone managers). ``is_community_guest``
+        only tells the disposable guest accounts apart inside it.
+        """
+        self.ensure_one()
+        groups = self.sudo().all_group_ids
+        community = self.env.ref(COMMUNITY_MEMBER_GROUP_XMLID, raise_if_not_found=False)
+        if not community or community not in groups:
+            return False
+        return not (groups & self._community_exempt_groups())
+
+    def _community_members(self):
+        """The subset of ``self`` that gets the community profile."""
+        return self.filtered(lambda user: user._is_community_member())
+
+    @api.model
+    def _community_exempt_groups(self):
+        """The installed exempt groups (see ``COMMUNITY_EXEMPT_GROUP_XMLIDS``)."""
+        groups = self.env["res.groups"]
+        for xmlid in COMMUNITY_EXEMPT_GROUP_XMLIDS:
+            group = self.env.ref(xmlid, raise_if_not_found=False)
+            if group:
+                groups |= group
+        return groups.sudo()
+
+    @api.model
+    def _search_all_community_members(self):
+        """Every community member, archived ones included (sudo)."""
+        community = self.env.ref(COMMUNITY_MEMBER_GROUP_XMLID, raise_if_not_found=False)
+        if not community:
+            return self.sudo().browse()
+        return (
+            self.sudo()
+            .with_context(active_test=False)
+            .search([("all_group_ids", "in", community.ids)])
+            ._community_members()
+        )
+
+    @api.depends("all_group_ids")
     def _compute_community_channel_ids(self):
-        """The four community channels, for guests only.
+        """The four community channels, for community members only.
 
         The neighbourhood channels are gated on
         ``discuss_channel_zone.group_zone_channel_member``, so the "open
-        channels" branch of the guest rules does not cover them; this list
-        does. Non-stored for the same reason as the hidden staff channels.
+        channels" branch of the community rules does not cover them; this
+        list does. Non-stored, resolved by xmlid: stable ids.
         """
         channels = (
             self.env["discuss.channel"]
@@ -116,22 +200,29 @@ class ResUsers(models.Model):
         )
         for user in self:
             user.community_channel_ids = (
-                channels if user.is_community_guest else self.env["discuss.channel"]
+                channels if user.is_community_member else self.env["discuss.channel"]
             )
 
-    @api.depends("is_community_guest")
+    @api.depends("all_group_ids")
     def _compute_community_hidden_channel_ids(self):
-        """The staff channels, for guests only; nothing for anybody else.
+        """The staff channels and the staff group, for community members only.
 
-        Non-stored on purpose: the record rules read it once per user and the
-        rule domain is then cached (``ir.rule._compute_domain``), so the only
-        thing that matters is that the ids are stable -- and they are: they
-        are the two channels ``mail`` seeds, resolved by xmlid.
+        Non-stored on purpose: the record rules read them once per user and
+        the rule domain is then cached (``ir.rule._compute_domain``), so the
+        only thing that matters is that the ids are stable -- and they are:
+        the two channels ``mail`` seeds and the employee group, resolved by
+        xmlid.
         """
         hidden = self._community_staff_channels()
+        staff_group = self.env.ref(STAFF_CHANNEL_GROUP_XMLID, raise_if_not_found=False)
+        staff_groups = staff_group or self.env["res.groups"]
         for user in self:
+            member = user.is_community_member
             user.community_hidden_channel_ids = (
-                hidden if user.is_community_guest else self.env["discuss.channel"]
+                hidden if member else self.env["discuss.channel"]
+            )
+            user.community_staff_group_ids = (
+                staff_groups if member else self.env["res.groups"]
             )
 
     # ------------------------------------------------------------------
@@ -202,6 +293,9 @@ class ResUsers(models.Model):
                 "chat_zone": normalised,
                 "company_id": main_company.id,
                 "company_ids": [Command.set(main_company.ids)],
+                # Never onboarded by OdooBot, exactly like a guest: a resident
+                # has no use for a tour of the employee chat features.
+                "odoobot_state": "disabled",
             }
             if action:
                 vals["action_id"] = action.id
@@ -288,10 +382,11 @@ class ResUsers(models.Model):
     def write(self, vals):
         """Drop the cached record-rule domains when a user changes population.
 
-        The guest record rules branch on ``user.is_community_guest`` and
-        ``ir.rule._compute_domain`` caches the evaluated domain per user, so
-        flipping the flag on an existing account would otherwise keep
-        applying the old rules until the next restart.
+        The community record rules branch on ``user.is_community_member``,
+        which core already refreshes on a ``group_ids`` write (registry cache
+        clear). ``is_community_guest`` is cleared here too: code outside this
+        module (moderation, support) reads it, and the flag must never be
+        served stale.
         """
         result = super().write(vals)
         if "is_community_guest" in vals:
@@ -323,14 +418,16 @@ class ResUsers(models.Model):
     # ------------------------------------------------------------------
 
     def _zone_self_managed_users(self):
-        """Community guests choose their channels after the first seat.
+        """Community members choose their channels after the first seat.
 
-        ``discuss_channel_zone`` seats them in the general channel and in the
-        channel of their zone when they are created (or when their zone
-        changes) and never unseats them afterwards, so they can join and leave
-        each community channel from the Channels view.
+        Guests and registered residents alike. ``discuss_channel_zone`` seats
+        them in the general channel and in the channel of their zone when they
+        are created (or when their zone changes) and never unseats them
+        afterwards, so they can join and leave each community channel from
+        the Channels view without the nightly reconciliation undoing it.
+        Merchants, zone managers and administrators stay function-managed.
         """
-        return super()._zone_self_managed_users() | self.filtered("is_community_guest")
+        return super()._zone_self_managed_users() | self._community_members()
 
     def _community_guest_adopt_zone(self, zone):
         """Give a guest with no neighbourhood the one of ``zone``.
@@ -375,15 +472,15 @@ class ResUsers(models.Model):
     # ------------------------------------------------------------------
 
     def _on_webclient_bootstrap(self):
-        """Keep OdooBot away from community guests.
+        """Keep OdooBot away from community members.
 
         ``mail_bot`` opens a DM with OdooBot on the first backend load of any
         internal user whose ``odoobot_state`` is still unset
-        (``mail_bot/models/res_users.py``). New guests are born ``disabled``;
-        this covers guests created before that, or by any other path, by
-        disabling the bot BEFORE the core hook decides.
+        (``mail_bot/models/res_users.py``). New guests and promoted residents
+        are born ``disabled``; this covers accounts created before that, or
+        by any other path, by disabling the bot BEFORE the core hook decides.
         """
-        if self.is_community_guest and self.odoobot_state in (
+        if self.is_community_member and self.odoobot_state in (
             False,
             "not_initialized",
         ):
@@ -402,42 +499,65 @@ class ResUsers(models.Model):
 
     @api.model
     def _community_default_channel(self):
-        """The channel a community guest opens on, or an empty recordset."""
+        """The channel a community member opens on, or an empty recordset."""
         channel = self.env.ref(
             COMMUNITY_DEFAULT_CHANNEL_XMLID, raise_if_not_found=False
         )
         return channel.sudo() if channel else self.env["discuss.channel"]
 
     @api.model
-    def _cleanup_community_guests(self):
-        """Bring existing guests to the guest profile. Returns counters.
+    def _community_staff_channel_domain(self):
+        """Domain of the channels a community member must not sit in.
 
-        Idempotent, and run by the module migration: the create path and the
-        auto-subscription carve-out already keep NEW guests clean, this fixes
+        The two staff channels ``mail`` seeds, and every ``channel``
+        restricted to the employee group -- the same set the community
+        channel rule hides.
+        """
+        domain = [("id", "in", self.sudo()._community_staff_channels().ids)]
+        staff_group = self.env.ref(STAFF_CHANNEL_GROUP_XMLID, raise_if_not_found=False)
+        if staff_group:
+            domain = [
+                "|",
+                *domain,
+                "&",
+                ("channel_type", "=", "channel"),
+                ("group_public_id", "=", staff_group.id),
+            ]
+        return domain
+
+    @api.model
+    def _cleanup_community_members(self):
+        """Bring existing community members to the community profile.
+
+        Guests and registered residents alike (``_community_members``: never
+        administrators, merchants or zone managers). Returns counters.
+        Idempotent, and run by the module migrations: the create path and the
+        auto-subscription carve-out already keep NEW members clean, this fixes
         the ones seated before they existed.
 
-        * **Staff channels.** Memberships in "general" and "Administrators"
-          are removed (plain ``unlink``, silent: core posts no leave notice on
-          a ``channel``).
-        * **OdooBot.** The guest leaves its DM with OdooBot (its member row is
-          removed, the conversation itself is kept for OdooBot's side) and the
-          bot is disabled so the DM is never re-created.
+        * **Staff channels.** Memberships in "general", "Administrators" and
+          any other channel restricted to employees are removed (plain
+          ``unlink``, silent: core posts no leave notice on a ``channel``).
+        * **OdooBot.** The member leaves its DM with OdooBot (its member row
+          is removed, the conversation itself is kept for OdooBot's side) and
+          the bot is disabled so the DM is never re-created.
         """
-        guests = (
-            self.sudo()
-            .with_context(active_test=False)
-            .search([("is_community_guest", "=", True)])
-        )
+        members = self._search_all_community_members()
         counters = {"staff_seats": 0, "odoobot_chats": 0, "odoobot_disabled": 0}
-        if not guests:
+        if not members:
             return counters
         member_model = self.env["discuss.channel.member"].sudo()
-        staff_channels = self.sudo()._community_staff_channels()
+        staff_channels = (
+            self.env["discuss.channel"]
+            .sudo()
+            .with_context(active_test=False)
+            .search(self._community_staff_channel_domain())
+        )
         if staff_channels:
             staff_seats = member_model.search(
                 [
                     ("channel_id", "in", staff_channels.ids),
-                    ("partner_id", "in", guests.partner_id.ids),
+                    ("partner_id", "in", members.partner_id.ids),
                 ]
             )
             counters["staff_seats"] = len(staff_seats)
@@ -451,23 +571,23 @@ class ResUsers(models.Model):
                     ("partner_id", "=", odoobot.id),
                 ]
             ).channel_id
-            guest_seats = member_model.search(
+            bot_seats = member_model.search(
                 [
                     ("channel_id", "in", bot_chats.ids),
-                    ("partner_id", "in", guests.partner_id.ids),
+                    ("partner_id", "in", members.partner_id.ids),
                 ]
             )
-            counters["odoobot_chats"] = len(guest_seats)
-            guest_seats.unlink()
+            counters["odoobot_chats"] = len(bot_seats)
+            bot_seats.unlink()
 
-        to_disable = guests.filtered(lambda user: user.odoobot_state != "disabled")
+        to_disable = members.filtered(lambda user: user.odoobot_state != "disabled")
         counters["odoobot_disabled"] = len(to_disable)
         if to_disable:
             to_disable.write({"odoobot_state": "disabled"})
         _logger.info(
-            "discuss_community: guest cleanup removed %(staff_seats)s staff "
-            "seats and %(odoobot_chats)s OdooBot chats, disabled OdooBot for "
-            "%(odoobot_disabled)s guests",
+            "discuss_community: community member cleanup removed "
+            "%(staff_seats)s staff seats and %(odoobot_chats)s OdooBot chats, "
+            "disabled OdooBot for %(odoobot_disabled)s members",
             counters,
         )
         return counters

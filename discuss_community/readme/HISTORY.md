@@ -1,3 +1,25 @@
+## 19.0.1.8.0 (2026-09-30)
+
+- Registered community members get the guest profile. Every community
+  behaviour now pivots on `res.users.is_community_member` (the community
+  group, never administrators, merchants or zone managers) instead of
+  `is_community_guest`:
+  - record rules: no staff channels ("general", "Administrators" and any
+    channel restricted to employees) nor their messages, only their own
+    member rows in channels, the same join restrictions;
+  - self-managed for `discuss_channel_zone`: the nightly reconciliation no
+    longer undoes the channels a resident joined or left;
+  - `session_info.is_community_member` drives the trimmed Discuss UI and the
+    landing in "Canarias Conectada"; no Discuss Configuration menu; no
+    OdooBot onboarding (`odoobot_state` disabled on promotion); @-mention
+    suggestions limited like a guest's;
+  - the auto-subscription carve-out exempts administrators, merchants and
+    zone managers who also hold the community group.
+- Migration: removes the staff-channel seats and OdooBot DMs of every
+  community member (`_cleanup_community_members`, formerly guests only).
+- Unchanged: the garbage collector only removes guests; moderation keeps
+  holding guests and applying the trust threshold to members.
+
 ## 19.0.1.7.0 (2026-09-29)
 
 - Guests entering from a commercial-zone site are seated in that zone's

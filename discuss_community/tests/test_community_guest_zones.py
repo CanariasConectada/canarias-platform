@@ -102,10 +102,11 @@ class TestCommunityGuestZones(CommunityMixin, TransactionCase):
         self.assertFalse(self._seat(self.guest, self.channel_guanarteme))
         self.assertTrue(self._seat(self.guest, self.channel_lomo))
 
-    def test_resident_stays_function_managed(self):
-        """Only guests choose; a registered member keeps the zone sync."""
-        self.assertFalse(self.member._zone_self_managed_users())
+    def test_every_community_member_is_self_managed(self):
+        """Guests and registered residents choose; employees keep the sync."""
+        self.assertEqual(self.member._zone_self_managed_users(), self.member)
         self.assertEqual(self.guest._zone_self_managed_users(), self.guest)
+        self.assertFalse(self.employee._zone_self_managed_users())
 
     # ------------------------------------------------------------------
     # Migration

@@ -168,8 +168,8 @@ class TestCommunityGuestMembers(GuestProfileMixin, TransactionCase):
             set(self.channel_general.sudo().channel_member_ids.partner_id.ids),
         )
 
-    def test_flag_change_refreshes_the_cached_rules(self):
-        """Rule domains are cached per user: flipping the flag must reset them."""
+    def test_group_change_refreshes_the_cached_rules(self):
+        """Rule domains are cached per user: a group change must reset them."""
         self.assertIn(
             self.employee.partner_id.id,
             self._rpc_members(self.employee, self.channel_general),
@@ -179,7 +179,8 @@ class TestCommunityGuestMembers(GuestProfileMixin, TransactionCase):
             .with_user(self.employee)
             .search([("id", "=", self.employees_channel.id)])
         )
-        self.employee.is_community_guest = True
+        self.employee.group_ids = [(4, self.community_group.id)]
+        self.assertTrue(self.employee.is_community_member)
         self.assertEqual(
             self._rpc_members(self.employee, self.channel_general),
             {self.employee.partner_id.id},
@@ -189,7 +190,8 @@ class TestCommunityGuestMembers(GuestProfileMixin, TransactionCase):
             .with_user(self.employee)
             .search([("id", "=", self.employees_channel.id)])
         )
-        self.employee.is_community_guest = False
+        self.employee.group_ids = [(3, self.community_group.id)]
+        self.assertFalse(self.employee.is_community_member)
         self.assertTrue(
             self.env["discuss.channel"]
             .with_user(self.employee)
@@ -284,11 +286,16 @@ class TestCommunityGuestProfile(GuestProfileMixin, TransactionCase):
         for child in self.config_menu.child_id:
             self.assertNotIn(child.id, visible)
 
-    def test_configuration_menu_kept_for_non_guests(self):
-        """Guests only: no group was put on the core menu."""
+    def test_configuration_menu_kept_for_non_members(self):
+        """Community members only: no group was put on the core menu."""
         self.assertFalse(self.config_menu.group_ids - self.internal_group)
         self.assertIn(self.config_menu.id, self._visible_menus(self.employee))
-        self.assertIn(self.config_menu.id, self._visible_menus(self.member))
+
+    def test_registered_member_has_no_discuss_configuration_menu(self):
+        """Registered residents get the same trimmed Discuss as guests."""
+        visible = self._visible_menus(self.member)
+        self.assertIn(self.discuss_root.id, visible)
+        self.assertNotIn(self.config_menu.id, visible)
 
     def _odoobot_chats(self, user):
         return (
@@ -331,7 +338,7 @@ class TestCommunityGuestProfile(GuestProfileMixin, TransactionCase):
         self.employee._init_odoobot()
         self.assertTrue(self._odoobot_chats(guest))
 
-        counters = self.env["res.users"]._cleanup_community_guests()
+        counters = self.env["res.users"]._cleanup_community_members()
 
         self.assertGreaterEqual(counters["staff_seats"], 1)
         self.assertGreaterEqual(counters["odoobot_chats"], 1)
@@ -348,7 +355,7 @@ class TestCommunityGuestProfile(GuestProfileMixin, TransactionCase):
         )
         self.assertTrue(self._odoobot_chats(self.employee))
         # Idempotent.
-        again = self.env["res.users"]._cleanup_community_guests()
+        again = self.env["res.users"]._cleanup_community_members()
         self.assertEqual(
             again, {"staff_seats": 0, "odoobot_chats": 0, "odoobot_disabled": 0}
         )

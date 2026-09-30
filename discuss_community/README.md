@@ -28,7 +28,12 @@ buttons on the platform's branded card.
   `discuss_channel_zone` seats them in the general + neighbourhood channel.
 - Kept out of `mail.channel_all_employees` (and any other group
   auto-subscribed channel) by a carve-out in
-  `_subscribe_users_automatically_get_members`.
+  `_subscribe_users_automatically_get_members`, and unable to read staff
+  channels, their messages or channel rosters (record rules).
+- Guests and registered residents share this whole profile
+  (`res.users.is_community_member`); administrators, merchants and zone
+  managers holding the group by mistake are never trimmed. Only the
+  disposable guests are garbage-collected.
 
 Merchants keep their company-derived zone; backend-invited users stay
 portal; backend-created users are untouched.

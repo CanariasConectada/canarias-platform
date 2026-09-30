@@ -66,14 +66,24 @@ class DiscussChannel(models.Model):
         carved_out_groups = self._carved_out_groups()
         if not carved_out_groups:
             return members
+        community_group = self.env.ref(
+            "discuss_community.group_community_member", raise_if_not_found=False
+        )
         for channel in self:
             exempt = channel.sudo().group_ids & carved_out_groups
             excluded_groups = carved_out_groups - exempt
             if not excluded_groups:
                 continue
-            excluded_partner_ids = set(
-                excluded_groups.sudo().all_user_ids.partner_id.ids
-            )
+            excluded_users = self.env["res.users"].sudo()
+            for group in excluded_groups.sudo():
+                holders = group.all_user_ids
+                if group == community_group:
+                    # Community MEMBERS only: an administrator, merchant or
+                    # zone manager who also holds the group is staff and
+                    # keeps core's auto-seating.
+                    holders = holders._community_members()
+                excluded_users |= holders
+            excluded_partner_ids = set(excluded_users.partner_id.ids)
             if not excluded_partner_ids:
                 continue
             members[channel.id] = [
