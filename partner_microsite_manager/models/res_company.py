@@ -4,7 +4,7 @@
 import json
 import logging
 from datetime import datetime
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, quote_plus, urlsplit
 
 import pytz
 from lxml import etree
@@ -13,6 +13,7 @@ from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tools.translate import LazyTranslate
 
+from ..tools import map_url as map_url_tools
 from ..tools.opening_hours import (
     MAX_RANGES_PER_DAY,
     format_opening_hours,
@@ -36,6 +37,15 @@ OPENING_HOURS_CARD_TEMPLATE = "partner_microsite_manager.microsite_opening_hours
 # 'javascript:' or 'data:' src would run in the visitor's page context
 # (stored XSS), so any explicit non-https scheme is refused at write time.
 _ALLOWED_MAP_URL_SCHEMES = ("https",)
+# The pasted original only ever feeds an ``href``: http(s), nothing else.
+_ALLOWED_MAP_SHARE_URL_SCHEMES = ("http", "https")
+# Short links the daily retry resolves per run (each is up to one network
+# resolution, see ``tools.map_url.RESOLVE_BUDGET``).
+MAP_RETRY_BATCH = 20
+# Companies whose non-embeddable map this process already reported: the
+# render fallback runs on every page view, the warning only needs to be
+# read once.
+_MAP_FALLBACK_REPORTED = set()
 
 # Timezone the "open now" badge is judged against. NOT partner_id.tz: that
 # field holds whatever timezone the user who created the company happened to
@@ -132,8 +142,16 @@ class ResCompany(models.Model):
     microsite_services_text = fields.Text(string="Services Text")
     microsite_map_url = fields.Char(
         string="Custom Map URL",
-        help="Embeddable map URL. When empty, a Google Maps embed is built "
-        "from the company address.",
+        help="Paste any Google Maps link (share or embed); it will be "
+        "converted automatically. When empty, the map is built from the "
+        "company address.",
+    )
+    # What the user pasted, when it had to be converted to be framed (a
+    # share link, a place page): the "View on Google Maps" link goes there.
+    microsite_map_share_url = fields.Char(
+        string="Google Maps Link",
+        help="The link that was pasted as the map, before it was converted "
+        "to an embeddable one.",
     )
     # Public contact numbers, separate from the partner's own ``phone``.
     # A shop often publishes a counter number while the partner record keeps
@@ -294,6 +312,22 @@ class ResCompany(models.Model):
                     _(
                         "The map URL must be an https:// address; "
                         "'%(scheme)s:' links are not allowed.",
+                        scheme=scheme,
+                    )
+                )
+
+    @api.constrains("microsite_map_share_url")
+    def _check_microsite_map_share_url(self):
+        for company in self:
+            url = company.microsite_map_share_url
+            if not url:
+                continue
+            scheme = urlsplit(url.strip()).scheme.lower()
+            if scheme and scheme not in _ALLOWED_MAP_SHARE_URL_SCHEMES:
+                raise ValidationError(
+                    _(
+                        "The Google Maps link must be an http:// or https:// "
+                        "address; '%(scheme)s:' links are not allowed.",
                         scheme=scheme,
                     )
                 )
@@ -557,16 +591,192 @@ class ResCompany(models.Model):
     def _get_microsite_map_url(self):
         """Embeddable map URL: the custom one, or one built from the address.
 
+        A Google Maps link that is still not embeddable (a short link whose
+        resolution failed when it was saved) would show the browser's
+        "refused to connect" page, so it falls back to the address map: the
+        iframe never shows a broken page. Non-Google URLs are embedded as
+        they are; they are the administrator's responsibility.
+
         Returns an empty string when there is nothing to show, so the
         template hides the map block entirely.
         """
         self.ensure_one()
         custom_url = self._normalize_map_url(self.microsite_map_url)
+        if custom_url and map_url_tools.is_google_maps_url(custom_url):
+            if not map_url_tools.is_embeddable_map_url(custom_url):
+                converted = map_url_tools.to_embeddable_map_url(custom_url)
+                if map_url_tools.is_embeddable_map_url(converted):
+                    custom_url = converted
+                else:
+                    level = logging.DEBUG
+                    if self.id not in _MAP_FALLBACK_REPORTED:
+                        _MAP_FALLBACK_REPORTED.add(self.id)
+                        level = logging.WARNING
+                    _logger.log(
+                        level,
+                        "Company %s: map URL %s cannot be embedded; "
+                        "showing the address map instead (retried daily).",
+                        self.id,
+                        custom_url,
+                    )
+                    custom_url = ""
         if custom_url:
             return custom_url
         # Same builder as the event pages (website_map_embed), so both maps
         # stay identical.
         return self.partner_id._canarias_map_embed_url() or ""
+
+    def _get_microsite_map_link_url(self):
+        """Where "View on Google Maps" points, or ``""`` for no link.
+
+        The link the user pasted when there is one; otherwise a Google Maps
+        search for what the embedded map shows (its ``q``).
+        """
+        self.ensure_one()
+        share_url = self._normalize_map_url(self.microsite_map_share_url)
+        if share_url and map_url_tools.is_google_maps_url(share_url):
+            return share_url
+        embed_url = self._get_microsite_map_url()
+        if not map_url_tools.is_google_maps_url(embed_url):
+            return ""
+        query = parse_qs(urlsplit(embed_url).query).get("q", [""])[0].strip()
+        if not query:
+            return ""
+        return "https://www.google.com/maps/search/?api=1&query=" + quote_plus(
+            query, safe=","
+        )
+
+    # ------------------------------------------------------------------
+    # Map link normalisation (write time)
+    # ------------------------------------------------------------------
+    @api.model
+    def _to_embeddable_map_url(self, url):
+        """Embeddable form of any Google Maps link (see ``tools/map_url``).
+
+        Short links are resolved over the network, once, here: this runs
+        when the link is saved, never when a page is rendered.
+        """
+        return map_url_tools.to_embeddable_map_url(
+            url, resolver=map_url_tools.resolve_short_map_url
+        )
+
+    @api.model
+    def _prepare_map_url_vals(self, vals):
+        """``vals`` with the pasted map link converted and the original kept.
+
+        Leaves ``vals`` alone when it has no map link or already says what
+        the share link is (the migration writes both).
+        """
+        if "microsite_map_url" not in vals or "microsite_map_share_url" in vals:
+            return vals
+        pasted = (vals["microsite_map_url"] or "").strip()
+        vals = dict(vals)
+        if not pasted:
+            vals.update(microsite_map_url=False, microsite_map_share_url=False)
+            return vals
+        embed_url = self._to_embeddable_map_url(pasted)
+        vals["microsite_map_url"] = embed_url
+        vals["microsite_map_share_url"] = (
+            pasted if map_url_tools.is_share_link(pasted) else False
+        )
+        return vals
+
+    def _write_map_url_aware(self, vals):
+        """``super().write`` with the map link converted (see ``create``).
+
+        A company whose stored link (or pasted original) is exactly the value
+        written keeps both fields as they are: the page content editor writes
+        every field back on save, and re-saving an untouched map must neither
+        resolve the short link again nor forget the original. Only when the
+        stored link is embeddable, though: a short link whose resolution
+        failed is retried by saving it again.
+        """
+        if "microsite_map_url" not in vals or "microsite_map_share_url" in vals:
+            return super().write(vals)
+        pasted = (vals["microsite_map_url"] or "").strip()
+        unchanged = self.filtered(
+            lambda c: pasted
+            and map_url_tools.is_embeddable_map_url(c.microsite_map_url or "")
+            and pasted
+            in ((c.microsite_map_url or "").strip(), c.microsite_map_share_url)
+        )
+        result = True
+        if unchanged:
+            rest_vals = {k: v for k, v in vals.items() if k != "microsite_map_url"}
+            result = super(ResCompany, unchanged).write(rest_vals)
+        others = self - unchanged
+        if others:
+            result = super(ResCompany, others).write(self._prepare_map_url_vals(vals))
+        return result
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        return super().create([self._prepare_map_url_vals(v) for v in vals_list])
+
+    @api.model
+    def _cron_retry_map_short_links(self, limit=MAP_RETRY_BATCH):
+        """Daily: resolve again the short map links that failed on save.
+
+        At most ``limit`` companies per run, each in its own savepoint (see
+        ``_normalize_existing_map_urls``); until then their page shows the
+        address map. Returns the companies healed.
+        """
+        candidates = self.with_context(active_test=False).search(
+            [
+                "|",
+                ("microsite_map_url", "=ilike", "%maps.app.goo.gl%"),
+                ("microsite_map_url", "=ilike", "%goo.gl/maps%"),
+            ],
+            order="write_date asc, id",
+        )
+        pending = candidates.filtered(
+            lambda c: map_url_tools.is_short_map_url(
+                self._normalize_map_url(c.microsite_map_url)
+            )
+        )[:limit]
+        healed = pending._normalize_existing_map_urls()
+        if pending:
+            _logger.info(
+                "Map short links: %d retried, %d converted.",
+                len(pending),
+                len(healed),
+            )
+        return healed
+
+    def _normalize_existing_map_urls(self):
+        """Convert the stored map links of ``self``; return the changed ones.
+
+        Idempotent: an embeddable link converts to itself. Each company runs
+        in its own savepoint, so one failure (network, constraint) leaves
+        that value as it was -- the render fallback covers it -- and the
+        others still go through.
+        """
+        changed = self.browse()
+        for company in self.filtered("microsite_map_url"):
+            stored = company.microsite_map_url
+            try:
+                with self.env.cr.savepoint():
+                    embed_url = self._to_embeddable_map_url(stored)
+                    if embed_url == stored:
+                        continue
+                    share_url = company.microsite_map_share_url or (
+                        stored if map_url_tools.is_share_link(stored) else False
+                    )
+                    company.write(
+                        {
+                            "microsite_map_url": embed_url,
+                            "microsite_map_share_url": share_url,
+                        }
+                    )
+                    changed |= company
+            except Exception:
+                _logger.warning(
+                    "Company %s: could not convert map URL %s",
+                    company.id,
+                    stored,
+                    exc_info=True,
+                )
+        return changed
 
     # ------------------------------------------------------------------
     # Homepage publication (explicit action, one-time per website)
@@ -630,7 +840,7 @@ class ResCompany(models.Model):
         write is the smallest thing that makes "cambio el logo" true
         everywhere the visitor looks.
         """
-        result = super().write(vals)
+        result = self._write_map_url_aware(vals)
         if "logo" in vals:
             for company in self:
                 websites = company.website_id | self.env["website"].sudo().search(

@@ -1,3 +1,33 @@
+## 19.0.2.12.0 (2026-09-30)
+
+- Microsite map: any Google Maps link now shows a map (client request:
+  "verify it for this company, for the others, and for new ones"). Share
+  links (`/maps/place/...`, `maps.app.goo.gl/...`) answer with
+  `X-Frame-Options: SAMEORIGIN`, so the iframe showed the browser's error
+  page. `tools/map_url.py` converts them to
+  `maps.google.com/maps?q=...&output=embed` (pin coordinates `!3d!4d` first,
+  then `@lat,lng`, then the place name or search query). Short links are
+  resolved once on save (no cookies, 5 s timeout, at most 5 redirects, Google
+  hosts only), never at render time. The conversion runs on company
+  create/write, so the backend form and the page content editor both get it;
+  the pasted link is kept in the new `microsite_map_share_url` field and
+  feeds a "View on Google Maps" link under the map. A Google link that is
+  still not embeddable (resolution failed) renders the address map instead,
+  with a warning in the log. Non-Google https URLs are embedded as before
+  and non-https schemes are still refused.
+- Embed URLs copied from an iframe source with HTML-escaped `&amp;`
+  separators are decoded: QWeb escapes the attribute again, and Google then
+  received `amp;output=embed` and refused the frame.
+- Short-link resolution has a total budget of 6 s across at most 5
+  redirects. When it fails, the short link stays stored, the page shows the
+  address map (warned once per process and company, then at DEBUG), saving
+  the same link again retries, and a daily cron retries up to 20 of them,
+  one savepoint each.
+- `microsite_map_share_url` only accepts http(s) links.
+- Migration: every stored map link goes through the converter, one
+  savepoint per company (a failure leaves the value; the render fallback
+  covers it). Idempotent.
+
 ## 19.0.2.11.1 (2026-09-26)
 
 - i18n: the website logo form stayed in English in Spanish: its help text

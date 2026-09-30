@@ -238,6 +238,12 @@
                             <t t-set="map_title" t-value="company.partner_id.display_name"/>
                             <t t-set="map_height" t-value="240"/>
                         </t>
+                        <t t-set="map_link_url" t-value="map_url and company._get_microsite_map_link_url()"/>
+                        <p t-if="map_link_url" class="small mt-1 mb-0 o_microsite_map_link">
+                            <a t-att-href="map_link_url" target="_blank" rel="noopener noreferrer">
+                                <i class="fa fa-external-link fa-fw me-1"/>View on Google Maps
+                            </a>
+                        </p>
                         <h4 class="mt-4 mb-3 o_microsite_heading o_microsite_heading_pin">Find Us</h4>
                         <p t-if="company.partner_id.contact_address" class="mb-2">
                             <i class="fa fa-map-marker fa-fw me-2"/>

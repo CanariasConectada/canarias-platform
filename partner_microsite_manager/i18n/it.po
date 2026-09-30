@@ -851,13 +851,6 @@ msgid ""
 msgstr ""
 
 #. module: partner_microsite_manager
-#: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_map_url
-msgid ""
-"Embeddable map URL. When empty, a Google Maps embed is built from the "
-"company address."
-msgstr ""
-
-#. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
 msgid ""
 "En concreto, este sitio web utiliza las\n"
@@ -2097,3 +2090,45 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
 msgid "¿Qué son las cookies?"
 msgstr ""
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid "<i class=\"fa fa-external-link fa-fw me-1\"/>View on Google Maps"
+msgstr "<i class=\"fa fa-external-link fa-fw me-1\"/>Vedi su Google Maps"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_map_share_url
+msgid "Google Maps Link"
+msgstr "Link di Google Maps"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_microsite_content_editor__microsite_map_url
+msgid "Paste any Google Maps link (share or embed); it will be converted automatically."
+msgstr "Incolla qualsiasi link di Google Maps (di condivisione o di incorporamento); verrà convertito automaticamente."
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_map_url
+msgid "Paste any Google Maps link (share or embed); it will be converted automatically. When empty, the map is built from the company address."
+msgstr "Incolla qualsiasi link di Google Maps (di condivisione o di incorporamento); verrà convertito automaticamente. Se vuoto, la mappa viene generata dall'indirizzo dell'azienda."
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_map_share_url
+msgid "The link that was pasted as the map, before it was converted to an embeddable one."
+msgstr "Il link incollato come mappa, prima di essere convertito in uno incorporabile."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "https://maps.app.goo.gl/..."
+msgstr "https://maps.app.goo.gl/..."
+
+#. module: partner_microsite_manager
+#: model:ir.actions.server,name:partner_microsite_manager.ir_cron_retry_map_short_links_ir_actions_server
+msgid "Microsites: retry unresolved Google Maps short links"
+msgstr "Microsite: riprova i link brevi di Google Maps non risolti"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid "The Google Maps link must be an http:// or https:// address; '%(scheme)s:' links are not allowed."
+msgstr "Il link di Google Maps deve essere un indirizzo http:// o https://; i link «%(scheme)s:» non sono consentiti."

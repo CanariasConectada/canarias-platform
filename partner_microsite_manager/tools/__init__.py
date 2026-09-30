@@ -1,1 +1,1 @@
-from . import opening_hours
+from . import map_url, opening_hours

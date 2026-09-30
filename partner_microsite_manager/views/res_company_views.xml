@@ -83,7 +83,11 @@
                                     <field name="microsite_phone" string="Phone"/>
                                     <field name="microsite_phone2" string="Second phone"
                                            invisible="not microsite_phone"/>
-                                    <field name="microsite_map_url" string="Map"/>
+                                    <field name="microsite_map_url" string="Map"
+                                           placeholder="https://maps.app.goo.gl/..."/>
+                                    <field name="microsite_map_share_url"
+                                           readonly="1" widget="url"
+                                           invisible="not microsite_map_share_url"/>
                                 </group>
                             </group>
                         </page>
