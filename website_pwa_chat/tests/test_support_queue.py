@@ -275,12 +275,27 @@ class TestSupportQueue(WebsiteChatMixin, HttpCase):
     def test_the_page_asks_an_anonymous_visitor_who_they_are(self):
         page = self.url_open(SUPPORT_URL).text
         self.assertIn("o_cc_chat_identify", page)
-        self.assertIn("¿Cómo te llamas?", page)
+        self.assertRegex(page, "What should we call you|¿Cómo te llamamos?")
 
-    def test_the_card_says_what_identifying_buys(self):
-        """A form that does not say why is a form nobody fills in."""
+    def test_the_question_is_one_line_not_a_card(self):
+        """Client feedback 2026-09-29: the card pushed the conversation away."""
         page = self.url_open(SUPPORT_URL).text
-        self.assertIn("30 días en vez de 7", page)
+        self.assertNotIn(
+            "card", re.search(r'class="(o_cc_chat_identify[^"]*)"', page)[1]
+        )
+        self.assertNotIn("30 días en vez de 7", page)
+
+    def test_the_name_can_be_given_without_reloading_the_page(self):
+        channel = self._open_support()
+        result = self.make_jsonrpc_request(
+            "/website_pwa_chat/support/identify",
+            {"name": "  Lucía  ", "email": "lucia@example.com"},
+        )
+        self.assertEqual(result, {"identified": True})
+        channel.invalidate_recordset()
+        self.assertEqual(channel.support_visitor_name, "Lucía")
+        self.assertIn("Lucía", channel.name)
+        self.assertNotIn("o_cc_chat_identify", self.url_open(SUPPORT_URL).text)
 
     def test_giving_a_name_records_it_and_stops_asking(self):
         page = self.url_open(SUPPORT_URL).text

@@ -1,3 +1,40 @@
+## 19.0.6.6.0 (2026-09-25)
+
+- Support window simplified after client feedback ("huge, long, jumps
+  around; support mixed with messages to publish"). The support page reused
+  the community-channel template and carried its publishing pieces: the
+  visitor hint "someone on the team reads your message before publishing
+  it", the "held for review" zone, and an identify card whose footer sold an
+  account with "your messages are published instantly, no review". All of
+  them are gone from support; community channel pages keep them.
+- Inside the window: no title (the window header says Soporte), messages
+  that scroll, and one composer row ("Write your question…", bell, Send)
+  pinned at the bottom. The site's cookie bar and the backend shortcut no
+  longer render inside the frame.
+- While the window is open (`body.o_cc_support_open`, toggled by
+  support_window.js) the site's cookie bar drops under it: the bar is a
+  Bootstrap modal (1055) pinned to the bottom and covered the composer, on a
+  phone the whole bottom third of the window, until the visitor answered it.
+  Only the cookie bar is lowered; the window stays at 1030, below every
+  other dialog.
+- `/website_pwa_chat/support/identify` answers anonymous callers only, like
+  the line that calls it.
+- The identify card became one optional line (name, optional email, Save),
+  shown only to anonymous visitors and only after their first message. It
+  saves in place through the new `/website_pwa_chat/support/identify` route
+  instead of reloading the window; `/chat/soporte/identificarme` stays as
+  the no-script fallback. Fixed on the way: the page's submit listener
+  caught the identify form's submit too and sent the composer instead.
+- Logged-in users, walk-in community guests included, are no longer asked
+  for a name on the website (reverts that part of 19.0.6.4.0); they give it
+  in the Discuss dialog, which is unchanged.
+- Kept: the 26rem x 42rem window, the Discuss "Request support" button and
+  its name dialog, conversations named after the requester, the chime.
+- Tours: window size unchanged; new tours check, as an anonymous visitor
+  and as a logged-in guest, on desktop and phone, that the window shows no
+  review/publish/signup/channel UI, that the first message appears at once,
+  and that nothing but the conversation scrolls after it.
+
 ## 19.0.6.5.0 (2026-09-26)
 
 - Foreground chime when somebody else's message arrives in the open chat

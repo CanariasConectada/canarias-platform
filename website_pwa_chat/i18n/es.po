@@ -20,15 +20,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: website_pwa_chat
-#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
-msgid ""
-"<i class=\"fa fa-check me-1\" title=\"Identificado\" role=\"img\" aria-"
-"label=\"Identificado\"/>"
-msgstr ""
-"<i class=\"fa fa-check me-1\" title=\"Identificado\" role=\"img\" aria-"
-"label=\"Identificado\"/>"
-
-#. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
 msgid ""
 "<i class=\"fa fa-comments\" aria-hidden=\"true\"/>\n"
@@ -45,15 +36,6 @@ msgid ""
 msgstr ""
 "<i class=\"fa fa-comments\" aria-hidden=\"true\"/> <span "
 "class=\"o_cc_chat_fab_text\">Soporte</span>"
-
-#. module: website_pwa_chat
-#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
-msgid ""
-"<i class=\"fa fa-user-o me-1\" title=\"Identificarse\" role=\"img\" aria-"
-"label=\"Identificarse\"/>"
-msgstr ""
-"<i class=\"fa fa-user-o me-1\" title=\"Identificarse\" role=\"img\" aria-"
-"label=\"Identificarse\"/>"
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
@@ -305,12 +287,6 @@ msgid ""
 msgstr ""
 "Habla con tu barrio y con toda Canarias Conectada.\n"
 "                        Elige un canal para empezar."
-
-#. module: website_pwa_chat
-#. odoo-python
-#: code:addons/website_pwa_chat/controllers/main.py:0
-msgid "Hablamos con %s."
-msgstr "Hablamos con %s."
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
@@ -590,15 +566,6 @@ msgid "Who is asking?"
 msgstr "¿Quién pregunta?"
 
 #. module: website_pwa_chat
-#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
-msgid ""
-"Y con una cuenta, ni eso: tus mensajes se\n"
-"                                    publican al instante, sin esperar revisión."
-msgstr ""
-"Y con una cuenta, ni eso: tus mensajes se\n"
-"                                    publican al instante, sin esperar revisión."
-
-#. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_pending
 msgid ""
 "Ya lo tenemos. Antes de publicarlo lo lee una persona\n"
@@ -632,16 +599,6 @@ msgstr ""
 "                        aparecerá aquí sin que tengas que recargar nada."
 
 #. module: website_pwa_chat
-#. odoo-python
-#: code:addons/website_pwa_chat/controllers/main.py:0
-msgid ""
-"¿Cómo te llamas? Así sabemos con quién hablamos y guardamos esta "
-"conversación %(identified)s días en vez de %(anonymous)s."
-msgstr ""
-"¿Cómo te llamas? Así sabemos con quién hablamos y guardamos esta "
-"conversación %(identified)s días en vez de %(anonymous)s."
-
-#. module: website_pwa_chat
 #: model:ir.model.fields,field_description:website_pwa_chat.field_discuss_channel__support_last_message_date
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.discuss_channel_support_view_search
 msgid "Último mensaje"
@@ -663,3 +620,24 @@ msgstr "Silenciar el sonido de los mensajes"
 #: code:addons/website_pwa_chat/static/src/js/community_chat.js:0
 msgid "Turn on message sound"
 msgstr "Activar el sonido de los mensajes"
+
+#. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
+msgid "How can we help? Write to us and we will answer right here."
+msgstr "¿En qué podemos ayudarte? Escríbenos y te respondemos aquí mismo."
+
+#. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
+msgid "What should we call you?"
+msgstr "¿Cómo te llamamos?"
+
+#. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
+msgid "Write your question…"
+msgstr "Escribe tu consulta…"
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/js/community_chat.js:0
+msgid "Thanks, %s."
+msgstr "Gracias, %s."

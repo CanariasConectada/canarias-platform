@@ -45,6 +45,17 @@ what they typed.
 
 A support conversation is named `Soporte · <name>`, cut at 64 characters,
 so an agent can see who is asking in the Soporte drawer and in the thread
-header. The name is the one the visitor typed on the identify card, or else
-the account's name, or else the guest's. Walk-in community guests are
-accounts named "Invitado …", so they are shown the identify card as well.
+header. The name is the one the visitor typed (the one-line question on the
+website, or the Discuss dialog), or else the account's name, or else the
+guest's. Walk-in community guests give their name in the Discuss dialog; the
+website does not ask them again.
+
+## The support window
+
+The floating **Soporte** button opens `/chat/soporte?frame=1` in a window over
+the page: the conversation, and one composer pinned at the bottom. Nothing
+else. Support publishes nothing, so none of the community channels' pieces
+appear there (no "held for review" notice, no invitation to register, no
+channel list). An anonymous visitor is asked "What should we call you?" in a
+single optional line, and only after their first message; logged-in users are
+never asked.

@@ -270,13 +270,12 @@ class TestSupportChannelName(SupportDiscussMixin, HttpCase):
         )
         self.authenticate(walk_in.login, walk_in.login)
 
-        page = self.url_open("/chat/soporte")
-        self.assertIn(
-            "o_cc_chat_identify",
-            page.text,
-            "an account named 'Invitado …' is asked who is behind it",
-        )
-        self._identify("Carmen la del kiosco")
+        # Client feedback 2026-09-29: no second form on the website. The
+        # guest gives a name in the Discuss dialog, and that names the
+        # conversation.
+        page = self.url_open("/chat/soporte?frame=1")
+        self.assertNotIn('class="o_cc_chat_identify', page.text)
+        self.make_jsonrpc_request(REQUEST_URL, {"name": "Carmen la del kiosco"})
 
         channel = self._support_of(walk_in)
         self.assertEqual(len(channel), 1)
@@ -287,6 +286,24 @@ class TestSupportChannelName(SupportDiscussMixin, HttpCase):
         self.authenticate(self.merchant.login, self.merchant.login)
         page = self.url_open("/chat/soporte")
         self.assertNotIn('class="o_cc_chat_identify', page.text)
+
+    def test_the_inline_identify_route_refuses_logged_in_users(self):
+        """The website's name line is for anonymous visitors only, on the
+        server as in the page: an account keeps its own name."""
+        self.authenticate(self.merchant.login, self.merchant.login)
+        channel = (
+            self.env["discuss.channel"]
+            .with_user(self.merchant)
+            ._support_request_from_discuss()
+        )
+        result = self.make_jsonrpc_request(
+            "/website_pwa_chat/support/identify", {"name": "Otro nombre"}
+        )
+        self.assertEqual(result, {"identified": False})
+        channel.invalidate_recordset()
+        self.assertFalse(channel.support_identified)
+        self.assertNotIn("Otro nombre", channel.name)
+        self.assertIn(self.merchant.partner_id.name, channel.name)
 
     def test_a_long_name_is_cut_to_what_the_sidebar_can_show(self):
         channel = (
@@ -368,11 +385,8 @@ class TestSupportChannelName(SupportDiscussMixin, HttpCase):
         self.assertEqual(by_account.name, "Soporte · Ferretería Las Canteras")
 
 
-@tagged("post_install", "-at_install")
-class TestSupportWindowSizeDesktop(SupportDiscussMixin, HttpCase):
-    """Requirement 12: the floating window is tall enough to read."""
-
-    browser_size = "1366x900"
+class SupportWindowMixin(SupportDiscussMixin):
+    """A plain page of the suite's own, with the floating button on it."""
 
     @classmethod
     def setUpClass(cls):
@@ -395,21 +409,65 @@ class TestSupportWindowSizeDesktop(SupportDiscussMixin, HttpCase):
         self.addCleanup(self.registry.clear_cache, "templates")
         return "/wpc-size-page"
 
-    def test_the_window_is_sized_to_be_read(self):
+    def _run_window_tour(self, tour, login=None, cookies_bar=False):
         # The site's own default language, so no language redirect happens:
         # on a multi-language database the browser's Accept-Language sends
         # every URL through /xx/, and website_pwa's service-worker
         # registration then fails with "script resource is behind a
         # redirect", which the browser test counts as a failure of its own.
         website = self.env["website"].get_current_website()
+        # The site's cookie bar is a visible modal until it is answered, and
+        # a tour may not act inside the frame while one is up. The size tour
+        # keeps it, to prove it goes under the open window; the tours that
+        # type into the window switch it off.
+        website.cookies_bar = cookies_bar
         self.start_tour(
             self._plain_page(),
-            "website_pwa_chat_support_window_size",
+            tour,
+            login=login,
             cookies={"frontend_lang": website.default_lang_id.code},
         )
 
 
 @tagged("post_install", "-at_install")
+class TestSupportWindowSizeDesktop(SupportWindowMixin, HttpCase):
+    """Requirement 12: the floating window is tall enough to read."""
+
+    browser_size = "1366x900"
+
+    def test_the_window_is_sized_to_be_read(self):
+        self._run_window_tour("website_pwa_chat_support_window_size", cookies_bar=True)
+
+
+@tagged("post_install", "-at_install")
 class TestSupportWindowSizePhone(TestSupportWindowSizeDesktop):
+    browser_size = "390x844"
+    touch_enabled = True
+
+
+@tagged("post_install", "-at_install")
+class TestSupportSimpleDesktop(SupportWindowMixin, HttpCase):
+    """Client feedback 2026-09-29: a quick, direct support chat.
+
+    "Support is a chat that doesn't publish anything": no review notice, no
+    invitation to register, no channel list, no second form in front of the
+    composer -- for an anonymous visitor and for a logged-in guest alike.
+    """
+
+    browser_size = "1366x900"
+
+    def test_an_anonymous_visitor_gets_only_the_conversation(self):
+        self._run_window_tour("website_pwa_chat_support_simple_anonymous")
+
+    def test_a_logged_in_user_is_never_asked_for_a_name(self):
+        """Any account: ``show_identify`` is for the public user only, so a
+        walk-in community guest takes this very branch (asserted over HTTP
+        in ``test_a_community_guest_is_named_after_what_they_typed``)."""
+        user = self._make_user("wpc_simple_user", "Ferretería del Puerto")
+        self._run_window_tour("website_pwa_chat_support_simple_user", login=user.login)
+
+
+@tagged("post_install", "-at_install")
+class TestSupportSimplePhone(TestSupportSimpleDesktop):
     browser_size = "390x844"
     touch_enabled = True

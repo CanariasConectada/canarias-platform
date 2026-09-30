@@ -350,13 +350,43 @@ class TestSupportChat(WebsiteChatMixin, HttpCase):
         self.assertIn('<header id="top"', response.text)
         self.assertIn("o_cc_chat_fab", response.text)
 
-    def test_the_identify_card_invites_the_visitor_to_register(self):
-        self._forget_guest_cookie()
-        response = self.url_open(SUPPORT_URL)
+    def test_the_support_page_shows_nothing_of_the_community_channels(self):
+        """Client feedback 2026-09-29: support was mixed with publishing.
 
-        self.assertIn("o_cc_chat_identify_signup", response.text)
-        self.assertIn("Crear mi cuenta", response.text)
-        self.assertIn("Ya tengo cuenta", response.text)
+        Support publishes nothing, so nothing on it may talk about review,
+        publishing, registering to skip the queue or the channel list.
+        """
+        self._forget_guest_cookie()
+        for url in (SUPPORT_URL, SUPPORT_URL + "?frame=1"):
+            page = self.url_open(url).text
+            # The conversation block only: the site layout around it (menus,
+            # footer, snippets) is none of this test's business.
+            start = page.index("o_cc_chat ")
+            chat = page[start : page.index("o_cc_chat_error", start)]
+            for marker in (
+                "o_cc_chat_pending_zone",
+                "o_cc_chat_hint",
+                "o_cc_chat_identify_signup",
+                'href="/chat"',
+                "/web/signup",
+                "revisión",
+                "publica",
+                "review",
+                "publish",
+            ):
+                self.assertNotIn(marker, chat, "%s shows %r" % (url, marker))
+            # Either language: CI runs in English, the lab in Spanish.
+            self.assertRegex(chat, "Write your question|Escribe tu consulta")
+            self.assertEqual(chat.count("<textarea"), 1, "one composer")
+
+    def test_the_window_opens_on_the_conversation_not_on_a_form(self):
+        """Nobody has written yet: the name is asked AFTER the first message."""
+        self._forget_guest_cookie()
+        page = self.url_open(SUPPORT_URL + "?frame=1").text
+
+        self.assertRegex(page, r'class="o_cc_chat_identify[^"]*d-none')
+        self.assertIn("o_cc_chat_in_frame", page)
+        self.assertNotIn('<h1 class="h4', page, "the window header is the title")
 
     def test_a_frame_value_other_than_one_means_the_full_page(self):
         """bool() on a query string would call "0" true; the visitor means no."""

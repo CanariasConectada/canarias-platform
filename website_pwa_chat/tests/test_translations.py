@@ -37,3 +37,14 @@ class TestWebTranslations(TransactionCase):
         self.assertEqual(
             messages.get("Turn on message sound"), "Activar el sonido de los mensajes"
         )
+
+    def test_support_thanks_is_served_in_spanish(self):
+        """The support window thanks an anonymous visitor from JS."""
+        self.env["res.lang"]._activate_lang("es_ES")
+        messages = {
+            message["id"]: message["string"]
+            for message in code_translations.get_web_translations(
+                "website_pwa_chat", "es_ES"
+            )["messages"]
+        }
+        self.assertEqual(messages.get("Thanks, %s."), "Gracias, %s.")

@@ -32,20 +32,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: website_pwa_chat
-#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
-msgid ""
-"<i class=\"fa fa-check me-1\" title=\"Identificado\" role=\"img\" aria-"
-"label=\"Identificado\"/>"
-msgstr ""
-
-#. module: website_pwa_chat
-#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
-msgid ""
-"<i class=\"fa fa-user-o me-1\" title=\"Identificarse\" role=\"img\" aria-"
-"label=\"Identificarse\"/>"
-msgstr ""
-
-#. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_index
 msgid ""
 "<span class=\"o_cc_chat_support_icon\" aria-hidden=\"true\">\n"
@@ -124,7 +110,10 @@ msgid ""
 "                            mensajes se publican al momento y entras además en\n"
 "                            el canal de tu barrio. Es gratis y se hace en un\n"
 "                            minuto."
-msgstr "With an account you wouldn't have to wait: your messages are published at the moment and you also enter the channel of your neighborhood. It's free and done in a minute."
+msgstr ""
+"With an account you wouldn't have to wait: your messages are published at "
+"the moment and you also enter the channel of your neighborhood. It's free "
+"and done in a minute."
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.discuss_channel_support_view_list
@@ -170,7 +159,10 @@ msgid ""
 "                                    cuenta. Si te registras, entras además en\n"
 "                                    el canal de tu barrio y tus mensajes se\n"
 "                                    publican al instante."
-msgstr "On the general channel you can write without account. If you register, you also enter the channel of your neighborhood and your messages are posted instantly."
+msgstr ""
+"On the general channel you can write without account. If you register, you "
+"also enter the channel of your neighborhood and your messages are posted "
+"instantly."
 
 #. module: website_pwa_chat
 #: model:ir.model.fields,field_description:website_pwa_chat.field_discuss_channel__website_chat_published
@@ -187,7 +179,9 @@ msgstr "Community link"
 msgid ""
 "Escribes como visitante: alguien del equipo lee\n"
 "                                tu mensaje antes de publicarlo."
-msgstr "You write as a visitor: someone on the team reads your message before publishing it."
+msgstr ""
+"You write as a visitor: someone on the team reads your message before "
+"publishing it."
 
 #. module: website_pwa_chat
 #. odoo-javascript
@@ -221,13 +215,9 @@ msgstr "Save"
 msgid ""
 "Habla con tu barrio y con toda Canarias Conectada.\n"
 "                        Elige un canal para empezar."
-msgstr "Talk to your neighborhood and all the Canaries connected. Choose a channel to start with."
-
-#. module: website_pwa_chat
-#. odoo-python
-#: code:addons/website_pwa_chat/controllers/main.py:0
-msgid "Hablamos con %s."
-msgstr "We are talking to %s."
+msgstr ""
+"Talk to your neighborhood and all the Canaries connected. Choose a channel "
+"to start with."
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_index
@@ -429,7 +419,9 @@ msgid ""
 "Ya lo tenemos. Antes de publicarlo lo lee una persona\n"
 "                        del equipo, para que este sea un sitio en el que\n"
 "                        apetezca entrar. Solemos hacerlo en menos de"
-msgstr "We got it. Before publishing it, a person on the team reads it, so that this is a place he wants to enter. We usually do in less than"
+msgstr ""
+"We got it. Before publishing it, a person on the team reads it, so that this"
+" is a place he wants to enter. We usually do in less than"
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
@@ -446,15 +438,9 @@ msgstr "Your message is being reviewed"
 msgid ""
 "minutos; en cuanto esté,\n"
 "                        aparecerá aquí sin que tengas que recargar nada."
-msgstr "minutes; as soon as he is, he will appear here without you having to recharge anything."
-
-#. module: website_pwa_chat
-#. odoo-python
-#: code:addons/website_pwa_chat/controllers/main.py:0
-msgid ""
-"¿Cómo te llamas? Así sabemos con quién hablamos y guardamos esta "
-"conversación %(identified)s días en vez de %(anonymous)s."
-msgstr "What is your name? That way we know who we are talking to, and we keep this conversation for %(identified)s days instead of %(anonymous)s."
+msgstr ""
+"minutes; as soon as he is, he will appear here without you having to "
+"recharge anything."
 
 #. module: website_pwa_chat
 #: model:ir.model.fields,field_description:website_pwa_chat.field_discuss_channel__support_last_message_date
@@ -466,13 +452,6 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
 msgid "← Todos los canales"
 msgstr "← All channels"
-
-#. module: website_pwa_chat
-#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
-msgid ""
-"Y con una cuenta, ni eso: tus mensajes se\n"
-"                                    publican al instante, sin esperar revisión."
-msgstr "And with an account, not even that: your messages are published instantly, no review to wait for."
 
 #. module: website_pwa_chat
 #: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_support_bubble
@@ -544,3 +523,24 @@ msgstr ""
 #: code:addons/website_pwa_chat/models/discuss_channel.py:0
 msgid "Please tell us your name so the support team knows who is asking."
 msgstr ""
+
+#. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
+msgid "How can we help? Write to us and we will answer right here."
+msgstr "How can we help? Write to us and we will answer right here."
+
+#. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
+msgid "What should we call you?"
+msgstr "What should we call you?"
+
+#. module: website_pwa_chat
+#: model_terms:ir.ui.view,arch_db:website_pwa_chat.chat_channel
+msgid "Write your question…"
+msgstr "Write your question…"
+
+#. module: website_pwa_chat
+#. odoo-javascript
+#: code:addons/website_pwa_chat/static/src/js/community_chat.js:0
+msgid "Thanks, %s."
+msgstr "Thanks, %s."
