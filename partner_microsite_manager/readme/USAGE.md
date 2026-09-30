@@ -7,6 +7,9 @@
    Opening hours use the compact notation
    `L-V 10:00-13:30 / L-V 16:30-20:00 / S 10:00-14:00`
    (`L M X J V S D` = Monday..Sunday, at most two ranges per day).
+   For the map, paste any Google Maps link (the "Share" link or an embed
+   code URL): it is converted to an embeddable map on save. Leave it empty
+   to show the company address.
 4. Press **Publish Homepage** once. The homepage of the company website is
    replaced by the dynamic microsite template.
 5. From then on, saving the Microsite tab updates the live homepage

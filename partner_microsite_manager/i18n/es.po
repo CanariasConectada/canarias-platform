@@ -970,15 +970,6 @@ msgstr ""
 "                                instalado en su ordenador o dispositivo móvil:"
 
 #. module: partner_microsite_manager
-#: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_map_url
-msgid ""
-"Embeddable map URL. When empty, a Google Maps embed is built from the "
-"company address."
-msgstr ""
-"URL de mapa incrustable. Si se deja vacía, se genera un mapa de Google Maps "
-"a partir de la dirección de la compañía."
-
-#. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
 msgid ""
 "En concreto, este sitio web utiliza las\n"
@@ -2378,3 +2369,34 @@ msgstr "¿Qué cookies utilizamos?"
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
 msgid "¿Qué son las cookies?"
 msgstr "¿Qué son las cookies?"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid "<i class=\"fa fa-external-link fa-fw me-1\"/>View on Google Maps"
+msgstr "<i class=\"fa fa-external-link fa-fw me-1\"/>Ver en Google Maps"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_map_share_url
+msgid "Google Maps Link"
+msgstr "Enlace de Google Maps"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_microsite_content_editor__microsite_map_url
+msgid "Paste any Google Maps link (share or embed); it will be converted automatically."
+msgstr "Pegue cualquier enlace de Google Maps (para compartir o para insertar); se convertirá automáticamente."
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_map_url
+msgid "Paste any Google Maps link (share or embed); it will be converted automatically. When empty, the map is built from the company address."
+msgstr "Pegue cualquier enlace de Google Maps (para compartir o para insertar); se convertirá automáticamente. Si se deja vacío, el mapa se genera a partir de la dirección de la compañía."
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_map_share_url
+msgid "The link that was pasted as the map, before it was converted to an embeddable one."
+msgstr "El enlace que se pegó como mapa, antes de convertirlo en uno insertable."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "https://maps.app.goo.gl/..."
+msgstr "https://maps.app.goo.gl/..."

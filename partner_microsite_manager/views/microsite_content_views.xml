@@ -76,7 +76,8 @@
                                     <field name="microsite_phone"/>
                                     <field name="microsite_phone2"
                                            invisible="not microsite_phone"/>
-                                    <field name="microsite_map_url"/>
+                                    <field name="microsite_map_url"
+                                           placeholder="https://maps.app.goo.gl/..."/>
                                 </group>
                             </group>
                         </page>

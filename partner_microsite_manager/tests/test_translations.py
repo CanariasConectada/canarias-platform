@@ -20,3 +20,16 @@ class TestTranslations(TransactionCase):
         arch = view.with_context(lang="es_ES").arch_db
         self.assertIn("Se muestra en la cabecera de todas las páginas", arch)
         self.assertNotIn("Shown in the header", arch)
+
+    def test_map_link_is_translated_to_spanish(self):
+        self.env["res.lang"]._activate_lang("es_ES")
+        self.env["ir.module.module"].search(
+            [("name", "=", "partner_microsite_manager")]
+        )._update_translations("es_ES")
+        view = self.env.ref("partner_microsite_manager.microsite_homepage_content")
+        self.assertIn("Ver en Google Maps", view.with_context(lang="es_ES").arch_db)
+        field = self.env["res.company"]._fields["microsite_map_url"]
+        self.assertIn(
+            "Pegue cualquier enlace de Google Maps",
+            field._description_help(self.env(context={"lang": "es_ES"})),
+        )

@@ -182,7 +182,11 @@ class MicrositeContentEditor(models.TransientModel):
     microsite_parking_info = fields.Char(string="Parking and directions")
     microsite_phone = fields.Char(string="Phone")
     microsite_phone2 = fields.Char(string="Second phone")
-    microsite_map_url = fields.Char(string="Map")
+    microsite_map_url = fields.Char(
+        string="Map",
+        help="Paste any Google Maps link (share or embed); it will be "
+        "converted automatically.",
+    )
     social_facebook = fields.Char(string="Facebook")
     social_instagram = fields.Char(string="Instagram")
     social_twitter = fields.Char(string="X/Twitter")

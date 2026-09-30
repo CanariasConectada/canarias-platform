@@ -3,6 +3,7 @@ from . import (
     test_core_menu_gating,
     test_legal_pages,
     test_logo_follows_company,
+    test_map_url,
     test_merchant_server_actions,
     test_microsite_company,
     test_microsite_company_picker,

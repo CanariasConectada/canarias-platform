@@ -851,13 +851,6 @@ msgid ""
 msgstr ""
 
 #. module: partner_microsite_manager
-#: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_map_url
-msgid ""
-"Embeddable map URL. When empty, a Google Maps embed is built from the "
-"company address."
-msgstr ""
-
-#. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
 msgid ""
 "En concreto, este sitio web utiliza las\n"
@@ -2097,3 +2090,34 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
 msgid "¿Qué son las cookies?"
 msgstr ""
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid "<i class=\"fa fa-external-link fa-fw me-1\"/>View on Google Maps"
+msgstr "<i class=\"fa fa-external-link fa-fw me-1\"/>Voir sur Google Maps"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_map_share_url
+msgid "Google Maps Link"
+msgstr "Lien Google Maps"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_microsite_content_editor__microsite_map_url
+msgid "Paste any Google Maps link (share or embed); it will be converted automatically."
+msgstr "Collez n'importe quel lien Google Maps (partage ou intégration) ; il sera converti automatiquement."
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_map_url
+msgid "Paste any Google Maps link (share or embed); it will be converted automatically. When empty, the map is built from the company address."
+msgstr "Collez n'importe quel lien Google Maps (partage ou intégration) ; il sera converti automatiquement. S'il est vide, la carte est générée à partir de l'adresse de la société."
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_map_share_url
+msgid "The link that was pasted as the map, before it was converted to an embeddable one."
+msgstr "Le lien collé comme carte, avant sa conversion en lien intégrable."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "https://maps.app.goo.gl/..."
+msgstr "https://maps.app.goo.gl/..."
