@@ -1,7 +1,7 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import models
+from odoo import api, models
 
 from odoo.addons.mail.tools.discuss import Store
 
@@ -111,13 +111,27 @@ class DiscussChannel(models.Model):
             return (
                 moderation if moderation.moderate_community_guests else moderation_model
             )
-        if user.has_group(COMMUNITY_MEMBER_GROUP):
+        if self._community_moderation_is_member(user):
             if not moderation.moderate_new_users:
                 return moderation_model
             if self._community_trust_reached(moderation, partner):
                 return moderation_model
             return moderation
         return moderation_model
+
+    @api.model
+    def _community_moderation_is_member(self, user):
+        """Whether ``user`` is a registered community member for moderation.
+
+        ``discuss_community`` defines the population
+        (``res.users.is_community_member``: the community group, never
+        administrators, merchants or zone managers); the plain group check is
+        the fallback for an older ``discuss_community`` without that field.
+        sudo: the flag sits on res.users; only the boolean is read.
+        """
+        if "is_community_member" in user._fields:
+            return bool(user.sudo().is_community_member)
+        return user.has_group(COMMUNITY_MEMBER_GROUP)
 
     def _community_trust_reached(self, moderation, partner):
         """Whether ``partner`` has earned free posting on THIS channel.
@@ -213,7 +227,8 @@ class DiscussChannel(models.Model):
         elif partner:
             user = self.env.user
             if not (
-                user.sudo().is_community_guest or user.has_group(COMMUNITY_MEMBER_GROUP)
+                user.sudo().is_community_guest
+                or self._community_moderation_is_member(user)
             ):
                 return []
             author_domain = [("partner_id", "=", partner.id)]

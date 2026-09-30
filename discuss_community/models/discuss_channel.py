@@ -1,7 +1,7 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import models
+from odoo import api, models
 
 # The other population that leaked into ``mail.channel_all_employees``: not
 # a community member (only 2 of those exist), but 116 merchant accounts
@@ -61,6 +61,27 @@ class DiscussChannel(models.Model):
                 groups |= group
         return groups
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        """A top-level channel created by a community member is open.
+
+        Core gives every new top-level ``channel`` ``group_public_id =
+        base.group_user`` (``_compute_group_public_id``), and the community
+        channel rule hides employee-only channels from members -- so the
+        member's own new channel would be refused at creation (the rule is
+        also checked on create). Stated explicitly as ``False`` so the
+        compute leaves it alone; sub-channels keep inheriting their parent's.
+        """
+        if self.env.user.is_community_member:
+            for vals in vals_list:
+                if (
+                    vals.get("channel_type", "channel") == "channel"
+                    and not vals.get("parent_channel_id")
+                    and "group_public_id" not in vals
+                ):
+                    vals["group_public_id"] = False
+        return super().create(vals_list)
+
     def _subscribe_users_automatically_get_members(self):
         members = super()._subscribe_users_automatically_get_members()
         carved_out_groups = self._carved_out_groups()
@@ -76,12 +97,14 @@ class DiscussChannel(models.Model):
                 continue
             excluded_users = self.env["res.users"].sudo()
             for group in excluded_groups.sudo():
-                holders = group.all_user_ids
                 if group == community_group:
-                    # Community MEMBERS only: an administrator, merchant or
-                    # zone manager who also holds the group is staff and
-                    # keeps core's auto-seating.
-                    holders = holders._community_members()
+                    # Community MEMBERS only (one SQL search): an
+                    # administrator, merchant or zone manager who also holds
+                    # the group is staff and keeps core's auto-seating. A
+                    # migrated merchant stays carved out by its own group.
+                    holders = self.env["res.users"]._search_all_community_members()
+                else:
+                    holders = group.all_user_ids
                 excluded_users |= holders
             excluded_partner_ids = set(excluded_users.partner_id.ids)
             if not excluded_partner_ids:

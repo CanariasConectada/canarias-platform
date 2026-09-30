@@ -20,7 +20,9 @@ import {session} from "@web/session";
  */
 
 export function isCommunityMember() {
-    return Boolean(session.is_community_member);
+    // A session_info cached before 19.0.1.8.0 has no `is_community_member`:
+    // fall back to the guest flag it did carry.
+    return Boolean(session.is_community_member ?? session.is_community_guest);
 }
 
 /** Whether the session is a disposable guest account (a subset of members). */

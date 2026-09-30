@@ -43,12 +43,15 @@ COMMUNITY_MEMBER_GROUP_XMLID = "discuss_community.group_community_member"
 
 # Holders of any of these groups are never treated as community members, even
 # when they also hold the community group: administrators, merchants
-# ("Comercios") and zone managers ("Gestor ZCA") keep the full backend, every
-# channel and every roster. The last two are soft references: their modules
-# are not dependencies of this one.
+# ("Comercios" and the pre-repo "Comerciante (migracion)" group) and zone
+# managers ("Gestor ZCA") keep the full backend, every channel and every
+# roster. All but the first are soft references: their modules are not
+# dependencies of this one (the migrated-merchant xmlid is minted by a
+# production data fix, see ``discuss_channel.py``).
 COMMUNITY_EXEMPT_GROUP_XMLIDS = (
     "base.group_system",
     "merchant_group.group_merchant",
+    "discuss_community.group_migrated_merchant",
     "zca_manager_group.group_zca_manager",
 )
 
@@ -158,8 +161,43 @@ class ResUsers(models.Model):
         return not (groups & self._community_exempt_groups())
 
     def _community_members(self):
-        """The subset of ``self`` that gets the community profile."""
-        return self.filtered(lambda user: user._is_community_member())
+        """The subset of ``self`` that gets the community profile.
+
+        One SQL search whatever the size of ``self`` (use
+        ``_is_community_member`` for a single record already in hand).
+        """
+        if not self:
+            return self
+        domain = self._community_member_domain()
+        if domain is None:
+            return self.browse()
+        found = set(
+            self.sudo()
+            .with_context(active_test=False)
+            .search([("id", "in", self.ids), *domain])
+            .ids
+        )
+        return self.filtered(lambda user: user.id in found)
+
+    @api.model
+    def _community_member_domain(self):
+        """Search domain of the community population, ``None`` if undefined."""
+        community = self.env.ref(COMMUNITY_MEMBER_GROUP_XMLID, raise_if_not_found=False)
+        if not community:
+            return None
+        domain = [("all_group_ids", "in", community.ids)]
+        exempt = self._community_exempt_groups()
+        if exempt:
+            # Two positive searches: a negative operator on the x2many path
+            # behind ``all_group_ids`` means "SOME group does not imply it",
+            # not "no group implies it".
+            exempt_users = (
+                self.sudo()
+                .with_context(active_test=False)
+                ._search([("all_group_ids", "in", exempt.ids)])
+            )
+            domain.append(("id", "not in", exempt_users))
+        return domain
 
     @api.model
     def _community_exempt_groups(self):
@@ -174,15 +212,10 @@ class ResUsers(models.Model):
     @api.model
     def _search_all_community_members(self):
         """Every community member, archived ones included (sudo)."""
-        community = self.env.ref(COMMUNITY_MEMBER_GROUP_XMLID, raise_if_not_found=False)
-        if not community:
+        domain = self._community_member_domain()
+        if domain is None:
             return self.sudo().browse()
-        return (
-            self.sudo()
-            .with_context(active_test=False)
-            .search([("all_group_ids", "in", community.ids)])
-            ._community_members()
-        )
+        return self.sudo().with_context(active_test=False).search(domain)
 
     @api.depends("all_group_ids")
     def _compute_community_channel_ids(self):
@@ -526,6 +559,19 @@ class ResUsers(models.Model):
         return domain
 
     @api.model
+    def _community_log_removed_seats(self, kind, seats):
+        """Log each membership row about to be removed (audit trail)."""
+        for seat in seats:
+            _logger.info(
+                "discuss_community: removing %s seat discuss.channel.member %s "
+                "(user %s, channel %s)",
+                kind,
+                seat.id,
+                ",".join(seat.partner_id.user_ids.mapped("login")) or "-",
+                seat.channel_id.id,
+            )
+
+    @api.model
     def _cleanup_community_members(self):
         """Bring existing community members to the community profile.
 
@@ -561,6 +607,7 @@ class ResUsers(models.Model):
                 ]
             )
             counters["staff_seats"] = len(staff_seats)
+            self._community_log_removed_seats("staff channel", staff_seats)
             staff_seats.unlink()
 
         odoobot = self.env.ref("base.partner_root", raise_if_not_found=False)
@@ -578,6 +625,7 @@ class ResUsers(models.Model):
                 ]
             )
             counters["odoobot_chats"] = len(bot_seats)
+            self._community_log_removed_seats("OdooBot chat", bot_seats)
             bot_seats.unlink()
 
         to_disable = members.filtered(lambda user: user.odoobot_state != "disabled")

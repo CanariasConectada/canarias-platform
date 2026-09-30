@@ -1,10 +1,13 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import importlib.util
+import os
 from datetime import timedelta
 
 from odoo import fields
-from odoo.exceptions import AccessError
+from odoo.exceptions import AccessError, UserError, ValidationError
+from odoo.modules.module import get_module_path
 from odoo.tests import HttpCase, TransactionCase, tagged
 from odoo.tools import mute_logger
 
@@ -105,11 +108,21 @@ class TestCommunityMemberParity(MemberParityMixin, TransactionCase):
         self.channel_lomo.with_user(self.resident).channel_join()
         self.channel_guanarteme.with_user(self.resident).action_unfollow()
 
+        self.channel_general.with_user(self.resident).action_unfollow()
+
         self.env["res.users"]._cron_sync_zone_channels()
 
         self.assertTrue(self._seat(self.resident, self.channel_lomo))
         self.assertFalse(self._seat(self.resident, self.channel_guanarteme))
-        self.assertTrue(self._seat(self.resident, self.channel_general))
+        self.assertFalse(
+            self._seat(self.resident, self.channel_general),
+            "a left 'Canarias Conectada' must not come back overnight",
+        )
+        # A direct sync (zone change path) may add seats but never removes
+        # a self-managed user's own choices.
+        counters = self.resident._sync_zone_channels()
+        self.assertEqual(counters["removed"], 0)
+        self.assertTrue(self._seat(self.resident, self.channel_lomo))
 
     # ------------------------------------------------------------------
     # Staff channels
@@ -120,15 +133,145 @@ class TestCommunityMemberParity(MemberParityMixin, TransactionCase):
         self.assertFalse(self._seat(self.resident, self.admin_channel))
         # Regroup: every path of core's auto-subscription funnels through
         # ``_subscribe_users_automatically_get_members``.
+        self.resident.write({"group_ids": [(3, self.community_group.id)]})
+        self.assertFalse(self._seat(self.resident, self.employees_channel))
+        self.resident.write({"group_ids": [(4, self.community_group.id)]})
+        self.assertFalse(self._seat(self.resident, self.employees_channel))
         self.resident.write({"group_ids": [(4, self.internal_group.id)]})
+        self.assertFalse(self._seat(self.resident, self.employees_channel))
         self.resident.write(
             {"group_ids": [(6, 0, self.env["res.users"]._community_group_ids())]}
         )
+        self.assertFalse(self._seat(self.resident, self.employees_channel))
         self.employees_channel._subscribe_users_automatically()
         self.assertFalse(self._seat(self.resident, self.employees_channel))
         self.assertFalse(self._seat(self.member, self.employees_channel))
-        # Control: an employee regrouped the same way IS seated.
+        # Control: an employee IS seated.
         self.assertTrue(self._seat(self.employee, self.employees_channel))
+
+    def test_carve_out_spares_staff_holding_the_community_group(self):
+        """Admins and merchants holding the group are auto-seated in general."""
+        admin = self._make_user(
+            "dcm_carve_admin",
+            self.env.ref("base.group_system") | self.community_group,
+        )
+        self.assertTrue(self._seat(admin, self.employees_channel))
+        merchant_group = self.env.ref(
+            "merchant_group.group_merchant", raise_if_not_found=False
+        )
+        if merchant_group:
+            merchant = self._make_user(
+                "dcm_carve_merchant", merchant_group | self.community_group
+            )
+            self.assertTrue(self._seat(merchant, self.employees_channel))
+        pure = self._make_user(
+            "dcm_carve_member", self.internal_group | self.community_group
+        )
+        self.assertFalse(self._seat(pure, self.employees_channel))
+
+    def test_group_side_change_refreshes_the_cached_rules(self):
+        """Adding/removing the user FROM THE GROUP flips visibility at once."""
+        user = self._make_user("dcm_group_side", self.internal_group)
+
+        def sees_general():
+            return bool(self._readable(user, self.employees_channel))
+
+        self.assertTrue(sees_general())
+        self.community_group.write({"user_ids": [(4, user.id)]})
+        self.assertTrue(user.is_community_member)
+        self.assertFalse(sees_general())
+        self.community_group.write({"user_ids": [(3, user.id)]})
+        self.assertFalse(user.is_community_member)
+        self.assertTrue(sees_general())
+
+    # ------------------------------------------------------------------
+    # Conversations and people
+    # ------------------------------------------------------------------
+
+    def _self_join(self, user, channel):
+        return self.Member.with_user(user).create(
+            {"channel_id": channel.id, "partner_id": user.partner_id.id}
+        )
+
+    @mute_logger("odoo.addons.base.models.ir_rule", "odoo.orm.models")
+    def test_resident_cannot_join_a_foreign_group(self):
+        group = (
+            self.env["discuss.channel"]
+            .with_user(self.employee)
+            ._create_group(partners_to=self.member.partner_id.ids)
+        )
+        with self.assertRaises(AccessError):
+            self._self_join(self.resident, group)
+        self.assertNotIn(self.resident.partner_id, group.sudo().channel_partner_ids)
+
+    @mute_logger("odoo.addons.base.models.ir_rule", "odoo.orm.models")
+    def test_resident_cannot_join_a_foreign_chat(self):
+        chat = (
+            self.env["discuss.channel"]
+            .with_user(self.employee)
+            ._get_or_create_chat(partners_to=self.member.partner_id.ids)
+        )
+        chat.with_user(self.member).action_unfollow()
+        # Whichever check fires first, the resident must not end up seated.
+        with self.assertRaises(Exception) as caught:
+            self._self_join(self.resident, chat)
+        self.assertIsInstance(
+            caught.exception, (AccessError, UserError, ValidationError)
+        )
+        self.assertNotIn(self.resident.partner_id, chat.sudo().channel_partner_ids)
+
+    def test_resident_creates_its_own_open_channel(self):
+        """Core would gate a new channel on employees, which the rule hides."""
+        channel = (
+            self.env["discuss.channel"]
+            .with_user(self.resident)
+            ._create_channel(name="DCM Resident Room", group_id=None)
+        )
+        self.assertFalse(channel.sudo().group_public_id)
+        self.assertEqual(self._readable(self.resident, channel), channel)
+        plain = (
+            self.env["discuss.channel"]
+            .with_user(self.resident)
+            .create({"name": "DCM Resident Plain Room"})
+        )
+        self.assertFalse(plain.sudo().group_public_id)
+        # An employee's plain new channel keeps core's default.
+        staff = (
+            self.env["discuss.channel"]
+            .with_user(self.employee)
+            .create({"name": "DCM Employee Room"})
+        )
+        self.assertEqual(staff.sudo().group_public_id, self.internal_group)
+
+    def test_resident_people_search_offers_no_directory(self):
+        """Empty mention/invite searches only return its conversation partners."""
+        outsider = self._make_user("dcm_outsider", self.internal_group)
+        Partner = self.env["res.partner"].with_user(self.resident)
+        result = Partner.get_mention_suggestions("", limit=50)
+        mentioned = {row["id"] for row in result.get("res.partner", [])}
+        self.assertLessEqual(mentioned, {self.resident.partner_id.id})
+        invite = Partner.search_for_channel_invite("", self.channel_lomo.id)
+        self.assertFalse(invite["partner_ids"])
+        self.assertEqual(invite["count"], 0)
+        # A chat partner becomes findable; a stranger never is.
+        self.env["discuss.channel"].with_user(self.employee)._get_or_create_chat(
+            partners_to=self.resident.partner_id.ids
+        )
+        result = Partner.get_mention_suggestions("", limit=50)
+        mentioned = {row["id"] for row in result.get("res.partner", [])}
+        self.assertIn(self.employee.partner_id.id, mentioned)
+        self.assertNotIn(outsider.partner_id.id, mentioned)
+        self.assertNotIn(self.env.ref("base.partner_admin").id, mentioned)
+        # Control: an employee gets the directory.
+        staff_result = (
+            self.env["res.partner"]
+            .with_user(self.employee)
+            .get_mention_suggestions("dcm outsider", limit=50)
+        )
+        self.assertIn(
+            outsider.partner_id.id,
+            {row["id"] for row in staff_result.get("res.partner", [])},
+        )
 
     @mute_logger("odoo.addons.base.models.ir_rule", "odoo.orm.models")
     def test_resident_cannot_read_general_nor_its_messages(self):
@@ -216,6 +359,35 @@ class TestCommunityMemberParity(MemberParityMixin, TransactionCase):
         again = self.env["res.users"]._cleanup_community_members()
         self.assertEqual(again["staff_seats"], 0)
 
+    def _migration(self):
+        path = os.path.join(
+            get_module_path("discuss_community"),
+            "migrations",
+            "19.0.1.8.0",
+            "post-migration.py",
+        )
+        spec = importlib.util.spec_from_file_location("dcm_migration_1_8", path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def test_migration_removes_member_staff_seats(self):
+        guest = self.env["res.users"]._create_community_guest(zone="guanarteme")
+        seated = self.resident | guest | self.employee
+        self.employees_channel.sudo()._add_members(
+            partners=seated.partner_id, post_joined_message=False
+        )
+        migration = self._migration()
+        self.env.flush_all()
+        migration.migrate(self.env.cr, None)  # fresh install: no-op
+        self.env.invalidate_all()
+        self.assertTrue(self._seat(self.resident, self.employees_channel))
+        migration.migrate(self.env.cr, "19.0.1.7.0")
+        self.env.invalidate_all()
+        self.assertFalse(self._seat(self.resident, self.employees_channel))
+        self.assertFalse(self._seat(guest, self.employees_channel))
+        self.assertTrue(self._seat(self.employee, self.employees_channel))
+
     def test_gc_ignores_registered_residents(self):
         """The garbage collector is for disposable guests only."""
         old = fields.Datetime.now() - timedelta(days=60)
@@ -291,6 +463,26 @@ class TestCommunityStaffPopulations(MemberParityMixin, TransactionCase):
         self.env["res.users"]._cleanup_community_members()
         self.assertTrue(self._seat(plain, self.employees_channel))
         self.assertTrue(self._seat(mixed, self.employees_channel))
+
+    def test_migrated_merchant_is_exempt(self):
+        xmlid = "discuss_community.group_migrated_merchant"
+        group = self.env.ref(xmlid, raise_if_not_found=False)
+        if not group:
+            group = self.env["res.groups"].create({"name": "DCM Migrated Merchant"})
+            self.env["ir.model.data"].create(
+                {
+                    "name": "group_migrated_merchant",
+                    "module": "discuss_community",
+                    "model": "res.groups",
+                    "res_id": group.id,
+                }
+            )
+        user = self._make_user(
+            "dcm_migrated_mixed", self.internal_group | group | self.community_group
+        )
+        self.assertFalse(user.is_community_member)
+        self.assertFalse(user._zone_self_managed_users())
+        self.assertNotIn(user, self.env["res.users"]._search_all_community_members())
 
     def test_merchant_keeps_the_full_profile(self):
         self._check_population("merchant_group.group_merchant", "dcm_comercio")
