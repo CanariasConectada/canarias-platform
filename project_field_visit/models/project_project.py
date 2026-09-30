@@ -3,7 +3,7 @@
 
 import copy
 
-from odoo import _, api, fields, models
+from odoo import Command, _, api, fields, models
 
 from .project_task import MANAGER_GROUP
 
@@ -105,6 +105,34 @@ class ProjectProject(models.Model):
                 project.task_properties_definition = (
                     project._field_visit_phase_one_properties()
                 )
+
+    @api.model
+    def _field_visit_grant_admins(self):
+        """Give the platform administrators the *Field visit manager* access.
+
+        Runs once, at install or at the upgrade to 19.0.1.2.0, and only while
+        nobody has been appointed yet (the built-in superuser and admin get
+        the group from the module itself): once someone runs the programme,
+        who is a manager is their decision, never the module's.
+        """
+        group = self.env.ref(MANAGER_GROUP, raise_if_not_found=False)
+        if not group:
+            return self.env["res.users"]
+        group = group.sudo()
+        builtin = self.env.ref("base.user_root") | self.env.ref(
+            "base.user_admin", raise_if_not_found=False
+        )
+        appointed = group.with_context(active_test=False).user_ids - builtin
+        if appointed.filtered(lambda u: u.active and not u.share):
+            return self.env["res.users"]
+        admins = (
+            self.env.ref("base.group_system")
+            .sudo()
+            .all_user_ids.filtered(lambda u: u.active and not u.share)
+        ) - group.user_ids
+        if admins:
+            group.write({"user_ids": [Command.link(user.id) for user in admins]})
+        return admins
 
     def action_open_field_visit_import(self):
         self.ensure_one()

@@ -32,6 +32,7 @@
                         <field name="file" filename="filename" />
                         <field name="filename" invisible="1" />
                         <field name="dry_run" />
+                        <field name="overwrite_values" />
                         <field name="update_stages" />
                     </group>
                 </div>

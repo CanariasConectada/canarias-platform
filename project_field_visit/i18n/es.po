@@ -39,6 +39,12 @@ msgstr ""
 "Un negocio solo puede tener una tarea por proyecto de visitas de campo."
 
 #. module: project_field_visit
+#: model:ir.actions.act_window,name:project_field_visit.action_field_visit_all_visits
+#: model:ir.ui.menu,name:project_field_visit.menu_field_visit_all_visits
+msgid "All visits"
+msgstr "Todas las visitas"
+
+#. module: project_field_visit
 #: model:ir.model.fields,field_description:project_field_visit.field_res_partner__field_visit_annex_number
 #: model:ir.model.fields,field_description:project_field_visit.field_res_users__field_visit_annex_number
 msgid "Annex number"
@@ -49,6 +55,18 @@ msgstr "Número de anexo"
 #: model:ir.model.fields.selection,name:project_field_visit.selection__project_task__field_visit_last_outcome__appointment
 msgid "Appointment scheduled"
 msgstr "Cita agendada"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Assigned to a consultant user: %s"
+msgstr "Asignados a un usuario consultor: %s"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Authoritative sheet (its values win): '%s'"
+msgstr "Hoja de referencia (sus valores prevalecen): '%s'"
 
 #. module: project_field_visit
 #: model_terms:ir.ui.view,arch_db:project_field_visit.project_field_visit_import_view_form
@@ -62,6 +80,11 @@ msgid "Business"
 msgstr "Negocio"
 
 #. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_task__field_visit_address
+msgid "Business address"
+msgstr "Dirección del negocio"
+
+#. module: project_field_visit
 #: model:ir.model.fields.selection,name:project_field_visit.selection__project_field_visit_log__outcome__closed
 #: model:ir.model.fields.selection,name:project_field_visit.selection__project_task__field_visit_last_outcome__closed
 msgid "Business closed"
@@ -73,15 +96,31 @@ msgid "Business contact"
 msgstr "Contacto del negocio"
 
 #. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_task__field_visit_email
+msgid "Business email"
+msgstr "Correo del negocio"
+
+#. module: project_field_visit
 #: model:ir.model.fields,help:project_field_visit.field_project_task__business_company_id
 msgid "Business of the platform this task documents."
 msgstr "Negocio de la plataforma que documenta esta tarea."
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_task__field_visit_phone
+msgid "Business phone"
+msgstr "Teléfono del negocio"
 
 #. module: project_field_visit
 #. odoo-python
 #: code:addons/project_field_visit/wizards/field_visit_import.py:0
 msgid "Business rows read: %s"
 msgstr "Filas de negocios leídas: %s"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Businesses (rows of several sheets merged): %s"
+msgstr "Negocios (filas de varias hojas unidas): %s"
 
 #. module: project_field_visit
 #. odoo-python
@@ -97,6 +136,18 @@ msgid ""
 msgstr ""
 "Por defecto, una nueva importación deja las tareas existentes en la etapa a "
 "la que las movieron los consultores."
+
+#. module: project_field_visit
+#: model:ir.model.fields,help:project_field_visit.field_project_field_visit_import__overwrite_values
+msgid ""
+"By default a re-import only fills what is empty on the tasks, so what the "
+"consultants typed in Odoo wins. Tick it when the sheet must win (checklist "
+"values, contact details, planned date)."
+msgstr ""
+"Por defecto, una nueva importación solo rellena lo que está vacío en las "
+"tareas, así que prevalece lo que los consultores escribieron en Odoo. "
+"Márquelo cuando deba prevalecer la hoja (valores de la lista de "
+"comprobación, datos de contacto, fecha prevista)."
 
 #. module: project_field_visit
 #: model_terms:ir.ui.view,arch_db:project_field_visit.project_field_visit_log_view_form
@@ -115,6 +166,12 @@ msgid "Close"
 msgstr "Cerrar"
 
 #. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Columns ignored for privacy (never read):"
+msgstr "Columnas ignoradas por privacidad (nunca se leen):"
+
+#. module: project_field_visit
 #: model:ir.model,name:project_field_visit.model_res_company
 msgid "Companies"
 msgstr "Compañías"
@@ -123,6 +180,12 @@ msgstr "Compañías"
 #: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_log__user_id
 msgid "Consultant"
 msgstr "Consultor"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Consultant kept as text (no matching user): %s"
+msgstr "Consultor guardado como texto (sin usuario que coincida): %s"
 
 #. module: project_field_visit
 #: model_terms:ir.ui.view,arch_db:project_field_visit.field_visit_message
@@ -142,6 +205,11 @@ msgid ""
 msgstr ""
 "Contacto del negocio visitado. Para un negocio que aún no está en la "
 "plataforma (un posible adherido) es el único vínculo."
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_task__field_visit_contact_name
+msgid "Contact person"
+msgstr "Persona de contacto"
 
 #. module: project_field_visit
 #: model:ir.model,website_form_label:project_field_visit.model_res_partner
@@ -262,6 +330,11 @@ msgid "Field Visit Prospect Key"
 msgstr "Clave del posible adherido"
 
 #. module: project_field_visit
+#: model:mail.activity.type,name:project_field_visit.mail_activity_type_field_visit
+msgid "Field visit"
+msgstr "Visita de campo"
+
+#. module: project_field_visit
 #: model:res.groups,name:project_field_visit.group_field_visit_consultant
 msgid "Field visit consultant"
 msgstr "Consultor de visitas de campo"
@@ -283,7 +356,9 @@ msgstr "Posible adherido (visitas de campo)"
 #: model:ir.model.fields,field_description:project_field_visit.field_res_company__field_visit_task_count
 #: model:ir.model.fields,field_description:project_field_visit.field_res_partner__field_visit_task_count
 #: model:ir.model.fields,field_description:project_field_visit.field_res_users__field_visit_task_count
+#: model:ir.ui.menu,name:project_field_visit.menu_field_visit_root
 #: model:res.groups.privilege,name:project_field_visit.res_groups_privilege_field_visit
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_task_view_list_field_visit_daily
 #: model_terms:ir.ui.view,arch_db:project_field_visit.res_company_view_form_field_visit
 #: model_terms:ir.ui.view,arch_db:project_field_visit.res_partner_view_form_field_visit
 msgid "Field visits"
@@ -293,6 +368,12 @@ msgstr "Visitas de campo"
 #: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_import__filename
 msgid "Filename"
 msgstr "Nombre del archivo"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Format: consultants' tracking list."
+msgstr "Formato: listado de seguimiento de los consultores."
 
 #. module: project_field_visit
 #. odoo-python
@@ -337,6 +418,7 @@ msgid "Import finished."
 msgstr "Importación terminada."
 
 #. module: project_field_visit
+#: model:ir.ui.menu,name:project_field_visit.menu_field_visit_import
 #: model_terms:ir.ui.view,arch_db:project_field_visit.project_project_view_form_field_visit
 msgid "Import spreadsheet"
 msgstr "Importar hoja de cálculo"
@@ -378,8 +460,15 @@ msgstr "Registrar una visita de campo"
 #: code:addons/project_field_visit/models/project_task.py:0
 #: model_terms:ir.ui.view,arch_db:project_field_visit.project_field_visit_log_view_form
 #: model_terms:ir.ui.view,arch_db:project_field_visit.project_task_view_form_field_visit
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_task_view_list_field_visit_daily
 msgid "Log visit"
 msgstr "Registrar visita"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_task__field_visit_map_url
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_task_view_list_field_visit_daily
+msgid "Map"
+msgstr "Mapa"
 
 #. module: project_field_visit
 #. odoo-python
@@ -398,6 +487,12 @@ msgstr "Encontrados por nombre parecido: %s"
 #: code:addons/project_field_visit/wizards/field_visit_import.py:0
 msgid "Matched by subdomain: %s"
 msgstr "Encontrados por subdominio: %s"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Matched to a task already in the phase: %s"
+msgstr "Encontrados en una tarea que ya estaba en la fase: %s"
 
 #. module: project_field_visit
 #: model:ir.model.fields,field_description:project_field_visit.field_project_task__business_website_id
@@ -425,6 +520,13 @@ msgid "Moved to stage:"
 msgstr "Movida a la etapa:"
 
 #. module: project_field_visit
+#: model:ir.actions.act_window,name:project_field_visit.action_field_visit_my_visits
+#: model:ir.ui.menu,name:project_field_visit.menu_field_visit_my_visits
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_task_view_search_field_visit
+msgid "My visits"
+msgstr "Mis visitas"
+
+#. module: project_field_visit
 #: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_import__new_project_name
 msgid "New phase project"
 msgstr "Nuevo proyecto de fase"
@@ -438,12 +540,50 @@ msgstr "Etapas nuevas: %s"
 #. module: project_field_visit
 #. odoo-python
 #: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "New task fields: %s"
+msgstr "Campos nuevos en las tareas: %s"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_log__next_visit_date
+msgid "Next visit"
+msgstr "Próxima visita"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid ""
+"No header row found. A phase checklist needs the columns 'Comercio (razón "
+"social)' or 'Nombre comercial', and 'Subdominio'; a tracking list needs a "
+"business name column ('Nombre', 'Nombre comercial'...) and contact or "
+"follow-up columns ('Zona', 'TLF', 'Dirección', 'Correo'...)."
+msgstr ""
+"No se encontró la fila de cabecera. Una lista de comprobación de fase "
+"necesita las columnas 'Comercio (razón social)' o 'Nombre comercial', y "
+"'Subdominio'; un listado de seguimiento necesita una columna con el nombre "
+"del negocio ('Nombre', 'Nombre comercial'...) y columnas de contacto o "
+"seguimiento ('Zona', 'TLF', 'Dirección', 'Correo'...)."
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
 msgid ""
 "No header row found: the sheet needs at least the columns 'Comercio (razón "
 "social)' or 'Nombre comercial', and 'Subdominio'."
 msgstr ""
 "No se encontró la fila de cabecera: la hoja necesita al menos las columnas "
 "'Comercio (razón social)' o 'Nombre comercial', y 'Subdominio'."
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "No sheet of the file has a column with the business names."
+msgstr ""
+"Ninguna hoja del archivo tiene una columna con los nombres de los negocios."
+
+#. module: project_field_visit
+#: model_terms:ir.actions.act_window,help:project_field_visit.action_field_visit_my_visits
+msgid "No visits assigned to you"
+msgstr "No tiene visitas asignadas"
 
 #. module: project_field_visit
 #: model:ir.model.fields.selection,name:project_field_visit.selection__project_field_visit_log__outcome__absent
@@ -486,6 +626,11 @@ msgid "Only field visit consultants can do this."
 msgstr "Solo los consultores de visitas de campo pueden hacer esto."
 
 #. module: project_field_visit
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_task_view_form_field_visit
+msgid "Open in Google Maps"
+msgstr "Abrir en Google Maps"
+
+#. module: project_field_visit
 #: model:ir.model.fields.selection,name:project_field_visit.selection__project_field_visit_log__outcome__other
 #: model:ir.model.fields.selection,name:project_field_visit.selection__project_task__field_visit_last_outcome__other
 msgid "Other"
@@ -502,6 +647,11 @@ msgid "Outcome:"
 msgstr "Resultado:"
 
 #. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_import__overwrite_values
+msgid "Overwrite values from the spreadsheet"
+msgstr "Sobrescribir con los valores de la hoja"
+
+#. module: project_field_visit
 #: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_import__project_id
 msgid "Phase project"
 msgstr "Proyecto de fase"
@@ -510,6 +660,20 @@ msgstr "Proyecto de fase"
 #: model:ir.model.fields,help:project_field_visit.field_project_field_visit_log__attachment_ids
 msgid "Photos and documents taken during the visit."
 msgstr "Fotos y documentos tomados durante la visita."
+
+#. module: project_field_visit
+#: model:ir.model.fields,help:project_field_visit.field_project_field_visit_log__next_visit_date
+msgid ""
+"Planned date of the next visit: it becomes the task date and a reminder in "
+"the assigned consultants' activities."
+msgstr ""
+"Fecha prevista de la próxima visita: pasa a ser la fecha de la tarea y un "
+"recordatorio en las actividades de los consultores asignados."
+
+#. module: project_field_visit
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_task_view_list_field_visit_daily
+msgid "Planned visit"
+msgstr "Visita prevista"
 
 #. module: project_field_visit
 #: model:ir.model,name:project_field_visit.model_project_project
@@ -537,6 +701,12 @@ msgstr ""
 #. module: project_field_visit
 #. odoo-python
 #: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Rows skipped (no name): %s"
+msgstr "Filas omitidas (sin nombre): %s"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
 msgid "Rows skipped (no number or no name): %s"
 msgstr "Filas omitidas (sin número o sin nombre): %s"
 
@@ -552,6 +722,41 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:project_field_visit.project_field_visit_log_view_form
 msgid "Save visit"
 msgstr "Guardar visita"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Sheet '%(sheet)s': %(rows)s business rows."
+msgstr "Hoja '%(sheet)s': %(rows)s filas de negocios."
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Sheet '%s' skipped: it holds credentials."
+msgstr "Hoja '%s' omitida: contiene credenciales."
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid ""
+"Sheet '%s' skipped: no business column (its 'Nombre' does not name known "
+"businesses; rename it 'Nombre comercial' if it does)."
+msgstr ""
+"Hoja '%s' omitida: no tiene columna de negocio (su 'Nombre' no corresponde a"
+" negocios conocidos; renómbrela 'Nombre comercial' si los contiene)."
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Sheet '%s' skipped: no header with a business name column."
+msgstr ""
+"Hoja '%s' omitida: no tiene cabecera con una columna de nombre del negocio."
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Sheets:"
+msgstr "Hojas:"
 
 #. module: project_field_visit
 #: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_import__file
@@ -573,6 +778,12 @@ msgstr "Resumen"
 #: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_log__task_id
 msgid "Task"
 msgstr "Tarea"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Task fields that would be added: %s"
+msgstr "Campos que se añadirían a las tareas: %s"
 
 #. module: project_field_visit
 #. odoo-python
@@ -603,6 +814,15 @@ msgstr "Tareas actualizadas: %s"
 #: code:addons/project_field_visit/models/project_task.py:0
 msgid "The business contact must be the contact of the visited business."
 msgstr "El contacto del negocio debe ser el contacto del negocio visitado."
+
+#. module: project_field_visit
+#: model_terms:ir.actions.act_window,help:project_field_visit.action_field_visit_my_visits
+msgid ""
+"The businesses you visit appear here once a manager assigns\n"
+"                them to you or imports the phase spreadsheet."
+msgstr ""
+"Los negocios que visita aparecen aquí cuando un responsable se los asigna\n"
+"                o importa la hoja de la fase."
 
 #. module: project_field_visit
 #. odoo-python
@@ -693,9 +913,20 @@ msgstr ""
 "            Asegúrate de utilizar el formato y el orden correcto, por ejemplo: ¡Mejorar la pantalla de configuración #función #v16 @Mitchell!"
 
 #. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/models/project_task.py:0
+msgid "Visit %s"
+msgstr "Visitar %s"
+
+#. module: project_field_visit
 #: model:ir.model.fields,field_description:project_field_visit.field_project_field_visit_log__visit_date
 msgid "Visit date"
 msgstr "Fecha de la visita"
+
+#. module: project_field_visit
+#: model:mail.activity.type,summary:project_field_visit.mail_activity_type_field_visit
+msgid "Visit the business"
+msgstr "Visitar el negocio"
 
 #. module: project_field_visit
 #: model:ir.model.fields,field_description:project_field_visit.field_project_task__business_company_id
@@ -721,6 +952,17 @@ msgstr ""
 #. module: project_field_visit
 #. odoo-python
 #: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid ""
+"Warning: the authoritative sheet is not the largest one ('%(largest)s' has "
+"%(rows)s rows). Move the master list first in the workbook if it is not."
+msgstr ""
+"Aviso: la hoja de referencia no es la más grande ('%(largest)s' tiene "
+"%(rows)s filas). Si no es el listado maestro, muévalo al principio del "
+"libro."
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
 msgid "Warnings:"
 msgstr "Avisos:"
 
@@ -730,6 +972,17 @@ msgid "What happened, what was agreed, what is missing..."
 msgstr "Qué pasó, qué se acordó, qué falta..."
 
 #. module: project_field_visit
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_task_view_form_field_visit
+msgid "Where and whom to visit"
+msgstr "Dónde y a quién visitar"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "With a planned visit date: %s"
+msgstr "Con fecha de visita prevista: %s"
+
+#. module: project_field_visit
 #. odoo-python
 #: code:addons/project_field_visit/models/project_task.py:0
 msgid ""
@@ -737,6 +990,12 @@ msgid ""
 msgstr ""
 "Sin un negocio de la plataforma, el contacto debe ser un posible adherido de"
 " visitas de campo."
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_task__field_visit_zone
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_task_view_search_field_visit
+msgid "Zone"
+msgstr "Zona"
 
 #. module: project_field_visit
 #. odoo-python

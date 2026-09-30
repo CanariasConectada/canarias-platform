@@ -20,6 +20,7 @@
                         name="stage_id"
                         options="{'no_create': True, 'no_open': True}"
                     />
+                    <field name="next_visit_date" />
                 </group>
                 <field
                     name="notes"
