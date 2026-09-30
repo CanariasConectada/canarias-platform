@@ -112,15 +112,33 @@ class TestMapUrlConverter(TransactionCase):
             self.assertEqual(
                 map_url_tools.resolve_short_map_url(SHORT_URL), RESOLVED_URL
             )
-            self.assertEqual(get.call_args.kwargs["timeout"], 5)
+            self.assertLessEqual(get.call_args.kwargs["timeout"], 6)
             self.assertFalse(get.call_args.kwargs["allow_redirects"])
         with (
             self.assertLogs(TOOLS_LOGGER, "WARNING"),
             patch(REQUESTS_GET, return_value=response("https://evil.example/x")),
         ):
             self.assertIsNone(map_url_tools.resolve_short_map_url(SHORT_URL))
-        with patch(REQUESTS_GET, return_value=response(SHORT_URL)):
+        with patch(REQUESTS_GET, return_value=response(SHORT_URL)) as get:
             self.assertIsNone(map_url_tools.resolve_short_map_url(SHORT_URL))
+            self.assertEqual(get.call_count, 5)
+
+    def test_resolver_budget_covers_all_hops(self):
+        """6 s for the whole chain, not per hop: a slow first hop leaves the
+        next one only the remainder, and none once the budget is spent."""
+        clock = iter([100.0, 100.0, 104.5, 107.0])
+        response = MagicMock(status_code=302, headers={"Location": SHORT_URL})
+        with (
+            patch(
+                "odoo.addons.partner_microsite_manager.tools.map_url.time.monotonic",
+                side_effect=lambda: next(clock),
+            ),
+            patch(REQUESTS_GET, return_value=response) as get,
+            self.assertLogs(TOOLS_LOGGER, "WARNING"),
+        ):
+            self.assertIsNone(map_url_tools.resolve_short_map_url(SHORT_URL))
+        timeouts = [call.kwargs["timeout"] for call in get.call_args_list]
+        self.assertEqual(timeouts, [6.0, 1.5])
         with (
             self.assertLogs(TOOLS_LOGGER, "WARNING"),
             patch(REQUESTS_GET, side_effect=requests.Timeout("slow")),
@@ -168,9 +186,35 @@ class TestCompanyMapUrl(TransactionCase):
             self.company.microsite_map_url = SHORT_URL
         self.assertEqual(self.company.microsite_map_url, SHORT_URL)
         with self.assertLogs(
-            "odoo.addons.partner_microsite_manager.models.res_company", "WARNING"
+            "odoo.addons.partner_microsite_manager.models.res_company", "DEBUG"
         ):
             self.assertEqual(self.company._get_microsite_map_url(), self.address_embed)
+
+    def test_resaving_a_failed_short_link_retries(self):
+        with patch(RESOLVER, return_value=None):
+            self.company.microsite_map_url = SHORT_URL
+        self.assertEqual(self.company.microsite_map_url, SHORT_URL)
+        with patch(RESOLVER, return_value=RESOLVED_URL) as resolver:
+            self.company.write({"microsite_map_url": SHORT_URL})
+        resolver.assert_called_once()
+        self.assertEqual(
+            self.company.microsite_map_url, _embed("28.1365573,-15.4334686")
+        )
+        self.assertEqual(self.company.microsite_map_share_url, SHORT_URL)
+
+    def test_daily_cron_heals_a_failed_short_link(self):
+        with patch(RESOLVER, return_value=None):
+            self.company.microsite_map_url = SHORT_URL
+        cron = self.env.ref("partner_microsite_manager.ir_cron_retry_map_short_links")
+        self.assertIn("_cron_retry_map_short_links", cron.code)
+        with patch(RESOLVER, return_value=RESOLVED_URL):
+            healed = self.env["res.company"]._cron_retry_map_short_links()
+        self.assertIn(self.company, healed)
+        self.assertLessEqual(len(healed), 20)
+        self.assertEqual(
+            self.company.microsite_map_url, _embed("28.1365573,-15.4334686")
+        )
+        self.assertEqual(self.company.microsite_map_share_url, SHORT_URL)
 
     def test_embed_url_is_stored_unchanged(self):
         self.company.microsite_map_url = EMBED_URL
@@ -190,8 +234,15 @@ class TestCompanyMapUrl(TransactionCase):
             self.company.microsite_map_url = "javascript:alert(1)"
         with self.assertRaises(ValidationError):
             self.company.microsite_map_url = "javascript://www.google.com/maps%0a"
-        self.company.microsite_map_share_url = "javascript://www.google.com/maps"
-        self.assertNotIn("javascript", self.company._get_microsite_map_link_url())
+        with self.assertRaises(ValidationError):
+            self.company.microsite_map_share_url = "javascript://www.google.com/maps"
+        with self.assertRaises(ValidationError):
+            self.company.write(
+                {
+                    "microsite_map_url": EMBED_URL,
+                    "microsite_map_share_url": "javascript:alert(1)",
+                }
+            )
 
     def test_resaving_the_same_link_does_not_resolve_again(self):
         with patch(RESOLVER, return_value=RESOLVED_URL):

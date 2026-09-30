@@ -18,6 +18,7 @@
     "data": [
         "security/ir.model.access.csv",
         "security/ir_rule.xml",
+        "data/ir_cron.xml",
         "views/microsite_templates.xml",
         "views/microsite_layout.xml",
         "views/microsite_header_contact.xml",

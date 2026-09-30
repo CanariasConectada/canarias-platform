@@ -37,6 +37,15 @@ OPENING_HOURS_CARD_TEMPLATE = "partner_microsite_manager.microsite_opening_hours
 # 'javascript:' or 'data:' src would run in the visitor's page context
 # (stored XSS), so any explicit non-https scheme is refused at write time.
 _ALLOWED_MAP_URL_SCHEMES = ("https",)
+# The pasted original only ever feeds an ``href``: http(s), nothing else.
+_ALLOWED_MAP_SHARE_URL_SCHEMES = ("http", "https")
+# Short links the daily retry resolves per run (each is up to one network
+# resolution, see ``tools.map_url.RESOLVE_BUDGET``).
+MAP_RETRY_BATCH = 20
+# Companies whose non-embeddable map this process already reported: the
+# render fallback runs on every page view, the warning only needs to be
+# read once.
+_MAP_FALLBACK_REPORTED = set()
 
 # Timezone the "open now" badge is judged against. NOT partner_id.tz: that
 # field holds whatever timezone the user who created the company happened to
@@ -303,6 +312,22 @@ class ResCompany(models.Model):
                     _(
                         "The map URL must be an https:// address; "
                         "'%(scheme)s:' links are not allowed.",
+                        scheme=scheme,
+                    )
+                )
+
+    @api.constrains("microsite_map_share_url")
+    def _check_microsite_map_share_url(self):
+        for company in self:
+            url = company.microsite_map_share_url
+            if not url:
+                continue
+            scheme = urlsplit(url.strip()).scheme.lower()
+            if scheme and scheme not in _ALLOWED_MAP_SHARE_URL_SCHEMES:
+                raise ValidationError(
+                    _(
+                        "The Google Maps link must be an http:// or https:// "
+                        "address; '%(scheme)s:' links are not allowed.",
                         scheme=scheme,
                     )
                 )
@@ -583,9 +608,14 @@ class ResCompany(models.Model):
                 if map_url_tools.is_embeddable_map_url(converted):
                     custom_url = converted
                 else:
-                    _logger.warning(
+                    level = logging.DEBUG
+                    if self.id not in _MAP_FALLBACK_REPORTED:
+                        _MAP_FALLBACK_REPORTED.add(self.id)
+                        level = logging.WARNING
+                    _logger.log(
+                        level,
                         "Company %s: map URL %s cannot be embedded; "
-                        "showing the address map instead.",
+                        "showing the address map instead (retried daily).",
                         self.id,
                         custom_url,
                     )
@@ -657,13 +687,16 @@ class ResCompany(models.Model):
         A company whose stored link (or pasted original) is exactly the value
         written keeps both fields as they are: the page content editor writes
         every field back on save, and re-saving an untouched map must neither
-        resolve the short link again nor forget the original.
+        resolve the short link again nor forget the original. Only when the
+        stored link is embeddable, though: a short link whose resolution
+        failed is retried by saving it again.
         """
         if "microsite_map_url" not in vals or "microsite_map_share_url" in vals:
             return super().write(vals)
         pasted = (vals["microsite_map_url"] or "").strip()
         unchanged = self.filtered(
             lambda c: pasted
+            and map_url_tools.is_embeddable_map_url(c.microsite_map_url or "")
             and pasted
             in ((c.microsite_map_url or "").strip(), c.microsite_map_share_url)
         )
@@ -679,6 +712,36 @@ class ResCompany(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         return super().create([self._prepare_map_url_vals(v) for v in vals_list])
+
+    @api.model
+    def _cron_retry_map_short_links(self, limit=MAP_RETRY_BATCH):
+        """Daily: resolve again the short map links that failed on save.
+
+        At most ``limit`` companies per run, each in its own savepoint (see
+        ``_normalize_existing_map_urls``); until then their page shows the
+        address map. Returns the companies healed.
+        """
+        candidates = self.with_context(active_test=False).search(
+            [
+                "|",
+                ("microsite_map_url", "=ilike", "%maps.app.goo.gl%"),
+                ("microsite_map_url", "=ilike", "%goo.gl/maps%"),
+            ],
+            order="write_date asc, id",
+        )
+        pending = candidates.filtered(
+            lambda c: map_url_tools.is_short_map_url(
+                self._normalize_map_url(c.microsite_map_url)
+            )
+        )[:limit]
+        healed = pending._normalize_existing_map_urls()
+        if pending:
+            _logger.info(
+                "Map short links: %d retried, %d converted.",
+                len(pending),
+                len(healed),
+            )
+        return healed
 
     def _normalize_existing_map_urls(self):
         """Convert the stored map links of ``self``; return the changed ones.

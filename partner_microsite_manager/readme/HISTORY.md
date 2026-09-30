@@ -18,6 +18,12 @@
 - Embed URLs copied from an iframe source with HTML-escaped `&amp;`
   separators are decoded: QWeb escapes the attribute again, and Google then
   received `amp;output=embed` and refused the frame.
+- Short-link resolution has a total budget of 6 s across at most 5
+  redirects. When it fails, the short link stays stored, the page shows the
+  address map (warned once per process and company, then at DEBUG), saving
+  the same link again retries, and a daily cron retries up to 20 of them,
+  one savepoint each.
+- `microsite_map_share_url` only accepts http(s) links.
 - Migration: every stored map link goes through the converter, one
   savepoint per company (a failure leaves the value; the render fallback
   covers it). Idempotent.

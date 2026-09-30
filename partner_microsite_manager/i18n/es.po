@@ -2400,3 +2400,14 @@ msgstr "El enlace que se pegó como mapa, antes de convertirlo en uno insertable
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "https://maps.app.goo.gl/..."
 msgstr "https://maps.app.goo.gl/..."
+
+#. module: partner_microsite_manager
+#: model:ir.actions.server,name:partner_microsite_manager.ir_cron_retry_map_short_links_ir_actions_server
+msgid "Microsites: retry unresolved Google Maps short links"
+msgstr "Micrositios: reintentar los enlaces cortos de Google Maps sin resolver"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid "The Google Maps link must be an http:// or https:// address; '%(scheme)s:' links are not allowed."
+msgstr "El enlace de Google Maps debe ser una dirección http:// o https://; no se permiten enlaces «%(scheme)s:»."

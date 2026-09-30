@@ -17,6 +17,7 @@ as a parameter so callers (and tests) decide whether resolving is allowed.
 import html
 import logging
 import re
+import time
 from urllib.parse import parse_qs, quote_plus, unquote_plus, urljoin, urlsplit
 
 import requests
@@ -26,7 +27,10 @@ from odoo.addons.website_map_embed.models.res_partner import MAP_EMBED_URL
 _logger = logging.getLogger(__name__)
 
 DEFAULT_ZOOM = 17
-RESOLVE_TIMEOUT = 5
+# Total time budget for resolving one short link, all hops included: the
+# resolution runs inside the request that saves the form, so the merchant
+# waits at most this long before the save goes through (unresolved).
+RESOLVE_BUDGET = 6
 RESOLVE_MAX_REDIRECTS = 5
 
 # google.com, www.google.es, maps.google.co.uk, ...
@@ -202,7 +206,7 @@ def _allowed_hop(url):
 
 
 def resolve_short_map_url(
-    url, timeout=RESOLVE_TIMEOUT, max_redirects=RESOLVE_MAX_REDIRECTS
+    url, budget=RESOLVE_BUDGET, max_redirects=RESOLVE_MAX_REDIRECTS
 ):
     """Follow a short Maps link's redirects; the first Maps URL it reaches.
 
@@ -210,9 +214,14 @@ def resolve_short_map_url(
     be checked: the chain may only visit Google hosts over https (a short
     link is user input, and this runs on the server). Stops as soon as a
     hop is a regular Maps URL -- its page is never downloaded, so Google's
-    consent wall never comes into play. Returns ``None`` on any failure.
+    consent wall never comes into play.
+
+    ``budget`` (seconds) bounds the WHOLE resolution, not each hop: every
+    request gets whatever time is left, and running out gives up. At most
+    ``max_redirects`` requests are made. Returns ``None`` on any failure.
     """
     current = url
+    deadline = time.monotonic() + budget
     try:
         for _hop in range(max_redirects):
             if not _allowed_hop(current):
@@ -226,10 +235,14 @@ def resolve_short_map_url(
                         continue
                     return None
                 return current
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                _logger.warning("Map link %s: resolution out of time", url)
+                return None
             response = requests.get(
                 current,
                 allow_redirects=False,
-                timeout=timeout,
+                timeout=remaining,
                 headers={"User-Agent": "Mozilla/5.0 (compatible; map-link-resolver)"},
                 stream=True,
             )
