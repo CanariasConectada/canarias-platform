@@ -14,6 +14,20 @@ class LocalContentCategory(models.Model):
     name = fields.Char(required=True, translate=True)
     sequence = fields.Integer(default=10)
     active = fields.Boolean(default=True)
+    # Two taxonomies share this model on purpose: what a place IS (a beach,
+    # a sports facility) and what can be DONE there (outdoor sport, cultural
+    # events) are complementary, not exclusive -- asked for on 2026-09-02.
+    # The axis is plain data, so reclassifying a category is a backend edit,
+    # never a deployment. A content type with no activity-axis categories
+    # (Memoria Viva) simply never shows the second selector.
+    axis = fields.Selection(
+        selection=[("place", "Place type"), ("activity", "Activity type")],
+        required=True,
+        default="place",
+        index=True,
+        help="Place type answers 'what is this place'; activity type "
+        "answers 'what can be done there'. Items filter by both.",
+    )
     type_id = fields.Many2one(
         comodel_name="website.local.content.type",
         string="Content Type",

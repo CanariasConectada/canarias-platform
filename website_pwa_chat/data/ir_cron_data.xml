@@ -26,4 +26,43 @@
         <field name="interval_type">days</field>
         <field name="active" eval="True" />
     </record>
+
+    <!--
+        Support conversations are temporary on purpose.
+
+        Left alone they become two bad things at once: a queue nobody can read,
+        because a hundred finished conversations sit among the three that are
+        waiting; and a permanent archive of strangers' messages, which is more
+        than we were given and more than we need.
+
+        So a conversation that has gone quiet is CLOSED (3 days), and a closed
+        one is DELETED (7 days, or 30 for a visitor who told us their name).
+        Reopening is free: writing again clears the flag.
+
+        The same sweep also drops conversations nobody ever wrote in, one
+        hour after they were opened (`support_empty_purge_hours`): a failed
+        first post or an identify form with no message behind it still opens
+        a row, and a row with nothing in it has nothing worth keeping.
+
+        Hourly, because of that last window: the day-sized rules are
+        idempotent and cost one indexed query each, so running them 24 times
+        a day is harmless, while an empty row that waited until 04:30 would
+        sit in the queue all day. All windows are system parameters, so
+        widening them needs no deploy.
+
+        No `noupdate`, on purpose: the interval is part of the module's
+        behaviour and has to follow the code on every update. `nextcall` is
+        reset to "shortly after this update" for the same reason: a value
+        left at tomorrow 04:30 would leave the first hourly run a day away.
+    -->
+    <record id="ir_cron_support_gc" model="ir.cron">
+        <field name="name">Chat: cerrar y borrar las conversaciones de soporte antiguas</field>
+        <field name="model_id" ref="mail.model_discuss_channel" />
+        <field name="state">code</field>
+        <field name="code">model._support_gc()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="nextcall" eval="(DateTime.now() + timedelta(minutes=10)).strftime('%Y-%m-%d %H:%M:%S')" />
+        <field name="active" eval="True" />
+    </record>
 </odoo>

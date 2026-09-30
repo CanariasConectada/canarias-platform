@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo noupdate="1">
+
+    <!-- Registrable domain the cookies bar consent is shared across: the
+         portal plus every <shop>.canariasconectada.es site. The value is
+         inert on any host that is not that domain or one of its subdomains
+         (localhost, an IP, a lab host, a future custom shop domain), so
+         shipping it is safe for every other database. noupdate: an admin
+         emptying it (= core behaviour) or changing it on purpose must
+         survive module upgrades. To switch the feature off, EMPTY the
+         value; do not delete the record. -->
+    <record id="config_parameter_shared_domain" model="ir.config_parameter">
+        <field name="key">website.cookies_bar_shared_domain</field>
+        <field name="value">canariasconectada.es</field>
+    </record>
+
+</odoo>

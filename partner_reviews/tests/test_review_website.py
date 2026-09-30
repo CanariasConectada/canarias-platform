@@ -3,6 +3,8 @@
 
 from odoo.tests import HttpCase, tagged
 
+from .common import add_forbidden_word
+
 
 @tagged("post_install", "-at_install")
 class TestReviewWebsite(HttpCase):
@@ -34,7 +36,7 @@ class TestReviewWebsite(HttpCase):
         self.assertIn("PRW Customer", response.text)
 
     def test_reviews_page_hides_pending(self):
-        self.env["review.forbidden.word"].create({"name": "horrible"})
+        add_forbidden_word(self.env, "horrible")
         self.env["rating.rating"].create(
             {
                 "res_model_id": self.env["ir.model"]._get_id("res.company"),

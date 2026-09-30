@@ -1,0 +1,45 @@
+/* Shop toolbar (counter, grid/list toggle, ppg selector).
+ * Formerly an inline <style> on website_sale.products' root, rendered
+ * after </html>. Every rule is scoped under the toolbar's or the grid's
+ * own id.
+ */
+#shop-directory-toolbar {
+    width: 100% !important;
+}
+#shop-directory-toolbar .btn-primary {
+    background-color: #714B67 !important;
+    border-color: #714B67 !important;
+    color: #fff !important;
+}
+#shop-directory-toolbar .btn-outline-secondary {
+    color: #6c757d !important;
+    border-color: #dee2e6 !important;
+}
+#shop-directory-toolbar .btn-outline-secondary:hover,
+#shop-directory-toolbar .btn-outline-secondary.active {
+    background-color: #714B67 !important;
+    border-color: #714B67 !important;
+    color: #fff !important;
+}
+#shop-directory-toolbar strong {
+    color: #714B67;
+    font-size: 1.25rem;
+}
+/* List view */
+#o_wsale_products_grid.view-mode-list .oe_product {
+    display: block !important;
+    width: 100% !important;
+    margin-bottom: 1rem !important;
+}
+#o_wsale_products_grid.view-mode-list .oe_product_cart {
+    flex-direction: row !important;
+    display: flex !important;
+}
+#o_wsale_products_grid.view-mode-list .oe_product_image {
+    width: 200px !important;
+    flex-shrink: 0 !important;
+}
+#o_wsale_products_grid.view-mode-list .o_wsale_product_information {
+    flex: 1 !important;
+    padding-left: 1rem !important;
+}

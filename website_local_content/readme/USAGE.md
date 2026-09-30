@@ -13,3 +13,18 @@
 
 Legacy URLs `/memoria-viva` and `/lugares-de-interes` are permanently
 redirected (301) to the new `/explora/...` pages.
+
+## Rating comments and moderation
+
+Logged-in visitors rate an item (1-5 stars) with an optional comment from
+the detail page. The stars are always published at once. When the comment
+contains a word of the shared forbidden-word list (*Settings > Moderation
+> Forbidden Words*, module `website_moderation_forbidden_word`) its text
+is held: the author sees it with a "Your comment will be published after
+review." notice, nobody else sees it, and the local content managers get
+an email and a to-do activity.
+
+Managers approve or reject held comments from *Local Content > Comments
+pending review* (administrators: *Settings > Moderation > Local Content
+Comments*). A rejected comment stays hidden; if its author writes a new
+text it is evaluated again like any new comment.

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!--
+        GLOBAL rules (no groups) on purpose: group rules are OR-ed together,
+        so a narrowing rule attached to a group would be widened back by
+        core's own `base.group_user` rule. A global rule is AND-ed with
+        everything, and its domain exempts everybody who is not a community
+        member with a trivially true branch.
+
+        `user.is_community_member`: holds `group_community_member` and is not
+        an administrator, a merchant ("Comercios") nor a zone manager ("Gestor
+        ZCA"). Guests and registered residents alike. It only changes with the
+        user's groups, and core clears the registry cache on every group
+        write, which matters: the evaluated domain is cached per user
+        (`ir.rule._compute_domain`).
+
+        What a community member may read: the channels and conversations it
+        is a member of, the open public channels (`group_public_id` unset) and
+        the four community channels (`user.community_channel_ids`: the
+        neighbourhood ones are gated on `group_zone_channel_member`, so the
+        open branch does not cover them, and a member must see all of them to
+        join or leave each). Never the staff channels: "general" and
+        "Administrators" (`user.community_hidden_channel_ids`) and any channel
+        restricted to the employee group (`user.community_staff_group_ids`),
+        even if seated there before this rule existed. Channel messages
+        follow: they are only readable with their channel.
+    -->
+    <record id="rule_discuss_channel_community_guest" model="ir.rule">
+        <field name="name">discuss.channel: community members only see their own, open and community channels</field>
+        <field name="model_id" ref="mail.model_discuss_channel"/>
+        <field name="domain_force">
+            [(1, "=", 1)] if not user.is_community_member else [
+                ("id", "not in", user.community_hidden_channel_ids.ids),
+                "|",
+                    ("group_public_id", "=", False),
+                    ("group_public_id", "not in", user.community_staff_group_ids.ids),
+                "|", "|", "|",
+                    ("is_member", "=", True),
+                    ("parent_channel_id.is_member", "=", True),
+                    ("id", "in", user.community_channel_ids.ids),
+                    "&amp;",
+                        ("channel_type", "=", "channel"),
+                        ("group_public_id", "=", False),
+            ]
+        </field>
+    </record>
+
+    <!--
+        Joining is creating a member row, and core's create rules let any
+        holder of a channel's group join it: a community member IS
+        `base.group_user`, so without this it could join "general" by RPC even
+        though it cannot read it. A create rule is checked AFTER the row
+        exists, so `channel_id.is_member` is already true for a self-join and
+        proves nothing on its own. What a community member may create:
+
+          * `channel`: its row in the open channels and in the four community
+            channels (and their threads). Core's create rules already refuse
+            a row for somebody else in a `channel`.
+          * `chat`: only rows in a chat it created itself
+            (`_get_or_create_chat` seats both members as the creator). Core's
+            two-member cap is not enough: once the other party leaves, a
+            foreign chat has one member left and anybody could sit down in
+            it and read the history. A DM started by somebody else is seated
+            with THAT user's rights, so it is unaffected.
+          * `group`: a row for SOMEBODY ELSE in a group it belongs to
+            (inviting), or any row in a group it created itself
+            (`_create_group` seats its creator as that user). Never a
+            self-join into somebody else's group: support conversations
+            (`website_pwa_chat`, `support_key`) and private groups are
+            `group`, and their ids are enumerable. The member's own support
+            conversation is created and seated with sudo, so it does not
+            depend on this rule.
+          * nothing else (livechat and the like are seated by the server).
+
+        Create only: leaving (unlinking its own row) stays core's
+        `ir_rule_discuss_channel_member_is_self_all`.
+    -->
+    <record id="rule_discuss_channel_member_community_guest_join" model="ir.rule">
+        <field name="name">discuss.channel.member: community members only join open and community channels, chats and their own groups</field>
+        <field name="model_id" ref="mail.model_discuss_channel_member"/>
+        <field name="domain_force">
+            [(1, "=", 1)] if not user.is_community_member else [
+                ("channel_id", "not in", user.community_hidden_channel_ids.ids),
+                "|", "|", "|", "|", "|",
+                    "&amp;",
+                        ("channel_id.channel_type", "=", "channel"),
+                        ("channel_id.group_public_id", "=", False),
+                    ("channel_id", "in", user.community_channel_ids.ids),
+                    ("channel_id.parent_channel_id", "in", user.community_channel_ids.ids),
+                    "&amp;",
+                        ("channel_id.channel_type", "=", "chat"),
+                        ("channel_id.create_uid", "=", user.id),
+                    "&amp;", "&amp;",
+                        ("channel_id.channel_type", "=", "group"),
+                        ("is_self", "=", False),
+                        ("channel_id.is_member", "=", True),
+                    "&amp;",
+                        ("channel_id.channel_type", "=", "group"),
+                        ("channel_id.create_uid", "=", user.id),
+            ]
+        </field>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="perm_create" eval="True"/>
+    </record>
+
+    <!--
+        Who is in a channel. Core lets every internal user read the members of
+        any open channel (`ir_rule_discuss_channel_member_read_all`), which
+        for a community member would mean the whole roster of "Canarias
+        Conectada", merchants included, one RPC away. A community member
+        reads:
+          * in a `channel`: only its OWN membership row;
+          * in a chat or group it belongs to: the other members, since the
+            conversation is named after them;
+          * nothing at all in the staff channels.
+    -->
+    <record id="rule_discuss_channel_member_community_guest_read" model="ir.rule">
+        <field name="name">discuss.channel.member: community members only read their own rows in channels</field>
+        <field name="model_id" ref="mail.model_discuss_channel_member"/>
+        <field name="domain_force">
+            [(1, "=", 1)] if not user.is_community_member else [
+                ("channel_id", "not in", user.community_hidden_channel_ids.ids),
+                "|",
+                    ("is_self", "=", True),
+                    "&amp;",
+                        ("channel_id.channel_type", "!=", "channel"),
+                        ("channel_id.is_member", "=", True),
+            ]
+        </field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+        <field name="perm_create" eval="False"/>
+    </record>
+
+</odoo>

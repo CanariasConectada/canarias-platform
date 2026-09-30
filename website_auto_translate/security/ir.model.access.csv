@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_auto_translate_engine_system,auto.translate.engine system,model_auto_translate_engine,base.group_system,1,1,1,1
+access_auto_translate_job_system,auto.translate.job system,model_auto_translate_job,base.group_system,1,1,1,1
+access_auto_translate_job_user,auto.translate.job user read,model_auto_translate_job,base.group_user,1,0,0,0
+access_auto_translate_term_system,auto.translate.term system,model_auto_translate_term,base.group_system,1,1,1,1
+access_auto_translate_term_user,auto.translate.term user read,model_auto_translate_term,base.group_user,1,0,0,0
+access_auto_translate_glossary_system,auto.translate.glossary system,model_auto_translate_glossary,base.group_system,1,1,1,1
+access_auto_translate_glossary_user,auto.translate.glossary user read,model_auto_translate_glossary,base.group_user,1,0,0,0

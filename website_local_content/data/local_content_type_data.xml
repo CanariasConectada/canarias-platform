@@ -12,6 +12,12 @@
             <field name="sequence">10</field>
             <field name="use_photo_year" eval="True"/>
             <field name="description">Historical photographs and stories of the neighbourhood, shared by its people.</field>
+            <field name="hero_subtitle">Discover and share the stories of the neighbourhood</field>
+            <field name="hero_image" type="base64" file="website_local_content/static/src/img/hero-cine-astoria.jpg"/>
+            <!-- The Gobierno de Canarias mark is mandatory on every Living
+                 Memory page (grant acknowledgement). -->
+            <field name="sponsor_name">Gobierno de Canarias</field>
+            <field name="sponsor_logo" type="base64" file="website_local_content/static/src/img/logo-gobierno-canarias.png"/>
         </record>
 
         <record id="content_type_places_of_interest" model="website.local.content.type">
@@ -21,6 +27,8 @@
             <field name="sequence">20</field>
             <field name="use_photo_year" eval="False"/>
             <field name="description">Places worth visiting in the area: culture, leisure, nature and more.</field>
+            <field name="hero_subtitle">Discover and share the stories of the neighbourhood</field>
+            <field name="hero_image" type="base64" file="website_local_content/static/src/img/hero-cine-astoria.jpg"/>
         </record>
 
     </data>

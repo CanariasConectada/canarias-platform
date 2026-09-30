@@ -2,17 +2,518 @@
 # This file contains the translation of the following modules:
 # 	* partner_microsite_manager
 #
+# Generated from the module's own .pot so every `#:` reference line survives.
+# See scratchpad/refresh_po.py for why that matters.
+#
+# The legal page templates (rewritten in 19.0.2.0.0) are not listed here:
+# their Spanish source gets its own es_ES key from that version's
+# post-migration, and their other languages come from the
+# website_auto_translate queue, not from .po files.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
 "Last-Translator: Canarias Conectada\n"
 "Language-Team: \n"
-"Language: es\n"
+"Language: es_ES\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/microsite_opening_slot.py:0
+msgid ""
+"%(day)s: %(first)s and %(second)s overlap. Each period of the day must end "
+"before the next one starts."
+msgstr ""
+"%(day)s: %(first)s y %(second)s se solapan. Cada tramo del día debe terminar"
+" antes de que empiece el siguiente."
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/microsite_opening_slot.py:0
+msgid ""
+"%(day)s: the shop cannot close (%(close)s) before it opens (%(open)s). Times"
+" must stay within one day, opening first."
+msgstr ""
+"%(day)s: el comercio no puede cerrar (%(close)s) antes de abrir (%(open)s). "
+"Las horas deben estar dentro del mismo día, primero la apertura."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice_content
+msgid ", la"
+msgstr ", la"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid ""
+", que el\n"
+"                                usuario deberá leer y aceptar para usar todos\n"
+"                                los servicios e información que se facilitan\n"
+"                                desde el sitio."
+msgstr ""
+", que el\n"
+"                                usuario deberá leer y aceptar para usar todos\n"
+"                                los servicios e información que se facilitan\n"
+"                                desde el sitio."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid "1 año"
+msgstr "1 año"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid "1. Cookies propias"
+msgstr "1. Cookies propias"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid "1. Introducción"
+msgstr "1. Introducción"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid "1. Responsable del tratamiento"
+msgstr "1. Responsable del tratamiento"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid "10. Contacto"
+msgstr "10. Contacto"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid "2. Condiciones de uso"
+msgstr "2. Condiciones de uso"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid "2. Cookies de terceros"
+msgstr "2. Cookies de terceros"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid "2. Información y datos personales que recopilamos"
+msgstr "2. Información y datos personales que recopilamos"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid "3. Finalidades y bases jurídicas"
+msgstr "3. Finalidades y bases jurídicas"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid "3. Modificaciones"
+msgstr "3. Modificaciones"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid "31 días"
+msgstr "31 días"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid "4. Cómo protegemos la información"
+msgstr "4. Cómo protegemos la información"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid "4. Obligaciones del usuario"
+msgstr "4. Obligaciones del usuario"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid "5. Derechos de los titulares de los datos"
+msgstr "5. Derechos de los titulares de los datos"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid "5. Propiedad intelectual e industrial"
+msgstr "5. Propiedad intelectual e industrial"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid "6. Conservación de los datos"
+msgstr "6. Conservación de los datos"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid "6. Privacidad y protección de datos"
+msgstr "6. Privacidad y protección de datos"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid "7 días"
+msgstr "7 días"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid "7. Cookies"
+msgstr "7. Cookies"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid "8. Idioma"
+msgstr "8. Idioma"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid "8. Ley aplicable y jurisdicción"
+msgstr "8. Ley aplicable y jurisdicción"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid "9. Legislación aplicable y jurisdicción"
+msgstr "9. Legislación aplicable y jurisdicción"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid "<code>frontend_lang</code>"
+msgstr "<code>frontend_lang</code>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid ""
+"<code>odoo_utm_campaign</code>,\n"
+"                                                <code>odoo_utm_source</code>,\n"
+"                                                <code>odoo_utm_medium</code>"
+msgstr ""
+"<code>odoo_utm_campaign</code>,\n"
+"                                                <code>odoo_utm_source</code>,\n"
+"                                                <code>odoo_utm_medium</code>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid "<code>session_id</code>"
+msgstr "<code>session_id</code>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid "<code>website_cookies_bar</code>"
+msgstr "<code>website_cookies_bar</code>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_company_picker_form
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "<i class=\"fa fa-globe me-1\" title=\"Address\" role=\"img\" aria-label=\"Address\"/>"
+msgstr ""
+"<i class=\"fa fa-globe me-1\" title=\"Dirección\" role=\"img\" aria-"
+"label=\"Dirección\"/>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid ""
+"<small>\n"
+"                                    Esta política de cookies puede ser\n"
+"                                    modificada en cualquier momento. Le\n"
+"                                    recomendamos revisarla periódicamente.\n"
+"                                    Última actualización: agosto de 2026.\n"
+"                                </small>"
+msgstr ""
+"<small>\n"
+"                                    Esta política de cookies puede ser\n"
+"                                    modificada en cualquier momento. Le\n"
+"                                    recomendamos revisarla periódicamente.\n"
+"                                    Última actualización: agosto de 2026.\n"
+"                                </small>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid ""
+"<small>\n"
+"                                    Esta política puede ser actualizada\n"
+"                                    periódicamente. Le recomendamos revisarla\n"
+"                                    con frecuencia. Última actualización:\n"
+"                                    agosto de 2026.\n"
+"                                </small>"
+msgstr ""
+"<small>\n"
+"                                    Esta política puede ser actualizada\n"
+"                                    periódicamente. Le recomendamos revisarla\n"
+"                                    con frecuencia. Última actualización:\n"
+"                                    agosto de 2026.\n"
+"                                </small>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_language_note
+msgid ""
+"<small>\n"
+"                Las versiones de esta página en idiomas distintos del español\n"
+"                son traducciones automáticas que se ofrecen únicamente a\n"
+"                título informativo. En caso de discrepancia, prevalecerá la\n"
+"                versión en español.\n"
+"            </small>"
+msgstr ""
+"<small>\n"
+"                Las versiones de esta página en idiomas distintos del español\n"
+"                son traducciones automáticas que se ofrecen únicamente a\n"
+"                título informativo. En caso de discrepancia, prevalecerá la\n"
+"                versión en español.\n"
+"            </small>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid "<small>Última actualización: agosto de 2026</small>"
+msgstr "<small>Última actualización: agosto de 2026</small>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.footer_platform_legal_links
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
+msgid "<span class=\"mx-2\">·</span>"
+msgstr "<span class=\"mx-2\">·</span>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_partner_form_microsite
+msgid "<span class=\"o_stat_text\">Microsite</span>"
+msgstr "<span class=\"o_stat_text\">Microsite</span>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid ""
+"<span class=\"s_website_form_label_content\">Email</span>\n"
+"                                        <span class=\"s_website_form_mark\"> *</span>"
+msgstr ""
+"<span class=\"s_website_form_label_content\">Correo electrónico</span> <span"
+" class=\"s_website_form_mark\"> *</span>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid ""
+"<span class=\"s_website_form_label_content\">Message</span>\n"
+"                                        <span class=\"s_website_form_mark\"> *</span>"
+msgstr ""
+"<span class=\"s_website_form_label_content\">Mensaje</span> <span "
+"class=\"s_website_form_mark\"> *</span>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid ""
+"<span class=\"s_website_form_label_content\">Name</span>\n"
+"                                        <span class=\"s_website_form_mark\"> *</span>"
+msgstr ""
+"<span class=\"s_website_form_label_content\">Nombre</span> <span "
+"class=\"s_website_form_mark\"> *</span>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid "<span class=\"s_website_form_label_content\">Phone</span>"
+msgstr "<span class=\"s_website_form_label_content\">Teléfono</span>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_opening_hours_card
+msgid "<span>: </span>"
+msgstr "<span>: </span>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid ""
+"<strong>Acceso:</strong> obtener\n"
+"                                    confirmación de si se están tratando sus\n"
+"                                    datos"
+msgstr ""
+"<strong>Acceso:</strong> obtener\n"
+"                                    confirmación de si se están tratando sus\n"
+"                                    datos"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid ""
+"<strong>Atender sus consultas y solicitudes\n"
+"                                    de contacto:</strong> consentimiento del\n"
+"                                    interesado (art. 6.1.a RGPD)."
+msgstr ""
+"<strong>Atender sus consultas y solicitudes\n"
+"                                    de contacto:</strong> consentimiento del\n"
+"                                    interesado (art. 6.1.a RGPD)."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid ""
+"<strong>Cookies de personalización:</strong>\n"
+"                                Son aquellas que permiten al usuario acceder al\n"
+"                                servicio con algunas características generales\n"
+"                                predefinidas en función de una serie de\n"
+"                                criterios en el terminal del usuario, como por\n"
+"                                ejemplo idioma, tipo de navegador,\n"
+"                                configuración regional, etc."
+msgstr ""
+"<strong>Cookies de personalización:</strong>\n"
+"                                Son aquellas que permiten al usuario acceder al\n"
+"                                servicio con algunas características generales\n"
+"                                predefinidas en función de una serie de\n"
+"                                criterios en el terminal del usuario, como por\n"
+"                                ejemplo idioma, tipo de navegador,\n"
+"                                configuración regional, etc."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid ""
+"<strong>Cookies técnicas estrictamente\n"
+"                                necesarias:</strong> Son aquellas que permiten\n"
+"                                al usuario la navegación a través de una página\n"
+"                                web, plataforma o aplicación y la utilización\n"
+"                                de las diferentes opciones o servicios que en\n"
+"                                ella existan como, por ejemplo, controlar el\n"
+"                                tráfico y la comunicación de datos, identificar\n"
+"                                la sesión, acceder a partes de acceso\n"
+"                                restringido, realizar el proceso de compra de\n"
+"                                un pedido."
+msgstr ""
+"<strong>Cookies técnicas estrictamente\n"
+"                                necesarias:</strong> Son aquellas que permiten\n"
+"                                al usuario la navegación a través de una página\n"
+"                                web, plataforma o aplicación y la utilización\n"
+"                                de las diferentes opciones o servicios que en\n"
+"                                ella existan como, por ejemplo, controlar el\n"
+"                                tráfico y la comunicación de datos, identificar\n"
+"                                la sesión, acceder a partes de acceso\n"
+"                                restringido, realizar el proceso de compra de\n"
+"                                un pedido."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice_content
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid "<strong>Correo electrónico: </strong>"
+msgstr "<strong>Correo electrónico: </strong>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid ""
+"<strong>Cumplir obligaciones legales</strong>\n"
+"                                    (fiscales, mercantiles o de consumo):\n"
+"                                    obligación legal (art. 6.1.c RGPD)."
+msgstr ""
+"<strong>Cumplir obligaciones legales</strong>\n"
+"                                    (fiscales, mercantiles o de consumo):\n"
+"                                    obligación legal (art. 6.1.c RGPD)."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice_content
+msgid "<strong>Denominación: </strong>"
+msgstr "<strong>Denominación: </strong>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid "<strong>Dirección: </strong>"
+msgstr "<strong>Dirección: </strong>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice_content
+msgid "<strong>Domicilio: </strong>"
+msgstr "<strong>Domicilio: </strong>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid "<strong>Email: </strong>"
+msgstr "<strong>Email: </strong>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid ""
+"<strong>Exención de responsabilidad para\n"
+"                                productos y servicios de terceros:</strong>"
+msgstr ""
+"<strong>Exención de responsabilidad para\n"
+"                                productos y servicios de terceros:</strong>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid ""
+"<strong>Garantizar la seguridad y el\n"
+"                                    correcto funcionamiento del sitio\n"
+"                                    web:</strong> interés legítimo (art. 6.1.f\n"
+"                                    RGPD)."
+msgstr ""
+"<strong>Garantizar la seguridad y el\n"
+"                                    correcto funcionamiento del sitio\n"
+"                                    web:</strong> interés legítimo (art. 6.1.f\n"
+"                                    RGPD)."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid ""
+"<strong>Limitación:</strong> solicitar la\n"
+"                                    limitación del tratamiento"
+msgstr ""
+"<strong>Limitación:</strong> solicitar la\n"
+"                                    limitación del tratamiento"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice_content
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid "<strong>NIF/CIF: </strong>"
+msgstr "<strong>NIF/CIF: </strong>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid "<strong>Nombre: </strong>"
+msgstr "<strong>Nombre: </strong>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid ""
+"<strong>Oposición:</strong> oponerse al\n"
+"                                    tratamiento de sus datos"
+msgstr ""
+"<strong>Oposición:</strong> oponerse al\n"
+"                                    tratamiento de sus datos"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid ""
+"<strong>Portabilidad:</strong> recibir sus\n"
+"                                    datos en un formato estructurado"
+msgstr ""
+"<strong>Portabilidad:</strong> recibir sus\n"
+"                                    datos en un formato estructurado"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid ""
+"<strong>Prestar los servicios solicitados y\n"
+"                                    gestionar pedidos:</strong> ejecución de un\n"
+"                                    contrato o aplicación de medidas\n"
+"                                    precontractuales (art. 6.1.b RGPD)."
+msgstr ""
+"<strong>Prestar los servicios solicitados y\n"
+"                                    gestionar pedidos:</strong> ejecución de un\n"
+"                                    contrato o aplicación de medidas\n"
+"                                    precontractuales (art. 6.1.b RGPD)."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid ""
+"<strong>Rectificación:</strong> modificar\n"
+"                                    datos inexactos o erróneos"
+msgstr ""
+"<strong>Rectificación:</strong> modificar\n"
+"                                    datos inexactos o erróneos"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice_content
+msgid "<strong>Sitio web: </strong>"
+msgstr "<strong>Sitio web: </strong>"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid ""
+"<strong>Supresión:</strong> solicitar la\n"
+"                                    eliminación de sus datos"
+msgstr ""
+"<strong>Supresión:</strong> solicitar la\n"
+"                                    eliminación de sus datos"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice_content
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid "<strong>Teléfono: </strong>"
+msgstr "<strong>Teléfono: </strong>"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_about_text
@@ -25,19 +526,144 @@ msgid "About Title"
 msgstr "Título sobre nosotros"
 
 #. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
-msgid "About"
-msgstr "Sobre nosotros"
-
-#. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
 msgid "About Us"
 msgstr "Sobre nosotros"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "About the shop"
+msgstr "Sobre el comercio"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid ""
+"Add one row per period your shop is open. A day that closes at midday and "
+"reopens in the afternoon takes two rows. Leave the list empty to show no "
+"hours at all."
+msgstr ""
+"Añade una fila por cada tramo en que tu comercio está abierto. Un día que "
+"cierra a mediodía y vuelve a abrir por la tarde lleva dos filas. Deja la "
+"lista vacía para no mostrar horario."
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_company_picker__selected_company_website_url
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__website_url
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.website_view_list_merchant
+msgid "Address"
+msgstr "Dirección"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid ""
+"Al acceder al sitio web se muestra un aviso de\n"
+"                                cookies desde el que puede aceptar o rechazar\n"
+"                                las cookies no necesarias. Las cookies técnicas\n"
+"                                estrictamente necesarias no requieren\n"
+"                                consentimiento. Puede retirar su consentimiento\n"
+"                                en cualquier momento eliminando las cookies\n"
+"                                almacenadas en su navegador; el aviso volverá a\n"
+"                                mostrarse en su siguiente visita."
+msgstr ""
+"Al acceder al sitio web se muestra un aviso de\n"
+"                                cookies desde el que puede aceptar o rechazar\n"
+"                                las cookies no necesarias. Las cookies técnicas\n"
+"                                estrictamente necesarias no requieren\n"
+"                                consentimiento. Puede retirar su consentimiento\n"
+"                                en cualquier momento eliminando las cookies\n"
+"                                almacenadas en su navegador; el aviso volverá a\n"
+"                                mostrarse en su siguiente visita."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid ""
+"Algunas páginas pueden incorporar contenido de\n"
+"                                terceros, como vídeos, mapas o publicaciones de\n"
+"                                redes sociales. Ese contenido permanece\n"
+"                                bloqueado hasta que usted acepta las cookies\n"
+"                                opcionales en el aviso de cookies; al\n"
+"                                aceptarlas, el tercero correspondiente puede\n"
+"                                instalar sus propias cookies conforme a sus\n"
+"                                políticas."
+msgstr ""
+"Algunas páginas pueden incorporar contenido de\n"
+"                                terceros, como vídeos, mapas o publicaciones de\n"
+"                                redes sociales. Ese contenido permanece\n"
+"                                bloqueado hasta que usted acepta las cookies\n"
+"                                opcionales en el aviso de cookies; al\n"
+"                                aceptarlas, el tercero correspondiente puede\n"
+"                                instalar sus propias cookies conforme a sus\n"
+"                                políticas."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid ""
+"Asimismo, si considera que el tratamiento de\n"
+"                                sus datos no se ajusta a la normativa, tiene\n"
+"                                derecho a presentar una reclamación ante la\n"
+"                                autoridad de control: la Agencia Española de\n"
+"                                Protección de Datos ("
+msgstr ""
+"Asimismo, si considera que el tratamiento de\n"
+"                                sus datos no se ajusta a la normativa, tiene\n"
+"                                derecho a presentar una reclamación ante la\n"
+"                                autoridad de control: la Agencia Española de\n"
+"                                Protección de Datos ("
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice_content
+msgid "Aviso Legal"
+msgstr "Aviso Legal"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.footer_platform_legal_links
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
+msgid "Aviso legal"
+msgstr "Aviso legal"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "Banners"
 msgstr "Banners"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid "Bloqueo de cookies"
+msgstr "Bloqueo de cookies"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__can_pick_company
+msgid "Can Pick Company"
+msgstr "Puede elegir comercio"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_company_picker_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: partner_microsite_manager
+#: model:ir.model,name:partner_microsite_manager.model_microsite_company_picker
+msgid "Choose which of your shops to edit"
+msgstr "Elige cuál de tus tiendas quieres editar"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_company_picker_form
+msgid "Choose your shop"
+msgstr "Elige tu tienda"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid "Closed"
+msgstr "Cerrado"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor_slot__close_time
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_opening_slot__close_time
+msgid "Closes"
+msgstr "Cierra"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_banner_image
@@ -50,9 +676,87 @@ msgid "Closing Banner Title"
 msgstr "Título del banner de cierre"
 
 #. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_banner_title
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "Closing banner"
+msgstr "Banner de cierre"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_banner_image
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "Closing banner image"
+msgstr "Imagen del banner de cierre"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_opening_hours
+msgid ""
+"Compact notation, e.g. L-V 10:00-13:30 / L-V 16:30-20:00 / S 10:00-14:00 (L "
+"M X J V S D = Monday..Sunday). Generated from the opening periods when the "
+"company has any."
+msgstr ""
+"Notación compacta, p. ej. L-V 10:00-13:30 / L-V 16:30-20:00 / S 10:00-14:00 "
+"(L M X J V S D = lunes..domingo). Se genera a partir de las franjas horarias"
+" cuando la compañía tiene alguna."
+
+#. module: partner_microsite_manager
 #: model:ir.model,name:partner_microsite_manager.model_res_company
 msgid "Companies"
 msgstr "Compañías"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_opening_slot__company_id
+msgid "Company"
+msgstr "Compañía"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid ""
+"Company %(name)s has no website yet. Create its website first (Settings > "
+"Websites)."
+msgstr ""
+"La compañía %(name)s aún no tiene website. Cree primero su website (Ajustes "
+"> Websites)."
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_res_partner__microsite_company_id
+#: model:ir.model.fields,help:partner_microsite_manager.field_res_users__microsite_company_id
+msgid "Company of this contact that owns a website (microsite)."
+msgstr "Compañía de este contacto que posee un sitio web (microsite)."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice_content
+msgid "Condiciones de uso"
+msgstr "Condiciones de uso"
+
+#. module: partner_microsite_manager
+#: model:ir.model,name:partner_microsite_manager.model_res_config_settings
+msgid "Config Settings"
+msgstr "Ajustes de configuración"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid "Consentimiento"
+msgstr "Consentimiento"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid ""
+"Conservamos sus datos personales durante el\n"
+"                                tiempo necesario para cumplir con la finalidad\n"
+"                                para la cual fueron obtenidos, así como para\n"
+"                                atender posibles responsabilidades derivadas\n"
+"                                del tratamiento, y en todo caso durante los\n"
+"                                plazos de prescripción que establezca la\n"
+"                                legislación aplicable."
+msgstr ""
+"Conservamos sus datos personales durante el\n"
+"                                tiempo necesario para cumplir con la finalidad\n"
+"                                para la cual fueron obtenidos, así como para\n"
+"                                atender posibles responsabilidades derivadas\n"
+"                                del tratamiento, y en todo caso durante los\n"
+"                                plazos de prescripción que establezca la\n"
+"                                legislación aplicable."
 
 #. module: partner_microsite_manager
 #: model:ir.model,name:partner_microsite_manager.model_res_partner
@@ -60,9 +764,89 @@ msgid "Contact"
 msgstr "Contacto"
 
 #. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
-msgid "Contact Us"
-msgstr "Contáctanos"
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.website_view_list_merchant
+msgid "Content"
+msgstr "Contenido"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_company_picker_form
+msgid "Continue"
+msgstr "Continuar"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid "Cookie"
+msgstr "Cookie"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_config_settings__is_microsite_themed
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_website__is_microsite_themed
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.res_config_settings_view_form_microsite
+msgid "Corporate Microsite Look"
+msgstr "Aspecto corporativo del microsite"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "Cover"
+msgstr "Portada"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_button_text
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "Cover button"
+msgstr "Botón de portada"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_hero_image
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "Cover image"
+msgstr "Imagen de portada"
+
+#. module: partner_microsite_manager
+#: model:ir.model,website_form_label:partner_microsite_manager.model_res_partner
+msgid "Create a Customer"
+msgstr "Crear un cliente"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_company_picker__create_uid
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__create_uid
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor_slot__create_uid
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_opening_slot__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_company_picker__create_date
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__create_date
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor_slot__create_date
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_opening_slot__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid ""
+"Cualquier transacción que realice con\n"
+"                                    establecimientos terceros se realiza bajo\n"
+"                                    su propio riesgo."
+msgstr ""
+"Cualquier transacción que realice con\n"
+"                                    establecimientos terceros se realiza bajo\n"
+"                                    su propio riesgo."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid ""
+"Cuando el tratamiento se base en el\n"
+"                                consentimiento, puede retirarlo en cualquier\n"
+"                                momento sin que ello afecte a la licitud del\n"
+"                                tratamiento previo."
+msgstr ""
+"Cuando el tratamiento se base en el\n"
+"                                consentimiento, puede retirarlo en cualquier\n"
+"                                momento sin que ello afecte a la licitud del\n"
+"                                tratamiento previo."
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_map_url
@@ -70,14 +854,237 @@ msgid "Custom Map URL"
 msgstr "URL de mapa personalizado"
 
 #. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid "Datos necesarios para la prestación de nuestros servicios"
+msgstr "Datos necesarios para la prestación de nuestros servicios"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_delivery_info
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "Delivery"
+msgstr "Entrega"
+
+#. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_delivery_info
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
 msgid "Delivery / Shipping"
 msgstr "Entrega / Envío"
 
 #. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_logo_form
+msgid "Discard"
+msgstr "Descartar"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_company_picker__display_name
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__display_name
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor_slot__display_name
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_opening_slot__display_name
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__display_name
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_config_settings__display_name
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_partner__display_name
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_website__display_name
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_website_page__display_name
+msgid "Display Name"
+msgstr "Nombre mostrado"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid "Duración"
+msgstr "Duración"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_microsite_company_picker__selected_company_website_url
+msgid "E.g. https://www.mydomain.com"
+msgstr "Ej.: https://www.midominio.com"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__editable_company_ids
+msgid "Editable Company"
+msgstr "Comercios editables"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor_slot__editor_id
+msgid "Editor"
+msgstr "Editor"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid ""
+"El mero acceso y/o utilización del sitio web\n"
+"                                significa la plena aceptación de las presentes\n"
+"                                condiciones generales de uso."
+msgstr ""
+"El mero acceso y/o utilización del sitio web\n"
+"                                significa la plena aceptación de las presentes\n"
+"                                condiciones generales de uso."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid "El responsable del tratamiento de datos es:"
+msgstr "El responsable del tratamiento de datos es:"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid ""
+"El sitio web actúa únicamente como\n"
+"                                    intermediario de información sobre\n"
+"                                    productos y servicios."
+msgstr ""
+"El sitio web actúa únicamente como\n"
+"                                    intermediario de información sobre\n"
+"                                    productos y servicios."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid ""
+"El tratamiento de datos personales se realiza\n"
+"                                de conformidad con nuestra"
+msgstr ""
+"El tratamiento de datos personales se realiza\n"
+"                                de conformidad con nuestra"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid ""
+"El usuario deberá respetar en todo momento los\n"
+"                                términos y condiciones establecidos. De forma\n"
+"                                expresa el usuario manifiesta que:"
+msgstr ""
+"El usuario deberá respetar en todo momento los\n"
+"                                términos y condiciones establecidos. De forma\n"
+"                                expresa el usuario manifiesta que:"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid ""
+"El usuario puede permitir, bloquear o eliminar\n"
+"                                las cookies instaladas en su equipo mediante la\n"
+"                                configuración de las opciones del navegador\n"
+"                                instalado en su ordenador o dispositivo móvil:"
+msgstr ""
+"El usuario puede permitir, bloquear o eliminar\n"
+"                                las cookies instaladas en su equipo mediante la\n"
+"                                configuración de las opciones del navegador\n"
+"                                instalado en su ordenador o dispositivo móvil:"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid ""
+"En concreto, este sitio web utiliza las\n"
+"                                siguientes cookies propias:"
+msgstr ""
+"En concreto, este sitio web utiliza las\n"
+"                                siguientes cookies propias:"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice_content
+msgid ""
+"En cumplimiento del artículo 10 de la Ley 34/2002,\n"
+"                        de servicios de la sociedad de la información y de\n"
+"                        comercio electrónico (LSSI-CE), se informa de los\n"
+"                        siguientes datos identificativos:"
+msgstr ""
+"En cumplimiento del artículo 10 de la Ley 34/2002,\n"
+"                        de servicios de la sociedad de la información y de\n"
+"                        comercio electrónico (LSSI-CE), se informa de los\n"
+"                        siguientes datos identificativos:"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid "En este sitio web recopilamos:"
+msgstr "En este sitio web recopilamos:"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid "En particular, se consideran como marco de referencia:"
+msgstr "En particular, se consideran como marco de referencia:"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid ""
+"Estas condiciones se han redactado en español.\n"
+"                                Las versiones en otros idiomas son traducciones\n"
+"                                automáticas que se ofrecen únicamente a título\n"
+"                                informativo; en caso de discrepancia,\n"
+"                                prevalecerá la versión en español."
+msgstr ""
+"Estas condiciones se han redactado en español.\n"
+"                                Las versiones en otros idiomas son traducciones\n"
+"                                automáticas que se ofrecen únicamente a título\n"
+"                                informativo; en caso de discrepancia,\n"
+"                                prevalecerá la versión en español."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid ""
+"Este sitio web no utiliza cookies analíticas de\n"
+"                                terceros (como Google Analytics) ni cookies\n"
+"                                publicitarias."
+msgstr ""
+"Este sitio web no utiliza cookies analíticas de\n"
+"                                terceros (como Google Analytics) ni cookies\n"
+"                                publicitarias."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid ""
+"Este sitio web utiliza cookies. Para más\n"
+"                                información, consulte nuestra"
+msgstr ""
+"Este sitio web utiliza cookies. Para más\n"
+"                                información, consulte nuestra"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_microsite_company_picker__company_ids
+msgid "Every real shop of yours that has its own site."
+msgstr "Cada una de tus tiendas reales que tiene su propio sitio."
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__social_facebook
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "Facebook"
+msgstr "Facebook"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid "Finalidad"
+msgstr "Finalidad"
+
+#. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
 msgid "Find Us"
-msgstr "Encuéntranos"
+msgstr "Dónde estamos"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid "Follow us"
+msgstr "Síguenos"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_content_editor_slot__weekday__4
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_opening_slot__weekday__4
+msgid "Friday"
+msgstr "Viernes"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid "Google Chrome"
+msgstr "Google Chrome"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid ""
+"Guarda su decisión sobre el uso\n"
+"                                                de cookies para no volver a\n"
+"                                                preguntarle"
+msgstr ""
+"Guarda su decisión sobre el uso\n"
+"                                                de cookies para no volver a\n"
+"                                                preguntarle"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__has_microsite
@@ -85,6 +1092,33 @@ msgstr "Encuéntranos"
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_users__has_microsite
 msgid "Has Microsite"
 msgstr "Tiene microsite"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid "Hasta 1 año"
+msgstr "Hasta 1 año"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "Header"
+msgstr "Cabecera"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "Heading"
+msgstr "Título"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_name
+msgid ""
+"Heading printed on the microsite homepage. Falls back to the company name. "
+"The shop's trade name lives on the company itself."
+msgstr ""
+"Titular que se muestra en la portada del microsite. Si se deja vacío, se usa"
+" el nombre de la compañía. El nombre comercial del comercio está en la "
+"propia compañía."
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_button_text
@@ -97,9 +1131,70 @@ msgid "Hero Image"
 msgstr "Imagen de cabecera"
 
 #. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_homepage_page_id
+msgid "Homepage published by the 'Publish Homepage' action."
+msgstr "Página de inicio publicada por la acción «Publicar página de inicio»."
+
+#. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
-msgid "Identity"
-msgstr "Identidad"
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "How your shop is called on its page"
+msgstr "Cómo se llama tu comercio en su página"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_company_picker__id
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__id
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor_slot__id
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_opening_slot__id
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__id
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_config_settings__id
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_partner__id
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_website__id
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_website_page__id
+msgid "ID"
+msgstr "ID"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid ""
+"Identifica la sesión del\n"
+"                                                usuario y permite el acceso a\n"
+"                                                zonas restringidas y al proceso\n"
+"                                                de compra"
+msgstr ""
+"Identifica la sesión del\n"
+"                                                usuario y permite el acceso a\n"
+"                                                zonas restringidas y al proceso\n"
+"                                                de compra"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid ""
+"Implementamos medidas de seguridad técnicas y\n"
+"                                organizativas para proteger sus datos\n"
+"                                personales contra accesos no autorizados,\n"
+"                                alteraciones, pérdidas o destrucción."
+msgstr ""
+"Implementamos medidas de seguridad técnicas y\n"
+"                                organizativas para proteger sus datos\n"
+"                                personales contra accesos no autorizados,\n"
+"                                alteraciones, pérdidas o destrucción."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid "Información de contacto (nombre, email, teléfono)"
+msgstr "Información de contacto (nombre, email, teléfono)"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid "Información de navegación (cookies, dirección IP)"
+msgstr "Información de navegación (cookies, dirección IP)"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__social_instagram
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "Instagram"
+msgstr "Instagram"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_intro_image
@@ -112,6 +1207,23 @@ msgid "Intro Banner Title"
 msgstr "Título del banner de introducción"
 
 #. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_intro_title
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "Intro banner"
+msgstr "Banner de entrada"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_intro_image
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "Intro banner image"
+msgstr "Imagen del banner de entrada"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid "Introducción"
+msgstr "Introducción"
+
+#. module: partner_microsite_manager
 #. odoo-python
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 msgid ""
@@ -122,11 +1234,182 @@ msgstr ""
 "16:30-20:00 / S 10:00-14:00'."
 
 #. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid ""
+"La información de carácter personal se refiere\n"
+"                                a cualquier información que se relacione con\n"
+"                                una persona física identificada o\n"
+"                                identificable."
+msgstr ""
+"La información de carácter personal se refiere\n"
+"                                a cualquier información que se relacione con\n"
+"                                una persona física identificada o\n"
+"                                identificable."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid ""
+"La información sobre las cookies que utiliza\n"
+"                                este sitio web está disponible en la"
+msgstr ""
+"La información sobre las cookies que utiliza\n"
+"                                este sitio web está disponible en la"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid ""
+"La resolución de conflictos se regirá por la\n"
+"                                legislación española. Nos sometemos a los\n"
+"                                Jueces y Tribunales de Las Palmas de Gran\n"
+"                                Canaria."
+msgstr ""
+"La resolución de conflictos se regirá por la\n"
+"                                legislación española. Nos sometemos a los\n"
+"                                Jueces y Tribunales de Las Palmas de Gran\n"
+"                                Canaria."
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_button_text
+msgid ""
+"Label of the call-to-action button of the hero section. Falls back to "
+"'Shop'."
+msgstr ""
+"Etiqueta del botón de llamada a la acción de la sección hero. Si se deja "
+"vacía, se usa «Tienda»."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid ""
+"Las cookies son esenciales para el\n"
+"                                funcionamiento de Internet, aportando\n"
+"                                innumerables ventajas en la prestación de\n"
+"                                servicios interactivos, facilitando la\n"
+"                                navegación y usabilidad de las páginas web."
+msgstr ""
+"Las cookies son esenciales para el\n"
+"                                funcionamiento de Internet, aportando\n"
+"                                innumerables ventajas en la prestación de\n"
+"                                servicios interactivos, facilitando la\n"
+"                                navegación y usabilidad de las páginas web."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid ""
+"Las cookies son pequeños archivos de datos que\n"
+"                                se envían al ordenador del Usuario, teléfono\n"
+"                                móvil u otro dispositivo de acceso cuando\n"
+"                                visita una página web y que permiten obtener y\n"
+"                                recopilar información relativa a su navegación."
+msgstr ""
+"Las cookies son pequeños archivos de datos que\n"
+"                                se envían al ordenador del Usuario, teléfono\n"
+"                                móvil u otro dispositivo de acceso cuando\n"
+"                                visita una página web y que permiten obtener y\n"
+"                                recopilar información relativa a su navegación."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid ""
+"Las presentes condiciones generales de uso\n"
+"                                regulan los términos y condiciones de acceso y\n"
+"                                uso de este sitio web, propiedad de"
+msgstr ""
+"Las presentes condiciones generales de uso\n"
+"                                regulan los términos y condiciones de acceso y\n"
+"                                uso de este sitio web, propiedad de"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid ""
+"Las presentes condiciones se rigen y se\n"
+"                                interpretan de acuerdo con las Leyes de España.\n"
+"                                Para cualquier reclamación serán competentes\n"
+"                                los jueces y tribunales de Las Palmas de Gran\n"
+"                                Canaria."
+msgstr ""
+"Las presentes condiciones se rigen y se\n"
+"                                interpretan de acuerdo con las Leyes de España.\n"
+"                                Para cualquier reclamación serán competentes\n"
+"                                los jueces y tribunales de Las Palmas de Gran\n"
+"                                Canaria."
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_company_picker__write_uid
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__write_uid
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor_slot__write_uid
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_opening_slot__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_company_picker__write_date
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__write_date
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor_slot__write_date
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_opening_slot__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid ""
+"Ley 34/2002, de servicios de la sociedad de\n"
+"                                    la información y de comercio electrónico\n"
+"                                    (LSSI)"
+msgstr ""
+"Ley 34/2002, de servicios de la sociedad de\n"
+"                                    la información y de comercio electrónico\n"
+"                                    (LSSI)"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid ""
+"Ley Orgánica 3/2018 de Protección de Datos\n"
+"                                    Personales y garantía de los derechos\n"
+"                                    digitales (LOPDGDD)"
+msgstr ""
+"Ley Orgánica 3/2018 de Protección de Datos\n"
+"                                    Personales y garantía de los derechos\n"
+"                                    digitales (LOPDGDD)"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__social_linkedin
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "LinkedIn"
+msgstr "LinkedIn"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid ""
+"Los datos se tratan para las siguientes\n"
+"                                finalidades, cada una amparada en la base\n"
+"                                jurídica del artículo 6.1 del RGPD que se\n"
+"                                indica:"
+msgstr ""
+"Los datos se tratan para las siguientes\n"
+"                                finalidades, cada una amparada en la base\n"
+"                                jurídica del artículo 6.1 del RGPD que se\n"
+"                                indica:"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_map_url
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "Map"
+msgstr "Mapa"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid "Mediante la presente Política de Privacidad,"
+msgstr "Mediante la presente Política de Privacidad,"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid "Medición de campañas (no necesaria)"
+msgstr "Medición de campañas (no necesaria)"
+
+#. module: partner_microsite_manager
 #. odoo-python
-#: code:addons/partner_microsite_manager/models/res_company.py:0
 #: code:addons/partner_microsite_manager/models/res_partner.py:0
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_partner_form_microsite
 msgid "Microsite"
 msgstr "Microsite"
 
@@ -137,9 +1420,127 @@ msgid "Microsite Company"
 msgstr "Compañía del microsite"
 
 #. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_social_facebook
+msgid "Microsite Facebook"
+msgstr "Facebook del microsite"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_name
+msgid "Microsite Heading"
+msgstr "Titular del microsite"
+
+#. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_homepage_page_id
 msgid "Microsite Homepage"
 msgstr "Portada del microsite"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_social_instagram
+msgid "Microsite Instagram"
+msgstr "Instagram del microsite"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_social_linkedin
+msgid "Microsite LinkedIn"
+msgstr "LinkedIn del microsite"
+
+#. module: partner_microsite_manager
+#: model:ir.model,name:partner_microsite_manager.model_microsite_opening_slot
+msgid "Microsite Opening Slot"
+msgstr "Franja horaria del microsite"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_social_twitter
+msgid "Microsite X/Twitter"
+msgstr "X/Twitter del microsite"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_social_youtube
+msgid "Microsite YouTube"
+msgstr "YouTube del microsite"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid "Microsoft Edge"
+msgstr "Microsoft Edge"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_content_editor_slot__weekday__0
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_opening_slot__weekday__0
+msgid "Monday"
+msgstr "Lunes"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid "Mozilla Firefox"
+msgstr "Mozilla Firefox"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+#: model:ir.actions.server,name:partner_microsite_manager.action_own_websites
+#: model:ir.ui.menu,name:partner_microsite_manager.menu_own_websites
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.website_view_list_merchant
+msgid "My shops"
+msgstr "Mis sitios"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "Name on the microsite"
+msgstr "Nombre en el microsite"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid ""
+"No asumimos responsabilidad por la calidad,\n"
+"                                    disponibilidad, precio o cualquier otro\n"
+"                                    aspecto de los productos o servicios\n"
+"                                    ofrecidos por terceros."
+msgstr ""
+"No asumimos responsabilidad por la calidad,\n"
+"                                    disponibilidad, precio o cualquier otro\n"
+"                                    aspecto de los productos o servicios\n"
+"                                    ofrecidos por terceros."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid ""
+"No garantizamos la exactitud, integridad o\n"
+"                                    actualidad de la información proporcionada."
+msgstr ""
+"No garantizamos la exactitud, integridad o\n"
+"                                    actualidad de la información proporcionada."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid "No interferirá en el funcionamiento normal del sitio"
+msgstr "No interferirá en el funcionamiento normal del sitio"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid "No realizará actividades ilícitas o lesivas"
+msgstr "No realizará actividades ilícitas o lesivas"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid "No transmitirá virus o código dañino"
+msgstr "No transmitirá virus o código dañino"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid "Only website designers can publish a microsite homepage."
+msgstr ""
+"Solo los diseñadores de sitios web pueden publicar la página de inicio de un"
+" microsite."
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid "Open now"
+msgstr "Abierto ahora"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_opening_hours
@@ -148,9 +1549,117 @@ msgid "Opening Hours"
 msgstr "Horario"
 
 #. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_opening_slot_ids
+msgid "Opening Periods"
+msgstr "Franjas horarias"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_opening_hours
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "Opening hours"
+msgstr "Horario"
+
+#. module: partner_microsite_manager
+#: model:ir.model,name:partner_microsite_manager.model_microsite_content_editor_slot
+msgid "Opening period of the page content editor"
+msgstr "Franja horaria del editor de contenido de la página"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__opening_slot_ids
+msgid "Opening periods"
+msgstr "Franjas horarias"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor_slot__open_time
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_opening_slot__open_time
+msgid "Opens"
+msgstr "Abre"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/website.py:0
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.website_view_list_merchant
+msgid "Orders"
+msgstr "Pedidos"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_website__merchant_can_open_orders
+msgid "Orders reachable"
+msgstr "Pedidos accesibles"
+
+#. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
 msgid "Our Services"
 msgstr "Nuestros servicios"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_about_text
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "Our story"
+msgstr "Nuestra historia"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_about_title
+msgid "Our story: heading"
+msgstr "Nuestra historia: título"
+
+#. module: partner_microsite_manager
+#: model:ir.model,name:partner_microsite_manager.model_website_page
+msgid "Page"
+msgstr "Página"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/website.py:0
+#: code:addons/partner_microsite_manager/wizards/microsite_company_picker.py:0
+#: code:addons/partner_microsite_manager/wizards/microsite_content_editor.py:0
+#: model:ir.actions.server,name:partner_microsite_manager.action_own_microsite_content
+#: model:ir.ui.menu,name:partner_microsite_manager.menu_own_microsite_content
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "Page content"
+msgstr "Contenido de la página"
+
+#. module: partner_microsite_manager
+#: model:ir.model,name:partner_microsite_manager.model_microsite_content_editor
+msgid "Page content of my shop"
+msgstr "Contenido de la página de mi comercio"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/wizards/microsite_content_editor.py:0
+msgid "Page content of the shops"
+msgstr "Contenido de página de los comercios"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/website.py:0
+msgid "Pages"
+msgstr "Páginas"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_website__merchant_can_open_pages
+msgid "Pages reachable"
+msgstr "Páginas accesibles"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid ""
+"Para cualquier consulta relacionada con estos\n"
+"                                términos y condiciones, puede contactarnos en:"
+msgstr ""
+"Para cualquier consulta relacionada con estos\n"
+"                                términos y condiciones, puede contactarnos en:"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid ""
+"Para ejercer estos derechos, contacte con\n"
+"                                nosotros a través del email:"
+msgstr ""
+"Para ejercer estos derechos, contacte con\n"
+"                                nosotros a través del email:"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
@@ -163,9 +1672,114 @@ msgid "Parking / Directions"
 msgstr "Parking / Cómo llegar"
 
 #. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_parking_info
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
-msgid "Practical Information"
+msgid "Parking and directions"
+msgstr "Aparcamiento y cómo llegar"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice_content
+msgid ""
+"Pendiente del texto definitivo de la asesoría\n"
+"                            jurídica. Hasta que se incorpore, siguen siendo\n"
+"                            de aplicación la"
+msgstr ""
+"Pendiente del texto definitivo de la asesoría\n"
+"                            jurídica. Hasta que se incorpore, siguen siendo\n"
+"                            de aplicación la"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid "Personalización (necesaria)"
+msgstr "Personalización (necesaria)"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_phone
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "Phone"
+msgstr "Teléfono"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_phone
+msgid ""
+"Phone shown on the microsite. Falls back to the company contact's phone when"
+" empty."
+msgstr ""
+"Teléfono mostrado en el microsite. Si se deja vacío, se usa el teléfono del "
+"contacto de la compañía."
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_microsite_company_picker__selected_company_id
+msgid ""
+"Pick one of your own shops. Its address is shown below so two similarly "
+"named shops are not confused."
+msgstr ""
+"Elige una de tus tiendas. Su dirección se muestra debajo para no confundir "
+"dos tiendas con nombres parecidos."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid ""
+"Plataforma desarrollada en el marco del proyecto Canarias Conectada, "
+"cofinanciado por la Unión Europea a través del Programa FEDER Canarias "
+"2021-2027 — Consejería de Economía, Industria, Comercio y Autónomos del "
+"Gobierno de Canarias. Plataforma que integra los resultados del proyecto "
+"«Guanarteme en tu mano», financiado por la Unión Europea – NextGenerationEU,"
+" en el marco del Plan de Recuperación, Transformación y Resiliencia — "
+"Ministerio de Industria, Comercio y Turismo y Gobierno de Canarias."
+msgstr ""
+"Plataforma desarrollada en el marco del proyecto Canarias Conectada, "
+"cofinanciado por la Unión Europea a través del Programa FEDER Canarias "
+"2021-2027 — Consejería de Economía, Industria, Comercio y Autónomos del "
+"Gobierno de Canarias. Plataforma que integra los resultados del proyecto "
+"«Guanarteme en tu mano», financiado por la Unión Europea – NextGenerationEU,"
+" en el marco del Plan de Recuperación, Transformación y Resiliencia — "
+"Ministerio de Industria, Comercio y Turismo y Gobierno de Canarias."
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/wizards/microsite_company_picker.py:0
+msgid "Please choose a shop first."
+msgstr "Elige primero una tienda."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.footer_platform_legal_links
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice_content
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid "Política de Cookies"
+msgstr "Política de Cookies"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice_content
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid "Política de Privacidad"
+msgstr "Política de Privacidad"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.footer_platform_legal_links
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
+msgid "Política de privacidad"
+msgstr "Política de privacidad"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "Practical information"
 msgstr "Información práctica"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_phone
+msgid "Public Phone"
+msgstr "Teléfono público"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_phone2
+msgid "Public Phone 2"
+msgstr "Teléfono público 2"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
@@ -178,9 +1792,129 @@ msgid "Publish Homepage"
 msgstr "Publicar portada"
 
 #. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid ""
+"Queda expresamente prohibida la reproducción,\n"
+"                                distribución o transformación de cualquier\n"
+"                                contenido sin autorización previa."
+msgstr ""
+"Queda expresamente prohibida la reproducción,\n"
+"                                distribución o transformación de cualquier\n"
+"                                contenido sin autorización previa."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid ""
+"Recuerda el idioma elegido para\n"
+"                                                mostrar el sitio"
+msgstr ""
+"Recuerda el idioma elegido para\n"
+"                                                mostrar el sitio"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid ""
+"Registran el origen de la\n"
+"                                                visita cuando se llega al sitio\n"
+"                                                desde un enlace de campaña;\n"
+"                                                solo se instalan si usted\n"
+"                                                acepta las cookies opcionales"
+msgstr ""
+"Registran el origen de la\n"
+"                                                visita cuando se llega al sitio\n"
+"                                                desde un enlace de campaña;\n"
+"                                                solo se instalan si usted\n"
+"                                                acepta las cookies opcionales"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid ""
+"Reglamento (UE) 2016/679 del Parlamento\n"
+"                                    Europeo y del Consejo (RGPD)"
+msgstr ""
+"Reglamento (UE) 2016/679 del Parlamento\n"
+"                                    Europeo y del Consejo (RGPD)"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_res_config_settings__is_microsite_themed
+msgid ""
+"Render the corporate microsite footer (black footer with social links, legal"
+" pages and certification badges) on the selected website. Leave off for the "
+"directory and the main website."
+msgstr ""
+"Muestra el pie corporativo del microsite (pie negro con enlaces a redes "
+"sociales, páginas legales y distintivos de certificación) en el sitio web "
+"seleccionado. Déjalo desactivado para el directorio y el sitio web "
+"principal."
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_website__is_microsite_themed
+msgid ""
+"Render the corporate microsite footer (black footer with social links, legal"
+" pages and certification badges) on this website. Leave off for the "
+"directory and the main website."
+msgstr ""
+"Muestra el pie corporativo del microsite (pie negro con enlaces a redes "
+"sociales, páginas legales y distintivos de certificación) en este sitio web."
+" Déjalo desactivado para el directorio y el sitio web principal."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.res_config_settings_view_form_microsite
+msgid ""
+"Render the corporate microsite footer (social links, legal pages and "
+"certification badges) on this website."
+msgstr ""
+"Muestra el pie corporativo del microsite (enlaces a redes sociales, páginas "
+"legales y distintivos de certificación) en este sitio web."
+
+#. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
-msgid "Services"
-msgstr "Servicios"
+msgid ""
+"Replace the homepage of the company website with the dynamic microsite "
+"template."
+msgstr ""
+"Sustituye la página de inicio del sitio web de la compañía por la plantilla "
+"dinámica del microsite."
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_microsite_content_editor__company_id
+msgid "Resolved from your account. It is not a choice."
+msgstr "Se deduce de tu cuenta. No es una elección."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid "Safari"
+msgstr "Safari"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_content_editor_slot__weekday__5
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_opening_slot__weekday__5
+msgid "Saturday"
+msgstr "Sábado"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_logo_form
+msgid "Save"
+msgstr "Guardar"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_phone2
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "Second phone"
+msgstr "Segundo teléfono"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_phone2
+msgid "Second phone shown on the microsite, below the first one."
+msgstr "Segundo teléfono mostrado en el microsite, debajo del primero."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid "Send"
+msgstr "Enviar"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_services_text
@@ -193,9 +1927,162 @@ msgid "Services Title"
 msgstr "Título de servicios"
 
 #. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__company_id
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_logo_form
 msgid "Shop"
 msgstr "Tienda"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_company_picker__selected_company_id
+msgid "Shop to edit"
+msgstr "Tienda a editar"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid ""
+"Shown at the bottom of your page. Leave a\n"
+"                                network empty to hide its icon."
+msgstr ""
+"Se muestran al pie de tu página. Deja una red vacía para ocultar su icono."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_logo_form
+msgid ""
+"Shown in the header of every page of your website.\n"
+"                        Recommended: a PNG with a transparent background (JPG\n"
+"                        also works), wider than tall (for example 400 x 120\n"
+"                        pixels) and no larger than 512 pixels on either side."
+msgstr ""
+"Se muestra en la cabecera de todas las páginas de tu sitio web. Recomendado:"
+" un PNG con fondo transparente (también vale JPG), más ancho que alto (por "
+"ejemplo 400 x 120 píxeles) y no más de 512 píxeles por lado."
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_microsite_content_editor__logo
+msgid ""
+"Shown in the header of your website. Recommended: a PNG with a transparent "
+"background (JPG also works), wider than tall, for example 400 x 120 pixels, "
+"and no more than 512 pixels on either side. Larger images are scaled down."
+msgstr ""
+"Se muestra en la cabecera de tu sitio web. Recomendado: un PNG con fondo "
+"transparente (también vale JPG), más ancho que alto, por ejemplo 400 x 120 "
+"píxeles, y no más de 512 píxeles por lado. Las imágenes más grandes se "
+"reducen."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "Shown on the page"
+msgstr "Así se verá en la página"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "Social networks"
+msgstr "Redes sociales"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_content_editor_slot__weekday__6
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_opening_slot__weekday__6
+msgid "Sunday"
+msgstr "Domingo"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "Tell your customers what you offer"
+msgstr "Cuenta a tu clientela qué ofreces"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "Tell your customers who you are"
+msgstr "Cuenta a tu clientela quién eres"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/website.py:0
+msgid "That website does not belong to your shop."
+msgstr "Ese sitio web no pertenece a tu comercio."
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid ""
+"The map URL must be an https:// address; '%(scheme)s:' links are not "
+"allowed."
+msgstr ""
+"La URL del mapa debe ser una dirección https://; no se permiten enlaces "
+"«%(scheme)s:»."
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/wizards/microsite_content_editor.py:0
+msgid ""
+"The website must be an http:// or https:// address, for example "
+"https://www.example.com."
+msgstr ""
+"El sitio web debe ser una dirección http:// o https://, por ejemplo "
+"https://www.ejemplo.com."
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_partner.py:0
+msgid "This contact has no microsite."
+msgstr "Este contacto no tiene microsite."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid ""
+"This replaces the current homepage of the company website with the microsite"
+" template. Continue?"
+msgstr ""
+"Esto sustituye la portada actual del website de la compañía por la plantilla"
+" del microsite. ¿Continuar?"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_content_editor_slot__weekday__3
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_opening_slot__weekday__3
+msgid "Thursday"
+msgstr "Jueves"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid "Tipo"
+msgstr "Tipo"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice_content
+msgid "Titular del sitio web"
+msgstr "Titular del sitio web"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid ""
+"Todos los contenidos, marcas, logos, dibujos,\n"
+"                                documentación, programas informáticos o\n"
+"                                cualquier otro elemento susceptible de\n"
+"                                protección por la legislación de propiedad\n"
+"                                intelectual o industrial, que sean accesibles\n"
+"                                en el sitio web corresponden exclusivamente a"
+msgstr ""
+"Todos los contenidos, marcas, logos, dibujos,\n"
+"                                documentación, programas informáticos o\n"
+"                                cualquier otro elemento susceptible de\n"
+"                                protección por la legislación de propiedad\n"
+"                                intelectual o industrial, que sean accesibles\n"
+"                                en el sitio web corresponden exclusivamente a"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
+msgid "Todos los derechos reservados"
+msgstr "Todos los derechos reservados"
 
 #. module: partner_microsite_manager
 #. odoo-python
@@ -204,29 +2091,323 @@ msgid ""
 "Too many time ranges for %(day)s: at most %(limit)s per day (morning and "
 "afternoon)."
 msgstr ""
-"Demasiadas franjas horarias para %(day)s: máximo %(limit)s por día (mañana "
-"y tarde)."
+"Demasiadas franjas horarias para %(day)s: máximo %(limit)s por día (mañana y"
+" tarde)."
 
 #. module: partner_microsite_manager
-#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_name
-msgid "Trade Name"
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_name
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "Trade name"
 msgstr "Nombre comercial"
 
 #. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
-msgid ""
-"This replaces the current homepage of the company website with the "
-"microsite template. Continue?"
+#: model:ir.model.fields,help:partner_microsite_manager.field_res_company__has_microsite
+msgid "True when the company has its own website, i.e. a microsite."
 msgstr ""
-"Esto sustituye la portada actual del website de la compañía por la "
-"plantilla del microsite. ¿Continuar?"
+"Verdadero cuando la compañía tiene su propio sitio web, es decir, un "
+"microsite."
 
 #. module: partner_microsite_manager
 #. odoo-python
 #: code:addons/partner_microsite_manager/models/res_company.py:0
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_content_editor_slot__weekday__1
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_opening_slot__weekday__1
+msgid "Tuesday"
+msgstr "Martes"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid "Técnica (necesaria)"
+msgstr "Técnica (necesaria)"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice_content
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid "Términos y Condiciones"
+msgstr "Términos y Condiciones"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.footer_platform_legal_links
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
+msgid "Términos y condiciones"
+msgstr "Términos y condiciones"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid "Usted tiene derecho a:"
+msgstr "Usted tiene derecho a:"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid "Utilizará el sitio web de forma diligente"
+msgstr "Utilizará el sitio web de forma diligente"
+
+#. module: partner_microsite_manager
+#: model:ir.model,name:partner_microsite_manager.model_website
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__company_website
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "Website"
+msgstr "Sitio web"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/wizards/microsite_content_editor.py:0
+#: model:ir.actions.server,name:partner_microsite_manager.action_own_website_logo
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__logo
+#: model:ir.ui.menu,name:partner_microsite_manager.menu_own_website_logo
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_logo_form
+msgid "Website logo"
+msgstr "Logo del sitio web"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_content_editor_slot__weekday__2
+#: model:ir.model.fields.selection,name:partner_microsite_manager.selection__microsite_opening_slot__weekday__2
+msgid "Wednesday"
+msgstr "Miércoles"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor_slot__weekday
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_opening_slot__weekday
+msgid "Weekday"
+msgstr "Día"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_services_text
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "What we do"
+msgstr "Qué hacemos"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_services_title
+msgid "What we do: heading"
+msgstr "Qué hacemos: título"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_microsite_content_editor__website_url
+msgid "Where the page this screen edits can be seen."
+msgstr "Dónde se ve la página que edita esta pantalla."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid "Write to us"
+msgstr "Escríbenos"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__social_twitter
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "X/Twitter"
+msgstr "X/Twitter"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_company_picker_form
 msgid ""
-"Company %(name)s has no website yet. Create its website first (Settings > "
-"Websites)."
+"You manage more than one shop. Choose which one's\n"
+"                        page content you want to edit."
 msgstr ""
-"La compañía %(name)s aún no tiene website. Cree primero su website "
-"(Ajustes > Websites)."
+"Gestionas más de una tienda. Elige de cuál quieres editar el contenido de la"
+" página."
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__social_youtube
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "YouTube"
+msgstr "YouTube"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/wizards/microsite_content_editor.py:0
+msgid ""
+"Your account is not linked to a shop with its own site, so there is no page "
+"content to edit."
+msgstr ""
+"Tu cuenta no está vinculada a un comercio con sitio propio, así que no hay "
+"contenido de página que editar."
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/wizards/microsite_content_editor.py:0
+msgid ""
+"Your account is not linked to a shop with its own site, so there is no "
+"website logo to change."
+msgstr ""
+"Tu cuenta no está vinculada a un comercio con sitio propio, así que no hay "
+"logo del sitio web que cambiar."
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/wizards/microsite_content_editor.py:0
+msgid "Your account is not linked to that shop."
+msgstr "Tu cuenta no está vinculada a esa tienda."
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_microsite_content_editor__company_website
+msgid ""
+"Your shop's own site outside this platform, shown with a globe icon next to "
+"the social links."
+msgstr ""
+"El sitio web propio de tu comercio fuera de esta plataforma, mostrado con un"
+" icono de globo junto a las redes sociales."
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_company_picker__company_ids
+msgid "Your shops"
+msgstr "Tus sitios"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice_content
+msgid "de este sitio."
+msgstr "de este sitio."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+msgid "e.g. L-V 10:00-13:30 / L-V 16:30-20:00 / S 10:00-14:00"
+msgstr "p. ej. L-V 10:00-13:30 / L-V 16:30-20:00 / S 10:00-14:00"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "https://www.example.com"
+msgstr "https://www.ejemplo.com"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "https://www.facebook.com/..."
+msgstr "https://www.facebook.com/..."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "https://www.instagram.com/..."
+msgstr "https://www.instagram.com/..."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "https://www.linkedin.com/company/..."
+msgstr "https://www.linkedin.com/company/..."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "https://www.youtube.com/..."
+msgstr "https://www.youtube.com/..."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "https://x.com/..."
+msgstr "https://x.com/..."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid ""
+"o a sus\n"
+"                                legítimos titulares."
+msgstr ""
+"o a sus\n"
+"                                legítimos titulares."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid ""
+"pretende\n"
+"                                mostrar su compromiso respecto al cumplimiento\n"
+"                                de las normativas y legislaciones que se deriva\n"
+"                                del tratamiento de la información necesaria\n"
+"                                para la prestación de sus servicios."
+msgstr ""
+"pretende\n"
+"                                mostrar su compromiso respecto al cumplimiento\n"
+"                                de las normativas y legislaciones que se deriva\n"
+"                                del tratamiento de la información necesaria\n"
+"                                para la prestación de sus servicios."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid ""
+"se reserva\n"
+"                                la facultad de modificar en cualquier momento\n"
+"                                las condiciones generales de uso del sitio web.\n"
+"                                Se recomienda consultar periódicamente estos\n"
+"                                términos."
+msgstr ""
+"se reserva\n"
+"                                la facultad de modificar en cualquier momento\n"
+"                                las condiciones generales de uso del sitio web.\n"
+"                                Se recomienda consultar periódicamente estos\n"
+"                                términos."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
+msgid "www.aepd.es"
+msgstr "www.aepd.es"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
+msgid ""
+"y la normativa vigente en materia de protección\n"
+"                                de datos."
+msgstr ""
+"y la normativa vigente en materia de protección\n"
+"                                de datos."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice_content
+msgid "y los"
+msgstr "y los"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid "¿Qué cookies utilizamos?"
+msgstr "¿Qué cookies utilizamos?"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
+msgid "¿Qué son las cookies?"
+msgstr "¿Qué son las cookies?"
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+msgid "<i class=\"fa fa-external-link fa-fw me-1\"/>View on Google Maps"
+msgstr "<i class=\"fa fa-external-link fa-fw me-1\"/>Ver en Google Maps"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_map_share_url
+msgid "Google Maps Link"
+msgstr "Enlace de Google Maps"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_microsite_content_editor__microsite_map_url
+msgid "Paste any Google Maps link (share or embed); it will be converted automatically."
+msgstr "Pegue cualquier enlace de Google Maps (para compartir o para insertar); se convertirá automáticamente."
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_map_url
+msgid "Paste any Google Maps link (share or embed); it will be converted automatically. When empty, the map is built from the company address."
+msgstr "Pegue cualquier enlace de Google Maps (para compartir o para insertar); se convertirá automáticamente. Si se deja vacío, el mapa se genera a partir de la dirección de la compañía."
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_map_share_url
+msgid "The link that was pasted as the map, before it was converted to an embeddable one."
+msgstr "El enlace que se pegó como mapa, antes de convertirlo en uno insertable."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "https://maps.app.goo.gl/..."
+msgstr "https://maps.app.goo.gl/..."
+
+#. module: partner_microsite_manager
+#: model:ir.actions.server,name:partner_microsite_manager.ir_cron_retry_map_short_links_ir_actions_server
+msgid "Microsites: retry unresolved Google Maps short links"
+msgstr "Micrositios: reintentar los enlaces cortos de Google Maps sin resolver"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid "The Google Maps link must be an http:// or https:// address; '%(scheme)s:' links are not allowed."
+msgstr "El enlace de Google Maps debe ser una dirección http:// o https://; no se permiten enlaces «%(scheme)s:»."

@@ -74,3 +74,31 @@ class TestSwitchSameDomain(HttpCase):
             self.other_website.id,
             "the selected website must be the one the session now renders",
         )
+
+    def test_the_editor_is_told_not_to_hop_domains_either(self):
+        """The half of this that nobody reached.
+
+        Picking a site from the switcher never gets as far as
+        `/website/force`: the systray component sends the whole browser to the
+        site's domain first, and only the `else` branch of that check asks the
+        server at all. So the controller above can be perfectly correct and the
+        switch still hops -- which is what happened, and what got reported a
+        second time.
+
+        `website_bypass_domain_redirect` is core's own flag for it: read in
+        `website_switcher_systray_item.js` and written nowhere, a hook left for
+        support. With it on, the component asks the server, and the server is
+        where this module already had an answer.
+
+        Read out of the backend page rather than by calling `session_info()`:
+        that method builds its answer from `request`, so calling it outside one
+        raises -- and what reaches the browser is the thing under test anyway.
+        """
+        self.authenticate("switch_editor", self.password)
+        page = self.url_open("/odoo")
+        self.assertEqual(page.status_code, 200)
+        self.assertIn(
+            '"website_bypass_domain_redirect": true',
+            page.text,
+            "without this the browser leaves before the controller is asked",
+        )

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<templates xml:space="preserve">
+
+    <t t-name="company_facilities.FacilityCheckboxesField">
+        <div aria-atomic="true" class="o_cf_facility_checkboxes">
+            <t t-foreach="groups" t-as="group" t-key="group.id">
+                <div class="o_cf_facility_checkboxes__group mb-3">
+                    <h6 class="o_cf_facility_checkboxes__heading text-uppercase text-muted small fw-bold mb-2"
+                        t-esc="group.name"/>
+                    <t t-foreach="group.items" t-as="item" t-key="item[0]">
+                        <div>
+                            <CheckBox
+                                value="isSelected(item)"
+                                disabled="props.readonly"
+                                onChange="(ev) => this.onChange(item[0], ev)"
+                            >
+                                <t t-esc="item[1]"/>
+                            </CheckBox>
+                        </div>
+                    </t>
+                </div>
+            </t>
+        </div>
+    </t>
+
+</templates>

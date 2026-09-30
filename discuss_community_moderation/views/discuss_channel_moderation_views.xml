@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="discuss_channel_moderation_view_form" model="ir.ui.view">
+        <field name="name">discuss.channel.moderation.form.community</field>
+        <field name="model">discuss.channel.moderation</field>
+        <field
+            name="inherit_id"
+            ref="discuss_channel_moderation.discuss_channel_moderation_view_form"
+        />
+        <field name="arch" type="xml">
+            <field name="moderate_portal" position="after">
+                <field name="moderate_community_guests"/>
+                <field name="moderate_new_users"/>
+                <field
+                    name="trust_threshold"
+                    invisible="not moderate_new_users"
+                />
+            </field>
+        </field>
+    </record>
+
+    <record id="discuss_channel_moderation_view_list" model="ir.ui.view">
+        <field name="name">discuss.channel.moderation.list.community</field>
+        <field name="model">discuss.channel.moderation</field>
+        <field
+            name="inherit_id"
+            ref="discuss_channel_moderation.discuss_channel_moderation_view_list"
+        />
+        <field name="arch" type="xml">
+            <field name="moderate_portal" position="after">
+                <field name="moderate_community_guests" optional="show"/>
+                <field name="moderate_new_users" optional="show"/>
+                <field name="trust_threshold" optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

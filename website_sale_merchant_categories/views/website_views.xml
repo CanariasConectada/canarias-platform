@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- "My shops": one more button per row, next to Content, for the
+         owner of several shops (a sole owner never meets this list). -->
+    <record id="website_view_list_merchant_categories" model="ir.ui.view">
+        <field name="name">website.list.merchant.categories</field>
+        <field name="model">website</field>
+        <field name="inherit_id" ref="partner_microsite_manager.website_view_list_merchant"/>
+        <field name="arch" type="xml">
+            <button name="action_microsite_content" position="after">
+                <button name="action_microsite_categories" type="object"
+                        string="Categories" icon="fa-th-large"/>
+            </button>
+        </field>
+    </record>
+
+</odoo>

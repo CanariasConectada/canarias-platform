@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<templates xml:space="preserve">
+
+    <t t-name="discuss_community_moderation.CommunityPendingMessages">
+        <t t-if="props.thread.model === 'discuss.channel'">
+            <div
+                t-foreach="entries"
+                t-as="entry"
+                t-key="entry.id"
+                class="o-cc-PendingMessage px-2 py-1"
+            >
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <span
+                        t-if="entry.state === 'rejected'"
+                        class="badge rounded-pill text-bg-danger"
+                    >Rejected</span>
+                    <span
+                        t-else=""
+                        class="badge rounded-pill text-bg-warning"
+                    >Pending review</span>
+                    <small t-if="entry.date" class="text-muted" t-esc="entry.date"/>
+                </div>
+                <div
+                    class="o-cc-PendingMessage-body opacity-75 fst-italic"
+                    t-out="entry.bodyMarkup"
+                />
+                <div
+                    t-if="entry.state === 'rejected' and entry.rejection_reason"
+                    class="small text-danger"
+                >
+                    Reason: <t t-esc="entry.rejection_reason"/>
+                </div>
+            </div>
+        </t>
+    </t>
+
+    <t
+        t-name="discuss_community_moderation.Thread"
+        t-inherit="mail.Thread"
+        t-inherit-mode="extension"
+    >
+        <xpath expr="//t[@t-foreach='messages']" position="after">
+            <CommunityPendingMessages thread="props.thread"/>
+        </xpath>
+    </t>
+
+</templates>

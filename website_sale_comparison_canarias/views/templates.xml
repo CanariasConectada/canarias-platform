@@ -4,6 +4,49 @@
 <odoo>
 
     <!-- ================================================================
+         THE SWITCH
+         ================================================================
+         Every compare control on the platform sits behind
+         ``website._wscc_comparison_enabled()`` (models/website.py), a
+         platform-wide ``ir.config_parameter`` the admin flips from Website >
+         Configuration > Settings > "Price comparator". Off (the shipped
+         default) means NOT RENDERED: no button, no picker, no bottom bar, no
+         empty wrapper left behind — not hidden with CSS. The two templates
+         right below put core's OWN buttons behind the same condition, so
+         that a product WITH variants (the one case where core renders its
+         button by itself) does not keep a way in either. -->
+    <template
+        id="core_card_compare_switch"
+        inherit_id="website_sale_comparison.add_to_compare"
+        name="Core compare button on the card behind the switch (Canarias)"
+    >
+        <!-- Forcing ``isCompareAvailable`` off, rather than touching the
+             button, keeps core's own alignment placeholder in place. -->
+        <xpath expr="//t[@t-set='isCompareAvailable']" position="after">
+            <t t-if="not (website and website._wscc_comparison_enabled())"
+               t-set="isCompareAvailable" t-value="False"/>
+        </xpath>
+    </template>
+
+    <template
+        id="core_product_page_compare_switch"
+        inherit_id="website_sale_comparison.product_add_to_compare"
+        name="Core compare button on the product page behind the switch (Canarias)"
+    >
+        <!-- AND-ed onto core's own ``t-if`` (``add`` + ``separator="and"``,
+             the inheritance engine's own way of extending a Python
+             attribute), so core's condition stays exactly as core wrote it.
+             NOT a ``replace`` wrapping a ``position="move"``: the engine only
+             extracts a move that is a DIRECT child of the spec, so a move
+             nested in a ``t-if`` is not honoured and the button would be
+             deleted in both states. -->
+        <xpath expr="//button[@data-action='o_comparelist']" position="attributes">
+            <attribute name="t-if" add="website and website._wscc_comparison_enabled()"
+                       separator="and"/>
+        </xpath>
+    </template>
+
+    <!-- ================================================================
          Make "compare" available on EVERY product, modern styling
          ================================================================
          Core's compare button (website_sale_comparison.add_to_compare) only
@@ -15,9 +58,25 @@
          variant id, so the gate is simply too strict for a marketplace that
          compares whole products, not variants of one.
 
-         We reuse core's button (same ``o_add_compare`` hook the comparison
-         interaction listens on) and only change two things: it always renders,
-         and it carries a modern look. -->
+         ``o_add_compare`` IS carried this time, on purpose (2026-08-21):
+         the visitor asked to keep the shop grid on core's own one-by-one
+         flow (click a card, it joins the comparison, the bottom bar picks
+         it up) and reserve the scoped picker (category + "which shop")
+         for the product page alone, where the question of WHAT to compare
+         against actually needs asking. ``o_wscc_compare_btn`` stays for the
+         legible/always-visible skin; ``o_add_compare`` is what makes core's
+         OWN ``ProductComparison`` interaction own the click, exactly the
+         way it owns its own button, disable-after-add included, which is
+         no longer a problem now that this button does not ALSO have to stay
+         clickable to reopen a picker. -->
+    <!-- NO ``aria-label`` on these buttons, on purpose: they already carry
+         visible text, and Odoo's arch translation only substitutes the FIRST
+         occurrence of a source string within one view. With an
+         ``aria-label`` repeating the same words as the visible ``<span>``,
+         the attribute translated and the span the visitor actually reads
+         stayed in English. Reported 2026-08-21. A redundant aria-label on a
+         button that already has visible text is unnecessary for
+         accessibility anyway. -->
     <!-- The Canarias aggregated shop hides the whole add-to-cart button row
          (the cart lives on each merchant's own site), and core injects its
          compare button INTO that row — so on our shop it never rendered.
@@ -27,21 +86,21 @@
     <template
         id="card_compare_button"
         inherit_id="website_sale.products_item"
-        name="Comparar en la tarjeta del shop (Canarias)"
+        name="Compare button on the shop card (Canarias)"
     >
         <xpath expr="//*[hasclass('o_wsale_products_item_title')]" position="after">
-            <div t-if="product.product_variant_id" class="o_wscc_compare_wrap mt-1">
+            <div t-if="website and website._wscc_comparison_enabled() and product.product_variant_id"
+                 class="o_wscc_compare_wrap mt-1">
                 <button
                     type="button"
-                    class="btn o_add_compare o_wscc_compare_btn o_wscc_compare_btn_sm"
-                    title="Comparar con otros productos"
-                    aria-label="Comparar"
+                    class="btn o_wscc_compare_btn o_wscc_compare_btn_sm o_add_compare"
+                    title="Compare with other products"
+                    data-action="o_comparelist"
                     t-att-data-product-template-id="product.id"
                     t-att-data-product-product-id="product.product_variant_id.id"
-                    data-action="o_comparelist"
                 >
                     <span class="fa fa-exchange fa-fw o_not-animable"/>
-                    <span class="o_label small ms-1">Comparar</span>
+                    <span class="o_label small ms-1">Compare</span>
                 </button>
             </div>
         </xpath>
@@ -56,22 +115,234 @@
     <template
         id="ajax_card_compare"
         inherit_id="website_sale_canarias.shop_grid_ajax"
-        name="Comparar en la grilla AJAX (Canarias)"
+        name="Compare button on the AJAX grid (Canarias)"
     >
         <xpath expr="//div[hasclass('o_wsale_product_price')]" position="after">
             <button
-                t-if="product.product_variant_id"
+                t-if="website and website._wscc_comparison_enabled() and product.product_variant_id"
                 type="button"
-                class="btn btn-sm o_add_compare o_wscc_compare_btn o_wscc_compare_btn_sm mt-1"
-                title="Comparar con otros productos"
-                aria-label="Comparar"
+                class="btn btn-sm o_wscc_compare_btn o_wscc_compare_btn_sm mt-1 o_add_compare"
+                title="Compare with other products"
+                data-action="o_comparelist"
                 t-att-data-product-template-id="product.id"
                 t-att-data-product-product-id="product.product_variant_id.id"
-                data-action="o_comparelist"
             >
                 <span class="fa fa-exchange fa-fw o_not-animable"/>
-                <span class="o_label small ms-1">Comparar</span>
+                <span class="o_label small ms-1">Compare</span>
             </button>
+        </xpath>
+    </template>
+
+    <!-- ================================================================
+         Compare from the product page itself
+         ================================================================
+         Where the question is actually asked. Core puts its own button in
+         `#product_option_block` and only renders it when the product has
+         variant attributes, which on this catalogue is almost never; and the
+         aggregated shop hides that whole row anyway.
+
+         Anchored right under the price, because a price comparator is what
+         this is: the visitor is looking at a number and wants to know
+         whether it is a good one. -->
+    <template
+        id="product_page_compare_button"
+        inherit_id="website_sale.product"
+        name="Compare prices on the product page (Canarias)"
+    >
+        <xpath expr="//div[hasclass('o_wsale_product_details_content_section_price')]"
+               position="after">
+            <div t-if="website and website._wscc_comparison_enabled() and product.product_variant_id"
+                 class="o_wscc_compare_wrap mb-4">
+                <button
+                    type="button"
+                    class="btn btn-outline-primary o_wscc_compare_btn o_wscc_compare_btn_picker"
+                    title="Compare this price with other products"
+                    t-att-data-product-template-id="product.id"
+                    t-att-data-product-product-id="product.product_variant_id.id"
+                >
+                    <span class="fa fa-exchange fa-fw o_not-animable"/>
+                    <span class="o_label ms-1">Compare prices</span>
+                </button>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- ================================================================
+         The picker
+         ================================================================
+         Rendered once per page, next to the shop, and driven by the
+         `wscc:open` event the product page's own `o_wscc_compare_btn_picker`
+         button dispatches (the shop-grid cards join the comparison directly
+         through core's own `o_add_compare` now; only the product page still
+         asks "compare against what"). One modal for the whole grid rather
+         than one per card: a thousand-product zone shop would otherwise ship
+         a thousand copies of this markup. -->
+    <template id="comparison_modal" inherit_id="website.layout"
+              name="Comparison picker modal (Canarias)">
+        <!-- The switch as seen from the browser: ``data-wscc-comparison`` on
+             ``<body>`` only while the comparator is on. Core's own
+             ``ProductComparison`` interaction (the bottom bar) is matched on
+             it — see comparison_switch.js. A new attribute of its own, so
+             nothing core sets on ``<body>`` is touched. -->
+        <xpath expr="//body" position="attributes">
+            <attribute name="t-att-data-wscc-comparison">'1' if website and website._wscc_comparison_enabled() else None</attribute>
+        </xpath>
+        <xpath expr="//div[@id='wrapwrap']" position="inside">
+            <!-- Rendered ONLY with the switch on: the ``ComparisonModal``
+                 interaction selects on this element, so with the comparator
+                 off it is never even instantiated. -->
+            <div t-if="website and website._wscc_comparison_enabled()"
+                 class="modal fade o_wscc_compare_modal" id="o_wscc_compare_modal"
+                 tabindex="-1" aria-hidden="true"
+                 aria-labelledby="o_wscc_compare_modal_title">
+                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="o_wscc_compare_modal_title">
+                                Compare prices
+                            </h5>
+                            <button type="button" class="btn-close"
+                                    data-bs-dismiss="modal" aria-label="Close"/>
+                        </div>
+                        <div class="modal-body">
+                            <!-- Usage help. The <ol> numbers itself, and the
+                                 section titles below are numbered by a CSS
+                                 counter (see the stylesheet), so both skip
+                                 the "same category" step together when the
+                                 product has no category: the help and the
+                                 layout can never disagree about which step
+                                 is which. The client collapses this on a
+                                 phone, where four lines of help would push
+                                 the product list off the screen.
+
+                                 Every text below sits on ONE line on purpose:
+                                 the translation term is the node's text as
+                                 written, line breaks included. -->
+                            <details class="o_wscc_modal_help mb-3" open="open">
+                                <summary>
+                                    <h6 class="o_wscc_modal_help_title o_wscc_modal_help_title_4">Compare in 4 steps</h6>
+                                    <h6 class="o_wscc_modal_help_title o_wscc_modal_help_title_3 d-none">Compare in 3 steps</h6>
+                                </summary>
+                                <ol class="o_wscc_modal_help_steps small text-muted mb-0 mt-1">
+                                    <li>Scope: choose where to search: in all of Canarias Conectada, in your commercial zone, outside it or only in this shop.</li>
+                                    <li class="o_wscc_modal_help_same">Same category: the category of this product comes ticked so you compare with similar products. Untick it if you do not want to limit yourself to it.</li>
+                                    <li>Other categories: if you want, add other product categories to compare with.</li>
+                                    <li>Products: select up to 4 products and press "View comparison".</li>
+                                </ol>
+                            </details>
+
+                            <!-- STEP 1. The four scopes. Rendered by the
+                                 client from what the server says is available
+                                 here: a product in no neighbourhood offers
+                                 neither "my zone" nor "outside my zone". A
+                                 tab that comes back empty is worse than one
+                                 that is not offered.
+
+                                 `d-flex flex-wrap gap-2`, not `btn-group`:
+                                 a button group merges its members' borders
+                                 into one connected strip, which reads fine
+                                 on a single row but turned into a cramped,
+                                 gapless block once a fourth scope ("Only at
+                                 ...") pushed onto its own row underneath —
+                                 reported 2026-08-21 ("corrige los
+                                 paddings"). Independent chips with a real
+                                 gap between them wrap cleanly at any width. -->
+                            <section class="o_wscc_modal_step o_wscc_modal_step_scope mb-3"
+                                     aria-labelledby="o_wscc_step_scope_title">
+                                <h6 class="o_wscc_modal_step_title"
+                                    id="o_wscc_step_scope_title">Scope</h6>
+                                <div class="o_wscc_modal_scopes d-flex flex-wrap gap-2"
+                                     role="group" aria-label="Comparison scope"/>
+                                <div class="o_wscc_modal_zones mt-2 d-none">
+                                    <label class="form-label small text-muted mb-1"
+                                           for="o_wscc_zone_select">Which zone?</label>
+                                    <select class="form-select form-select-sm"
+                                            id="o_wscc_zone_select"/>
+                                </div>
+                            </section>
+
+                            <!-- STEP 2. The clicked product's own categories,
+                                 ticked on open. Nothing else can be picked
+                                 here (the category is what it is), only
+                                 unticked. Hidden altogether by the client
+                                 when the product has no category. -->
+                            <section class="o_wscc_modal_step o_wscc_modal_step_same mb-3 d-none"
+                                     aria-labelledby="o_wscc_step_same_title">
+                                <h6 class="o_wscc_modal_step_title"
+                                    id="o_wscc_step_same_title">Same category</h6>
+                                <div class="o_wscc_modal_same_chips" role="group"
+                                     aria-labelledby="o_wscc_step_same_title"/>
+                            </section>
+
+                            <!-- STEP 3. Every other category on offer in the
+                                 scope, none picked. Folded by default: on the
+                                 whole platform this is some seventy chips,
+                                 and a wall of restaurants and surf shops is
+                                 not what somebody comparing a laptop came
+                                 for. The client keeps it open while any of
+                                 them is picked. -->
+                            <section class="o_wscc_modal_step o_wscc_modal_step_other mb-3"
+                                     aria-labelledby="o_wscc_step_other_title">
+                                <h6 class="o_wscc_modal_step_title"
+                                    id="o_wscc_step_other_title">Other categories</h6>
+                                <details class="o_wscc_modal_other">
+                                    <summary class="small">Show other categories (<span class="o_wscc_modal_other_count">0</span>)</summary>
+                                    <div class="o_wscc_modal_chips mt-2" role="group"
+                                         aria-labelledby="o_wscc_step_other_title"/>
+                                </details>
+                                <div class="o_wscc_modal_other_none small text-muted d-none">There are no other categories here.</div>
+                            </section>
+
+                            <!-- STEP 4. The candidates. The search box lives
+                                 here because the list is what it filters. -->
+                            <section class="o_wscc_modal_step o_wscc_modal_step_products"
+                                     aria-labelledby="o_wscc_step_products_title">
+                                <h6 class="o_wscc_modal_step_title"
+                                    id="o_wscc_step_products_title">Select the products to compare (maximum 4)</h6>
+                                <!-- Server-side search: the candidate pool is
+                                     capped at 120, so a client-side filter
+                                     could never reach what the cap already
+                                     cut off. -->
+                                <div class="input-group input-group-sm mb-2 o_wscc_modal_search">
+                                    <span class="input-group-text">
+                                        <span class="fa fa-search" role="presentation"/>
+                                    </span>
+                                    <input type="search"
+                                           class="form-control o_wscc_modal_search_input"
+                                           placeholder="Search products by name"
+                                           aria-label="Search products by name"/>
+                                </div>
+                                <div class="o_wscc_modal_list"/>
+                                <div class="o_wscc_modal_truncated d-none small text-muted mt-2">
+                                    Showing <span class="o_wscc_modal_shown">0</span> of <span class="o_wscc_modal_total">0</span> products. Search to find the rest.
+                                </div>
+                                <!-- Shown by the client when the request
+                                     itself fails, so a dead network does not
+                                     read as "nothing to compare". -->
+                                <div class="o_wscc_modal_error d-none small text-danger text-center py-3" role="alert">The products could not be loaded. Please try again.</div>
+                                <div class="o_wscc_modal_empty d-none text-muted text-center py-4">
+                                    No products in this category to compare.
+                                </div>
+                            </section>
+                        </div>
+                        <div class="modal-footer">
+                            <span class="me-auto small text-muted">
+                                Selected: <span class="o_wscc_modal_count">0</span> of 4
+                            </span>
+                            <button type="button" class="btn btn-secondary"
+                                    data-bs-dismiss="modal">Close</button>
+                            <!-- Enabled by the client once at least two
+                                 products are ticked; the href is rebuilt from
+                                 the comparison cookie on every change, the
+                                 same URL core's bottom bar builds. -->
+                            <a href="#" class="btn btn-primary disabled o_wscc_modal_go"
+                               aria-disabled="true" tabindex="-1">
+                                View comparison
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </xpath>
     </template>
 

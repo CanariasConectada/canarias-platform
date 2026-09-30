@@ -1,0 +1,93 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* zca_manager_group
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: Canarias Conectada\n"
+"Language-Team: \n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: zca_manager_group
+#: model:ir.actions.act_window,name:zca_manager_group.action_zone_companies
+#: model:ir.ui.menu,name:zca_manager_group.menu_zone_companies
+msgid "Companies"
+msgstr "Compañías"
+
+#. module: zca_manager_group
+#: model:res.groups,comment:zca_manager_group.group_zca_manager
+msgid "Manager of a commercial zone: sees the companies and contacts of the zone that is their company, organises its events and sends mailings to its members. No sales, no products."
+msgstr "Gestor de una zona comercial: ve las compañías y los contactos de la zona que es su compañía, organiza sus eventos y envía correos a sus asociados. Sin ventas ni productos."
+
+#. module: zca_manager_group
+#: model:res.groups,name:zca_manager_group.group_zca_manager
+msgid "ZCA Manager"
+msgstr "Gestor ZCA"
+
+#. module: zca_manager_group
+#: model:ir.rule,name:zca_manager_group.mailing_list_rule_zca_manager
+msgid "mailing.list: ZCA manager works on the mailing lists of their zone"
+msgstr "mailing.list: el gestor ZCA trabaja con las listas de correo de su zona"
+
+#. module: zca_manager_group
+#: model:ir.rule,name:zca_manager_group.mailing_mailing_rule_zca_manager
+msgid "mailing.mailing: ZCA manager works on the mailings of their zone"
+msgstr "mailing.mailing: el gestor ZCA trabaja con los envíos de su zona"
+
+#. module: zca_manager_group
+#: model:ir.rule,name:zca_manager_group.res_company_rule_zca_manager
+msgid "res.company: ZCA manager reads the companies of their zone"
+msgstr "res.company: el gestor ZCA lee las compañías de su zona"
+
+#. module: zca_manager_group
+#: model:ir.rule,name:zca_manager_group.mailing_contact_rule_zca_manager
+msgid "mailing.contact: ZCA manager works on the mailing contacts of their zone"
+msgstr "mailing.contact: el gestor ZCA trabaja con los contactos de correo de su zona"
+
+#. module: zca_manager_group
+#: model:ir.rule,name:zca_manager_group.mailing_subscription_rule_zca_manager
+msgid "mailing.subscription: ZCA manager works on the subscriptions of their zone"
+msgstr "mailing.subscription: el gestor ZCA trabaja con las suscripciones de su zona"
+
+#. module: zca_manager_group
+#: model:ir.rule,name:zca_manager_group.mail_blacklist_rule_zca_manager_readonly
+msgid "mail.blacklist: ZCA manager reads the blacklist and edits nothing"
+msgstr "mail.blacklist: el gestor ZCA lee la lista negra y no edita nada"
+
+#. module: zca_manager_group
+#: model:ir.rule,name:zca_manager_group.mailing_subscription_optout_rule_zca_manager_readonly
+msgid "mailing.subscription.optout: ZCA manager reads the opt-out reasons and edits nothing"
+msgstr "mailing.subscription.optout: el gestor ZCA lee los motivos de baja y no edita nada"
+
+#. module: zca_manager_group
+#: model:ir.rule,name:zca_manager_group.event_event_rule_zca_manager_write
+msgid "event.event: ZCA manager edits the events of their zone only"
+msgstr "event.event: el gestor ZCA edita solo los eventos de su zona"
+
+#. module: zca_manager_group
+#: model:ir.rule,name:zca_manager_group.event_registration_rule_zca_manager_write
+msgid "event.registration: ZCA manager edits the registrations of their zone only"
+msgstr "event.registration: el gestor ZCA edita solo las inscripciones de su zona"
+
+#. module: zca_manager_group
+#: model:ir.rule,name:zca_manager_group.event_event_ticket_rule_zca_manager_write
+msgid "event.event.ticket: ZCA manager edits the tickets of their zone only"
+msgstr "event.event.ticket: el gestor ZCA edita solo las entradas de su zona"
+
+#. module: zca_manager_group
+#. odoo-python
+#: code:addons/zca_manager_group/models/res_users.py:0
+msgid "%s is a ZCA Manager: the only allowed company must be the zone company."
+msgstr "%s es Gestor ZCA: la única compañía permitida debe ser la compañía de la zona."
+
+#. module: zca_manager_group
+#. odoo-python
+#: code:addons/zca_manager_group/models/res_users.py:0
+msgid "%(user)s is a ZCA Manager, but %(company)s is not a zone company."
+msgstr "%(user)s es Gestor ZCA, pero %(company)s no es una compañía de zona."

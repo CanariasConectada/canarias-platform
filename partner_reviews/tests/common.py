@@ -4,6 +4,21 @@
 from odoo.tests import TransactionCase
 
 
+def add_forbidden_word(env, name, active=True):
+    """A forbidden word of the shared list, created or reused.
+
+    The seed of ``website_moderation_forbidden_word`` already holds hundreds
+    of words, unique on their accent-folded form: creating one blindly may
+    collide with it, so the helper reuses the existing row.
+    """
+    Word = env["moderation.forbidden.word"].with_context(active_test=False)
+    word = Word.search([("name_normalized", "=", Word._normalize(name))], limit=1)
+    if word:
+        word.active = active
+        return word
+    return Word.create({"name": name, "active": active})
+
+
 class PartnerReviewsCase(TransactionCase):
     """Shared fixtures: one merchant company and two customer partners."""
 
@@ -28,6 +43,9 @@ class PartnerReviewsCase(TransactionCase):
             {"name": "PR Customer Two", "email": "pr.customer2@example.com"}
         )
         cls.company_model_id = cls.env["ir.model"]._get_id("res.company")
+
+    def _add_word(self, name, active=True):
+        return add_forbidden_word(self.env, name, active=active)
 
     def _create_review(self, partner, rating, feedback="", company=None):
         return self.env["rating.rating"].create(

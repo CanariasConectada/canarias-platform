@@ -1,0 +1,146 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* website_moderation_forbidden_word
+#
+# Generated from the module's own .pot so every `#:` reference line survives.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: Canarias Conectada\n"
+"Language-Team: \n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+
+#. module: website_moderation_forbidden_word
+#. odoo-python
+#: code:addons/website_moderation_forbidden_word/models/moderation_forbidden_word.py:0
+msgid "A forbidden word cannot be empty."
+msgstr "Una palabra prohibida no puede estar vacía."
+
+#. module: website_moderation_forbidden_word
+#: model:ir.model.fields,help:website_moderation_forbidden_word.field_moderation_forbidden_word__name
+msgid ""
+"A single word or a whole expression (e.g. 'hijo de puta'). Matching ignores "
+"case and accents and only hits whole words: 'imbécil' flags 'IMBECIL' but "
+"not 'imbecilidad'."
+msgstr "Una sola palabra o una expresión completa (p. ej. 'hijo de puta'). La coincidencia ignora mayúsculas y acentos y solo detecta palabras completas: 'imbécil' marca 'IMBECIL' pero no 'imbecilidad'."
+
+#. module: website_moderation_forbidden_word
+#: model:ir.model.fields,field_description:website_moderation_forbidden_word.field_moderation_forbidden_word__active
+msgid "Active"
+msgstr "Activo"
+
+#. module: website_moderation_forbidden_word
+#: model_terms:ir.actions.act_window,help:website_moderation_forbidden_word.action_moderation_forbidden_word
+msgid "Add a forbidden word"
+msgstr "Añade una palabra prohibida"
+
+#. module: website_moderation_forbidden_word
+#: model_terms:ir.ui.view,arch_db:website_moderation_forbidden_word.moderation_forbidden_word_view_form
+#: model_terms:ir.ui.view,arch_db:website_moderation_forbidden_word.moderation_forbidden_word_view_search
+msgid "Archived"
+msgstr "Archivado"
+
+#. module: website_moderation_forbidden_word
+#: model:ir.model.fields,field_description:website_moderation_forbidden_word.field_moderation_forbidden_word__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: website_moderation_forbidden_word
+#: model:ir.model.fields,field_description:website_moderation_forbidden_word.field_moderation_forbidden_word__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: website_moderation_forbidden_word
+#: model:ir.model.fields,field_description:website_moderation_forbidden_word.field_moderation_forbidden_word__display_name
+msgid "Display Name"
+msgstr "Nombre mostrado"
+
+#. module: website_moderation_forbidden_word
+#: model_terms:ir.ui.view,arch_db:website_moderation_forbidden_word.moderation_forbidden_word_view_search
+msgid "Expressions"
+msgstr "Expresiones"
+
+#. module: website_moderation_forbidden_word
+#: model:ir.actions.act_window,name:website_moderation_forbidden_word.action_moderation_forbidden_word
+#: model:ir.ui.menu,name:website_moderation_forbidden_word.menu_moderation_forbidden_word
+msgid "Forbidden Words"
+msgstr "Palabras prohibidas"
+
+#. module: website_moderation_forbidden_word
+#: model:ir.model.fields,field_description:website_moderation_forbidden_word.field_moderation_forbidden_word__id
+msgid "ID"
+msgstr "ID"
+
+#. module: website_moderation_forbidden_word
+#: model:ir.model.fields,field_description:website_moderation_forbidden_word.field_moderation_forbidden_word__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: website_moderation_forbidden_word
+#: model:ir.model.fields,field_description:website_moderation_forbidden_word.field_moderation_forbidden_word__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: website_moderation_forbidden_word
+#: model:ir.ui.menu,name:website_moderation_forbidden_word.menu_moderation_root
+msgid "Moderation"
+msgstr "Moderación"
+
+#. module: website_moderation_forbidden_word
+#: model:ir.model,name:website_moderation_forbidden_word.model_moderation_forbidden_word
+msgid "Moderation Forbidden Word"
+msgstr "Palabra prohibida de moderación"
+
+#. module: website_moderation_forbidden_word
+#: model:ir.model.fields,field_description:website_moderation_forbidden_word.field_moderation_forbidden_word__name_normalized
+msgid "Normalized Form"
+msgstr "Forma normalizada"
+
+#. module: website_moderation_forbidden_word
+#: model:ir.model.fields,field_description:website_moderation_forbidden_word.field_moderation_forbidden_word__note
+msgid "Note"
+msgstr "Nota"
+
+#. module: website_moderation_forbidden_word
+#: model:ir.model.fields,help:website_moderation_forbidden_word.field_moderation_forbidden_word__note
+msgid ""
+"Optional reason or context for moderators (why the word is listed, false "
+"positives to watch for...)."
+msgstr "Motivo o contexto opcional para los moderadores (por qué está en la lista, falsos positivos a vigilar...)."
+
+#. module: website_moderation_forbidden_word
+#: model:ir.model.fields,help:website_moderation_forbidden_word.field_moderation_forbidden_word__name_normalized
+msgid ""
+"Technical: lower-case, accent-folded form used for matching and uniqueness."
+msgstr "Técnico: forma en minúsculas y sin acentos usada para la coincidencia y la unicidad."
+
+#. module: website_moderation_forbidden_word
+#: model_terms:ir.actions.act_window,help:website_moderation_forbidden_word.action_moderation_forbidden_word
+msgid ""
+"Texts containing any of these words or expressions are held\n"
+"                for a manual check instead of being published automatically.\n"
+"                Matching ignores case and accents and only hits whole words."
+msgstr ""
+"Los textos que contienen alguna de estas palabras o expresiones se\n"
+"                retienen para una revisión manual en lugar de publicarse\n"
+"                automáticamente. La coincidencia ignora mayúsculas y acentos y\n"
+"                solo detecta palabras completas."
+
+#. module: website_moderation_forbidden_word
+#: model:ir.model.constraint,message:website_moderation_forbidden_word.constraint_moderation_forbidden_word_name_normalized_uniq
+msgid ""
+"This word is already in the forbidden list (case and accents do not make a "
+"different word)."
+msgstr "Esta palabra ya está en la lista de prohibidas (las mayúsculas y los acentos no la convierten en otra palabra)."
+
+#. module: website_moderation_forbidden_word
+#: model:ir.model.fields,field_description:website_moderation_forbidden_word.field_moderation_forbidden_word__name
+msgid "Word"
+msgstr "Palabra"

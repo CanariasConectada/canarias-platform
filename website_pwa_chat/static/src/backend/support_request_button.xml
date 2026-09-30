@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<templates xml:space="preserve">
+    <t t-name="website_pwa_chat.SupportRequestButton">
+        <div t-if="visible" class="d-flex flex-column flex-grow-0 o-mx-2_5 my-1 o_cc_support_request">
+            <button
+                type="button"
+                class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center gap-2 o_cc_support_request_button"
+                t-att-class="{ 'px-0': store.discuss.isSidebarCompact }"
+                t-att-disabled="state.busy"
+                title="Request support"
+                aria-label="Request support"
+                t-on-click="onClick"
+            >
+                <i class="fa fa-life-ring" aria-hidden="true"/>
+                <span t-if="!store.discuss.isSidebarCompact" class="text-truncate">Request support</span>
+            </button>
+        </div>
+    </t>
+</templates>

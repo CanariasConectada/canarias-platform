@@ -25,5 +25,23 @@
             <field name="groups" eval="[Command.link(ref('group_local_content_manager')), Command.link(ref('base.group_system'))]"/>
         </record>
 
+        <!-- Held or rejected rating comments are for their author and the
+             local content managers only. A GLOBAL rule (no group) because
+             the group rules other modules put on rating.rating (e.g.
+             partner_reviews for every internal user) are OR-ed together and
+             could not be narrowed from here. Ratings of other models and
+             published comments stay exactly as readable as before; the
+             public page reads through sudo, so it is unaffected. -->
+        <record id="rule_rating_local_content_held_comment" model="ir.rule">
+            <field name="name">Local content: held comments for managers and their author</field>
+            <field name="model_id" ref="rating.model_rating_rating"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">[(1, '=', 1)] if user.has_group('website_local_content.group_local_content_manager') or user.has_group('base.group_system') else ['|', '|', ('res_model', '!=', 'website.local.content.item'), ('feedback_moderation_status', '=', 'approved'), ('partner_id', '=', user.partner_id.id)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
     </data>
 </odoo>

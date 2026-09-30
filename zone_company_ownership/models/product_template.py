@@ -1,7 +1,7 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import api, models
+from odoo import api, fields, models
 
 from .res_company import SKIP_CONTEXT
 
@@ -9,6 +9,26 @@ from .res_company import SKIP_CONTEXT
 class ProductTemplate(models.Model):
     _name = "product.template"
     _inherit = ["product.template", "zone.company.ownership.mixin"]
+
+    # See the twin declaration on ``res.partner`` for why this cannot live
+    # on the mixin: the default relation table would collide with the one
+    # ``company_ids`` already occupies.
+    zone_company_ids = fields.Many2many(
+        comodel_name="res.company",
+        relation="product_template_zone_company_rel",
+        column1="product_tmpl_id",
+        column2="company_id",
+        string="Commercial Zone",
+        compute="_compute_zone_company_ids",
+        store=True,
+        help="The zone companies among this product's owners. Derived from "
+        "the owning shop's commercial zone; group or filter by it to see a "
+        "neighbourhood's catalogue together.",
+    )
+
+    @api.depends("company_ids", "company_ids.zone_company_key")
+    def _compute_zone_company_ids(self):
+        return super()._compute_zone_company_ids()
 
     def _zone_sync_candidates(self):
         """Delivery methods are not catalogue, so they get no zone.

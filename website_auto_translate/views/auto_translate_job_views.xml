@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="view_auto_translate_job_list" model="ir.ui.view">
+        <field name="name">auto.translate.job.list</field>
+        <field name="model">auto.translate.job</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="correctable_here" column_invisible="1"/>
+                <field name="content_kind" readonly="1" optional="show"/>
+                <field name="record_label" readonly="1" optional="show"/>
+                <field name="lang" readonly="1"/>
+                <field name="source_text" readonly="1"/>
+                <field name="translated_text"
+                       readonly="not correctable_here"
+                       placeholder="Correct it here and it stays corrected"/>
+                <field name="state" widget="badge" readonly="1"
+                       decoration-success="state == 'done'"
+                       decoration-danger="state == 'failed'"
+                       decoration-info="state == 'locked'"/>
+                <field name="model_name" readonly="1" optional="hide"/>
+                <field name="res_id" readonly="1" optional="hide"/>
+                <field name="field_name" readonly="1" optional="hide"/>
+                <field name="engine_id" readonly="1" optional="hide"/>
+                <field name="attempts" readonly="1" optional="hide"/>
+                <field name="error" readonly="1" optional="show"/>
+                <field name="write_date" readonly="1" optional="hide"/>
+                <field name="term_count" readonly="1" optional="hide"/>
+                <button name="action_open_terms" type="object" icon="fa-list-ol"
+                        title="Read and correct this page sentence by sentence"
+                        invisible="correctable_here"/>
+                <button name="action_sync_terms" type="object" icon="fa-sitemap"
+                        title="Rebuild sentences"
+                        invisible="correctable_here"/>
+                <button name="action_retry" type="object" icon="fa-repeat"
+                        title="Queue again"
+                        invisible="state not in ('failed', 'done')"/>
+                <button name="action_translate_again" type="object"
+                        icon="fa-refresh"
+                        title="Translate again even though the source has not changed"
+                        invisible="state == 'locked'"/>
+                <button name="action_unlock" type="object" icon="fa-unlock"
+                        title="Discard the hand-written text and translate it again"
+                        invisible="state != 'locked'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_auto_translate_job_search" model="ir.ui.view">
+        <field name="name">auto.translate.job.search</field>
+        <field name="model">auto.translate.job</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="model_name"/>
+                <field name="field_name"/>
+                <field name="lang"/>
+                <filter name="pages" string="Pages"
+                        domain="[('content_kind', '=', 'page')]"/>
+                <filter name="products" string="Products"
+                        domain="[('content_kind', '=', 'product')]"/>
+                <separator/>
+                <filter name="pending" string="Pending"
+                        domain="[('state', '=', 'pending')]"/>
+                <filter name="failed" string="Failed"
+                        domain="[('state', '=', 'failed')]"/>
+                <filter name="locked" string="Written by hand"
+                        domain="[('state', '=', 'locked')]"/>
+                <separator/>
+                <group name="group_by">
+                    <filter name="by_state" string="Status"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="by_lang" string="Language"
+                            context="{'group_by': 'lang'}"/>
+                    <filter name="by_engine" string="Winning engine"
+                            context="{'group_by': 'engine_id'}"/>
+                    <filter name="by_kind" string="Kind of content"
+                            context="{'group_by': 'content_kind'}"/>
+                    <filter name="by_model" string="Model"
+                            context="{'group_by': 'model_name'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_auto_translate_job" model="ir.actions.act_window">
+        <field name="name">Translation Queue</field>
+        <field name="res_model">auto.translate.job</field>
+        <field name="view_mode">list</field>
+        <field name="context">
+            {'search_default_by_kind': 1, 'search_default_by_lang': 2}
+        </field>
+    </record>
+
+</odoo>

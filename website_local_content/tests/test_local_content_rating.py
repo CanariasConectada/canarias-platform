@@ -1,11 +1,12 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo.tests import TransactionCase
+from odoo.tests import TransactionCase, tagged
 
 from .common import create_taxonomy
 
 
+@tagged("post_install", "-at_install")
 class TestLocalContentRating(TransactionCase):
     """Read-only display of the migrated legacy ratings on public pages."""
 
@@ -63,6 +64,10 @@ class TestLocalContentRating(TransactionCase):
         self.assertEqual(reviews[0].feedback, "Beautiful place")
 
     def test_rating_author_name_visitor_fallback(self):
+        # The fallback resolves against the ambient language, Spanish on
+        # this database since the language rollout. Pinned to keep the
+        # expectation literal.
+        self.env.user.lang = "en_US"
         anonymous = self._create_rating(4)
         named = self._create_rating(5, partner=self.partner)
         item_model = self.env["website.local.content.item"]

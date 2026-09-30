@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <menuitem id="menu_facilities_root"
+              name="Facilities and services"
+              parent="website.menu_website_configuration"
+              sequence="85"
+              groups="company_facilities.group_facility_manager"/>
+
+    <menuitem id="menu_company_facility"
+              name="Items"
+              parent="menu_facilities_root"
+              action="action_company_facility"
+              sequence="10"/>
+
+    <menuitem id="menu_company_facility_category"
+              name="Subdivisions"
+              parent="menu_facilities_root"
+              action="action_company_facility_category"
+              sequence="20"/>
+
+</odoo>

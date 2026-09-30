@@ -51,10 +51,17 @@
     <template id="certification_landing" name="Certification - Landing Page">
         <t t-call="website.layout">
             <t t-set="additional_title" t-value="cert_type.website_title or cert_type.name"/>
-            <div id="wrap" class="oe_structure o_cc_landing">
-                <!-- Hero: gradient band with the vertical's title, lead and seal.
-                     Same treatment as the Lugares de Interes / Memoria Viva heros. -->
-                <section class="o_cc_landing_hero">
+            <!-- The code travels on the wrapper so the stylesheet can pick the
+                 vertical's accent colour; the template itself knows no colour. -->
+            <div id="wrap"
+                 t-attf-class="oe_structure o_cc_landing o_cc_landing_{{ cert_type.code }}"
+                 t-att-data-certification-code="cert_type.code">
+                <!-- Hero: the vertical's picture behind the title when it has
+                     one (a dark overlay keeps the title readable), otherwise
+                     the same gradient band as the Lugares de Interes / Memoria
+                     Viva heros. -->
+                <section t-attf-class="o_cc_landing_hero {{ 'o_cc_landing_hero--image' if cert_type.landing_image else '' }}"
+                         t-att-style="'background-image: url(/certification/%s/landing_image);' % cert_type.code if cert_type.landing_image else None">
                     <div class="container">
                         <div class="row align-items-center g-4">
                             <div class="col-lg-8 text-center text-lg-start">
@@ -189,6 +196,37 @@
                         </div>
                     </div>
                 </section>
+
+                <!-- The way across to the other seals. The page's own seal is
+                     left out: it is already in the hero, and a card linking
+                     the page to itself read as a duplicate. Nothing below this
+                     point sends a visitor to the questionnaire: evaluations
+                     start from the backend Certificaciones menu, for members
+                     of the seal's group only. -->
+                <section t-if="seals" class="o_cc_landing_section o_cc_landing_seals py-5">
+                    <div class="container">
+                        <h2 class="o_cc_landing_section__title text-center mb-5">Other Canarias Conectada seals</h2>
+                        <div class="row g-4 justify-content-center">
+                            <div t-foreach="seals" t-as="seal" class="col-12 col-md-6">
+                                <a t-attf-href="/certification/{{ seal['code'] }}"
+                                   class="o_cc_seal_card card h-100 border-0 shadow-sm text-decoration-none text-center">
+                                    <div class="card-body">
+                                        <img t-if="seal['has_badge']"
+                                             t-attf-src="/certification/{{ seal['code'] }}/badge"
+                                             class="o_cc_seal_card__img img-fluid mb-3"
+                                             t-att-alt="seal['title']"
+                                             loading="lazy"/>
+                                        <span class="o_cc_seal_card__title d-block h5 fw-bold"
+                                              t-out="seal['title']"/>
+                                        <p t-if="seal['description']"
+                                           class="o_cc_seal_card__desc text-muted mb-0"
+                                           t-out="seal['description']"/>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </div>
         </t>
     </template>
@@ -196,13 +234,6 @@
     <!-- ============================================================ -->
     <!-- Survey flow tweaks for certification questionnaires          -->
     <!-- ============================================================ -->
-
-    <!-- No retake button: retries are ruled by the cooldown, not the user. -->
-    <template id="survey_button_retake_certification" inherit_id="survey.survey_button_retake">
-        <xpath expr="//div[@class='d-print-none']" position="attributes">
-            <attribute name="t-if">not survey.certification_type_id and not answer.is_session_answer and not (survey.certification and answer.scoring_success)</attribute>
-        </xpath>
-    </template>
 
     <!-- Result panel on the survey completion page.
          SINGLE source of truth for every certification (Silver, Sostenibilidad
@@ -253,7 +284,7 @@
             </t>
             <!-- Improvement recommendations. -->
             <t t-if="cert_type">
-                <t t-set="weak_lines" t-value="answer.user_input_line_ids.filtered(lambda l: l.question_id.comments_allowed and l.answer_score &lt; cert_type.question_full_score and l.question_id.comments_message)"/>
+                <t t-set="weak_lines" t-value="answer.user_input_line_ids.filtered(lambda l: l.answer_score &lt; cert_type.question_full_score and l.question_id.comments_message)"/>
                 <div t-if="weak_lines" class="mt-4 mx-auto" style="max-width:34rem;">
                     <h5 class="fw-bold mb-3">
                         <i class="fa fa-lightbulb-o text-warning me-2"/>Recomendaciones para mejorar
@@ -276,12 +307,17 @@
                 </div>
             </t>
         </xpath>
+        <!-- Wrapped in a <p> like the core buttons in this flex row: a bare
+             <a> gets stretched to the row height by the default flex
+             align-items and renders as a misshapen oval next to the pills. -->
         <xpath expr="//div[contains(@class, 'o_survey_finished')]//div[contains(@class, 'd-flex') and contains(@class, 'gap-3')]" position="inside">
-            <a t-if="survey.certification_type_id" role="button"
-               class="btn btn-outline-secondary btn-lg"
-               href="javascript:window.close()">
-                <i class="fa fa-times"/> Cerrar
-            </a>
+            <p t-if="survey.certification_type_id" class="d-print-none mb-0">
+                <a role="button"
+                   class="btn btn-outline-secondary btn-lg"
+                   href="javascript:window.close()">
+                    <i class="fa fa-times"/> Cerrar
+                </a>
+            </p>
         </xpath>
         <!-- On a certification survey, hide the raw Odoo score ("You scored
              X%") and the "Review your answers" button: the seal card below
@@ -293,45 +329,15 @@
         <xpath expr="//a[hasclass('o_survey_review')]" position="attributes">
             <attribute name="t-att-class">'o_survey_review btn btn-secondary btn-lg' + (' d-none' if survey.certification_type_id else '')</attribute>
         </xpath>
-    </template>
-
-    <!-- Show the question's comment message as a fixed recommendation
-         instead of a free comment box on certification questionnaires. -->
-    <template id="question_simple_choice_certification" inherit_id="survey.question_simple_choice">
-        <xpath expr="//div[@t-if='question.comments_allowed and not question.comment_count_as_answer']" position="replace">
-            <div t-if="question.comments_allowed and not question.comment_count_as_answer"
-                 class="mb-2 o_survey_comment_container mt-3">
-                <t t-if="survey.certification_type_id and not answer.test_entry">
-                    <div class="alert alert-light border mt-2 p-2">
-                        <i class="fa fa-lightbulb-o text-warning me-2"/>
-                        <strong>Recommendation:</strong>
-                        <span t-out="question.comments_message"/>
-                    </div>
-                </t>
-                <t t-else="">
-                    <textarea type="text" class="col form-control o_survey_comment o_survey_question_text_box bg-transparent rounded-0 p-0"
-                        t-att-placeholder="question.comments_message or default_comments_message if not survey_form_readonly else ''"><t t-esc="comment_line.value_char_box if comment_line else ''"/></textarea>
-                </t>
-            </div>
-        </xpath>
-    </template>
-
-    <template id="question_multiple_choice_certification" inherit_id="survey.question_multiple_choice">
-        <xpath expr="//div[@t-if='question.comments_allowed and not question.comment_count_as_answer']" position="replace">
-            <div t-if="question.comments_allowed and not question.comment_count_as_answer"
-                 class="mb-2 o_survey_comment_container mt-3">
-                <t t-if="survey.certification_type_id and not answer.test_entry">
-                    <div class="alert alert-light border mt-2 p-2">
-                        <i class="fa fa-lightbulb-o text-warning me-2"/>
-                        <strong>Recommendation:</strong>
-                        <span t-out="question.comments_message"/>
-                    </div>
-                </t>
-                <t t-else="">
-                    <textarea type="text" class="col form-control o_survey_comment o_survey_question_text_box bg-transparent rounded-0 p-0"
-                        t-att-placeholder="question.comments_message or default_comments_message if not survey_form_readonly else ''"><t t-esc="comment_line.value_char_box if comment_line else ''"/></textarea>
-                </t>
-            </div>
+        <!-- No retake button on certification surveys: retries are ruled by
+             the cooldown, not the user, and the core /survey/retry route
+             would bypass both the cooldown check and the company binding.
+             Guarded at the call site: the vertical modules each overwrite
+             the t-if attribute inside survey.survey_button_retake (the
+             last-applied one wins, keeping only its own flag), so an
+             attribute override inside that template is not reliable. -->
+        <xpath expr="//t[@t-call='survey.survey_button_retake']" position="attributes">
+            <attribute name="t-if">not survey.certification_type_id</attribute>
         </xpath>
     </template>
 
@@ -346,81 +352,98 @@
         </xpath>
     </template>
 
+    <!-- The block itself, kept separate from where it is called so a page
+         can place it among its own sections. ``cc_company`` rather than
+         ``company``: the caller states whose seals these are. Renders nothing
+         for a company holding no valid seal (no empty section). -->
+    <template id="certification_block" name="Certification Seals Block">
+        <t t-set="cc_certifications" t-value="cc_company._get_valid_certifications()"/>
+        <section t-if="cc_certifications"
+                 class="o_cc o_cc2 pt32 pb32 o_colored_level o_cc_seals"
+                 data-name="Certification Seals">
+            <div class="container">
+                <t t-foreach="cc_certifications" t-as="cert">
+                    <t t-set="cert_type" t-value="cert.type_id"/>
+                    <t t-set="bar_color" t-value="{'gold': '#FFD700', 'silver': '#C0C0C0', 'bronze': '#CD7F32'}.get(cert.level, '#6c757d')"/>
+                    <div class="row align-items-center mb-5">
+                        <div class="col-lg-6 text-center mb-4 mb-lg-0">
+                            <!-- A URL, not image_data_uri: the seal is a
+                                 258 KB PNG and inlining it put that in
+                                 the HTML of every microsite homepage,
+                                 uncached and re-sent on every view. -->
+                            <img t-if="cert_type.badge_image"
+                                 t-attf-src="/certification/{{ cert_type.code }}/badge"
+                                 t-att-alt="cert_type.name"
+                                 class="img-fluid"
+                                 style="max-width: 280px; height: auto; object-fit: contain;"
+                                 loading="lazy"/>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="d-flex align-items-center justify-content-center mb-3">
+                                <span class="badge rounded-pill px-4 py-2 fw-bold"
+                                      t-attf-style="background-color: {{ bar_color }}; color: {{ '#212529' if cert.level in ('gold', 'silver') else '#fff' }}; font-size: 1rem;"
+                                      t-esc="cert._get_level_label()"/>
+                                <div t-attf-style="width: 3px; height: 60px; background-color: {{ bar_color }}; margin: 0 20px; opacity: 0.6;"/>
+                                <div class="display-3 fw-bold" t-attf-style="color: {{ bar_color }}; line-height: 1;">
+                                    <t t-esc="int(cert.score)"/>%
+                                </div>
+                            </div>
+                            <h3 class="fw-bold text-center mb-3" style="font-size: 1.5rem;"
+                                t-esc="cert_type.website_title or cert_type.name"/>
+                            <p class="text-center text-muted"
+                               style="font-size: 0.95rem; line-height: 1.6;"
+                               t-esc="cert_type.website_description"/>
+                        </div>
+                    </div>
+                    <!-- What the seal means, as an icon grid: the pattern
+                         a visitor already knows from a lodging site's
+                         "what this place offers". A centered single
+                         column made ten short items read as one long
+                         sentence; a grid lets the eye scan icons. -->
+                    <t t-set="amenities" t-value="cc_company._get_certification_amenities(cert_type)"/>
+                    <div class="row" t-if="amenities">
+                        <div class="col-12">
+                            <h4 class="o_cc_amenities__title h5 fw-bold mb-4"
+                                t-out="cert_type.amenities_title or 'Lo que ofrece este comercio'"/>
+                            <div class="row g-3 o_cc_amenities mb-4">
+                                <div t-foreach="amenities" t-as="item"
+                                     class="col-12 col-sm-6 col-lg-4">
+                                    <div class="o_cc_amenity d-flex align-items-start gap-3">
+                                        <i t-attf-class="fa {{ item['icon'] }} o_cc_amenity__icon"
+                                           t-attf-style="color: {{ bar_color }};"
+                                           aria-hidden="true"/>
+                                        <span>
+                                            <span class="o_cc_amenity__label d-block"
+                                                  t-out="item['label']"/>
+                                            <small t-if="item.get('description')"
+                                                   class="o_cc_amenity__desc d-block text-muted"
+                                                   t-out="item['description']"/>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </section>
+    </template>
+
+    <!-- Homepage fallback, above the footer. Merchant homepages call
+         ``certification_block`` themselves, between the facilities and the
+         contact section (``website._cc_place_seals_in_homepage`` for the
+         imported ones, the ``partner_microsite_manager`` template for the
+         dynamic ones); there this stays silent so the seals never show
+         twice. It still renders on every other homepage: the portal, the
+         zone websites and any homepage with no contact section to anchor
+         on. Only on the homepage, and never while filling a survey. -->
     <template id="certification_microsite_section" inherit_id="website.layout" name="Certification - Microsite Section">
         <xpath expr="//footer[@id='bottom']" position="before">
-            <t t-set="cc_company" t-value="website.company_id"/>
             <t t-set="cc_is_homepage" t-value="request.httprequest.path == (website.homepage_url or '/')"/>
-            <!-- Only resolve the (sudo + filtered) certifications on the
-                 homepage, where the section is actually rendered. -->
-            <t t-set="cc_certifications" t-value="cc_company._get_valid_certifications() if (cc_is_homepage and not suppress_certification_section) else []"/>
-            <section t-if="cc_is_homepage and cc_certifications and not suppress_certification_section"
-                     class="o_cc o_cc2 pt32 pb32 o_colored_level">
-                <div class="container">
-                    <t t-foreach="cc_certifications" t-as="cert">
-                        <t t-set="cert_type" t-value="cert.type_id"/>
-                        <t t-set="bar_color" t-value="{'gold': '#FFD700', 'silver': '#C0C0C0', 'bronze': '#CD7F32'}.get(cert.level, '#6c757d')"/>
-                        <div class="row align-items-center mb-5">
-                            <div class="col-lg-6 text-center mb-4 mb-lg-0">
-                                <!-- A URL, not image_data_uri: the seal is a
-                                     258 KB PNG and inlining it put that in
-                                     the HTML of every microsite homepage,
-                                     uncached and re-sent on every view. -->
-                                <img t-if="cert_type.badge_image"
-                                     t-attf-src="/certification/{{ cert_type.code }}/badge"
-                                     t-att-alt="cert_type.name"
-                                     class="img-fluid"
-                                     style="max-width: 280px; height: auto; object-fit: contain;"
-                                     loading="lazy"/>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="d-flex align-items-center justify-content-center mb-3">
-                                    <span class="badge rounded-pill px-4 py-2 fw-bold"
-                                          t-attf-style="background-color: {{ bar_color }}; color: {{ '#212529' if cert.level in ('gold', 'silver') else '#fff' }}; font-size: 1rem;"
-                                          t-esc="cert._get_level_label()"/>
-                                    <div t-attf-style="width: 3px; height: 60px; background-color: {{ bar_color }}; margin: 0 20px; opacity: 0.6;"/>
-                                    <div class="display-3 fw-bold" t-attf-style="color: {{ bar_color }}; line-height: 1;">
-                                        <t t-esc="int(cert.score)"/>%
-                                    </div>
-                                </div>
-                                <h3 class="fw-bold text-center mb-3" style="font-size: 1.5rem;"
-                                    t-esc="cert_type.website_title or cert_type.name"/>
-                                <p class="text-center text-muted"
-                                   style="font-size: 0.95rem; line-height: 1.6;"
-                                   t-esc="cert_type.website_description"/>
-                            </div>
-                        </div>
-                        <!-- What the seal means, as an icon grid: the pattern
-                             a visitor already knows from a lodging site's
-                             "what this place offers". A centered single
-                             column made ten short items read as one long
-                             sentence; a grid lets the eye scan icons. -->
-                        <t t-set="amenities" t-value="cc_company._get_certification_amenities(cert_type)"/>
-                        <div class="row" t-if="amenities">
-                            <div class="col-12">
-                                <h4 class="o_cc_amenities__title h5 fw-bold mb-4"
-                                    t-out="cert_type.amenities_title or 'Lo que ofrece este comercio'"/>
-                                <div class="row g-3 o_cc_amenities mb-4">
-                                    <div t-foreach="amenities" t-as="item"
-                                         class="col-12 col-sm-6 col-lg-4">
-                                        <div class="o_cc_amenity d-flex align-items-start gap-3">
-                                            <i t-attf-class="fa {{ item['icon'] }} o_cc_amenity__icon"
-                                               t-attf-style="color: {{ bar_color }};"
-                                               aria-hidden="true"/>
-                                            <span>
-                                                <span class="o_cc_amenity__label d-block"
-                                                      t-out="item['label']"/>
-                                                <small t-if="item.get('description')"
-                                                       class="o_cc_amenity__desc d-block text-muted"
-                                                       t-out="item['description']"/>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </t>
-                </div>
-            </section>
+            <t t-if="cc_is_homepage and not suppress_certification_section and not website._cc_page_places_seals(main_object)">
+                <t t-set="cc_company" t-value="website.company_id"/>
+                <t t-call="company_certification.certification_block"/>
+            </t>
         </xpath>
     </template>
 </odoo>

@@ -3,13 +3,19 @@
 
 import json
 import logging
+from contextlib import contextmanager
+from datetime import timedelta
 from urllib.parse import urlsplit
 
+from psycopg2.errors import UniqueViolation
+
 from odoo import api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ConcurrencyError, ValidationError
 from odoo.http import request
 
 from odoo.addons.mail.tools.jwt import InvalidVapidError
+
+from .mail_thread import PUSH_VIBRATE_PATTERN
 
 _logger = logging.getLogger(__name__)
 
@@ -91,6 +97,43 @@ MAX_BROWSER_KEY_LENGTH = 256
 
 BROWSER_KEY_NAMES = ("p256dh", "auth")
 
+# Which service worker owns a subscription. An origin running the installed app
+# has two: the website's (`website_pwa`, scope "/") and core's backend one
+# (`/web/service-worker.js`, scope "/odoo"). A push is handled by the worker of
+# the registration that owns the subscription, so a persona subscribed on both
+# gets every notification twice.
+WORKER_WEBSITE = "website"
+WORKER_BACKEND = "backend"
+WORKERS = (WORKER_WEBSITE, WORKER_BACKEND)
+
+# Core's `_endpoint_unique` (mail/models/mail_push_device.py), as Postgres
+# names it: `<table>_<constraint name without the leading underscore>`.
+ENDPOINT_UNIQUE_CONSTRAINT = "mail_push_device_endpoint_unique"
+
+# Answers of `cc_push_status`, the check behind the Discuss validation banner.
+PUSH_STATUS_REGISTERED = "registered"
+PUSH_STATUS_NOT_REGISTERED = "not_registered"
+PUSH_STATUS_OWNED_BY_OTHER = "owned_by_other"
+
+# Answers of `cc_push_test`.
+PUSH_TEST_SENT = "sent"
+PUSH_TEST_RATE_LIMITED = "rate_limited"
+PUSH_TEST_NO_DEVICE = "no_device"
+
+# One test push per user and per this many seconds. It pushes only to the
+# caller's own devices, so this is about not letting a stuck client (or a
+# click-happy person) hammer the push services from this server's address.
+PUSH_TEST_INTERVAL_SECONDS = 60
+
+# Title of the test push. The platform name, deliberately not translated.
+PUSH_TEST_TITLE = "Canarias Conectada"
+
+
+class _EndpointRace:
+    """What `_cc_endpoint_race_guard` found: the row it lost the race to."""
+
+    existing = None
+
 
 class MailPushDevice(models.Model):
     """Push devices that may belong to a guest instead of a partner.
@@ -129,6 +172,25 @@ class MailPushDevice(models.Model):
         # `cascade` matches `guest_id` and keeps the invariant true by
         # construction.
         ondelete="cascade",
+    )
+
+    cc_worker = fields.Selection(
+        selection=[
+            (WORKER_WEBSITE, "Website worker"),
+            (WORKER_BACKEND, "Backend worker"),
+        ],
+        string="Service worker",
+        readonly=True,
+        help="Service worker that owns the subscription: the website's "
+        "(scope /) or the backend's (scope /odoo). Empty on devices "
+        "registered before this was recorded.",
+    )
+
+    cc_test_push_dt = fields.Datetime(
+        string="Last test push",
+        readonly=True,
+        help="When the owner last asked for a test notification from the "
+        "Discuss validation banner. Used to rate-limit `cc_push_test`.",
     )
 
     _persona_not_both = models.Constraint(
@@ -312,6 +374,7 @@ class MailPushDevice(models.Model):
         keys=None,
         expiration_time=None,
         vapid_public_key=None,
+        worker=WORKER_WEBSITE,
     ):
         """Upsert the device of `endpoint` for exactly one persona.
 
@@ -324,6 +387,8 @@ class MailPushDevice(models.Model):
 
         :param partner: `res.partner` owning the device, or None
         :param guest: `mail.guest` owning the device, or None
+        :param worker: `WORKER_WEBSITE` or `WORKER_BACKEND`, the worker the
+            browser subscribed on; anything else is read as the website one
         :returns: the `mail.push.device` record, always as sudo, or an EMPTY
             recordset when the endpoint already belongs to somebody else (see
             `_may_claim_device`). Callers on the public route must NOT let
@@ -364,6 +429,7 @@ class MailPushDevice(models.Model):
             "keys": json.dumps({name: keys[name] for name in BROWSER_KEY_NAMES}),
             "partner_id": partner.id if partner else False,
             "guest_id": guest.id if guest else False,
+            "cc_worker": worker if worker in WORKERS else WORKER_WEBSITE,
         }
         # sudo: mail.push.device is granted to base.group_system only
         # (mail/security/ir.model.access.csv:67-68); every persona touching it
@@ -371,9 +437,44 @@ class MailPushDevice(models.Model):
         devices_su = self.sudo()
         existing = devices_su.search([("endpoint", "=", endpoint)], limit=1)
         if existing:
-            # `endpoint` is unique in core (mail/models/mail_push_device.py:28-31),
-            # so an existing row is either this browser re-subscribing or
-            # somebody else's subscription. Only the first may be re-pointed.
+            return self._cc_reclaim_for_persona(
+                existing, vals, partner=partner, guest=guest
+            )
+        persona_domain = (
+            [("partner_id", "=", partner.id)]
+            if partner
+            else [("guest_id", "=", guest.id)]
+        )
+        if devices_su.search_count(persona_domain) >= MAX_DEVICES_PER_PERSONA:
+            raise ValidationError(
+                self.env._(
+                    "This visitor already has the maximum number of "
+                    "notification devices."
+                )
+            )
+        with self._cc_endpoint_race_guard(endpoint) as race:
+            device = devices_su.create([vals])
+        if race.existing:
+            # Lost the race to a registration of the same endpoint that is
+            # visible to this transaction: same rule as a row found up front.
+            return self._cc_reclaim_for_persona(
+                race.existing, vals, partner=partner, guest=guest
+            )
+        self._cc_drop_website_devices(device)
+        return device
+
+    @api.model
+    def _cc_reclaim_for_persona(self, existing, vals, *, partner=None, guest=None):
+        """Re-point the row already holding `vals["endpoint"]`, if allowed.
+
+        `endpoint` is unique in core (mail/models/mail_push_device.py:28-31),
+        so an existing row is either this browser re-subscribing or somebody
+        else's subscription. Only the first may be re-pointed.
+
+        :returns: `existing`, or an empty recordset on refusal (see
+            `_register_for_persona`)
+        """
+        if existing:
             if not self._may_claim_device(existing, partner=partner, guest=guest):
                 # One short line, and deliberately NOT at warning: this route is
                 # unauthenticated and unthrottled (see ROADMAP), so anything
@@ -389,22 +490,110 @@ class MailPushDevice(models.Model):
                 # Refusal answers with an EMPTY recordset, and the public route
                 # turns that into the same `True` a success gets: see
                 # `_may_claim_device` for why the refusal is silent.
-                return devices_su.browse()
+                return existing.browse()
             existing.write(vals)
-            return existing
-        persona_domain = (
-            [("partner_id", "=", partner.id)]
-            if partner
-            else [("guest_id", "=", guest.id)]
-        )
-        if devices_su.search_count(persona_domain) >= MAX_DEVICES_PER_PERSONA:
-            raise ValidationError(
-                self.env._(
-                    "This visitor already has the maximum number of "
-                    "notification devices."
+            self._cc_drop_website_devices(existing)
+        return existing
+
+    @contextmanager
+    def _cc_endpoint_race_guard(self, endpoint):
+        """Run an INSERT of `endpoint` so that losing a race is not an error.
+
+        THE RACE (client report of 2026-09-29, "El punto de conexión debe ser
+        único"): the Discuss banner's "Activate and verify" registers through
+        `/mail/push/subscribe` while core's web client, woken by the very
+        permission grant the banner asked for (its `permissions` "change"
+        listener, mail/static/src/webclient/web/webclient.js), calls
+        `register_devices` with the same endpoint. Both requests search, both
+        find nothing, both INSERT; the second one blocks on the unique index
+        until the first commits, then fails with core's `_endpoint_unique`,
+        which `retrying` turns into that ValidationError. Browsers that fire
+        the permission "change" event hit it; Safari (Mac, iPhone) does not
+        fire it, which is why those never saw it.
+
+        A lock taken before the search does not fix it: Odoo runs requests
+        in REPEATABLE READ, so the winner's row stays invisible to the
+        loser's snapshot however long the loser waits. What does fix it is
+        running the loser AGAIN, in a fresh transaction that sees the row and
+        takes the ordinary "existing row" path with its ownership rule. So:
+
+        * the INSERT runs in a savepoint, and only a violation of THIS
+          constraint is caught (anything else propagates untouched);
+        * if the conflicting row is visible (it was inserted earlier in this
+          same transaction), it is handed back in `race.existing` and the
+          caller applies `_may_claim_device` to it, exactly as if its own
+          search had found it;
+        * otherwise the row belongs to a concurrent transaction, and
+          `ConcurrencyError` asks `odoo.service.model.retrying` -- which
+          wraps every HTTP request, `/mail/push/subscribe` and
+          `/web/dataset/call_kw` alike -- to roll back and replay the
+          request. The replay finds the row: same persona is a success,
+          another persona is the same silent refusal as always.
+
+        Yields an object whose `existing` is set only in the second case.
+        """
+        race = _EndpointRace()
+        try:
+            with self.env.cr.savepoint():
+                yield race
+        except UniqueViolation as error:
+            if error.diag.constraint_name != ENDPOINT_UNIQUE_CONSTRAINT:
+                raise
+            race.existing = self.sudo().search([("endpoint", "=", endpoint)], limit=1)
+            if not race.existing:
+                _logger.info(
+                    "WebPush: concurrent registration of the same endpoint, "
+                    "retrying the request"
                 )
+                raise ConcurrencyError(
+                    "mail.push.device: endpoint registered by a concurrent "
+                    "transaction"
+                ) from error
+
+    @api.model
+    def _cc_drop_website_devices(self, device):
+        """Safety net against double notifications for internal users.
+
+        Internal users are pushed through core's backend worker, the only one
+        carrying core's push handler (calls, badges, the Discuss client). A
+        website-worker subscription of theirs is therefore always a leftover
+        -- made before `website_pwa_push` routed them to the backend worker,
+        or on a website with push on -- and while it lives every message
+        arrives twice. The page script retires the one of the browser it runs
+        in; this removes what the script could not reach.
+
+        "Same browser" cannot be told on the server: the two workers of one
+        browser hold unrelated endpoints and nothing else identifies a
+        browser. So once an internal user registers a backend device, ALL of
+        their website-worker devices go. That is the routing rule itself, not
+        collateral: no internal user should hold one, on any browser, and a
+        browser that lost one re-subscribes on the backend worker the next
+        time the web client starts with permission granted.
+
+        Devices with no recorded worker (every row registered before the
+        field existed) are left alone.
+        """
+        if device.cc_worker != WORKER_BACKEND or not device.partner_id:
+            return
+        # sudo: `share` of another user's account; read only.
+        if not device.partner_id.sudo().user_ids.filtered(
+            lambda user: user.active and not user.share
+        ):
+            return
+        leftovers = self.sudo().search(
+            [
+                ("partner_id", "=", device.partner_id.id),
+                ("cc_worker", "=", WORKER_WEBSITE),
+                ("id", "!=", device.id),
+            ]
+        )
+        if leftovers:
+            _logger.info(
+                "WebPush: dropped %s website-worker device(s) of internal partner %s",
+                len(leftovers),
+                device.partner_id.id,
             )
-        return devices_su.create([vals])
+            leftovers.unlink()
 
     @api.model
     def get_web_push_vapid_public_key(self):
@@ -573,7 +762,31 @@ class MailPushDevice(models.Model):
                     "notification devices."
                 )
             )
-        return super().register_devices(**kw)
+        # Core creates the row itself; the guard turns losing the race
+        # against the banner's `/mail/push/subscribe` (or a second tab) into a
+        # replay instead of a unique violation. See `_cc_endpoint_race_guard`.
+        with self._cc_endpoint_race_guard(endpoint) as race:
+            result = super().register_devices(**kw)
+        if race.existing:
+            # The row is visible now: run the whole door again, so that it
+            # takes the "existing row" branch with its ownership check. Keyed
+            # on `endpoint` alone: a `previousEndpoint` whose row is gone is
+            # what sent core to its create branch in the first place, and
+            # keeping it would send the replay there again.
+            kw.pop("previousEndpoint", None)
+            return self.register_devices(**kw)
+        # Core's door is the backend web client and the backend worker's own
+        # `pushsubscriptionchange`: every device it touches is a backend one.
+        if endpoint:
+            device = devices_su.search(
+                [("endpoint", "=", endpoint), ("partner_id", "=", partner.id)],
+                limit=1,
+            )
+            if device:
+                if device.cc_worker != WORKER_BACKEND:
+                    device.cc_worker = WORKER_BACKEND
+                self._cc_drop_website_devices(device)
+        return result
 
     @api.model
     def _may_claim_device(self, device, *, partner=None, guest=None):
@@ -743,3 +956,128 @@ class MailPushDevice(models.Model):
             return False
         devices.unlink()
         return True
+
+    # ------------------------------------------------------------------
+    # Validation (the Discuss "notifications are active" banner)
+    #
+    # WHY THIS EXISTS: every registration door above is silent on refusal
+    # by design (see `_may_claim_device`), and core's own door returns None
+    # whatever happened. So a browser could hold permission AND a
+    # subscription while the server holds no row for it, and nothing on the
+    # client could tell. Production incident of 2026-09-26: a community guest
+    # on an iPhone was told notifications were on (the banner only read
+    # `Notification.permission`) and no device row existed for them.
+    #
+    # These two methods let the authenticated web client ASK instead of
+    # assume. They are reached over `/web/dataset/call_kw`, i.e. by any
+    # authenticated account; neither reveals anything about another persona.
+    # ------------------------------------------------------------------
+
+    @api.model
+    def cc_push_status(self, endpoint=None):
+        """Is `endpoint` registered for the CURRENT user?
+
+        The caller is the browser that holds `endpoint` (it read it from its
+        own `PushSubscription`), so answering "somebody else owns it" tells it
+        nothing it could not already infer, and it is what lets the client fix
+        a shared device (unsubscribe and resubscribe, which yields a fresh
+        endpoint nobody owns). WHO owns it is never returned.
+
+        A row the caller may claim but does not own yet (the guest -> login
+        upgrade of `_may_claim_device`) answers `not_registered`: the next
+        registration will carry it over, so the client should register, not
+        report a conflict.
+
+        :param str endpoint: `PushSubscription.endpoint` of this browser
+        :returns: "registered", "not_registered" or "owned_by_other"
+        """
+        if (
+            not endpoint
+            or not isinstance(endpoint, str)
+            or len(endpoint) > MAX_ENDPOINT_LENGTH
+            or self.env.user._is_public()
+        ):
+            return PUSH_STATUS_NOT_REGISTERED
+        partner = self.env.user.partner_id
+        # sudo: mail.push.device is a base.group_system model; ownership is
+        # decided below, and only a status string leaves this method.
+        device = self.sudo().search([("endpoint", "=", endpoint)], limit=1)
+        if not device:
+            return PUSH_STATUS_NOT_REGISTERED
+        if device.partner_id == partner:
+            return PUSH_STATUS_REGISTERED
+        if self._may_claim_device(device, partner=partner):
+            return PUSH_STATUS_NOT_REGISTERED
+        return PUSH_STATUS_OWNED_BY_OTHER
+
+    @api.model
+    def cc_push_test(self):
+        """Send a real test notification to the current user's own devices.
+
+        Goes through core's sender (`mail.thread._web_push_send_notification`,
+        which wraps `mail/tools/web_push.py`), so the test exercises the exact
+        path a message takes: VAPID signing, payload encryption, the push
+        service round trip, and the unlinking of a device whose push service
+        answers 404/410. Only devices whose `partner_id` is the caller's
+        partner are ever selected.
+
+        Rate-limited to one call per `PUSH_TEST_INTERVAL_SECONDS` per user.
+        The row lock makes two concurrent calls of the same user queue on each
+        other instead of both passing the check.
+
+        :returns: dict with `status` ("sent", "rate_limited" or "no_device")
+            and, for "sent", the number of `devices` targeted
+        """
+        if self.env.user._is_public():
+            return {"status": PUSH_TEST_NO_DEVICE}
+        partner = self.env.user.partner_id
+        # sudo: same as `cc_push_status`; the domain is the ownership rule.
+        devices_su = self.sudo().search([("partner_id", "=", partner.id)])
+        if not devices_su:
+            return {"status": PUSH_TEST_NO_DEVICE}
+        self.env.cr.execute(
+            "SELECT id FROM mail_push_device WHERE id IN %s FOR UPDATE",
+            [tuple(devices_su.ids)],
+        )
+        devices_su.invalidate_recordset(["cc_test_push_dt"])
+        now = fields.Datetime.now()
+        threshold = now - timedelta(seconds=PUSH_TEST_INTERVAL_SECONDS)
+        if any(
+            device.cc_test_push_dt and device.cc_test_push_dt > threshold
+            for device in devices_su
+        ):
+            return {"status": PUSH_TEST_RATE_LIMITED}
+        ir_params_su = self.env["ir.config_parameter"].sudo()
+        private_key = ir_params_su.get_param("mail.web_push_vapid_private_key")
+        public_key = ir_params_su.get_param("mail.web_push_vapid_public_key")
+        if not private_key or not public_key:
+            return {"status": PUSH_TEST_NO_DEVICE}
+        devices_su.write({"cc_test_push_dt": now})
+        # The recipient's language, not the request's: the text is read on
+        # the phone, by the partner the devices belong to.
+        reader_env = self.with_context(lang=partner.lang or self.env.lang).env
+        payload = {
+            "title": PUSH_TEST_TITLE,
+            "options": {
+                "body": reader_env._("Notifications are active on this device ✓"),
+                "icon": "/web/static/img/odoo-icon-192x192.png",
+                "tag": "cc-push-test",
+                # A second test within the same tag REPLACES the first one;
+                # without `renotify` that replacement is silent, and a test
+                # that makes no sound tests nothing the user cares about.
+                "renotify": True,
+                "silent": False,
+                "vibrate": list(PUSH_VIBRATE_PATTERN),
+                # Empty model/res_id: no open thread matches it, so core's
+                # web client never swallows the notification as "already
+                # on screen" (mail/static/src/core/common/store_service.js).
+                "data": {"model": "", "res_id": ""},
+            },
+        }
+        count = len(devices_su)
+        # `payload=`, never `payload_by_lang=`: same reason as in
+        # discuss_channel.py (the sender indexes that dict by partner lang).
+        partner.sudo()._web_push_send_notification(
+            devices_su, private_key, public_key, payload=payload
+        )
+        return {"status": PUSH_TEST_SENT, "devices": count}

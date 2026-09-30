@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_website_page_restricted_editor,website.page restricted editor,website.model_website_page,website.group_website_restricted_editor,1,1,0,0

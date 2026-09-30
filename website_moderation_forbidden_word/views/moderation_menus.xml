@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- Settings > Moderation: the administrator's single place for every
+         moderation list of the platform. Modules that consume the word list
+         add their own entries here (pending items, per-app menus...).
+         The Settings root itself is only visible to administrators, so
+         functional apps keep an entry of their own for their managers. -->
+    <menuitem id="menu_moderation_root"
+              name="Moderation"
+              parent="base.menu_administration"
+              sequence="60"
+              groups="base.group_system"/>
+
+    <menuitem id="menu_moderation_forbidden_word"
+              name="Forbidden Words"
+              parent="menu_moderation_root"
+              action="action_moderation_forbidden_word"
+              sequence="10"
+              groups="base.group_system"/>
+
+</odoo>

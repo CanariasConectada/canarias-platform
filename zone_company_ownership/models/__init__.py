@@ -5,5 +5,6 @@
 from . import zone_company_mixin
 from . import res_company
 from . import product_template
+from . import res_partner
 from . import res_users
 from . import multi_company_abstract

@@ -107,6 +107,14 @@
         }
 
         toggle.textContent = label();
+        // Keep the toggle honest when the cascade repopulates the select or
+        // sets its value from code: any change event re-reads the label.
+        select.addEventListener("change", function () {
+            toggle.textContent = label();
+        });
+        select.addEventListener("wsc:refresh", function () {
+            toggle.textContent = label();
+        });
         toggle.addEventListener("click", function (event) {
             event.preventDefault();
             if (panel.classList.contains("d-none")) {
@@ -160,6 +168,9 @@
         busy: false,
         minPrice: 0,
         maxPrice: 0,
+        // The active category, kept here because the two filter instances
+        // (sidebar and offcanvas) can disagree after an AJAX change.
+        category: null,
 
         grid: function () {
             return (
@@ -240,7 +251,94 @@
                 });
         },
 
+        // Preserve the OTHER active filters, mirroring the server-rendered
+        // chip's keep(shop_path, category=0): the category is gone, search
+        // and price survive.
+        buildClearHref: function (result) {
+            var params = new URLSearchParams();
+            if (result.search) {
+                params.set("search", result.search);
+            }
+            if (result.price && result.price.min) {
+                params.set("min_price", result.price.min);
+            }
+            if (result.price && result.price.max) {
+                params.set("max_price", result.price.max);
+            }
+            var qs = params.toString();
+            return "/shop" + (qs ? "?" + qs : "");
+        },
+
+        // Where a freshly created chip belongs: the same spot the QWeb view
+        // puts it — right before the tile row when there is one, otherwise
+        // right before the grid's own wrapper (or the grid itself, on the
+        // rare page that has no wrapper at all, e.g. zero products).
+        findChipAnchor: function () {
+            return (
+                document.querySelector(".o_wsc_category_tiles_row") ||
+                document.querySelector(".o_wsale_products_grid_table_wrapper") ||
+                this.grid()
+            );
+        },
+
+        // Builds the exact markup the server renders for the chip (same
+        // wrapper/classes/ids as templates.xml's shop_category_tiles view)
+        // and inserts it at findChipAnchor(). Returns the new #wsc_category
+        // _chip element, or null when there is nowhere sane to put it.
+        createCategoryChip: function () {
+            var anchor = this.findChipAnchor();
+            if (!anchor) {
+                return null;
+            }
+            var wrapper = document.createElement("div");
+            wrapper.className =
+                "wd-active-filters mb-3 d-flex flex-wrap gap-2 align-items-center";
+            wrapper.innerHTML =
+                '<span id="wsc_category_chip" class="badge bg-primary wd-filter-chip d-inline-flex align-items-center">' +
+                '<i class="fa fa-folder me-1"></i>' +
+                '<span class="o_wsc_category_chip_label"></span>' +
+                '<a class="wd-filter-link wd-filter-chip-x" aria-label="Quitar filtro de categoría">×</a>' +
+                "</span>";
+            anchor.insertAdjacentElement("beforebegin", wrapper);
+            return wrapper.querySelector("#wsc_category_chip");
+        },
+
+        // The tile row and its "×" clear the filter with a full navigation
+        // (see the QWeb view), so THEY never go stale. The chip is the one
+        // piece of chrome the grid-swapping AJAX loader would otherwise
+        // leave behind: it is only server-rendered for whatever category
+        // the page loaded on, so an unfiltered /shop that gets a category
+        // picked afterwards in the sidebar select starts with no chip at
+        // all. Called on every AJAX response so the chip always names the
+        // CURRENT filter — created when missing, updated in place, or
+        // removed (wrapper included) when there is none.
+        syncCategoryChip: function (result) {
+            var chip = document.getElementById("wsc_category_chip");
+            if (!result.category_id) {
+                if (chip) {
+                    var oldWrapper = chip.closest(".wd-active-filters");
+                    (oldWrapper || chip).remove();
+                }
+                return;
+            }
+            if (!chip) {
+                chip = this.createCategoryChip();
+                if (!chip) {
+                    return;
+                }
+            }
+            var label = chip.querySelector(".o_wsc_category_chip_label");
+            if (label) {
+                label.textContent = result.category_name || "";
+            }
+            var clearLink = chip.querySelector(".wd-filter-chip-x");
+            if (clearLink) {
+                clearLink.setAttribute("href", this.buildClearHref(result));
+            }
+        },
+
         updateChrome: function (result) {
+            this.syncCategoryChip(result);
             var banner = document.getElementById("wsc-active-filters");
             if (banner) {
                 banner.remove();
@@ -302,36 +400,117 @@
         return input ? input.value : "";
     }
 
-    function setup() {
-        var select = document.getElementById("wsc_category_select");
-        if (select) {
-            enhanceSelect(select);
-            select.addEventListener("change", function () {
-                loader.load(select.value || null, currentSearch());
+    function categoryTree(suffix) {
+        var node =
+            document.getElementById("wsc_category_data" + (suffix || "")) ||
+            document.getElementById("wsc_category_data");
+        if (!node) {
+            return [];
+        }
+        try {
+            return JSON.parse(node.dataset.tree || "[]");
+        } catch (error) {
+            return [];
+        }
+    }
+
+    function findNode(nodes, id) {
+        for (var i = 0; i < nodes.length; i++) {
+            if (String(nodes[i].id) === String(id)) {
+                return nodes[i];
+            }
+        }
+        return null;
+    }
+
+    /*
+     * The filter cards render twice — the desktop sidebar and the mobile
+     * offcanvas — each with its own id suffix, so every control is wired
+     * per instance. The loader tracks the active category itself: the two
+     * instances are never visible at the same breakpoint, so the one the
+     * visitor last touched is the truth.
+     */
+    function wireFilterGroup(suffix) {
+        // Zone switcher: each option's value is another marketplace's /shop
+        // URL, so picking a zone is a plain navigation — no AJAX, the other
+        // site renders its own shop.
+        var zoneSelect = document.getElementById("wsc_zone_select" + suffix);
+        if (zoneSelect) {
+            enhanceSelect(zoneSelect);
+            zoneSelect.addEventListener("change", function () {
+                if (zoneSelect.value) {
+                    window.location.href = zoneSelect.value;
+                }
             });
         }
 
-        ["min_price", "max_price"].forEach(function (name) {
-            var input = document.querySelector(
-                'input[name="' + name + '"], input#' + name
-            );
-            if (!input) {
+        var select = document.getElementById("wsc_category_select" + suffix);
+        var subSelect = document.getElementById("wsc_subcategory_select" + suffix);
+        var subWrap = document.getElementById("wsc_subcategory_wrap" + suffix);
+        var tree = categoryTree(suffix);
+        if (select) {
+            enhanceSelect(select);
+            select.addEventListener("change", function () {
+                // Repopulate the subcategory level for the new main
+                // category; the products load on the main category itself
+                // (the endpoint includes its children).
+                if (subSelect && subWrap) {
+                    while (subSelect.options.length > 1) {
+                        subSelect.remove(1);
+                    }
+                    subSelect.value = "";
+                    var node = select.value ? findNode(tree, select.value) : null;
+                    var children = (node && node.children) || [];
+                    children.forEach(function (child) {
+                        var option = document.createElement("option");
+                        option.value = child.id;
+                        option.textContent = child.name;
+                        subSelect.appendChild(option);
+                    });
+                    subWrap.classList.toggle("d-none", !children.length);
+                    subSelect.dispatchEvent(new Event("wsc:refresh"));
+                }
+                loader.category = select.value || null;
+                loader.load(loader.category, currentSearch());
+            });
+        }
+        if (subSelect) {
+            enhanceSelect(subSelect);
+            subSelect.addEventListener("change", function () {
+                loader.category =
+                    subSelect.value || (select && select.value) || null;
+                loader.load(loader.category, currentSearch());
+            });
+        }
+    }
+
+    function wirePriceInputs() {
+        var inputs = document.querySelectorAll(
+            'input[name="min_price"], input#min_price, ' +
+                'input[name="max_price"], input#max_price'
+        );
+        inputs.forEach(function (input) {
+            if (input.dataset.wscWired) {
                 return;
             }
+            input.dataset.wscWired = "1";
             input.addEventListener("change", function () {
+                // Read min and max from the input's OWN filter block: the
+                // price widget renders once per filter instance and the
+                // untouched instance may hold stale values.
+                var scope =
+                    input.closest("#o_wsale_price_range_option") || document;
                 loader.minPrice =
                     parseFloat(
-                        (document.querySelector('input[name="min_price"]') || {}).value
+                        (scope.querySelector('input[name="min_price"]') || {})
+                            .value
                     ) || 0;
                 loader.maxPrice =
                     parseFloat(
-                        (document.querySelector('input[name="max_price"]') || {}).value
+                        (scope.querySelector('input[name="max_price"]') || {})
+                            .value
                     ) || 0;
-                var params = new URLSearchParams(window.location.search);
-                loader.load(
-                    (select && select.value) || params.get("category"),
-                    currentSearch()
-                );
+                loader.load(loader.category, currentSearch());
             });
             // The stock price filter submits a GET form; with the AJAX
             // loader in charge that reload is pure flicker.
@@ -343,6 +522,14 @@
                 });
             }
         });
+    }
+
+    function setup() {
+        loader.category =
+            new URLSearchParams(window.location.search).get("category") || null;
+
+        ["", "_offcanvas"].forEach(wireFilterGroup);
+        wirePriceInputs();
 
         rewriteMerchantLinks();
 

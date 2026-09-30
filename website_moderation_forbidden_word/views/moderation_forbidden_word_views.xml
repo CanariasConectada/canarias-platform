@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="moderation_forbidden_word_view_list" model="ir.ui.view">
+        <field name="name">moderation.forbidden.word.list</field>
+        <field name="model">moderation.forbidden.word</field>
+        <field name="arch" type="xml">
+            <list editable="bottom" multi_edit="1">
+                <field name="name"/>
+                <field name="note" optional="show"/>
+                <field name="name_normalized" optional="hide"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="moderation_forbidden_word_view_form" model="ir.ui.view">
+        <field name="name">moderation.forbidden.word.form</field>
+        <field name="model">moderation.forbidden.word</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <group>
+                        <field name="name"/>
+                        <field name="name_normalized"/>
+                        <field name="note"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="moderation_forbidden_word_view_search" model="ir.ui.view">
+        <field name="name">moderation.forbidden.word.search</field>
+        <field name="model">moderation.forbidden.word</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" filter_domain="['|', ('name', 'ilike', self), ('name_normalized', 'ilike', self)]"/>
+                <field name="note"/>
+                <filter name="filter_multi_word" string="Expressions" domain="[('name_normalized', 'like', ' ')]"/>
+                <separator/>
+                <filter name="filter_inactive" string="Archived" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_moderation_forbidden_word" model="ir.actions.act_window">
+        <field name="name">Forbidden Words</field>
+        <field name="res_model">moderation.forbidden.word</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="moderation_forbidden_word_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Add a forbidden word
+            </p>
+            <p>
+                Texts containing any of these words or expressions are held
+                for a manual check instead of being published automatically.
+                Matching ignores case and accents and only hits whole words.
+            </p>
+        </field>
+    </record>
+
+</odoo>

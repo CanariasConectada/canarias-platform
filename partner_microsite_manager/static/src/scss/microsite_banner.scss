@@ -1,0 +1,16 @@
+// Copyright 2026 Canarias Conectada
+// License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+// The closing banner's parallax. `background-attachment: fixed` together
+// with `cover` is broken on iOS (the image paints at the DOCUMENT's size,
+// grotesquely zoomed and cropped), and on any touch viewport the effect
+// costs jank for nothing. It is therefore opt-in: only viewports that can
+// hover (a real pointer, so not iPads pretending to be laptops) AND are
+// lg or wider get the fixed sheet; everything else scrolls normally.
+.o_pmm_banner_fixed {
+    background-attachment: scroll;
+
+    @media (hover: hover) and (min-width: 992px) {
+        background-attachment: fixed;
+    }
+}

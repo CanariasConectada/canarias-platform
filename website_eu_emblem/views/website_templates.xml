@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!-- The emblem itself, kept apart so both branches below render the same
+         thing and neither can drift. -->
+    <template id="eu_emblem_content" name="EU Emblem content">
+        <img src="/website_eu_emblem/static/src/img/eu_flag.svg"
+             class="o_cc_eu_emblem_flag"
+             width="60" height="40"
+             t-att-alt="eu_emblem['statement'] or 'Unión Europea'"
+             loading="lazy"/>
+        <!-- Shown beside the flag on wide screens only: the statement is a
+             sentence, not a label, and forcing it into a phone-width navbar
+             would push the menu off. It stays reachable as alt text. -->
+        <span t-if="eu_emblem['statement']"
+              class="o_cc_eu_emblem_text d-none d-lg-inline"
+              t-out="eu_emblem['statement']"/>
+    </template>
+
+    <!-- Anchored on the cart link rather than the brand placeholder: asked
+         for on 2026-08-20, "mueve el logo de la ue de la izquierda a la
+         derecha, colocala antes del carrito". `website_sale.header_cart_link`
+         is, like `website.placeholder_header_brand`, the ONE template every
+         header variant renders through a single `t-call`: this platform
+         has six header variants in use (header_call_to_action_stretched /
+         _large / _sidebar, header_search_box_input, header_text_element,
+         header_call_to_action), each inserting the SAME cart template rather
+         than its own copy of the `<li>`. Inheriting that one template reaches
+         every variant's cart, wherever it sits, without touching a single
+         per-website COW view: the exact reason the brand placeholder was
+         chosen before.
+
+         The xpath targets the leading divider `<li>` (`Make sure the cart
+         and related menus are not folded`, see core's comment on it), not
+         the cart `<li>` itself, so the divider and the cart it guards stay
+         adjacent and `autohideMenu` keeps folding them as one unit; the
+         emblem lands immediately before that pair, i.e. immediately before
+         the cart. -->
+    <template id="header_eu_emblem" inherit_id="website_sale.header_cart_link"
+              name="EU Emblem in the header">
+        <!-- `hasclass()` reads the `class` attribute; this `<li>` carries its
+             classes as `t-attf-class` (a QWeb templating attribute, resolved
+             at render time, not inherit time), so the match has to be a
+             literal substring check on that attribute instead. -->
+        <xpath expr="//li[contains(@t-attf-class, 'divider')]" position="before">
+            <t t-set="eu_emblem" t-value="website._eu_emblem_values()"/>
+            <li t-if="eu_emblem['enabled']" class="d-flex align-items-center o_cc_eu_emblem_item">
+                <a t-if="eu_emblem['url']"
+                   t-att-href="eu_emblem['url']"
+                   class="o_cc_eu_emblem"
+                   t-att-title="eu_emblem['statement'] or None">
+                    <t t-call="website_eu_emblem.eu_emblem_content"/>
+                </a>
+                <span t-else=""
+                      class="o_cc_eu_emblem"
+                      t-att-title="eu_emblem['statement'] or None">
+                    <t t-call="website_eu_emblem.eu_emblem_content"/>
+                </span>
+            </li>
+        </xpath>
+    </template>
+
+    <!-- Funding strip at the foot of every page (asked for 2026-09-15).
+
+         `website.layout` renders `<footer id="bottom">` as `<div id="footer">`
+         (the editable `oe_structure` each site's footer variant replaces)
+         followed by the copyright bar `<div class="o_footer_copyright">`.
+         Appending as the footer's LAST child puts the strip below both, i.e.
+         at the very bottom of the page, and outside any `oe_structure`, so
+         the website editor neither offers it as a snippet nor lets a site
+         drag it away. Since 19.0.1.5.0 the block is a light band of its own
+         (static/src/scss/funding_footer.scss): without a colour it took the
+         footer's `o_cc` combination and, under the black inner footer of the
+         zone sites and themed microsites, hung there as a loose white strip;
+         the band is what makes it read as the footer's last row instead.
+
+         The image is the same 962x220 strip `partner_microsite_manager`
+         (microsite homepages) and `website_login_branding` (auth card) each
+         ship a copy of; those two should point here in a later cleanup.
+
+         Priority 120: `partner_microsite_manager.footer_platform_legal_links`
+         appends the legal links to the same footer at 110, and the client
+         wants the strip below those too. Inherited views apply in priority
+         order, so the higher number is what makes this the last child. -->
+    <template id="funding_footer" inherit_id="website.layout"
+              name="Funding strip in the footer" priority="120">
+        <xpath expr="//footer[@id='bottom']" position="inside">
+            <div t-if="website._cc_show_funding_footer(main_object)"
+                 class="o_cc_funding_footer o_not_editable">
+                <img src="/website_eu_emblem/static/src/img/funding_strip.png"
+                     class="o_cc_funding_strip_img"
+                     loading="lazy"
+                     alt="Plataforma desarrollada en el marco del proyecto Canarias Conectada, cofinanciado por la Unión Europea a través del Programa FEDER Canarias 2021-2027 — Consejería de Economía, Industria, Comercio y Autónomos del Gobierno de Canarias. Plataforma que integra los resultados del proyecto «Guanarteme en tu mano», financiado por la Unión Europea – NextGenerationEU, en el marco del Plan de Recuperación, Transformación y Resiliencia — Ministerio de Industria, Comercio y Turismo y Gobierno de Canarias."/>
+            </div>
+        </xpath>
+    </template>
+</odoo>

@@ -13,9 +13,10 @@ Reviews are plain `rating.rating` records (stars in `rating`, comment in
 `feedback`, merchant answer in the native `publisher_comment` from
 `portal_rating`). This module only adds:
 
-- a moderation state machine (`pending` / `approved` / `rejected`) with a
-  configurable forbidden words list that holds suspicious reviews for a
-  manual check,
+- a moderation state machine (`pending` / `approved` / `rejected`) driven
+  by the platform-wide forbidden words list of
+  `website_moderation_forbidden_word`, which holds suspicious reviews for
+  a manual check,
 - email and to-do notifications to moderators and merchants,
 - backend views, menus and security groups scoped per company,
 - the public website page, rendered fully server-side (no JavaScript).

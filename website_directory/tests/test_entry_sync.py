@@ -174,6 +174,17 @@ class TestDirectoryEntrySync(TransactionCase):
         entry = self._get_entry(self.company)
         self.assertEqual(entry.website_url, "https://wd-site.example.com")
 
+    def test_own_microsite_outranks_partner_website(self):
+        # The merchant typed their external site on the contact card, but
+        # the directory must send visitors to the platform microsite.
+        website = self.env["website"].create(
+            {"name": "WD Own Site", "domain": "https://wd-own.example.com"}
+        )
+        self.company.website_id = website
+        self.company.write({"website": "https://wd-external.example.com"})
+        entry = self._get_entry(self.company)
+        self.assertEqual(entry.website_url, "https://wd-own.example.com")
+
     # ------------------------------------------------------------------
     # Async behaviour: create/write flag pending, the cron drains it
     # ------------------------------------------------------------------
@@ -215,7 +226,13 @@ class TestDirectoryEntrySync(TransactionCase):
     def test_cron_syncs_and_clears_pending(self):
         company = self.Company.create({"name": "WD Cron Co"})
         self.assertTrue(company.directory_sync_pending)
-        self.env["res.company"]._cron_sync_directory_entries()
+        # Drained in a loop: the queue may hold an estate-wide backlog (a
+        # migration queues a full resync) and the cron works in batches, so
+        # one pass has no right to reach this particular company.
+        for _ in range(20):
+            self.env["res.company"]._cron_sync_directory_entries()
+            if not company.directory_sync_pending:
+                break
         self.assertFalse(company.directory_sync_pending)
         entry = self._get_entry(company)
         self.assertEqual(entry.name, "WD Cron Co")

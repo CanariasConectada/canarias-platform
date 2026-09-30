@@ -8,6 +8,14 @@ from odoo.tests import HttpCase, tagged
 
 @tagged("post_install", "-at_install")
 class TestDirectoryController(HttpCase):
+    def setUp(self):
+        super().setUp()
+        # Pinned to the website's default language: since the seven-language
+        # rollout the anonymous negotiation can land on en_US and every
+        # unprefixed request becomes a 303 language hop first.
+        website = self.env["website"].search([], limit=1)
+        self.opener.cookies["frontend_lang"] = website.default_lang_id.code
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -61,6 +69,33 @@ class TestDirectoryController(HttpCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("WDC Alpha Bakery", response.text)
         self.assertIn("WDC Beta Cafe", response.text)
+
+    def test_sidebar_levels_zone_then_category_then_extras(self):
+        """The filters read top-down as levels: where (zone), then what
+        (category), then the bridge modules' refinements underneath."""
+        response = self.url_open("/comercio")
+        self.assertEqual(response.status_code, 200)
+        zone = response.text.find('id="wd_zone_card"')
+        category = response.text.find('id="wd_category_card"')
+        extras = response.text.find('id="o_wd_sidebar_extra"')
+        self.assertGreater(zone, -1)
+        self.assertGreater(category, zone, "category filter must follow zone")
+        self.assertGreater(extras, category, "bridge filters close the column")
+
+    def test_category_filter_offers_every_active_root(self):
+        """No pruning: every active root category is an option; an archived
+        one is not offered."""
+        archived = self.env["res.company.category"].create(
+            {"name": "WDC Archived Root", "type": "view", "active": False}
+        )
+        response = self.url_open("/comercio")
+        self.assertEqual(response.status_code, 200)
+        roots = (
+            self.env["res.company.category"].sudo().search([("parent_id", "=", False)])
+        )
+        self.assertNotIn(archived, roots)
+        self.assertIn("WDC Root", response.text)
+        self.assertNotIn("WDC Archived Root", response.text)
 
     def test_browser_title_does_not_repeat_the_site_name(self):
         """The tab says where you are; the site name is appended by the layout.
@@ -166,6 +201,69 @@ class TestDirectoryController(HttpCase):
         response = self.url_open("/comercio")
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("wd-clear-filters", response.text)
+
+    def _selected_chips(self, html):
+        """Every ``directory_filter_chip`` anchor in the page, whole.
+
+        Whole, not just the opening tag, because what has to be asserted is
+        that the cross lives INSIDE the chip. No chip nests an anchor, so a
+        non-greedy match up to </a> cannot overshoot.
+        """
+        return re.findall(
+            r'<a[^>]*class="wd-filter-selected[^"]*"[^>]*>.*?</a>', html, re.DOTALL
+        )
+
+    def test_every_selected_filter_is_the_shared_remove_chip(self):
+        """One deselect affordance for the whole sidebar.
+
+        Reported 2026-09-05: each section had grown its own (a small "x",
+        a "Clear" button, a trash icon). The zone and the category are the
+        base module's own sections; the bridge modules cover theirs.
+        """
+        response = self.url_open(f"/comercio/categoria/{self.leaf_a.id}")
+        self.assertEqual(response.status_code, 200)
+        chips = self._selected_chips(response.text)
+        # The sidebar card and the top summary bar: the same chip twice,
+        # each one named after the filter it removes.
+        self.assertEqual(len(chips), 2, chips)
+        for chip in chips:
+            self.assertIn("wd-filter-link", chip)
+            self.assertIn('title="WDC Leaf A"', chip)
+            self.assertIn('class="wd-filter-remove"', chip)
+            # The accessible name is content, not an aria-label: a static
+            # text node is the only shape QWeb hands to the translator
+            # readably. Asserted by class, because the words themselves
+            # arrive in the website's own language.
+            self.assertIn('class="visually-hidden"', chip)
+        # The zone chip is the same control, minus the AJAX hook: removing
+        # the zone is a real navigation.
+        response = self.url_open("/comercio/zona/guanarteme")
+        self.assertEqual(response.status_code, 200)
+        chips = self._selected_chips(response.text)
+        self.assertEqual(len(chips), 2, chips)
+        for chip in chips:
+            self.assertNotIn("wd-filter-link", chip)
+            self.assertIn('class="wd-filter-remove"', chip)
+        # Nothing selected, nothing to remove.
+        response = self.url_open("/comercio")
+        self.assertNotIn("wd-filter-selected", response.text)
+        self.assertNotIn("wd-filter-remove", response.text)
+
+    def test_the_clear_all_button_wears_the_same_cross(self):
+        """One "remove" glyph per page: the clear-all dropped its trash for
+        the cross the chips use, keeping its own accessible name because it
+        clears every filter rather than the one it sits next to."""
+        response = self.url_open(f"/comercio/categoria/{self.leaf_a.id}")
+        clear_all = re.search(
+            r'<a[^>]*class="[^"]*wd-clear-filters[^"]*"[^>]*>.*?</a>',
+            response.text,
+            re.DOTALL,
+        )
+        self.assertIsNotNone(clear_all, "clear-all button not rendered")
+        self.assertIn(">X<", clear_all.group(0))
+        self.assertNotIn("fa-trash", clear_all.group(0))
+        self.assertNotIn("fa-times", clear_all.group(0))
+        self.assertRegex(clear_all.group(0), r"aria-label=\"[^\"]+\"")
 
     def test_ajax_search_partial(self):
         response = self.url_open("/comercio/ajax/search?search=Alpha")

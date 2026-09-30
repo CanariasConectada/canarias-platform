@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!-- The courses page greets every account with 0 karma with "your
+         account has not yet been verified" and a link that mails a
+         validation token. Merchants are internal accounts the platform
+         created itself: their address is known and the banner only
+         confuses them (reported 2026-09-15, "quita la validación de
+         cuenta para los usuarios comerciante"). Portal accounts keep the
+         banner: for them it is the real e-mail check. -->
+    <template id="courses_home_no_validation_for_internal_users"
+              inherit_id="website_slides.courses_home"
+              name="Courses: no validation banner for internal users">
+        <xpath expr="//div[hasclass('o_wprofile_email_validation_container')]" position="attributes">
+            <attribute name="t-if">request.env.user.share</attribute>
+        </xpath>
+    </template>
+</odoo>
