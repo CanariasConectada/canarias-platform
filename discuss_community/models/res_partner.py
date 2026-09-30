@@ -15,7 +15,7 @@ GUEST_MENTION_CTX = "community_guest_mention_partner_ids"
 
 
 class ResPartner(models.Model):
-    """Keep channel rosters out of a community guest's @-mention suggestions.
+    """Keep channel rosters out of a community member's @-mention suggestions.
 
     Core's ``get_mention_suggestions_from_channel`` filters partners with
     ``("channel_ids", "in", channel)``, a many2many condition compiled
@@ -37,7 +37,7 @@ class ResPartner(models.Model):
     @api.readonly
     @api.model
     def get_mention_suggestions_from_channel(self, channel_id, search, limit=8):
-        if not self.env.user.is_community_guest:
+        if not self.env.user.is_community_member:
             return super().get_mention_suggestions_from_channel(
                 channel_id, search, limit=limit
             )
@@ -78,6 +78,66 @@ class ResPartner(models.Model):
             for (author,) in groups:
                 partners |= author
         return partners.sudo(False)
+
+    @api.readonly
+    @api.model
+    def get_mention_suggestions(self, search, limit=8):
+        """Global @-mention search: only people the member converses with.
+
+        Core searches every partner of the database by name or email, which
+        would hand a community member the whole directory (staff and
+        merchants) with an empty search. A member is only offered the
+        members of its own chats and groups.
+        """
+        if not self.env.user.is_community_member:
+            return super().get_mention_suggestions(search, limit=limit)
+        allowed = self._community_member_known_partners()
+        return super(
+            ResPartner, self.with_context(**{GUEST_MENTION_CTX: allowed.ids})
+        ).get_mention_suggestions(search, limit=limit)
+
+    @api.readonly
+    @api.model
+    def search_for_channel_invite(self, search_term, channel_id=None, limit=30):
+        """Invite search: same restriction as the global mention search."""
+        if not self.env.user.is_community_member:
+            return super().search_for_channel_invite(
+                search_term, channel_id=channel_id, limit=limit
+            )
+        allowed = self._community_member_known_partners()
+        return super(
+            ResPartner, self.with_context(**{GUEST_MENTION_CTX: allowed.ids})
+        ).search_for_channel_invite(search_term, channel_id=channel_id, limit=limit)
+
+    @api.model
+    def _community_member_known_partners(self):
+        """The current user and the members of its chats and groups."""
+        user = self.env.user
+        seats = (
+            self.env["discuss.channel.member"]
+            .sudo()
+            .search(
+                [
+                    ("partner_id", "=", user.partner_id.id),
+                    ("channel_id.channel_type", "in", ("chat", "group")),
+                ]
+            )
+        )
+        partners = user.partner_id | seats.channel_id.channel_member_ids.partner_id
+        return partners.sudo(False)
+
+    @api.model
+    def _search(self, domain, *args, **kwargs):
+        """AND the member restriction into every partner search it scopes.
+
+        Only while ``GUEST_MENTION_CTX`` is in the context, which the
+        overrides above set around core's searches. A client sending the key
+        itself can only narrow its own results.
+        """
+        allowed_ids = self.env.context.get(GUEST_MENTION_CTX)
+        if allowed_ids is not None:
+            domain = Domain(domain) & Domain("id", "in", list(allowed_ids))
+        return super()._search(domain, *args, **kwargs)
 
     @api.model
     def _search_mention_suggestions(self, domain, limit, extra_domain=None):

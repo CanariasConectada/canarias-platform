@@ -1,3 +1,36 @@
+## 19.0.1.8.0 (2026-09-30)
+
+- Registered community members get the guest profile. Every community
+  behaviour now pivots on `res.users.is_community_member` (the community
+  group, never administrators, merchants or zone managers) instead of
+  `is_community_guest`:
+  - record rules: no staff channels ("general", "Administrators" and any
+    channel restricted to employees) nor their messages, only their own
+    member rows in channels, the same join restrictions;
+  - self-managed for `discuss_channel_zone`: the nightly reconciliation no
+    longer undoes the channels a resident joined or left;
+  - `session_info.is_community_member` drives the trimmed Discuss UI and the
+    landing in "Canarias Conectada"; no Discuss Configuration menu; no
+    OdooBot onboarding (`odoobot_state` disabled on promotion); @-mention
+    suggestions limited like a guest's;
+  - the auto-subscription carve-out exempts administrators, merchants and
+    zone managers who also hold the community group.
+- Migration: removes the staff-channel seats and OdooBot DMs of every
+  community member (`_cleanup_community_members`, formerly guests only).
+- Unchanged: the garbage collector only removes guests; moderation keeps
+  holding guests and applying the trust threshold to members.
+- Zone changes: like guests, a registered member is self-managed, so when
+  its zone changes it is seated in the new zone channel but NOT removed
+  from the old one (the sync only adds for self-managed users).
+- Hardening after review: migrated merchants
+  (`group_migrated_merchant`) are exempt too; the member population is one
+  SQL search; group-side membership changes (`res.groups` write) refresh
+  the cached rule domains; a member's own new channel is created open
+  (`group_public_id` unset) so the rule does not hide it; the global
+  @-mention and invite searches only offer the people the member already
+  shares a chat or group with; every removed seat is logged with its
+  login and channel.
+
 ## 19.0.1.7.0 (2026-09-29)
 
 - Guests entering from a commercial-zone site are seated in that zone's

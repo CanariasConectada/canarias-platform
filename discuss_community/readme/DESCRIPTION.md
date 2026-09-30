@@ -45,10 +45,19 @@ Security posture of internal community members
 Making residents internal opens `base.group_user`'s ACLs to them; the Phase 1
 audit and its mitigations:
 
+- **Who is a community member**: `res.users.is_community_member` — holds
+  `group_community_member` and is neither an administrator
+  (`base.group_system`), a merchant ("Comercios") nor a zone manager
+  ("Gestor ZCA"). Guests and registered residents get the same profile
+  (record rules, trimmed menus, landing channel, self-managed channel
+  seats); `is_community_guest` only marks the disposable accounts the
+  garbage collector and moderation treat apart.
 - **Staff channels**: `mail.channel_all_employees` auto-seats every internal
   user; a carve-out in `_subscribe_users_automatically_get_members` keeps
   community members out of group-auto-subscribed channels (unless a channel
-  is explicitly gated on the community group).
+  is explicitly gated on the community group), and the community record
+  rules hide "general", "Administrators" and every employee-only channel,
+  their messages and their rosters.
 - **Contacts**: `res.partner` visibility is already narrowed platform-wide by
   `partner_multi_company_restrict`'s global rules.
 - **Sales**: plain employees hold **no** ACL on `sale.order` / order lines —
