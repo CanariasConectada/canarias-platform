@@ -3,11 +3,14 @@
 
 import json
 import logging
+from contextlib import contextmanager
 from datetime import timedelta
 from urllib.parse import urlsplit
 
+from psycopg2.errors import UniqueViolation
+
 from odoo import api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ConcurrencyError, ValidationError
 from odoo.http import request
 
 from odoo.addons.mail.tools.jwt import InvalidVapidError
@@ -103,6 +106,10 @@ WORKER_WEBSITE = "website"
 WORKER_BACKEND = "backend"
 WORKERS = (WORKER_WEBSITE, WORKER_BACKEND)
 
+# Core's `_endpoint_unique` (mail/models/mail_push_device.py), as Postgres
+# names it: `<table>_<constraint name without the leading underscore>`.
+ENDPOINT_UNIQUE_CONSTRAINT = "mail_push_device_endpoint_unique"
+
 # Answers of `cc_push_status`, the check behind the Discuss validation banner.
 PUSH_STATUS_REGISTERED = "registered"
 PUSH_STATUS_NOT_REGISTERED = "not_registered"
@@ -120,6 +127,12 @@ PUSH_TEST_INTERVAL_SECONDS = 60
 
 # Title of the test push. The platform name, deliberately not translated.
 PUSH_TEST_TITLE = "Canarias Conectada"
+
+
+class _EndpointRace:
+    """What `_cc_endpoint_race_guard` found: the row it lost the race to."""
+
+    existing = None
 
 
 class MailPushDevice(models.Model):
@@ -424,9 +437,44 @@ class MailPushDevice(models.Model):
         devices_su = self.sudo()
         existing = devices_su.search([("endpoint", "=", endpoint)], limit=1)
         if existing:
-            # `endpoint` is unique in core (mail/models/mail_push_device.py:28-31),
-            # so an existing row is either this browser re-subscribing or
-            # somebody else's subscription. Only the first may be re-pointed.
+            return self._cc_reclaim_for_persona(
+                existing, vals, partner=partner, guest=guest
+            )
+        persona_domain = (
+            [("partner_id", "=", partner.id)]
+            if partner
+            else [("guest_id", "=", guest.id)]
+        )
+        if devices_su.search_count(persona_domain) >= MAX_DEVICES_PER_PERSONA:
+            raise ValidationError(
+                self.env._(
+                    "This visitor already has the maximum number of "
+                    "notification devices."
+                )
+            )
+        with self._cc_endpoint_race_guard(endpoint) as race:
+            device = devices_su.create([vals])
+        if race.existing:
+            # Lost the race to a registration of the same endpoint that is
+            # visible to this transaction: same rule as a row found up front.
+            return self._cc_reclaim_for_persona(
+                race.existing, vals, partner=partner, guest=guest
+            )
+        self._cc_drop_website_devices(device)
+        return device
+
+    @api.model
+    def _cc_reclaim_for_persona(self, existing, vals, *, partner=None, guest=None):
+        """Re-point the row already holding `vals["endpoint"]`, if allowed.
+
+        `endpoint` is unique in core (mail/models/mail_push_device.py:28-31),
+        so an existing row is either this browser re-subscribing or somebody
+        else's subscription. Only the first may be re-pointed.
+
+        :returns: `existing`, or an empty recordset on refusal (see
+            `_register_for_persona`)
+        """
+        if existing:
             if not self._may_claim_device(existing, partner=partner, guest=guest):
                 # One short line, and deliberately NOT at warning: this route is
                 # unauthenticated and unthrottled (see ROADMAP), so anything
@@ -442,25 +490,65 @@ class MailPushDevice(models.Model):
                 # Refusal answers with an EMPTY recordset, and the public route
                 # turns that into the same `True` a success gets: see
                 # `_may_claim_device` for why the refusal is silent.
-                return devices_su.browse()
+                return existing.browse()
             existing.write(vals)
             self._cc_drop_website_devices(existing)
-            return existing
-        persona_domain = (
-            [("partner_id", "=", partner.id)]
-            if partner
-            else [("guest_id", "=", guest.id)]
-        )
-        if devices_su.search_count(persona_domain) >= MAX_DEVICES_PER_PERSONA:
-            raise ValidationError(
-                self.env._(
-                    "This visitor already has the maximum number of "
-                    "notification devices."
+        return existing
+
+    @contextmanager
+    def _cc_endpoint_race_guard(self, endpoint):
+        """Run an INSERT of `endpoint` so that losing a race is not an error.
+
+        THE RACE (client report of 2026-09-29, "El punto de conexión debe ser
+        único"): the Discuss banner's "Activate and verify" registers through
+        `/mail/push/subscribe` while core's web client, woken by the very
+        permission grant the banner asked for (its `permissions` "change"
+        listener, mail/static/src/webclient/web/webclient.js), calls
+        `register_devices` with the same endpoint. Both requests search, both
+        find nothing, both INSERT; the second one blocks on the unique index
+        until the first commits, then fails with core's `_endpoint_unique`,
+        which `retrying` turns into that ValidationError. Browsers that fire
+        the permission "change" event hit it; Safari (Mac, iPhone) does not
+        fire it, which is why those never saw it.
+
+        A lock taken before the search does not fix it: Odoo runs requests
+        in REPEATABLE READ, so the winner's row stays invisible to the
+        loser's snapshot however long the loser waits. What does fix it is
+        running the loser AGAIN, in a fresh transaction that sees the row and
+        takes the ordinary "existing row" path with its ownership rule. So:
+
+        * the INSERT runs in a savepoint, and only a violation of THIS
+          constraint is caught (anything else propagates untouched);
+        * if the conflicting row is visible (it was inserted earlier in this
+          same transaction), it is handed back in `race.existing` and the
+          caller applies `_may_claim_device` to it, exactly as if its own
+          search had found it;
+        * otherwise the row belongs to a concurrent transaction, and
+          `ConcurrencyError` asks `odoo.service.model.retrying` -- which
+          wraps every HTTP request, `/mail/push/subscribe` and
+          `/web/dataset/call_kw` alike -- to roll back and replay the
+          request. The replay finds the row: same persona is a success,
+          another persona is the same silent refusal as always.
+
+        Yields an object whose `existing` is set only in the second case.
+        """
+        race = _EndpointRace()
+        try:
+            with self.env.cr.savepoint():
+                yield race
+        except UniqueViolation as error:
+            if error.diag.constraint_name != ENDPOINT_UNIQUE_CONSTRAINT:
+                raise
+            race.existing = self.sudo().search([("endpoint", "=", endpoint)], limit=1)
+            if not race.existing:
+                _logger.info(
+                    "WebPush: concurrent registration of the same endpoint, "
+                    "retrying the request"
                 )
-            )
-        device = devices_su.create([vals])
-        self._cc_drop_website_devices(device)
-        return device
+                raise ConcurrencyError(
+                    "mail.push.device: endpoint registered by a concurrent "
+                    "transaction"
+                ) from error
 
     @api.model
     def _cc_drop_website_devices(self, device):
@@ -674,7 +762,19 @@ class MailPushDevice(models.Model):
                     "notification devices."
                 )
             )
-        result = super().register_devices(**kw)
+        # Core creates the row itself; the guard turns losing the race
+        # against the banner's `/mail/push/subscribe` (or a second tab) into a
+        # replay instead of a unique violation. See `_cc_endpoint_race_guard`.
+        with self._cc_endpoint_race_guard(endpoint) as race:
+            result = super().register_devices(**kw)
+        if race.existing:
+            # The row is visible now: run the whole door again, so that it
+            # takes the "existing row" branch with its ownership check. Keyed
+            # on `endpoint` alone: a `previousEndpoint` whose row is gone is
+            # what sent core to its create branch in the first place, and
+            # keeping it would send the replay there again.
+            kw.pop("previousEndpoint", None)
+            return self.register_devices(**kw)
         # Core's door is the backend web client and the backend worker's own
         # `pushsubscriptionchange`: every device it touches is a backend one.
         if endpoint:

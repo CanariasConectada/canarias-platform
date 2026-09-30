@@ -129,6 +129,15 @@ function makeEnv(input, spec, log) {
         const method = params && params.method;
         const label = method ? `rpc:${method}` : `rpc:${route}`;
         log.push(label);
+        // `failOnce`: a list of messages, one consumed per call, then the
+        // call succeeds (a transient conflict).
+        const transient = (server.failOnce || {})[method || route];
+        if (transient && transient.length) {
+            const message = transient.shift();
+            const error = new Error(message);
+            error.data = {message};
+            throw error;
+        }
         const failing = (server.fail || {})[method || route];
         if (failing) {
             const error = new Error(failing);
@@ -172,6 +181,10 @@ function makeEnv(input, spec, log) {
             },
             isIOS: () => Boolean(spec.ios),
             isStandalone: () => Boolean(spec.standalone),
+            sleep(ms) {
+                log.push("sleep:" + ms);
+                return Promise.resolve();
+            },
         },
     };
 }
