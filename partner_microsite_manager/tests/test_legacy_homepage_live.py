@@ -498,7 +498,11 @@ class TestLegacyHomepageLiveData(TransactionCase):
         self.website.social_facebook = "javascript:alert(1)"
         self.website.social_instagram = "https://www.instagram.com/shop"
         hrefs = [link["href"] for link in self.website._pmm_footer_social_links()]
-        self.assertEqual(hrefs, ["https://www.instagram.com/shop"])
+        # A database with demo data carries Odoo's own social links too, so
+        # assert what matters: the good link is there and nothing unsafe is.
+        self.assertIn("https://www.instagram.com/shop", hrefs)
+        self.assertFalse([href for href in hrefs if "javascript" in href.lower()])
+        self.assertTrue(all(href.startswith("https://") for href in hrefs), hrefs)
         partner.website = "javascript:alert(1)"
         view = self._legacy_page(
             STANDARD_ARCH.replace(
