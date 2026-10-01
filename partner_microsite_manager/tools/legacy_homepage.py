@@ -18,7 +18,13 @@ the arch, so a ``t-call`` becomes literal text again; the marker is how this
 module finds such a flattened block and puts the ``t-call`` back.
 """
 
+import html
+import re
+import unicodedata
+
 from lxml import etree
+
+from .safe_url import safe_http_url
 
 MODULE = "partner_microsite_manager"
 LIVE_ATTR = "data-cc-live"
@@ -55,7 +61,8 @@ CONTACT_LINES = (
     ("email", "fa-envelope"),
     ("website", "fa-globe"),
 )
-_ICONS = {icon for _kind, icon in CONTACT_LINES}
+# The values that may legitimately differ between the page and the company.
+CONDITIONAL_KINDS = frozenset({"address", "email", "website"})
 # Feature cards of the "Horario" section, by their icon.
 FEATURE_CARDS = (
     ("hours", "fa-clock-o"),
@@ -186,9 +193,25 @@ def _contact_root(tree, wrap):
     return root
 
 
-def _find_contact_lines(root):
-    """``{kind: [(line, icon), ...]}`` for the contact lines in ``root``."""
+def _line_icon_kinds(line):
+    """The contact kinds whose icon appears in ``line``."""
+    kinds = set()
+    for icon in line.xpath(f".//i[{_xpath_class('fa-fw')}]"):
+        classes = set((icon.get("class") or "").split())
+        kinds |= {kind for kind, icon_class in CONTACT_LINES if icon_class in classes}
+    kinds.discard("phone2")
+    return kinds
+
+
+def _find_contact_lines(root, report=None):
+    """``{kind: [(line, icon), ...]}`` for the contact lines in ``root``.
+
+    A line that is not one plain value -- icons of several kinds in one
+    element, or a ``strong``/``b`` label before the value -- is someone's
+    own layout; it is left alone (and noted in ``report``).
+    """
     found = {}
+    refused = []
     for kind, icon_class in CONTACT_LINES:
         if kind == "phone2":
             continue
@@ -199,6 +222,18 @@ def _find_contact_lines(root):
                 continue
             if any(line is known for known, _icon in found.get(kind, [])):
                 continue
+            if any(line is known for known in refused):
+                continue
+            if len(_line_icon_kinds(line)) > 1:
+                refused.append(line)
+                if report is not None:
+                    report["notes"].append("line with several icons left as is")
+                continue
+            if line.xpath("./strong|./b"):
+                refused.append(line)
+                if report is not None:
+                    report["notes"].append(f"labelled {kind} line left as is")
+                continue
             found.setdefault(kind, []).append((line, icon))
     phones = found.pop("phone", [])
     if phones:
@@ -208,38 +243,125 @@ def _find_contact_lines(root):
     return found
 
 
-def _new_line(template_line, template_icon, icon_class, kind):
-    """A line shaped like ``template_line`` for ``kind``."""
-    line = etree.Element(template_line.tag)
-    for name, value in template_line.attrib.items():
-        if name != "t-if":
-            line.set(name, value)
-    icon = etree.SubElement(line, "i")
-    classes = [
-        icon_class if c in _ICONS else c
-        for c in (template_icon.get("class") or "fa fa-fw").split()
-    ]
-    icon.set("class", " ".join(classes))
-    line.append(_tcall(kind))
-    _set_visibility(line, kind)
-    line.tail = template_line.tail
-    return line
+# ----------------------------------------------------------------------
+# What the page shows vs. what the company says (migration only)
+# ----------------------------------------------------------------------
+# Words that say nothing about WHICH address it is.
+_ADDRESS_STOPWORDS = frozenset(
+    "c cl calle avenida avda av paseo pº plaza pza pl carretera ctra "
+    "de del la las el los y n no nº num numero local bajo s sn".split()
+)
+ADDRESS_SIMILARITY = 0.6
 
 
-def _relink_contact(root, facts, report, insert_missing):
-    lines = _find_contact_lines(root)
-    if not any(lines.get(kind) for kind in ("address", "phone", "email")):
-        return False
+def _plain(text):
+    text = html.unescape(text or "").replace("\xa0", " ")
+    text = unicodedata.normalize("NFKD", text)
+    return "".join(c for c in text if not unicodedata.combining(c)).lower()
+
+
+def address_tokens(text):
+    """Significant tokens of an address: no accents, case, punctuation,
+    street-type words or articles; order does not matter."""
+    words = re.split(r"[^0-9a-z]+", _plain(text))
+    return {word for word in words if word and word not in _ADDRESS_STOPWORDS}
+
+
+def address_similarity(shown, live):
+    """Token-set similarity: shared tokens over the smaller set (1.0 when
+    one address is the other with more or fewer details)."""
+    shown_tokens, live_tokens = address_tokens(shown), address_tokens(live)
+    if not shown_tokens or not live_tokens:
+        return 0.0
+    return len(shown_tokens & live_tokens) / min(len(shown_tokens), len(live_tokens))
+
+
+def _same_email(shown, live):
+    def norm(value):
+        return re.sub(r"\s+", "", value or "").lower()
+
+    return bool(norm(live)) and norm(shown) == norm(live)
+
+
+def _same_website(shown, live):
+    def norm(value):
+        url = safe_http_url(value).lower()
+        url = re.sub(r"^https?://", "", url)
+        url = re.sub(r"^www\.", "", url)
+        return url.rstrip("/")
+
+    return bool(norm(live)) and norm(shown) == norm(live)
+
+
+def _line_shown(line, icon, kind):
+    """What a static line shows (the href for a web line)."""
+    if kind == "website":
+        links = line.xpath(".//a/@href")
+        if links:
+            return links[0].strip()
+    parts = [icon.tail or ""]
+    for sibling in icon.itersiblings():
+        if isinstance(sibling.tag, str):
+            parts.append("".join(sibling.itertext()))
+        parts.append(sibling.tail or "")
+    return re.sub(r"\s+", " ", "".join(parts)).strip()
+
+
+def _static_verdict(kind, shown, live):
+    """``None`` when the static value may become live, else the reason."""
+    value = (live or {}).get(kind) or ""
+    if not value.strip():
+        return "live_empty"
+    if kind == "email":
+        return None if _same_email(shown, value) else "differs"
+    if kind == "address":
+        similar = address_similarity(shown, value) >= ADDRESS_SIMILARITY
+        return None if similar else "differs"
+    if kind == "website":
+        return None if _same_website(shown, value) else "differs"
+    return None
+
+
+def _keep_static(report, kind, shown, live, reason):
+    report["kept_static"].append(
+        {
+            "kind": kind,
+            "shown": shown,
+            "live": (live or {}).get(kind) or "",
+            "reason": reason,
+        }
+    )
+
+
+def _line_is_live(line, kind):
+    return bool(line.xpath(f".//t[@t-call='{LIVE_TEMPLATES[kind]}']"))
+
+
+def _relink_contact(root, report, live, force):
+    """Relink the contact lines. Returns the kinds that are live after."""
+    lines = _find_contact_lines(root, report)
+    live_kinds = set()
     for kind, _icon_class in CONTACT_LINES:
         entries = lines.get(kind, [])
         for line, _icon in entries[1:]:
-            # The live line already shows every value of its kind (both
-            # phones, for one); a second static copy would show it twice.
+            # The live line already shows every value of its kind; a second
+            # static copy would show it twice.
             _remove_keep_tail(line)
             report["dropped"].append(kind)
         if not entries:
             continue
         line, icon = entries[0]
+        if kind in CONDITIONAL_KINDS and not _line_is_live(line, kind):
+            if kind not in force:
+                if live is None:
+                    # A builder save: a static line stays static.
+                    continue
+                shown = _line_shown(line, icon, kind)
+                reason = _static_verdict(kind, shown, live)
+                if reason:
+                    _keep_static(report, kind, shown, live, reason)
+                    continue
+        live_kinds.add(kind)
         unchanged = _content_is(line, kind, after=icon) and line.get(
             "t-if"
         ) == VISIBLE_EXPR.format(kind=kind)
@@ -247,48 +369,42 @@ def _relink_contact(root, facts, report, insert_missing):
             _set_content(line, kind, after=icon)
             _set_visibility(line, kind)
             report["relinked"].append(kind)
-    if not insert_missing:
-        return True
-    # Lines the page never had while the company has the value.
-    present = {kind for kind, entries in lines.items() if entries}
-    sample_line, sample_icon = next(
-        lines[kind][0] for kind, _i in CONTACT_LINES if lines.get(kind)
-    )
-    order = [kind for kind, _i in CONTACT_LINES]
-    for index, (kind, icon_class) in enumerate(CONTACT_LINES):
-        if kind in present or not facts.get(kind):
-            continue
-        new_line = _new_line(sample_line, sample_icon, icon_class, kind)
-        before = [k for k in order[:index] if k in present]
-        after = [k for k in order[index + 1 :] if k in present]
-        if before:
-            anchor = lines[before[-1]][0][0]
-            anchor.addnext(new_line)
-            # addnext moves the anchor's tail onto the new line; keep the
-            # anchor's own whitespace.
-            anchor.tail, new_line.tail = new_line.tail, anchor.tail
-        else:
-            lines[after[0]][0][0].addprevious(new_line)
-        lines[kind] = [(new_line, new_line[0])]
-        present.add(kind)
-        report["inserted"].append(kind)
-    return True
+    return live_kinds
 
 
-def _relink_map(root, report):
+def _relink_map(root, report, live, force, address_live):
     # The importer's map, or its empty shell (a few shops had no address
-    # when they were imported and got ``src=""``).
+    # when they were imported and got ``src=""``). Only inside the contact
+    # block.
     iframes = root.xpath(
-        f".//iframe[@{LIVE_ATTR}='map' or normalize-space(@src)=''"
+        f".//iframe[@{LIVE_ATTR}='map' or @t-att-src or normalize-space(@src)=''"
         " or contains(@src, 'maps.google') or contains(@src, 'google.com/maps')"
         " or contains(@src, 'goo.gl')]"
     )
+    if not iframes:
+        report["notes"].append("no map iframe")
+    wanted = {
+        LIVE_ATTR: "map",
+        "t-att-src": MAP_SRC_EXPR,
+        "t-if": VISIBLE_EXPR.format(kind="map"),
+    }
     for iframe in iframes:
-        wanted = {
-            LIVE_ATTR: "map",
-            "t-att-src": MAP_SRC_EXPR,
-            "t-if": VISIBLE_EXPR.format(kind="map"),
-        }
+        is_live = iframe.get(LIVE_ATTR) == "map" or iframe.get("t-att-src")
+        if not is_live and "map" not in force:
+            if live is None:
+                continue
+            # The address fallback must match the address the page shows:
+            # without the shop's own map link, the static map stays unless
+            # the address line went live.
+            if not (live.get("map_explicit") or address_live):
+                _keep_static(
+                    report,
+                    "map",
+                    iframe.get("src") or "",
+                    {"map": live.get("map") or ""},
+                    "no_map_url_and_address_static",
+                )
+                continue
         if "src" not in iframe.attrib and all(
             iframe.get(k) == v for k, v in wanted.items()
         ):
@@ -297,8 +413,11 @@ def _relink_map(root, report):
         for name, value in wanted.items():
             iframe.set(name, value)
         report["relinked"].append("map")
-    if not iframes:
-        report["notes"].append("no map iframe")
+
+
+def _elements(element):
+    """Element children, comments and processing instructions left out."""
+    return [child for child in element if isinstance(child.tag, str)]
 
 
 def _feature_columns(section):
@@ -308,6 +427,16 @@ def _feature_columns(section):
             if column.xpath(f"./span[{_xpath_class(icon_class)}]"):
                 columns.setdefault(kind, column)
     return columns
+
+
+def _only_known_columns(section, columns):
+    """Whether the section is nothing but the importer's (up to) three
+    cards: only then may hiding it as a whole hide nothing else."""
+    rows = section.xpath(f".//div[{_xpath_class('row')}]")
+    if len(rows) != 1:
+        return False
+    known = list(columns.values())
+    return all(any(child is column for column in known) for child in _elements(rows[0]))
 
 
 def _relink_hours_column(column, report, label_tags=("h5", "h6")):
@@ -372,7 +501,9 @@ def _relink_features(tree, facts, report, insert_missing):
             if kind in columns:
                 _relink_value_column(columns[kind], kind, report)
         expected = VISIBLE_EXPR.format(kind="features")
-        if section.get("t-if") != expected:
+        if not _only_known_columns(section, columns):
+            report["notes"].append("Horario section has other content: no t-if")
+        elif section.get("t-if") != expected:
             section.set("t-if", expected)
             report["relinked"].append("features")
         return
@@ -439,26 +570,42 @@ def empty_report():
         "inserted": [],
         "dropped": [],
         "restored": [],
+        "kept_static": [],
         "notes": [],
         "skipped": None,
     }
 
 
-def relink_live_data(arch, facts, insert_missing=False):
+def relink_live_data(arch, facts, insert_missing=False, live=None, force=()):
     """Relink the values of a legacy homepage ``arch``.
+
+    Phone, second phone, parking, delivery and hours always become live.
+    Email, address, web and map are what may differ between the page and
+    the company (a shop address vs. a fiscal one, a public mailbox vs. a
+    login), so a STATIC line of those kinds becomes live only:
+
+    - in the migration (``live`` given), when it shows what the company
+      says (see ``_static_verdict``); otherwise it is kept and reported in
+      ``report["kept_static"]``. The map follows when the shop has its own
+      map link or its address line went live;
+    - when a human just changed that value (``force``);
+    - never on a builder save (neither given): a static line stays static.
+
+    A line or iframe that is already live (or that the builder flattened) is
+    always kept live.
 
     :param str arch: the base (``en_US``) arch of the page view
     :param dict facts: ``{kind: bool}`` -- which values the company has
-        (``address``, ``phone``, ``email``, ``website``, ``hours``); only
-        used to decide whether a line the page lacks is worth adding
-    :param bool insert_missing: add the contact lines and the hours card
-        the page lacks while the company has the value. Only the one-off
-        migration does that; after it, a line or card that is not on the
-        page is one the merchant removed in the builder, and it stays so.
+    :param bool insert_missing: add the hours card a page lacks while the
+        shop has hours (the migration only; contact lines are never added)
+    :param dict live: the company's ``email``, ``address``, ``website``,
+        ``map`` values and ``map_explicit`` (migration only)
+    :param force: kinds to make live whatever the page shows
     :returns: ``(new_arch or None, report)``; ``None`` when nothing changes
         or the page is skipped (``report["skipped"]`` says why)
     """
     report = empty_report()
+    force = frozenset(force or ())
     tree = etree.fromstring(arch.encode("utf-8"))
     before = etree.tostring(tree, encoding="unicode")
     wrap = _wrap(tree)
@@ -472,10 +619,10 @@ def relink_live_data(arch, facts, insert_missing=False):
     report["restored"] = restore_flattened_blocks(tree)
     if swap_legacy_hours_cards(tree):
         report["relinked"].append("hours")
-    _relink_contact(contact, facts, report, insert_missing)
-    _relink_map(contact, report)
+    live_kinds = _relink_contact(contact, report, live, force)
+    _relink_map(contact, report, live, force, "address" in live_kinds)
     _relink_features(tree, facts, report, insert_missing)
-    for key in ("relinked", "inserted", "dropped", "restored"):
+    for key in ("relinked", "inserted", "dropped", "restored", "notes"):
         report[key] = list(dict.fromkeys(report[key]))
     after = etree.tostring(tree, encoding="unicode")
     if after == before:

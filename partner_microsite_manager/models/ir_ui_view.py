@@ -37,11 +37,11 @@ class IrUiView(models.Model):
         if legacy:
             # Never the reason a save fails: whatever goes wrong is rolled
             # back to the savepoint and logged; the page keeps what the user
-            # saved (``from_builder_save`` does the same per page).
+            # saved (``mode="guard"`` does the same per page).
             try:
                 with self.env.cr.savepoint():
                     self.env["res.company"].sudo()._relink_legacy_homepage_live_data(
-                        views=legacy, from_builder_save=True
+                        views=legacy, mode="guard"
                     )
             except Exception:
                 _logger.warning(

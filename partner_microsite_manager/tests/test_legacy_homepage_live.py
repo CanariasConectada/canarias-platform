@@ -1,7 +1,9 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import csv
 import importlib.util
+import io
 import json
 import logging
 import os
@@ -39,9 +41,9 @@ STANDARD_ARCH = """<t name="Home - {slug}" t-name="website.homepage_{slug}">
 <div class="col-lg-6">
 <div class="mt-3 mb-3"><iframe src="https://maps.google.com/maps?q=Old+Street&amp;output=embed" width="100%" height="200" style="border:0; border-radius: 8px;"/></div>
 <h4 class="mb-3"><span class="fa fa-map-marker"/><strong>FIND US.</strong></h4>
-<p class="mb-2"><i class="fa fa-map-marker fa-fw mr-2 text-primary"/>Old Town</p>
+<p class="mb-2"><i class="fa fa-map-marker fa-fw mr-2 text-primary"/>Calle Nueva, 5 - Las Palmas</p>
 <p class="mb-2"><i class="fa fa-phone fa-fw mr-2 text-primary"/>928 00 00 00</p>
-<p class="mb-2"><i class="fa fa-envelope fa-fw mr-2 text-primary"/>old @ example.com</p>
+<p class="mb-2"><i class="fa fa-envelope fa-fw mr-2 text-primary"/>Shop @ example.com</p>
 </div>
 </div></div>
 </section>
@@ -117,9 +119,9 @@ class TestLegacyHomepageLiveData(TransactionCase):
         values["website"] = website or self.website
         return str(self.env["ir.qweb"]._render(view.id, values))
 
-    def _relink(self, view, insert_missing=False):
+    def _relink(self, view, mode="migration", kinds=()):
         return self.env["res.company"]._relink_legacy_homepage_live_data(
-            views=view, insert_missing=insert_missing
+            views=view, mode=mode, kinds=kinds
         )
 
     def _builder_save(self, view, drop_xpath=None):
@@ -179,8 +181,8 @@ class TestLegacyHomepageLiveData(TransactionCase):
             self.assertIn(current, page)
         for stale in (
             "928 00 00 00",
-            "Old Town",
-            "old @ example.com",
+            "Calle Nueva, 5 - Las Palmas",
+            "Shop @ example.com",
             "Parking nearby",
             "Delivery available",
             "q=Old+Street",
@@ -248,34 +250,41 @@ class TestLegacyHomepageLiveData(TransactionCase):
         self._slots((0, 9.0, 14.0))
         view = self._legacy_page(CUSTOM_ARCH, slug="customshop")
 
-        [stat] = self._relink(view, insert_missing=True)
+        [stat] = self._relink(view)
 
-        self.assertIn("hours", stat["inserted"])
-        # A missing phone line is added next to its siblings.
-        self.assertIn("phone", stat["inserted"])
+        self.assertEqual(stat["inserted"], ["hours"])
         tree = etree.fromstring(view.arch_db.encode())
         sections = [s.get("data-name") for s in tree.iter("section")]
         self.assertLess(sections.index("Horario"), sections.index("Acerca"))
         page = self._render(view)
         self.assertIn("09:00 - 14:00", page)
         self.assertIn("Opening Hours", page)
-        self.assertIn("928 11 11 11", page)
-        # The importer's literal &nbsp; is gone with the static address.
-        self.assertNotIn("nbsp", page)
-        self.assertIn("Calle Nueva 5, 35010 Las Palmas", page)
-        self.assertFalse(self._relink(view, insert_missing=True)[0]["written"])
+        # Contact lines are never added: the page had no phone line.
+        self.assertNotIn("928 11 11 11", page)
+        # A different address (shop vs. fiscal) is kept as the page shows it.
+        self.assertEqual(
+            [(k["kind"], k["reason"]) for k in stat["kept_static"]],
+            [
+                ("address", "differs"),
+                ("email", "differs"),
+                ("map", "no_map_url_and_address_static"),
+            ],
+        )
+        self.assertIn("Calle Vieja 23", page)
+        self.assertIn("q=Calle+Vieja", page)
+        self.assertFalse(self._relink(view)[0]["written"])
 
     def test_only_the_migration_adds_what_the_page_lacks(self):
         self._slots((0, 9.0, 14.0))
         view = self._legacy_page(CUSTOM_ARCH, slug="noinsert")
 
-        [stat] = self._relink(view)
+        [stat] = self._relink(view, mode="guard")
 
         self.assertFalse(stat["inserted"])
-        self.assertNotIn(legacy_homepage.LIVE_TEMPLATES["phone"], view.arch_db)
         self.assertNotIn('data-name="Horario"', view.arch_db)
-        # What is on the page is relinked all the same.
-        self.assertIn(legacy_homepage.LIVE_TEMPLATES["email"], view.arch_db)
+        # A builder save never turns a static line live.
+        self.assertNotIn(legacy_homepage.LIVE_TEMPLATES["email"], view.arch_db)
+        self.assertIn("old@example.com", view.arch_db)
 
     def test_a_page_without_a_contact_block_is_skipped_and_logged(self):
         view = self._legacy_page(
@@ -422,19 +431,30 @@ class TestLegacyHomepageLiveData(TransactionCase):
     def test_the_page_cache_is_emptied_only_by_a_change(self):
         registry = self.env.registry
         partner = self.company.partner_id
+        postcommit = self.env.cr.postcommit
+        postcommit.run()  # whatever the fixtures queued
         with patch.object(type(registry), "clear_cache") as clear_cache:
             partner.write({"phone": "928 22 22 22"})
-            partner.write({"phone": "928 22 22 22"})
-            self.assertEqual(clear_cache.call_count, 1)
-            clear_cache.assert_called_with("templates")
+            partner.write({"email": "other@example.com"})
+            clear_cache.assert_not_called()  # at commit, not before
+            postcommit.run()
+            clear_cache.assert_called_once_with("templates")  # once per transaction
             clear_cache.reset_mock()
+            partner.write({"phone": "928 22 22 22"})
             partner.write({"comment": "unrelated"})
             self.env["res.partner"].create({"name": "Somebody"}).write(
                 {"phone": "600 00 00 00"}
             )
             self.company.write({"microsite_delivery_info": "Home delivery in the zone"})
+            postcommit.run()
             clear_cache.assert_not_called()
             self.company.write({"microsite_delivery_info": "Changed"})
+            postcommit.run()
+            clear_cache.assert_called_once_with("templates")
+            clear_cache.reset_mock()
+            # The hours text is a stored compute: the rows clear it too.
+            self._slots((2, 9.0, 13.0))
+            postcommit.run()
             clear_cache.assert_called_once_with("templates")
 
     def test_only_http_links_reach_the_page(self):
@@ -528,3 +548,240 @@ class TestLegacyHomepageLiveData(TransactionCase):
         # A second run keeps the first backup and writes nothing.
         module.migrate(self.env.cr, "19.0.2.12.0")
         self.assertEqual(Attachment.search_count(domain), 1)
+
+    # -- what each page shows is preserved; a human edit wins ----------------
+    def _mismatching_page(self, slug="mismatch"):
+        return self._legacy_page(
+            STANDARD_ARCH.replace("Shop @ example.com", "public@example.com").replace(
+                "Calle Nueva, 5 - Las Palmas",
+                "Paseo Tomas Morales 72, Las Palmas 35003",
+            ),
+            slug=slug,
+        )
+
+    def test_a_page_showing_other_contact_data_keeps_it(self):
+        view = self._mismatching_page()
+
+        [stat] = self._relink(view)
+
+        kept = {k["kind"]: k for k in stat["kept_static"]}
+        self.assertEqual(set(kept), {"email", "address", "map"})
+        self.assertEqual(kept["email"]["shown"], "public@example.com")
+        self.assertEqual(kept["email"]["live"], "shop@example.com")
+        page = self._render(view)
+        self.assertIn("public@example.com", page)
+        self.assertIn("Paseo Tomas Morales 72", page)
+        self.assertIn("q=Old+Street", page)
+        self.assertNotIn("shop@example.com", page)
+        # Phone, parking, delivery and hours follow the company regardless.
+        self.assertIn("928 11 11 11", page)
+        # A builder save does not change that either.
+        self._builder_save(view)
+        self.assertIn("public@example.com", self._render(view))
+
+    def test_a_human_edit_makes_the_value_live(self):
+        view = self._mismatching_page(slug="humanedit")
+        self._relink(view)
+
+        self.company.partner_id.write({"email": "new@example.com"})
+
+        page = self._render(view)
+        self.assertIn("new@example.com", page)
+        self.assertNotIn("public@example.com", page)
+        self.assertIn("Paseo Tomas Morales 72", page)  # not edited: kept
+
+        self.company.partner_id.write({"street": "Calle Otra 9"})
+
+        page = self._render(view)
+        self.assertIn("Calle Otra 9, 35010 Las Palmas", page)
+        self.assertNotIn("Paseo Tomas Morales", page)
+        # The map follows the address it now shows.
+        self.assertNotIn("q=Old+Street", page)
+        self.assertIn("Calle+Otra", page)
+
+    def test_an_emptied_value_is_not_forced(self):
+        view = self._mismatching_page(slug="emptied")
+        self._relink(view)
+
+        self.company.partner_id.write({"email": False})
+
+        self.assertIn("public@example.com", self._render(view))
+
+    def test_a_new_map_link_makes_the_map_live(self):
+        view = self._mismatching_page(slug="maplink")
+        self._relink(view)
+
+        self.company.write(
+            {
+                "microsite_map_url": "https://maps.google.com/maps?q=New+Place&output=embed"
+            }
+        )
+
+        page = self._render(view)
+        self.assertIn("q=New+Place", page)
+        self.assertNotIn("q=Old+Street", page)
+
+    def test_bulk_writes_do_not_rewrite_pages(self):
+        view = self._mismatching_page(slug="bulk")
+        self._relink(view)
+        arch = view.arch_db
+        for key in ("install_mode", "module", "import_file"):
+            self.company.partner_id.with_context(**{key: True}).write(
+                {"email": f"{key}@example.com"}
+            )
+            self.assertEqual(view.arch_db, arch, key)
+
+    def test_a_failing_edit_relink_never_breaks_the_write(self):
+        view = self._mismatching_page(slug="editfail")
+        self._relink(view)
+        target = (
+            "odoo.addons.partner_microsite_manager.models.res_company."
+            "legacy_homepage.relink_live_data"
+        )
+        with (
+            patch(target, side_effect=RuntimeError("boom")),
+            self.assertLogs(LOGGER, logging.WARNING),
+        ):
+            self.company.partner_id.write({"email": "new@example.com"})
+        self.assertEqual(self.company.partner_id.email, "new@example.com")
+
+    def test_a_failing_page_does_not_stop_the_migration(self):
+        first = self._legacy_page(slug="first")
+        second = self._legacy_page(slug="second")
+        real = legacy_homepage.relink_live_data
+
+        def flaky(arch, *args, **kwargs):
+            if "homepage_first" in arch:
+                raise RuntimeError("boom")
+            return real(arch, *args, **kwargs)
+
+        target = (
+            "odoo.addons.partner_microsite_manager.models.res_company."
+            "legacy_homepage.relink_live_data"
+        )
+        with patch(target, side_effect=flaky), self.assertLogs(LOGGER, logging.ERROR):
+            stats = self.env["res.company"]._relink_legacy_homepage_live_data(
+                views=first | second
+            )
+        by_view = {s["view_id"]: s for s in stats}
+        self.assertTrue(by_view[first.id]["failed"])
+        self.assertTrue(by_view[second.id]["written"])
+        self.assertIn("928 00 00 00", first.arch_db)
+
+    # -- translations safety net ----------------------------------------------
+    def _raw(self, view):
+        return self.env["res.company"]._get_arch_db_raw(view)
+
+    def test_a_language_copy_out_of_step_is_left_alone(self):
+        self.env["res.lang"]._activate_lang("es_ES")
+        view = self._legacy_page(slug="outofstep")
+        raw = self._raw(view)
+        # A Spanish copy with one paragraph more than the source: its terms
+        # no longer line up, and a lang=None write would turn it English.
+        spanish = raw["en_US"].replace(
+            "<p>Our story</p>", "<p>Nuestra historia</p><p>Solo en castellano</p>"
+        )
+        self.env.cr.execute(
+            "UPDATE ir_ui_view SET arch_db = arch_db || jsonb_build_object('es_ES', %s::text)"
+            " WHERE id = %s",
+            [spanish, view.id],
+        )
+        view.invalidate_recordset()
+        before = self._raw(view)
+
+        with self.assertLogs(LOGGER, logging.WARNING):
+            [stat] = self._relink(view)
+
+        self.assertEqual(stat["skipped"], "translation structure mismatch")
+        self.assertFalse(stat["written"])
+        self.assertEqual(self._raw(view), before)
+
+    def test_a_language_copy_in_step_keeps_every_other_text(self):
+        self.env["res.lang"]._activate_lang("es_ES")
+        view = self._legacy_page(slug="instep")
+        field = view._fields["arch_db"]
+        view.with_context(pmm_live_relink=True).update_field_translations(
+            "arch_db",
+            {
+                "es_ES": {
+                    "Parking": "Aparcamiento",
+                    "Our story": "Nuestra historia",
+                    "Delivery available": "Entrega disponible",
+                    "FIND US.": "ENCUENTRANOS.",
+                }
+            },
+        )
+        before = self._raw(view)
+
+        [stat] = self._relink(view)
+
+        self.assertTrue(stat["written"])
+        after = self._raw(view)
+        removed = set(field.get_trans_terms(before["en_US"])) - set(
+            field.get_trans_terms(after["en_US"])
+        )
+        dictionary = field.get_translation_dictionary(
+            before["en_US"], {"es_ES": before["es_ES"]}
+        )
+        expected = set(field.get_trans_terms(before["es_ES"])) - {
+            dictionary[term]["es_ES"] for term in removed
+        }
+        self.assertEqual(set(field.get_trans_terms(after["es_ES"])), expected)
+        self.assertIn("Entrega disponible", before["es_ES"])
+        self.assertNotIn("Entrega disponible", after["es_ES"])
+
+    # -- assumptions and earlier paths ----------------------------------------
+    def test_a_generic_view_is_never_a_target(self):
+        """All 207 legacy views are website-specific on prod; a generic one
+        (shared, edited through copy-on-write) is never relinked."""
+        view = self._legacy_page(slug="generic")
+        # Straight in the column: the ORM would copy-on-write instead.
+        self.env.cr.execute(
+            "UPDATE ir_ui_view SET website_id = NULL WHERE id = %s", [view.id]
+        )
+        view.invalidate_recordset()
+        self.assertFalse(
+            self.env["res.company"]._get_legacy_homepage_views(view_ids=view.ids)
+        )
+
+    def test_the_hours_relink_of_2_8_0_does_not_relink_the_rest(self):
+        view = self._legacy_page(
+            STANDARD_ARCH.replace(
+                '<t t-call="partner_microsite_manager.microsite_opening_hours_card"/>',
+                '<div class="horario-card-accordion"><span>Lunes</span></div>',
+            ),
+            slug="old280",
+        )
+
+        self.company._relink_legacy_opening_hours_card()
+
+        self.assertIn(legacy_homepage.OPENING_HOURS_CARD_TEMPLATE, view.arch_db)
+        # Still static: 19.0.2.13.0 backs the page up before relinking it.
+        self.assertIn("928 00 00 00", view.arch_db)
+
+    def test_the_migration_lists_what_it_kept_for_review(self):
+        view = self._mismatching_page(slug="review")
+        module = self._migration_module()
+
+        module.migrate(self.env.cr, "19.0.2.12.0")
+
+        review = self.env["ir.attachment"].search(
+            [("name", "=", "legacy-homepage-review-19.0.2.13.0.csv")]
+        )
+        self.assertEqual(len(review), 1)
+        self.assertFalse(review.public)
+        rows = list(csv.DictReader(io.StringIO(review.raw.decode())))
+        mine = {r["kind"]: r for r in rows if r["company_id"] == str(self.company.id)}
+        self.assertEqual(set(mine), {"email", "address", "map"})
+        self.assertEqual(mine["email"]["shown_on_page"], "public@example.com")
+        self.assertEqual(mine["email"]["contact_value"], "shop@example.com")
+        self.assertEqual(mine["email"]["reason"], "differs")
+        self.assertIn("public@example.com", self._render(view))
+        # Rewritten, not duplicated, on a second run.
+        module.migrate(self.env.cr, "19.0.2.12.0")
+        self.assertEqual(
+            self.env["ir.attachment"].search_count(
+                [("name", "=", "legacy-homepage-review-19.0.2.13.0.csv")]
+            ),
+            1,
+        )

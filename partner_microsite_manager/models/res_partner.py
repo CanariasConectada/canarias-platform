@@ -4,12 +4,22 @@
 from odoo import _, fields, models
 from odoo.exceptions import AccessError
 
-from .res_company import _live_values_change
+from .res_company import _live_values_change, clear_templates_cache_on_commit
 
 # Partner fields the live blocks of a legacy homepage render.
 LIVE_PARTNER_FIELDS = frozenset(
     {"phone", "email", "street", "street2", "zip", "city", "website"}
 )
+# The page kind each partner field feeds (the map follows the address: it
+# is built from it when the shop has no map link of its own).
+PARTNER_FIELD_KINDS = {
+    "email": ("email",),
+    "street": ("address", "map"),
+    "street2": ("address", "map"),
+    "zip": ("address", "map"),
+    "city": ("address", "map"),
+    "website": ("website",),
+}
 
 
 class ResPartner(models.Model):
@@ -41,25 +51,38 @@ class ResPartner(models.Model):
             partner.has_microsite = bool(partner.microsite_company_id)
 
     def write(self, vals):
-        """Drop the page cache when a shop's contact data changes.
+        """Keep the shop's legacy homepage in step with its contact data.
 
-        The legacy homepages render the phone, email, address and web of
-        the company's partner live, but public pages are served from a
-        one-hour response cache keyed by page; the company's own form and
-        the directory write the partner directly, not through the content
-        editor that already empties it. Only an actual change counts.
+        - The page cache is emptied (at commit) when a rendered value really
+          changes: public pages are cached an hour per page, and the company
+          form and the directory write the partner directly.
+        - The kinds a person just changed go live on the page, even where
+          the migration kept the importer's text because it differed: from
+          now on the human edit wins. A kind left empty is not forced.
         """
         live_changed = _live_values_change(self, LIVE_PARTNER_FIELDS, vals)
+        changed_fields = [
+            name
+            for name in PARTNER_FIELD_KINDS
+            if name in vals and _live_values_change(self, frozenset({name}), vals)
+        ]
         result = super().write(vals)
-        if live_changed and (
-            self.env["res.company"]
-            .sudo()
-            .search_count(
-                [("partner_id", "in", self.ids), ("website_id", "!=", False)],
-                limit=1,
+        if live_changed:
+            companies = (
+                self.env["res.company"]
+                .sudo()
+                .search([("partner_id", "in", self.ids), ("website_id", "!=", False)])
             )
-        ):
-            self.env.registry.clear_cache("templates")
+            if companies:
+                clear_templates_cache_on_commit(self.env)
+                for company in companies:
+                    kinds = {
+                        kind
+                        for name in changed_fields
+                        for kind in PARTNER_FIELD_KINDS[name]
+                        if company._microsite_live_has(kind)
+                    }
+                    company._relink_after_human_edit(kinds)
         return result
 
     def action_open_microsite_company(self):

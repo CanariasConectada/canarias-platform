@@ -32,6 +32,27 @@
   savepoint and one log line per page. Idempotent. Only the migration adds
   lines or an hours card a page lacks; later relinks (builder saves) only
   relink what is on the page, so a line a merchant deletes stays deleted.
+- The migration preserves what each page shows; from then on a human edit
+  wins. Phone, second phone, parking, delivery and hours always go live.
+  Email, address and web go live only where the page shows what the
+  company says (email/web normalised, address by token-set similarity
+  >= 0.6); the map only when the shop has its own map link or its address
+  went live. The rest stays as typed, is logged (`kept_static=`) and is
+  listed in `legacy-homepage-review-19.0.2.13.0.csv` (attached to the main
+  company) for the consultants. Contact lines are never added; the hours
+  card is, where the shop has hours and the page none. When a person later
+  changes the shop's email, address (the map follows), web or map link,
+  that value goes live on the page (not during module updates or imports;
+  an emptied value is not forced).
+- Translation safety net: a page whose other-language copies would lose or
+  gain anything but the relinked values is skipped and logged
+  (`translation structure mismatch`), every language untouched.
+- Contact lines with several icons or a bold label, a second contact
+  section and Horario sections with extra content are left as they are.
+  Any error on a page is logged and the run goes on.
+- The page cache is emptied once, at commit, and also when opening rows
+  change. The 19.0.2.8.0 hours relink no longer triggers the builder-save
+  relink (the page is backed up first).
 - Rollback of one page (odoo shell, then commit):
   `env["res.company"]._restore_legacy_homepage_backup(env["ir.ui.view"].browse(3897)); env.cr.commit()`
   writes the backed-up `arch_db` back, every language as it was.
