@@ -140,7 +140,6 @@ class TestLegacyHomepageTransform(BaseCase):
         self.assertIn("_get_microsite_map_url", new_arch)
 
     def test_the_address_rule_on_the_real_cases(self):
-        city = "Las Palmas de Gran Canaria"
         cases = [
             # (page, contact, verdict) -- valcut es_ES copies, 2026-10-01
             (
@@ -194,11 +193,26 @@ class TestLegacyHomepageTransform(BaseCase):
                 "differs",  # aeropatin: shop vs. fiscal address
             ),
         ]
+        # A city-only page whose contact names another (wrong) city stays
+        # as typed: automocionmendoza, joyeriaplazafarray, panaderialabaguette.
+        cases += [
+            (
+                "Las Palmas de Gran Canaria",
+                "Calle Castillejos 37-39, 35010 ALFARO",
+                "differs",
+            ),
+            (
+                "Las Palmas de Gran Canaria",
+                "Calle Fernando Guanarteme 49, 35010 Miami",
+                "differs",
+            ),
+            ("Las Palmas de Gran Canaria", "Calle Daoiz 34, 35010 Panama", "differs"),
+        ]
         for shown, live, expected in cases:
-            self.assertEqual(address_verdict(shown, live, city), expected, shown)
+            self.assertEqual(address_verdict(shown, live), expected, shown)
 
     def test_two_addresses_without_a_street_must_be_the_same_text(self):
-        self.assertIsNone(address_verdict("Telde", "Telde", "Telde"))
+        self.assertIsNone(address_verdict("Telde", "Telde"))
         # A zip on one side only is format.
         self.assertIsNone(
             address_verdict(

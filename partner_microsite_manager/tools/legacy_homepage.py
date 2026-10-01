@@ -246,16 +246,14 @@ def _find_contact_lines(root, report=None):
 # ----------------------------------------------------------------------
 # What the page shows vs. what the company says (migration only)
 # ----------------------------------------------------------------------
-# Words that say nothing about WHICH street it is: street types,
-# connectors and number markers (``s/n`` = no number).
+# Words that say nothing about WHICH address it is: street types,
+# connectors, number markers (``s/n`` = no number) and the country.
 _STREET_TYPES = frozenset(
     "calle calles c cl avenida av avda paseo plaza camino carretera ctra".split()
 )
 _CONNECTORS = frozenset("de del la las el los y".split())
 _NUMBER_MARKERS = frozenset("numero num n no s sn".split())
-# Places every shop of the platform shares: never what tells two
-# addresses apart.
-_COMMON_PLACES = frozenset("las palmas de gran canaria espana".split())
+_COUNTRY = frozenset({"espana"})
 _ZIP_RE = re.compile(r"^\d{5}$")
 
 
@@ -269,30 +267,29 @@ def _words(text):
     return [word for word in re.split(r"[^0-9a-z]+", _plain(text)) if word]
 
 
-def street_tokens(text, city=""):
-    """The tokens of an address that name the street and number: no
-    accents, case or punctuation; no street types, connectors, number
-    markers, zips, the shop's city or the island's common place names."""
-    dropped = _STREET_TYPES | _CONNECTORS | _NUMBER_MARKERS | _COMMON_PLACES
-    dropped |= set(_words(city))
+def address_tokens(text):
+    """The tokens that tell an address apart: no accents, case or
+    punctuation; no street types, connectors, number markers, zips or
+    country. Street, number and city all count."""
+    dropped = _STREET_TYPES | _CONNECTORS | _NUMBER_MARKERS | _COUNTRY
     return {
         word for word in _words(text) if word not in dropped and not _ZIP_RE.match(word)
     }
 
 
-def address_verdict(shown, live, city=""):
+def address_verdict(shown, live):
     """``None`` when the typed address may become the live one, else why not.
 
-    Relinked when every street token the page shows is in the live address
-    (the contact says the same or more: a page showing only the city gets
-    the street). ``live_poorer`` when the live address says less (the street
-    or the number would be lost), ``differs`` otherwise. Two addresses with
-    no street token at all must be the same text, zips aside.
+    Relinked when every token the page shows is in the live address (street
+    + street2 + zip + city): the contact says the same or more, so a page
+    showing only the city gets the street -- but only if the contact names
+    the same city. ``live_poorer`` when the live address says strictly less
+    (the street or the number would be lost), ``differs`` otherwise. With
+    no token on either side, the texts must match, zips aside.
     """
-    shown_tokens, live_tokens = street_tokens(shown, city), street_tokens(live, city)
+    shown_tokens, live_tokens = address_tokens(shown), address_tokens(live)
     if not shown_tokens and not live_tokens:
-        # Only places on both sides: the same text, a zip aside (a zip on
-        # one side only is format, not a different address).
+
         def places(text):
             return [word for word in _words(text) if not _ZIP_RE.match(word)]
 
@@ -343,7 +340,7 @@ def _static_verdict(kind, shown, live):
     if kind == "email":
         return None if _same_email(shown, value) else "differs"
     if kind == "address":
-        return address_verdict(shown, value, (live or {}).get("city") or "")
+        return address_verdict(shown, value)
     if kind == "website":
         return None if _same_website(shown, value) else "differs"
     return None

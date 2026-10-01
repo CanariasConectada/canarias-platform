@@ -750,7 +750,6 @@ class ResCompany(models.Model):
         return {
             "email": self.partner_id.email or "",
             "address": self._get_microsite_live_address(),
-            "city": self.partner_id.city or "",
             "website": self.partner_id.website or "",
             "map": self.microsite_map_url or "",
             "map_explicit": bool(self.microsite_map_url),
