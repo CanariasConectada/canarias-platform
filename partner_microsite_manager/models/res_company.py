@@ -808,17 +808,16 @@ class ResCompany(models.Model):
             report = legacy_homepage.empty_report()
             try:
                 with self.env.cr.savepoint():
-                    new_arch, report = legacy_homepage.relink_live_data(
-                        view.arch_db or "",
-                        company._get_microsite_live_facts(),
-                        insert_missing=mode == "migration",
-                        live=(
-                            company._get_microsite_live_values()
-                            if mode == "migration"
-                            else None
-                        ),
-                        force=kinds if mode == "edit" else (),
-                    )
+                    if mode == "migration":
+                        new_arch, report = self._relink_from_authoring_copy(
+                            view, company
+                        )
+                    else:
+                        new_arch, report = legacy_homepage.relink_live_data(
+                            view.arch_db or "",
+                            company._get_microsite_live_facts(),
+                            force=kinds if mode == "edit" else (),
+                        )
                     if new_arch:
                         before = self._get_arch_db_raw(view)
                         view.with_context(
@@ -863,6 +862,52 @@ class ResCompany(models.Model):
                 )
             stats.append(stat)
         return stats
+
+    @api.model
+    def _relink_from_authoring_copy(self, view, company):
+        """The migration's transform of ``view``: keep/relink decided on the
+        copy in the website's default language, applied to the base arch.
+
+        The page was written in the website's language (Spanish); the base
+        (``en_US``) copy that a ``lang=None`` write rewrites holds machine
+        translations of the values, which never equal the company's. So the
+        email/address/web/map decisions are taken on the authoring copy
+        (website language, else ``es_ES``, else ``en_US``) and passed to the
+        transform of the base arch. A line one copy has and the other lacks
+        stays static and is noted.
+        """
+        raw = self._get_arch_db_raw(view)
+        base = raw.get("en_US") or view.arch_db or ""
+        lang = view.website_id.default_lang_id.code
+        authoring_lang = next(
+            (code for code in (lang, "es_ES", "en_US") if code and raw.get(code)),
+            "en_US",
+        )
+        facts = company._get_microsite_live_facts()
+        decisions, decided = legacy_homepage.decide_contact_kinds(
+            raw.get(authoring_lang) or base, facts, company._get_microsite_live_values()
+        )
+        new_arch, report = legacy_homepage.relink_live_data(
+            base, facts, insert_missing=True, decisions=decisions
+        )
+        kept = list(decided["kept_static"])
+        for kind in sorted(set(report["present"]) - set(decided["present"])):
+            report["notes"].append(
+                f"{kind} line not in the {authoring_lang} copy: kept"
+            )
+            kept.append(
+                {
+                    "kind": kind,
+                    "shown": "",
+                    "live": "",
+                    "reason": f"not_in_{authoring_lang}",
+                }
+            )
+        for kind in sorted(set(decided["present"]) - set(report["present"])):
+            report["notes"].append(f"{kind} line only in the {authoring_lang} copy")
+        report["kept_static"] = kept
+        report["notes"] = list(dict.fromkeys(decided["notes"] + report["notes"]))
+        return new_arch, report
 
     @api.model
     def _get_arch_db_raw(self, view):

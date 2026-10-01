@@ -785,3 +785,63 @@ class TestLegacyHomepageLiveData(TransactionCase):
             ),
             1,
         )
+
+    # -- decisions taken on the copy the page was written in ------------------
+    def _two_language_page(self, slug, english, spanish):
+        """A page whose en_US copy shows ``english`` (email, address) and
+        whose es_ES copy -- the website's language -- shows ``spanish``."""
+        es = self.env["res.lang"]._activate_lang("es_ES")
+        self.website.language_ids |= es
+        self.website.default_lang_id = es
+        view = self._legacy_page(
+            STANDARD_ARCH.replace("Shop @ example.com", english[0]).replace(
+                "Calle Nueva, 5 - Las Palmas", english[1]
+            ),
+            slug=slug,
+        )
+        raw = self._raw(view)
+        spanish_arch = (
+            raw["en_US"].replace(english[0], spanish[0]).replace(english[1], spanish[1])
+        )
+        self.env.cr.execute(
+            "UPDATE ir_ui_view SET arch_db = arch_db || jsonb_build_object('es_ES', %s::text)"
+            " WHERE id = %s",
+            [spanish_arch, view.id],
+        )
+        view.invalidate_recordset()
+        return view
+
+    def test_the_authoring_copy_decides_not_the_machine_translation(self):
+        view = self._two_language_page(
+            "authoring",
+            english=("shopconditioning", "New Street 5, The Palms"),
+            spanish=("Shop @ example.com", "Calle Nueva, 5 - Las Palmas"),
+        )
+
+        [stat] = self._relink(view)
+
+        self.assertTrue(stat["written"])
+        self.assertFalse(stat["kept_static"])
+        for lang in ("en_US", "es_ES"):
+            arch = self._raw(view)[lang]
+            self.assertIn(legacy_homepage.LIVE_TEMPLATES["email"], arch, lang)
+            self.assertIn(legacy_homepage.LIVE_TEMPLATES["address"], arch, lang)
+            self.assertNotIn("shopconditioning", arch, lang)
+
+    def test_a_differing_authoring_copy_keeps_the_values(self):
+        view = self._two_language_page(
+            "authoringdiff",
+            english=("Shop @ example.com", "Calle Nueva, 5 - Las Palmas"),
+            spanish=("tienda@example.com", "Paseo Tomas Morales 72, Las Palmas 35003"),
+        )
+
+        [stat] = self._relink(view)
+
+        kept = {k["kind"]: k for k in stat["kept_static"]}
+        self.assertEqual(set(kept), {"email", "address", "map"})
+        # The review list shows what the Spanish page shows.
+        self.assertEqual(kept["email"]["shown"], "tienda@example.com")
+        arch = self._raw(view)["es_ES"]
+        self.assertIn("tienda@example.com", arch)
+        self.assertNotIn(legacy_homepage.LIVE_TEMPLATES["email"], arch)
+        self.assertIn(legacy_homepage.LIVE_TEMPLATES["phone"], arch)

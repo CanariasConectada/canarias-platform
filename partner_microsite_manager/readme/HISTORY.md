@@ -39,7 +39,10 @@
   >= 0.6); the map only when the shop has its own map link or its address
   went live. The rest stays as typed, is logged (`kept_static=`) and is
   listed in `legacy-homepage-review-19.0.2.13.0.csv` (attached to the main
-  company) for the consultants. Contact lines are never added; the hours
+  company) for the consultants. These decisions are taken on the copy in
+  the website's language (else es_ES, else en_US) -- the en_US copies hold
+  machine translations of the values -- and applied to the base arch; a
+  line only one of the two copies has stays static. Contact lines are never added; the hours
   card is, where the shop has hours and the page none. When a person later
   changes the shop's email, address (the map follows), web or map link,
   that value goes live on the page (not during module updates or imports;

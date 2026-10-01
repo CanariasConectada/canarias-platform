@@ -337,10 +337,11 @@ def _line_is_live(line, kind):
     return bool(line.xpath(f".//t[@t-call='{LIVE_TEMPLATES[kind]}']"))
 
 
-def _relink_contact(root, report, live, force):
+def _relink_contact(root, report, live, force, decisions):
     """Relink the contact lines. Returns the kinds that are live after."""
     lines = _find_contact_lines(root, report)
     live_kinds = set()
+    report["present"].extend(kind for kind in CONDITIONAL_KINDS if lines.get(kind))
     for kind, _icon_class in CONTACT_LINES:
         entries = lines.get(kind, [])
         for line, _icon in entries[1:]:
@@ -353,14 +354,19 @@ def _relink_contact(root, report, live, force):
         line, icon = entries[0]
         if kind in CONDITIONAL_KINDS and not _line_is_live(line, kind):
             if kind not in force:
-                if live is None:
+                if decisions is not None:
+                    # Decided on the copy the page was written in.
+                    if decisions.get(kind) != "relink":
+                        continue
+                elif live is None:
                     # A builder save: a static line stays static.
                     continue
-                shown = _line_shown(line, icon, kind)
-                reason = _static_verdict(kind, shown, live)
-                if reason:
-                    _keep_static(report, kind, shown, live, reason)
-                    continue
+                else:
+                    shown = _line_shown(line, icon, kind)
+                    reason = _static_verdict(kind, shown, live)
+                    if reason:
+                        _keep_static(report, kind, shown, live, reason)
+                        continue
         live_kinds.add(kind)
         unchanged = _content_is(line, kind, after=icon) and line.get(
             "t-if"
@@ -372,7 +378,7 @@ def _relink_contact(root, report, live, force):
     return live_kinds
 
 
-def _relink_map(root, report, live, force, address_live):
+def _relink_map(root, report, live, force, address_live, decisions):
     # The importer's map, or its empty shell (a few shops had no address
     # when they were imported and got ``src=""``). Only inside the contact
     # block.
@@ -383,6 +389,8 @@ def _relink_map(root, report, live, force, address_live):
     )
     if not iframes:
         report["notes"].append("no map iframe")
+    else:
+        report["present"].append("map")
     wanted = {
         LIVE_ATTR: "map",
         "t-att-src": MAP_SRC_EXPR,
@@ -391,12 +399,15 @@ def _relink_map(root, report, live, force, address_live):
     for iframe in iframes:
         is_live = iframe.get(LIVE_ATTR) == "map" or iframe.get("t-att-src")
         if not is_live and "map" not in force:
-            if live is None:
+            if decisions is not None:
+                if decisions.get("map") != "relink":
+                    continue
+            elif live is None:
                 continue
             # The address fallback must match the address the page shows:
             # without the shop's own map link, the static map stays unless
             # the address line went live.
-            if not (live.get("map_explicit") or address_live):
+            elif not (live.get("map_explicit") or address_live):
                 _keep_static(
                     report,
                     "map",
@@ -571,12 +582,15 @@ def empty_report():
         "dropped": [],
         "restored": [],
         "kept_static": [],
+        "present": [],
         "notes": [],
         "skipped": None,
     }
 
 
-def relink_live_data(arch, facts, insert_missing=False, live=None, force=()):
+def relink_live_data(
+    arch, facts, insert_missing=False, live=None, force=(), decisions=None
+):
     """Relink the values of a legacy homepage ``arch``.
 
     Phone, second phone, parking, delivery and hours always become live.
@@ -601,6 +615,10 @@ def relink_live_data(arch, facts, insert_missing=False, live=None, force=()):
     :param dict live: the company's ``email``, ``address``, ``website``,
         ``map`` values and ``map_explicit`` (migration only)
     :param force: kinds to make live whatever the page shows
+    :param dict decisions: ``{kind: "relink"|"keep"}`` for the static email,
+        address, web and map lines, taken beforehand on another language
+        copy of the page (:func:`decide_contact_kinds`); a kind missing from
+        it stays static
     :returns: ``(new_arch or None, report)``; ``None`` when nothing changes
         or the page is skipped (``report["skipped"]`` says why)
     """
@@ -619,12 +637,33 @@ def relink_live_data(arch, facts, insert_missing=False, live=None, force=()):
     report["restored"] = restore_flattened_blocks(tree)
     if swap_legacy_hours_cards(tree):
         report["relinked"].append("hours")
-    live_kinds = _relink_contact(contact, report, live, force)
-    _relink_map(contact, report, live, force, "address" in live_kinds)
+    live_kinds = _relink_contact(contact, report, live, force, decisions)
+    _relink_map(contact, report, live, force, "address" in live_kinds, decisions)
     _relink_features(tree, facts, report, insert_missing)
-    for key in ("relinked", "inserted", "dropped", "restored", "notes"):
+    for key in ("relinked", "inserted", "dropped", "restored", "notes", "present"):
         report[key] = list(dict.fromkeys(report[key]))
     after = etree.tostring(tree, encoding="unicode")
     if after == before:
         return None, report
     return after, report
+
+
+def decide_contact_kinds(arch, facts, live):
+    """Keep or relink each static email/address/web/map line, judged on
+    ``arch`` -- the copy in the language the page was written in.
+
+    The migration writes the base (``en_US``) arch, but the importer's
+    ``en_US`` copies hold machine translations of the values
+    ("adgconditioning", "The Palms of Gran Canaria"): comparing those with
+    the company would keep almost every line static. Returns
+    ``(decisions, report)``; ``report["kept_static"]`` carries what that
+    copy shows, for the review list.
+    """
+    _new_arch, report = relink_live_data(arch, facts, live=live)
+    kept = {entry["kind"] for entry in report["kept_static"]}
+    decisions = {
+        kind: "keep" if kind in kept else "relink"
+        for kind in report["present"]
+        if kind in CONDITIONAL_KINDS or kind == "map"
+    }
+    return decisions, report
