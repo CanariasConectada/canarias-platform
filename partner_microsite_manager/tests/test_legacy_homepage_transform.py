@@ -6,7 +6,7 @@ from lxml import etree
 from odoo.tests.common import BaseCase
 
 from ..tools import legacy_homepage
-from ..tools.legacy_homepage import address_similarity, relink_live_data
+from ..tools.legacy_homepage import address_verdict, relink_live_data
 
 FACTS = {"address": True, "phone": True, "email": True, "hours": True, "map": True}
 LIVE = {
@@ -139,18 +139,70 @@ class TestLegacyHomepageTransform(BaseCase):
         self.assertIn(legacy_homepage.LIVE_TEMPLATES["email"], new_arch)
         self.assertIn("_get_microsite_map_url", new_arch)
 
-    def test_address_similarity(self):
-        self.assertGreaterEqual(
-            address_similarity(
-                "C/ Republica Dominicana, 23 - 35010 Las Palmas",
-                "Calle República Dominicana 23, 35010 Las Palmas de Gran Canaria",
+    def test_the_address_rule_on_the_real_cases(self):
+        city = "Las Palmas de Gran Canaria"
+        cases = [
+            # (page, contact, verdict) -- valcut es_ES copies, 2026-10-01
+            (
+                "Calle Almansa Nº 72, 35010,  Las Palmas de Gran Canaria",
+                "35010 Las Palmas de Gran Canaria",
+                "live_poorer",  # motorgc: the street would be lost
             ),
-            0.6,
-        )
-        self.assertLess(
-            address_similarity(
+            (
+                "Calle Almansa, 25, Las Palmas de Gran Canaria",
+                "Calle Almansa, 35010 Las Palmas de Gran Canaria",
+                "live_poorer",  # ninjagames: the number would be lost
+            ),
+            (
+                "Calle Luis Morote, 19, Las Palmas de Gran Canaria, 35008",
+                "Calle Albareda 24, 35008 Las Palmas de Gran Canaria",
+                "differs",  # esardas
+            ),
+            (
+                "Calle Luís Morote, 41, Las Palmas de Gran Canaria, 35007",
+                "Calle Ripoche 18, 35007 Las Palmas de Gran Canaria",
+                "differs",  # visonic
+            ),
+            (
+                "Calle Doctor Alfonso Chiscano Díaz, 10, Las Palmas de Gran Canaria, 35019",
+                "Calle Palafox, 35010 Las Palmas de Gran Canaria",
+                "differs",  # magiart
+            ),
+            (
+                "Calle Vergara, número 50, Las Palmas de Gran Canaria, 35010",
+                "Calle Vergara 50, 35010 Las Palmas de Gran Canaria",
+                None,  # suval
+            ),
+            (
+                "Calles Lepanto, 22, Las Palmas de Gran Canaria, 35018",
+                "Calle Lepanto, 22, 35010 Las Palmas de Gran Canaria",
+                None,  # anamargaritalepanto
+            ),
+            (
+                "Calle Pascal 9, Las Palmas de Gran Canaria, 35010",
+                "Calle Pascal 9, 35010 Las Palmas de Gran Canaria",
+                None,  # format only
+            ),
+            (
+                "Las Palmas de Gran Canaria",
+                "Calle Fernando Guanarteme 118, 35010 Las Palmas de Gran Canaria",
+                None,  # panambi: only the city on the page, the contact adds the street
+            ),
+            (
                 "Paseo Tomás Morales, 72, Las Palmas de Gran Canaria, 35003",
                 "Calle Pascal 9, 35010 Las Palmas de Gran Canaria",
+                "differs",  # aeropatin: shop vs. fiscal address
             ),
-            0.6,
+        ]
+        for shown, live, expected in cases:
+            self.assertEqual(address_verdict(shown, live, city), expected, shown)
+
+    def test_two_addresses_without_a_street_must_be_the_same_text(self):
+        self.assertIsNone(address_verdict("Telde", "Telde", "Telde"))
+        # A zip on one side only is format.
+        self.assertIsNone(
+            address_verdict(
+                "Las Palmas de Gran Canaria", "35010 Las Palmas de Gran Canaria"
+            )
         )
+        self.assertEqual(address_verdict("Telde", "Arucas"), "differs")

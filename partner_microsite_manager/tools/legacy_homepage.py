@@ -246,12 +246,17 @@ def _find_contact_lines(root, report=None):
 # ----------------------------------------------------------------------
 # What the page shows vs. what the company says (migration only)
 # ----------------------------------------------------------------------
-# Words that say nothing about WHICH address it is.
-_ADDRESS_STOPWORDS = frozenset(
-    "c cl calle avenida avda av paseo pº plaza pza pl carretera ctra "
-    "de del la las el los y n no nº num numero local bajo s sn".split()
+# Words that say nothing about WHICH street it is: street types,
+# connectors and number markers (``s/n`` = no number).
+_STREET_TYPES = frozenset(
+    "calle calles c cl avenida av avda paseo plaza camino carretera ctra".split()
 )
-ADDRESS_SIMILARITY = 0.6
+_CONNECTORS = frozenset("de del la las el los y".split())
+_NUMBER_MARKERS = frozenset("numero num n no s sn".split())
+# Places every shop of the platform shares: never what tells two
+# addresses apart.
+_COMMON_PLACES = frozenset("las palmas de gran canaria espana".split())
+_ZIP_RE = re.compile(r"^\d{5}$")
 
 
 def _plain(text):
@@ -260,20 +265,43 @@ def _plain(text):
     return "".join(c for c in text if not unicodedata.combining(c)).lower()
 
 
-def address_tokens(text):
-    """Significant tokens of an address: no accents, case, punctuation,
-    street-type words or articles; order does not matter."""
-    words = re.split(r"[^0-9a-z]+", _plain(text))
-    return {word for word in words if word and word not in _ADDRESS_STOPWORDS}
+def _words(text):
+    return [word for word in re.split(r"[^0-9a-z]+", _plain(text)) if word]
 
 
-def address_similarity(shown, live):
-    """Token-set similarity: shared tokens over the smaller set (1.0 when
-    one address is the other with more or fewer details)."""
-    shown_tokens, live_tokens = address_tokens(shown), address_tokens(live)
-    if not shown_tokens or not live_tokens:
-        return 0.0
-    return len(shown_tokens & live_tokens) / min(len(shown_tokens), len(live_tokens))
+def street_tokens(text, city=""):
+    """The tokens of an address that name the street and number: no
+    accents, case or punctuation; no street types, connectors, number
+    markers, zips, the shop's city or the island's common place names."""
+    dropped = _STREET_TYPES | _CONNECTORS | _NUMBER_MARKERS | _COMMON_PLACES
+    dropped |= set(_words(city))
+    return {
+        word for word in _words(text) if word not in dropped and not _ZIP_RE.match(word)
+    }
+
+
+def address_verdict(shown, live, city=""):
+    """``None`` when the typed address may become the live one, else why not.
+
+    Relinked when every street token the page shows is in the live address
+    (the contact says the same or more: a page showing only the city gets
+    the street). ``live_poorer`` when the live address says less (the street
+    or the number would be lost), ``differs`` otherwise. Two addresses with
+    no street token at all must be the same text, zips aside.
+    """
+    shown_tokens, live_tokens = street_tokens(shown, city), street_tokens(live, city)
+    if not shown_tokens and not live_tokens:
+        # Only places on both sides: the same text, a zip aside (a zip on
+        # one side only is format, not a different address).
+        def places(text):
+            return [word for word in _words(text) if not _ZIP_RE.match(word)]
+
+        return None if places(shown) == places(live) else "differs"
+    if shown_tokens <= live_tokens:
+        return None
+    if live_tokens < shown_tokens:
+        return "live_poorer"
+    return "differs"
 
 
 def _same_email(shown, live):
@@ -315,8 +343,7 @@ def _static_verdict(kind, shown, live):
     if kind == "email":
         return None if _same_email(shown, value) else "differs"
     if kind == "address":
-        similar = address_similarity(shown, value) >= ADDRESS_SIMILARITY
-        return None if similar else "differs"
+        return address_verdict(shown, value, (live or {}).get("city") or "")
     if kind == "website":
         return None if _same_website(shown, value) else "differs"
     return None
