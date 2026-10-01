@@ -4,6 +4,11 @@
 from odoo import _, fields, models
 from odoo.exceptions import AccessError
 
+# Partner fields the live blocks of a legacy homepage render.
+LIVE_PARTNER_FIELDS = frozenset(
+    {"phone", "email", "street", "street2", "zip", "city", "website"}
+)
+
 
 class ResPartner(models.Model):
     _inherit = "res.partner"
@@ -32,6 +37,27 @@ class ResPartner(models.Model):
         for partner in self:
             partner.microsite_company_id = mapping.get(partner.id, False)
             partner.has_microsite = bool(partner.microsite_company_id)
+
+    def write(self, vals):
+        """Drop the page cache when a shop's contact data changes.
+
+        The legacy homepages render the phone, email, address and web of
+        the company's partner live, but public pages are served from a
+        one-hour response cache keyed by page; the company's own form and
+        the directory write the partner directly, not through the content
+        editor that already empties it.
+        """
+        result = super().write(vals)
+        if LIVE_PARTNER_FIELDS.intersection(vals) and (
+            self.env["res.company"]
+            .sudo()
+            .search_count(
+                [("partner_id", "in", self.ids), ("website_id", "!=", False)],
+                limit=1,
+            )
+        ):
+            self.env.registry.clear_cache("templates")
+        return result
 
     def action_open_microsite_company(self):
         """Open the microsite content of this contact's shop.

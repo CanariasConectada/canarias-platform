@@ -1,3 +1,36 @@
+## 19.0.2.13.0 (2026-10-01)
+
+- Legacy homepages follow the company (client report: the content editor
+  saved, the site did not change -- Panambi still offered "Entrega
+  disponible", Diaz Leja kept its old phone and showed no hours). The 207
+  imported homepages (`website.homepage_*` / `website.home-*`) had every
+  value typed into the arch. Only those VALUE nodes now point at the
+  company; the design, the long texts, the labels and the seven languages
+  stay as they were:
+  - contact lines (address, phone, second phone, email, web) become
+    t-calls of the new `microsite_live_*` templates; the map `iframe` gets
+    `t-att-src` from `_get_microsite_map_url()` and keeps its size;
+  - the parking / delivery cards render the company fields and, like every
+    contact line and the hours card, carry a `t-if`: an emptied field takes
+    its card or line off the public page (still shown while editing, so
+    the builder does not drop it from the arch);
+  - a line the page lacks while the shop has the value is added next to
+    its siblings; a page with no hours card gets one (before "Acerca") when
+    the shop has hours; the "Info Bar" variant's static hours are replaced.
+  Zone companies, theme homepages and the dynamic homepage are not touched;
+  a page without the contact block is skipped and logged.
+- Builder saves no longer undo it: saving a page in the website builder
+  writes the rendered html back into the arch. Every live block carries a
+  `data-cc-live` marker (and is `o_not_editable`), and a write of the arch
+  of a legacy homepage runs the relinker again, which puts the t-calls back.
+- Writing the shop's phone, email, address or web (partner) or the
+  `microsite_*` values rendered live (company) empties the one-hour page
+  cache, as the content editor already did.
+- Migration: each legacy homepage's `arch_db` (all languages) is saved as
+  a JSON attachment of its view
+  (`legacy-homepage-backup-<view_id>-19.0.2.13.0.json`), then relinked, one
+  savepoint and one log line per page. Idempotent.
+
 ## 19.0.2.12.0 (2026-09-30)
 
 - Microsite map: any Google Maps link now shows a map (client request:

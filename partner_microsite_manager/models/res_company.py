@@ -1,8 +1,10 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import html
 import json
 import logging
+import re
 from datetime import datetime
 from urllib.parse import parse_qs, quote_plus, urlsplit
 
@@ -11,8 +13,10 @@ from lxml import etree
 
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError, ValidationError
+from odoo.tools.sql import column_exists
 from odoo.tools.translate import LazyTranslate
 
+from ..tools import legacy_homepage
 from ..tools import map_url as map_url_tools
 from ..tools.opening_hours import (
     MAX_RANGES_PER_DAY,
@@ -30,8 +34,31 @@ _logger = logging.getLogger(__name__)
 # It never read the company, which is why editing the hours in the backend
 # changed nothing on the site. ``_relink_legacy_opening_hours_card`` swaps
 # that element -- and only that element -- for the dynamic card template.
-LEGACY_HOURS_CARD_CLASS = "horario-card-accordion"
-OPENING_HOURS_CARD_TEMPLATE = "partner_microsite_manager.microsite_opening_hours_card"
+LEGACY_HOURS_CARD_CLASS = legacy_homepage.LEGACY_HOURS_CARD_CLASS
+OPENING_HOURS_CARD_TEMPLATE = legacy_homepage.OPENING_HOURS_CARD_TEMPLATE
+
+# The imported homepages: the views of the "/" pages whose key the importer
+# chose. The dynamic homepage (``partner_microsite_manager.microsite_homepage_*``)
+# and theme homepages (company 100's ``theme_corporate_multi``) never match.
+LEGACY_HOMEPAGE_KEY_LIKE = ("website.homepage\\_%", "website.home-%")
+LEGACY_HOMEPAGE_KEY_RE = re.compile(r"^website\.(homepage_|home-)")
+# Set while the relinker writes a page, so the builder-save guard on
+# ``ir.ui.view.write`` does not run again on its own write.
+LIVE_RELINK_CONTEXT_KEY = "pmm_live_relink"
+# The company fields the live blocks of a legacy homepage render: writing
+# any of them has to drop the one-hour page cache.
+LIVE_COMPANY_FIELDS = frozenset(
+    {
+        "microsite_phone",
+        "microsite_phone2",
+        "microsite_parking_info",
+        "microsite_delivery_info",
+        "microsite_map_url",
+        "microsite_map_share_url",
+        "microsite_opening_hours",
+        "microsite_opening_slot_ids",
+    }
+)
 
 # Only https map URLs are embeddable in the microsite contact iframe. A
 # 'javascript:' or 'data:' src would run in the visitor's page context
@@ -544,24 +571,186 @@ class ResCompany(models.Model):
         """Replace the legacy card(s) in ``arch`` and write it back to
         ``view``. Returns whether anything was replaced."""
         tree = etree.fromstring(arch.encode("utf-8"))
-        cards = tree.xpath(
-            "//*[contains(concat(' ', normalize-space(@class), ' '), "
-            f"' {LEGACY_HOURS_CARD_CLASS} ')]"
-        )
-        replaced = False
-        for card in cards:
-            parent = card.getparent()
-            if parent is None:
-                # A card nested inside a card already swapped out.
-                continue
-            call = etree.Element("t")
-            call.set("t-call", OPENING_HOURS_CARD_TEMPLATE)
-            call.tail = card.tail
-            parent.replace(card, call)
-            replaced = True
+        replaced = legacy_homepage.swap_legacy_hours_cards(tree)
         if replaced:
             view.write({"arch_db": etree.tostring(tree, encoding="unicode")})
         return replaced
+
+    # ------------------------------------------------------------------
+    # Legacy homepages: every value read from the company
+    # ------------------------------------------------------------------
+    @staticmethod
+    def _get_microsite_tel_href(number):
+        """``tel:`` link for a number as the merchant typed it."""
+        digits = re.sub(r"[^\d+]", "", number or "")
+        return f"tel:{digits}" if digits else ""
+
+    def _get_microsite_live_address(self):
+        """One line: ``street, street2, zip city``.
+
+        The importer left a literal ``&nbsp;`` (and the zip again) in some
+        streets -- ``Calle X 23&nbsp;35010`` -- which QWeb would print
+        escaped; it is decoded, and a zip the street repeats is dropped.
+        """
+        self.ensure_one()
+        partner = self.partner_id
+
+        def clean(value):
+            value = html.unescape(value or "").replace("\xa0", " ")
+            return re.sub(r"\s+", " ", value).strip(" ,")
+
+        zip_code, city = clean(partner.zip), clean(partner.city)
+        street = clean(partner.street)
+        if zip_code and street.endswith(" " + zip_code):
+            street = street[: -len(zip_code)].strip(" ,")
+        locality = " ".join(part for part in (zip_code, city) if part)
+        return ", ".join(
+            part for part in (street, clean(partner.street2), locality) if part
+        )
+
+    def _microsite_live_has(self, kind):
+        """Whether the shop has the value a live block of ``kind`` shows.
+
+        Called from the ``t-if`` the relinker puts on each line and card of
+        a legacy homepage, so an emptied value takes its label with it.
+        """
+        self.ensure_one()
+        partner = self.partner_id
+        if kind == "address":
+            return bool(self._get_microsite_live_address())
+        if kind == "phone":
+            return bool(self.microsite_phone or partner.phone)
+        if kind == "phone2":
+            return bool(self.microsite_phone2)
+        if kind == "email":
+            return bool(partner.email)
+        if kind == "website":
+            return bool(self._get_microsite_website_url())
+        if kind == "map":
+            return bool(self._get_microsite_map_url())
+        if kind == "hours":
+            return bool(parse_opening_hours(self.microsite_opening_hours))
+        if kind in ("parking", "delivery"):
+            return bool(self[f"microsite_{kind}_info"])
+        if kind == "features":
+            return any(
+                self._microsite_live_has(name)
+                for name in ("hours", "parking", "delivery")
+            )
+        return False
+
+    def _get_microsite_live_facts(self):
+        """``{kind: bool}`` for the relinker (which missing lines to add)."""
+        self.ensure_one()
+        return {
+            kind: self._microsite_live_has(kind)
+            for kind in (
+                "address",
+                "phone",
+                "phone2",
+                "email",
+                "website",
+                "map",
+                "hours",
+            )
+        }
+
+    @api.model
+    def _get_legacy_homepage_views(self, view_ids=None):
+        """The imported homepages to relink, as ``ir.ui.view`` records.
+
+        Resolved in SQL so the migration does not depend on which optional
+        modules are loaded: the "/" page of a website, with an importer key,
+        whose company is not one of the three zone companies (their homepage
+        is a different, hand-built page; ``zone_company_key`` comes from
+        ``zone_company_ownership`` and is only looked at when its column
+        exists). ``self`` narrows to those companies when not empty;
+        ``view_ids`` narrows to those views.
+        """
+        query = """
+            SELECT DISTINCT v.id
+              FROM website_page p
+              JOIN ir_ui_view v ON v.id = p.view_id
+              JOIN website w ON w.id = p.website_id
+             WHERE p.url = '/'
+               AND (v.key LIKE %s OR v.key LIKE %s)
+        """
+        params = list(LEGACY_HOMEPAGE_KEY_LIKE)
+        if column_exists(self.env.cr, "res_company", "zone_company_key"):
+            query += """
+               AND w.company_id NOT IN (
+                   SELECT id FROM res_company WHERE zone_company_key IS NOT NULL
+               )
+            """
+        if self:
+            query += " AND w.company_id = ANY(%s)"
+            params.append(self.ids)
+        if view_ids is not None:
+            query += " AND v.id = ANY(%s)"
+            params.append(list(view_ids))
+        self.env.cr.execute(query + " ORDER BY v.id", params)
+        return (
+            self.env["ir.ui.view"]
+            .sudo()
+            .browse([row[0] for row in self.env.cr.fetchall()])
+        )
+
+    def _relink_legacy_homepage_live_data(self, views=None):
+        """Point every value of the legacy homepages at the company.
+
+        The importer typed phone, address, email, map, parking and delivery
+        into ~207 homepages, so the content editor saved the company and the
+        page never changed (Panambi still offered "Entrega disponible" after
+        the merchant emptied it). The design, the long texts and the labels
+        stay: only the VALUE nodes become t-calls of the live templates
+        (``views/microsite_live_data.xml``), see ``tools/legacy_homepage``.
+
+        ``views`` narrows the run; whatever it holds, only imported
+        homepages of non-zone shops are touched (``_get_legacy_homepage_views``).
+        One savepoint per page; the base arch is written with ``lang=None``
+        so the six other languages re-map their unchanged terms (the
+        19.0.2.8.0 hours relink does exactly this). Idempotent: a page
+        already relinked is not written again.
+
+        Returns one dict per page: ``view_id``, ``company_id``, ``written``
+        and the transformation report (``relinked``, ``inserted``,
+        ``dropped``, ``restored``, ``notes``, ``skipped``).
+        """
+        targets = self._get_legacy_homepage_views(
+            view_ids=views.ids if views is not None else None
+        )
+        stats = []
+        for view in targets.with_context(lang=None):
+            company = view.website_id.company_id.sudo()
+            stat = {"view_id": view.id, "company_id": company.id, "written": False}
+            try:
+                with self.env.cr.savepoint():
+                    new_arch, report = legacy_homepage.relink_live_data(
+                        view.arch_db or "", company._get_microsite_live_facts()
+                    )
+                    if new_arch:
+                        view.with_context(
+                            lang=None, **{LIVE_RELINK_CONTEXT_KEY: True}
+                        ).write({"arch_db": new_arch})
+                        stat["written"] = True
+            except (etree.XMLSyntaxError, ValueError, ValidationError):
+                _logger.exception(
+                    "Legacy homepage: could not relink view %s (company %s); "
+                    "the page keeps its static values.",
+                    view.id,
+                    company.id,
+                )
+                report = dict(legacy_homepage.empty_report(), skipped="error")
+            stat.update(report)
+            if report["skipped"]:
+                _logger.info(
+                    "Legacy homepage: view %s (company %s) skipped: %s",
+                    view.id,
+                    company.id,
+                    report["skipped"],
+                )
+            stats.append(stat)
+        return stats
 
     def _get_microsite_website_url(self):
         """The shop's own site as a clickable absolute URL, or ``""``.
@@ -841,6 +1030,12 @@ class ResCompany(models.Model):
         everywhere the visitor looks.
         """
         result = self._write_map_url_aware(vals)
+        if LIVE_COMPANY_FIELDS.intersection(vals):
+            # The legacy homepages render these live, but public pages are
+            # served from a one-hour response cache keyed by page (see the
+            # content editor's save); without this the change shows up to an
+            # hour late.
+            self.env.registry.clear_cache("templates")
         if "logo" in vals:
             for company in self:
                 websites = company.website_id | self.env["website"].sudo().search(
