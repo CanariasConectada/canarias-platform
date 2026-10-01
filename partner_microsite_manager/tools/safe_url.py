@@ -22,6 +22,7 @@ def safe_http_url(url):
     - no scheme (``myshop.com``, ``localhost:8080``) -> ``https://`` added;
     - scheme-relative (``//host``) -> ``https:`` added;
     - ``http``/``https`` (any case) with a host -> kept;
+    - user info in the host part (``https://good@evil.com``) -> ``""``;
     - any other scheme (``javascript:``, ``data:``, ``vbscript:``...), a
       control character anywhere, or whitespace inside the scheme -> ``""``.
     """
@@ -44,5 +45,8 @@ def safe_http_url(url):
         url = "https://" + url
     parts = urlsplit(url)
     if parts.scheme.lower() not in ALLOWED_SCHEMES or not parts.netloc:
+        return ""
+    if "@" in parts.netloc:
+        # ``https://good@evil.com`` reads as "good" and goes to evil.com.
         return ""
     return url

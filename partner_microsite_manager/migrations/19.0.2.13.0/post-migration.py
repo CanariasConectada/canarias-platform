@@ -27,14 +27,9 @@ def _backup_arch(env, view_id):
     """
     Attachment = env["ir.attachment"].sudo()
     name = _backup_name(view_id)
-    if Attachment.search_count(
-        [
-            ("res_model", "=", "ir.ui.view"),
-            ("res_id", "=", view_id),
-            ("name", "=", name),
-        ],
-        limit=1,
-    ):
+    # Only the migration's own (superuser) backup counts, never a
+    # same-name attachment somebody else created.
+    if env["res.company"]._find_legacy_homepage_backup(view_id):
         return False
     env.cr.execute("SELECT arch_db FROM ir_ui_view WHERE id = %s", [view_id])
     arch_db = env.cr.fetchone()[0]
@@ -65,7 +60,7 @@ def migrate(cr, version):
        differently from the company is kept as it is (the page keeps what
        it shows until a person edits that value).
     4. Those kept values are listed in ``legacy-homepage-review-19.0.2.13.0.csv``
-       (attached to the main company) for the consultants to reconcile.
+       (no record, administrators only) for the consultants to reconcile.
 
     Idempotent: a second run finds nothing to relink and keeps the first
     backups.
@@ -151,18 +146,27 @@ def _write_review_csv(env, stats):
                     kept["reason"],
                 ]
             )
-    main = env.ref("base.main_company", raise_if_not_found=False)
+    # Not attached to any record: an attachment without res_model is only
+    # readable by administrators (and its creator, the superuser).
     values = {
         "name": REVIEW_CSV_NAME,
         "type": "binary",
         "mimetype": "text/csv",
         "raw": buffer.getvalue().encode(),
-        "res_model": "res.company",
-        "res_id": main.id if main else False,
+        "res_model": False,
+        "res_id": 0,
         "public": False,
     }
     Attachment = env["ir.attachment"].sudo()
-    existing = Attachment.search([("name", "=", REVIEW_CSV_NAME)], limit=1)
+    existing = Attachment.search(
+        [
+            ("name", "=", REVIEW_CSV_NAME),
+            ("res_model", "=", False),
+            ("create_uid", "=", SUPERUSER_ID),
+        ],
+        order="id asc",
+        limit=1,
+    )
     if existing:
         existing.write(values)
     else:

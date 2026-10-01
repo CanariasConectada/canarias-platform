@@ -21,6 +21,8 @@ class TestSafeHttpUrl(BaseCase):
             "data:text/html,<script>alert(1)</script>",
             "mailto:shop@example.com",
             "https://",
+            "https://good@evil.com",
+            "//user:pass@evil.com/x",
         ):
             self.assertEqual(safe_http_url(value), "", repr(value))
 

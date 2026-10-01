@@ -10,7 +10,7 @@ from urllib.parse import parse_qs, quote_plus, urlsplit
 import pytz
 from lxml import etree
 
-from odoo import _, api, fields, models
+from odoo import SUPERUSER_ID, _, api, fields, models
 from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tools.sql import column_exists
 from odoo.tools.translate import LazyTranslate
@@ -47,6 +47,9 @@ OPENING_HOURS_CARD_TEMPLATE = legacy_homepage.OPENING_HOURS_CARD_TEMPLATE
 # and theme homepages (company 100's ``theme_corporate_multi``) never match.
 LEGACY_HOMEPAGE_KEY_LIKE = ("website.homepage\\_%", "website.home-%")
 LEGACY_HOMEPAGE_KEY_RE = re.compile(r"^website\.(homepage_|home-)")
+# Set by ``_normalize_existing_map_urls``: a link converted by the cron is
+# not a person choosing a map, so the page is not relinked.
+MAP_NORMALIZE_CONTEXT_KEY = "pmm_map_normalize"
 # Attachment the 19.0.2.13.0 migration stores the original arch_db in.
 LEGACY_BACKUP_NAME = "legacy-homepage-backup-{view_id}-19.0.2.13.0.json"
 # Set while the relinker writes a page, so the builder-save guard on
@@ -119,7 +122,9 @@ def clear_templates_cache_on_commit(env):
     write would empty it for the whole platform many times per save, and
     clearing before the commit lets a concurrent request cache the old
     values again. ``retrying`` runs the post-commit hooks before it signals
-    the registry changes, so the other workers hear about it.
+    the registry changes, so the other workers hear about it. Bounded: only
+    writes that really change a rendered value get here, and at most one
+    clear happens per committed transaction.
     """
     postcommit = env.cr.postcommit
     if postcommit.data.get(_CLEAR_CACHE_KEY):
@@ -615,7 +620,9 @@ class ResCompany(models.Model):
     def _swap_legacy_opening_hours_card(self, view, arch):
         """Replace the legacy card(s) in ``arch`` and write it back to
         ``view``. Returns whether anything was replaced."""
-        tree = etree.fromstring(arch.encode("utf-8"))
+        tree = etree.fromstring(
+            arch.encode("utf-8"), parser=legacy_homepage.safe_parser()
+        )
         replaced = legacy_homepage.swap_legacy_hours_cards(tree)
         if replaced:
             # Flagged: on an upgrade from before 19.0.2.8.0 the builder-save
@@ -980,30 +987,71 @@ class ResCompany(models.Model):
             return []
 
     @api.model
+    def _find_legacy_homepage_backup(self, view_id):
+        """The migration's own backup of ``view_id``, or an empty recordset.
+
+        Only an attachment created by the superuser (the migration) counts,
+        and the first one: anybody who may create attachments could add a
+        later one with the same name.
+        """
+        return (
+            self.env["ir.attachment"]
+            .sudo()
+            .search(
+                [
+                    ("res_model", "=", "ir.ui.view"),
+                    ("res_id", "=", view_id),
+                    ("name", "=", LEGACY_BACKUP_NAME.format(view_id=view_id)),
+                    ("create_uid", "=", SUPERUSER_ID),
+                ],
+                order="id asc",
+                limit=1,
+            )
+        )
+
+    @staticmethod
+    def _is_valid_arch_backup(data):
+        """A backup is ``{language code: arch}`` with ``en_US`` in it."""
+        return (
+            isinstance(data, dict)
+            and isinstance(data.get("en_US"), str)
+            and all(
+                isinstance(lang, str)
+                and re.fullmatch(r"[a-z]{2,3}(_[A-Za-z0-9@]+)?", lang)
+                and isinstance(arch, str)
+                for lang, arch in data.items()
+            )
+        )
+
+    @api.model
     def _restore_legacy_homepage_backup(self, views):
         """Put back the arch (every language) the 19.0.2.13.0 migration saved.
 
         Reads ``legacy-homepage-backup-<view_id>-19.0.2.13.0.json`` attached
-        to each view and writes that jsonb back as it was, so the seven
-        language copies return byte for byte; the builder-save guard is not
-        involved (the column is written directly). Views without a backup
-        are left alone. Returns the restored views.
+        to each view by the migration (``_find_legacy_homepage_backup``) and
+        writes that jsonb back as it was, so the language copies return byte
+        for byte; the builder-save guard is not involved (the column is
+        written directly). Views without a trustworthy backup are left alone
+        and logged. Returns the restored views.
         """
-        Attachment = self.env["ir.attachment"].sudo()
         restored = self.env["ir.ui.view"]
         for view in views.sudo():
-            backup = Attachment.search(
-                [
-                    ("res_model", "=", "ir.ui.view"),
-                    ("res_id", "=", view.id),
-                    ("name", "=", LEGACY_BACKUP_NAME.format(view_id=view.id)),
-                ],
-                limit=1,
-            )
+            backup = self._find_legacy_homepage_backup(view.id)
             if not backup:
                 _logger.warning("Legacy homepage: no backup for view %s.", view.id)
                 continue
-            arch_db = json.loads(backup.raw)
+            try:
+                arch_db = json.loads(backup.raw)
+            except ValueError:
+                arch_db = None
+            if not self._is_valid_arch_backup(arch_db):
+                _logger.warning(
+                    "Legacy homepage: backup %s of view %s is not a "
+                    "{language: arch} map; not restored.",
+                    backup.id,
+                    view.id,
+                )
+                continue
             view.flush_recordset()
             self.env.cr.execute(
                 "UPDATE ir_ui_view SET arch_db = %s, write_date = now() AT TIME "
@@ -1215,7 +1263,7 @@ class ResCompany(models.Model):
                     share_url = company.microsite_map_share_url or (
                         stored if map_url_tools.is_share_link(stored) else False
                     )
-                    company.write(
+                    company.with_context(**{MAP_NORMALIZE_CONTEXT_KEY: True}).write(
                         {
                             "microsite_map_url": embed_url,
                             "microsite_map_share_url": share_url,
@@ -1303,11 +1351,16 @@ class ResCompany(models.Model):
         result = self._write_map_url_aware(vals)
         if live_changed:
             clear_templates_cache_on_commit(self.env)
-        if map_changed:
-            # A human set the shop's own map: it wins over the page's.
-            self.filtered(
-                lambda company: company._microsite_live_has("map")
-            )._relink_after_human_edit({"map"})
+        if (
+            map_changed
+            and (vals.get("microsite_map_url") or "").strip()
+            and not self.env.context.get(MAP_NORMALIZE_CONTEXT_KEY)
+        ):
+            # A human set the shop's own map link: it wins over the page's.
+            # Only an explicit link: clearing the field must never turn a
+            # page's own map into the partner-address one, and the cron that
+            # converts stored links is not a human edit.
+            self.filtered("microsite_map_url")._relink_after_human_edit({"map"})
         if "logo" in vals:
             for company in self:
                 websites = company.website_id | self.env["website"].sudo().search(

@@ -11,7 +11,7 @@ from unittest.mock import patch
 
 from lxml import etree, html
 
-from odoo.tests.common import TransactionCase
+from odoo.tests.common import TransactionCase, new_test_user
 
 from ..tools import legacy_homepage
 
@@ -845,3 +845,96 @@ class TestLegacyHomepageLiveData(TransactionCase):
         self.assertIn("tienda@example.com", arch)
         self.assertNotIn(legacy_homepage.LIVE_TEMPLATES["email"], arch)
         self.assertIn(legacy_homepage.LIVE_TEMPLATES["phone"], arch)
+
+    # -- final review ----------------------------------------------------------
+    def _as_user(self, record, user):
+        """Make ``record`` look created by ``user`` (as if they had)."""
+        self.env.cr.execute(
+            f"UPDATE {record._table} SET create_uid = %s WHERE id = %s",
+            [user.id, record.id],
+        )
+        record.invalidate_recordset()
+
+    def test_only_an_explicit_map_link_makes_the_map_live(self):
+        view = self._mismatching_page(slug="maponlyexplicit")
+        self._relink(view)
+        self.assertIn("q=Old+Street", self._render(view))
+
+        # The cron converting stored links is not a person choosing a map.
+        self.company.with_context(pmm_map_normalize=True).write(
+            {"microsite_map_url": "https://maps.google.com/maps?q=Cron&output=embed"}
+        )
+        self.assertIn("q=Old+Street", self._render(view))
+        # Clearing the link never swaps in the partner-address map.
+        self.company.write({"microsite_map_url": False})
+        self.assertIn("q=Old+Street", self._render(view))
+
+        self.company.write(
+            {
+                "microsite_map_url": "https://maps.google.com/maps?q=New+Place&output=embed"
+            }
+        )
+        page = self._render(view)
+        self.assertIn("q=New+Place", page)
+        self.assertNotIn("q=Old+Street", page)
+
+    def test_only_the_migration_backup_is_trusted(self):
+        view = self._legacy_page(slug="trusted")
+        original = self._raw(view)
+        self._migration_module().migrate(self.env.cr, "19.0.2.12.0")
+        user = new_test_user(self.env, login="pmm_backup_user")
+        name = f"legacy-homepage-backup-{view.id}-19.0.2.13.0.json"
+        forged = self.env["ir.attachment"].create(
+            {
+                "name": name,
+                "raw": json.dumps({"en_US": "<t t-name='x'>forged</t>"}).encode(),
+                "res_model": "ir.ui.view",
+                "res_id": view.id,
+            }
+        )
+        self._as_user(forged, user)
+
+        self.env["res.company"]._restore_legacy_homepage_backup(view)
+
+        self.assertEqual(self._raw(view), original)
+        # A second migration run does not take the forged one for its own
+        # either (the original backup is still there and still first).
+        self.assertEqual(
+            self.env["res.company"]._find_legacy_homepage_backup(view.id).create_uid.id,
+            self.env.ref("base.user_root").id,
+        )
+
+    def test_a_malformed_backup_is_not_restored(self):
+        Company = self.env["res.company"]
+        self.assertFalse(Company._is_valid_arch_backup(["<t/>"]))
+        self.assertFalse(Company._is_valid_arch_backup({"es_ES": "<t/>"}))
+        self.assertFalse(
+            Company._is_valid_arch_backup({"en_US": "<t/>", "x y": "<t/>"})
+        )
+        self.assertFalse(Company._is_valid_arch_backup({"en_US": 3}))
+        self.assertTrue(
+            Company._is_valid_arch_backup({"en_US": "<t/>", "es_ES": "<t/>"})
+        )
+
+    def test_the_review_list_is_for_administrators_only(self):
+        self._mismatching_page(slug="reviewaccess")
+        user = new_test_user(self.env, login="pmm_review_user")
+        planted = self.env["ir.attachment"].create(
+            {"name": "legacy-homepage-review-19.0.2.13.0.csv", "raw": b"planted"}
+        )
+        self._as_user(planted, user)
+
+        self._migration_module().migrate(self.env.cr, "19.0.2.12.0")
+
+        review = self.env["ir.attachment"].search(
+            [
+                ("name", "=", "legacy-homepage-review-19.0.2.13.0.csv"),
+                ("create_uid", "=", self.env.ref("base.user_root").id),
+            ]
+        )
+        self.assertEqual(len(review), 1)
+        self.assertFalse(review.res_model)
+        self.assertFalse(review.res_id)
+        self.assertFalse(review.public)
+        self.assertIn("public@example.com", review.raw.decode())
+        self.assertEqual(planted.raw, b"planted")

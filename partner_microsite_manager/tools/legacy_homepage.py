@@ -81,6 +81,11 @@ def _xpath_class(name):
     return f"contains(concat(' ', normalize-space(@class), ' '), ' {name} ')"
 
 
+def safe_parser():
+    """No entity expansion, no network: an arch is data, never a fetch."""
+    return etree.XMLParser(resolve_entities=False, no_network=True)
+
+
 def _tcall(kind, tail=None):
     call = etree.Element("t")
     call.set("t-call", LIVE_TEMPLATES[kind])
@@ -648,7 +653,7 @@ def relink_live_data(
     """
     report = empty_report()
     force = frozenset(force or ())
-    tree = etree.fromstring(arch.encode("utf-8"))
+    tree = etree.fromstring(arch.encode("utf-8"), parser=safe_parser())
     before = etree.tostring(tree, encoding="unicode")
     wrap = _wrap(tree)
     contact = _contact_root(tree, wrap)
