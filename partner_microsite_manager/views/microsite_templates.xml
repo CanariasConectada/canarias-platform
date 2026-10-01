@@ -265,7 +265,7 @@
                             <i class="fa fa-envelope fa-fw me-2"/>
                             <a t-attf-href="mailto:#{company.partner_id.email}" t-esc="company.partner_id.email"/>
                         </p>
-                        <p t-if="company.partner_id.website" class="mb-2">
+                        <p t-if="company._get_microsite_website_url()" class="mb-2">
                             <i class="fa fa-globe fa-fw me-2"/>
                             <a
                                 t-att-href="company._get_microsite_website_url()"

@@ -24,6 +24,7 @@ from ..tools.opening_hours import (
     parse_opening_hours,
     slots_from_parsed,
 )
+from ..tools.safe_url import safe_http_url
 
 _lt = LazyTranslate(__name__)
 _logger = logging.getLogger(__name__)
@@ -42,6 +43,8 @@ OPENING_HOURS_CARD_TEMPLATE = legacy_homepage.OPENING_HOURS_CARD_TEMPLATE
 # and theme homepages (company 100's ``theme_corporate_multi``) never match.
 LEGACY_HOMEPAGE_KEY_LIKE = ("website.homepage\\_%", "website.home-%")
 LEGACY_HOMEPAGE_KEY_RE = re.compile(r"^website\.(homepage_|home-)")
+# Attachment the 19.0.2.13.0 migration stores the original arch_db in.
+LEGACY_BACKUP_NAME = "legacy-homepage-backup-{view_id}-19.0.2.13.0.json"
 # Set while the relinker writes a page, so the builder-save guard on
 # ``ir.ui.view.write`` does not run again on its own write.
 LIVE_RELINK_CONTEXT_KEY = "pmm_live_relink"
@@ -103,6 +106,21 @@ WEEKDAY_LABELS = (
     _lt("Saturday"),
     _lt("Sunday"),
 )
+
+
+def _live_values_change(records, field_names, vals):
+    """Whether writing ``vals`` changes one of ``field_names`` on ``records``.
+
+    Empty values compare equal (``False``, ``""``, ``None``); a relational
+    command is always a change.
+    """
+    for name in field_names.intersection(vals):
+        if records._fields[name].type in ("one2many", "many2many"):
+            return True
+        new = vals[name] or False
+        if any((record[name] or False) != new for record in records):
+            return True
+    return False
 
 
 class ResCompany(models.Model):
@@ -369,15 +387,11 @@ class ResCompany(models.Model):
         The ``_check_microsite_map_url`` constraint guarantees the stored
         value is either scheme-less or already https, so this only ever
         prepends a scheme; it never turns a rejected link into a valid one.
+        Anything that is not http(s) -- a value stored before the
+        constraint existed, or written around it -- gives ``""``, so the
+        iframe falls back to the address map (``tools/safe_url``).
         """
-        url = (url or "").strip()
-        if not url:
-            return ""
-        if url.startswith("//"):
-            return "https:" + url
-        if not urlsplit(url).scheme:
-            return "https://" + url
-        return url
+        return safe_http_url(url)
 
     def _get_microsite_opening_hours_rows(self):
         """Weekly schedule as ``[(day_index, day_label, 'HH:MM - HH:MM'), ...]``.
@@ -695,7 +709,9 @@ class ResCompany(models.Model):
             .browse([row[0] for row in self.env.cr.fetchall()])
         )
 
-    def _relink_legacy_homepage_live_data(self, views=None):
+    def _relink_legacy_homepage_live_data(
+        self, views=None, insert_missing=False, from_builder_save=False
+    ):
         """Point every value of the legacy homepages at the company.
 
         The importer typed phone, address, email, map, parking and delivery
@@ -712,6 +728,15 @@ class ResCompany(models.Model):
         19.0.2.8.0 hours relink does exactly this). Idempotent: a page
         already relinked is not written again.
 
+        ``insert_missing`` (the 19.0.2.13.0 migration only) also adds the
+        contact lines and the hours card a page lacks while the shop has the
+        value; otherwise only blocks already on the page are relinked, so a
+        line the merchant deleted in the builder stays deleted.
+
+        ``from_builder_save`` (the ``ir.ui.view.write`` guard): any error is
+        logged at WARNING and the page keeps the arch the user saved; a
+        relink must never be the reason a builder save fails.
+
         Returns one dict per page: ``view_id``, ``company_id``, ``written``
         and the transformation report (``relinked``, ``inserted``,
         ``dropped``, ``restored``, ``notes``, ``skipped``).
@@ -726,19 +751,26 @@ class ResCompany(models.Model):
             try:
                 with self.env.cr.savepoint():
                     new_arch, report = legacy_homepage.relink_live_data(
-                        view.arch_db or "", company._get_microsite_live_facts()
+                        view.arch_db or "",
+                        company._get_microsite_live_facts(),
+                        insert_missing=insert_missing,
                     )
                     if new_arch:
                         view.with_context(
                             lang=None, **{LIVE_RELINK_CONTEXT_KEY: True}
                         ).write({"arch_db": new_arch})
                         stat["written"] = True
-            except (etree.XMLSyntaxError, ValueError, ValidationError):
-                _logger.exception(
+            except Exception as error:
+                expected = (etree.XMLSyntaxError, ValueError, ValidationError)
+                if not from_builder_save and not isinstance(error, expected):
+                    raise
+                _logger.log(
+                    logging.WARNING if from_builder_save else logging.ERROR,
                     "Legacy homepage: could not relink view %s (company %s); "
-                    "the page keeps its static values.",
+                    "the page keeps its arch as it was.",
                     view.id,
                     company.id,
+                    exc_info=True,
                 )
                 report = dict(legacy_homepage.empty_report(), skipped="error")
             stat.update(report)
@@ -752,20 +784,57 @@ class ResCompany(models.Model):
             stats.append(stat)
         return stats
 
+    @api.model
+    def _restore_legacy_homepage_backup(self, views):
+        """Put back the arch (every language) the 19.0.2.13.0 migration saved.
+
+        Reads ``legacy-homepage-backup-<view_id>-19.0.2.13.0.json`` attached
+        to each view and writes that jsonb back as it was, so the seven
+        language copies return byte for byte; the builder-save guard is not
+        involved (the column is written directly). Views without a backup
+        are left alone. Returns the restored views.
+        """
+        Attachment = self.env["ir.attachment"].sudo()
+        restored = self.env["ir.ui.view"]
+        for view in views.sudo():
+            backup = Attachment.search(
+                [
+                    ("res_model", "=", "ir.ui.view"),
+                    ("res_id", "=", view.id),
+                    ("name", "=", LEGACY_BACKUP_NAME.format(view_id=view.id)),
+                ],
+                limit=1,
+            )
+            if not backup:
+                _logger.warning("Legacy homepage: no backup for view %s.", view.id)
+                continue
+            arch_db = json.loads(backup.raw)
+            view.flush_recordset()
+            self.env.cr.execute(
+                "UPDATE ir_ui_view SET arch_db = %s, write_date = now() AT TIME "
+                "ZONE 'UTC', write_uid = %s WHERE id = %s",
+                [json.dumps(arch_db), self.env.uid, view.id],
+            )
+            view.invalidate_recordset()
+            restored |= view
+            _logger.info("Legacy homepage: view %s restored from its backup.", view.id)
+        if restored:
+            self.env.registry.clear_cache("templates")
+        return restored
+
     def _get_microsite_website_url(self):
         """The shop's own site as a clickable absolute URL, or ``""``.
 
         Merchants type ``myshop.com`` as often as they type the full URL,
         and a bare host in an href is read as a relative path -- the link
         would point back into the microsite.
+
+        Only http(s): the value lands in an ``href`` on every page of the
+        shop, so ``javascript:``/``data:`` (any case, any obfuscation) give
+        ``""`` and the link is not rendered (``tools/safe_url``).
         """
         self.ensure_one()
-        url = (self.partner_id.website or "").strip()
-        if not url:
-            return ""
-        if "://" not in url:
-            return "https://" + url
-        return url
+        return safe_http_url(self.partner_id.website)
 
     def _get_microsite_website_host(self):
         """The host of the shop's own site (``www.myshop.com``), or ``""``.
@@ -1029,12 +1098,14 @@ class ResCompany(models.Model):
         write is the smallest thing that makes "cambio el logo" true
         everywhere the visitor looks.
         """
+        # The legacy homepages render these live, but public pages are
+        # served from a one-hour response cache keyed by page (see the
+        # content editor's save); without this a change shows up to an hour
+        # late. Only an actual change empties it: the cache serves every
+        # site, and saving a form rewrites values that did not move.
+        live_changed = _live_values_change(self, LIVE_COMPANY_FIELDS, vals)
         result = self._write_map_url_aware(vals)
-        if LIVE_COMPANY_FIELDS.intersection(vals):
-            # The legacy homepages render these live, but public pages are
-            # served from a one-hour response cache keyed by page (see the
-            # content editor's save); without this the change shows up to an
-            # hour late.
+        if live_changed:
             self.env.registry.clear_cache("templates")
         if "logo" in vals:
             for company in self:

@@ -4,6 +4,8 @@
 from odoo import _, fields, models
 from odoo.exceptions import AccessError
 
+from ..tools.safe_url import safe_http_url
+
 # Badge accent colour per certification level, mirrored in the microsite
 # footer pills so they read the same as the certification showcase section.
 _CERT_LEVEL_COLORS = {
@@ -141,7 +143,9 @@ class Website(models.Model):
         company = self.company_id.sudo()
         links = []
         for field_name, title, icon in _FOOTER_SOCIAL_NETWORKS:
-            href = self[field_name] or company[field_name]
+            # Only http(s) reaches the href (``tools/safe_url``): these are
+            # free-text fields a merchant or an import filled.
+            href = safe_http_url(self[field_name] or company[field_name])
             if href:
                 links.append({"href": href, "title": title, "icon": icon})
         return links

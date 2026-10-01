@@ -4,6 +4,8 @@
 from odoo import _, fields, models
 from odoo.exceptions import AccessError
 
+from .res_company import _live_values_change
+
 # Partner fields the live blocks of a legacy homepage render.
 LIVE_PARTNER_FIELDS = frozenset(
     {"phone", "email", "street", "street2", "zip", "city", "website"}
@@ -45,10 +47,11 @@ class ResPartner(models.Model):
         the company's partner live, but public pages are served from a
         one-hour response cache keyed by page; the company's own form and
         the directory write the partner directly, not through the content
-        editor that already empties it.
+        editor that already empties it. Only an actual change counts.
         """
+        live_changed = _live_values_change(self, LIVE_PARTNER_FIELDS, vals)
         result = super().write(vals)
-        if LIVE_PARTNER_FIELDS.intersection(vals) and (
+        if live_changed and (
             self.env["res.company"]
             .sudo()
             .search_count(

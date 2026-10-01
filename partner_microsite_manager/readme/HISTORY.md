@@ -29,7 +29,18 @@
 - Migration: each legacy homepage's `arch_db` (all languages) is saved as
   a JSON attachment of its view
   (`legacy-homepage-backup-<view_id>-19.0.2.13.0.json`), then relinked, one
-  savepoint and one log line per page. Idempotent.
+  savepoint and one log line per page. Idempotent. Only the migration adds
+  lines or an hours card a page lacks; later relinks (builder saves) only
+  relink what is on the page, so a line a merchant deletes stays deleted.
+- Rollback of one page (odoo shell, then commit):
+  `env["res.company"]._restore_legacy_homepage_backup(env["ir.ui.view"].browse(3897)); env.cr.commit()`
+  writes the backed-up `arch_db` back, every language as it was.
+- Links built from merchant data (the shop's web, the footer's social
+  links, the map URLs) only accept http(s); `javascript:`, `data:` and the
+  like render no link (`tools/safe_url.py`).
+- The builder-save relink never fails a save (errors are logged at WARNING
+  and the saved arch is kept), and the page cache is emptied only when a
+  rendered value really changes.
 
 ## 19.0.2.12.0 (2026-09-30)
 

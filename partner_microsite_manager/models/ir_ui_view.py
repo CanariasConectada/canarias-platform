@@ -1,9 +1,13 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import logging
+
 from odoo import models
 
 from .res_company import LEGACY_HOMEPAGE_KEY_RE, LIVE_RELINK_CONTEXT_KEY
+
+_logger = logging.getLogger(__name__)
 
 ARCH_FIELDS = frozenset({"arch", "arch_db", "arch_base"})
 
@@ -31,7 +35,19 @@ class IrUiView(models.Model):
             lambda view: view.key and LEGACY_HOMEPAGE_KEY_RE.match(view.key)
         )
         if legacy:
-            self.env["res.company"].sudo()._relink_legacy_homepage_live_data(
-                views=legacy
-            )
+            # Never the reason a save fails: whatever goes wrong is rolled
+            # back to the savepoint and logged; the page keeps what the user
+            # saved (``from_builder_save`` does the same per page).
+            try:
+                with self.env.cr.savepoint():
+                    self.env["res.company"].sudo()._relink_legacy_homepage_live_data(
+                        views=legacy, from_builder_save=True
+                    )
+            except Exception:
+                _logger.warning(
+                    "Legacy homepage: relink after save failed for views %s; "
+                    "the arch is kept as saved.",
+                    legacy.ids,
+                    exc_info=True,
+                )
         return result

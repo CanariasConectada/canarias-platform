@@ -226,7 +226,7 @@ def _new_line(template_line, template_icon, icon_class, kind):
     return line
 
 
-def _relink_contact(root, facts, report):
+def _relink_contact(root, facts, report, insert_missing):
     lines = _find_contact_lines(root)
     if not any(lines.get(kind) for kind in ("address", "phone", "email")):
         return False
@@ -247,7 +247,9 @@ def _relink_contact(root, facts, report):
             _set_content(line, kind, after=icon)
             _set_visibility(line, kind)
             report["relinked"].append(kind)
-    # Lines the page never had (or lost) while the company has the value.
+    if not insert_missing:
+        return True
+    # Lines the page never had while the company has the value.
     present = {kind for kind, entries in lines.items() if entries}
     sample_line, sample_icon = next(
         lines[kind][0] for kind, _i in CONTACT_LINES if lines.get(kind)
@@ -355,7 +357,7 @@ def _relink_value_column(column, kind, report):
         report["relinked"].append(kind)
 
 
-def _relink_features(tree, facts, report):
+def _relink_features(tree, facts, report, insert_missing):
     """The "Horario" features section, the "Info Bar" variant, or a new
     minimal hours section. Returns nothing; fills ``report``."""
     sections = tree.xpath("//section[@data-name='Horario']")
@@ -386,7 +388,7 @@ def _relink_features(tree, facts, report):
         return
     if tree.xpath(f"//t[@t-call='{OPENING_HOURS_CARD_TEMPLATE}']"):
         return
-    if not facts.get("hours"):
+    if not insert_missing or not facts.get("hours"):
         return
     anchor = tree.xpath("//section[@data-name='Acerca']")
     if not anchor:
@@ -442,13 +444,17 @@ def empty_report():
     }
 
 
-def relink_live_data(arch, facts):
+def relink_live_data(arch, facts, insert_missing=False):
     """Relink the values of a legacy homepage ``arch``.
 
     :param str arch: the base (``en_US``) arch of the page view
     :param dict facts: ``{kind: bool}`` -- which values the company has
         (``address``, ``phone``, ``email``, ``website``, ``hours``); only
         used to decide whether a line the page lacks is worth adding
+    :param bool insert_missing: add the contact lines and the hours card
+        the page lacks while the company has the value. Only the one-off
+        migration does that; after it, a line or card that is not on the
+        page is one the merchant removed in the builder, and it stays so.
     :returns: ``(new_arch or None, report)``; ``None`` when nothing changes
         or the page is skipped (``report["skipped"]`` says why)
     """
@@ -466,9 +472,9 @@ def relink_live_data(arch, facts):
     report["restored"] = restore_flattened_blocks(tree)
     if swap_legacy_hours_cards(tree):
         report["relinked"].append("hours")
-    _relink_contact(contact, facts, report)
+    _relink_contact(contact, facts, report, insert_missing)
     _relink_map(contact, report)
-    _relink_features(tree, facts, report)
+    _relink_features(tree, facts, report, insert_missing)
     for key in ("relinked", "inserted", "dropped", "restored"):
         report[key] = list(dict.fromkeys(report[key]))
     after = etree.tostring(tree, encoding="unicode")

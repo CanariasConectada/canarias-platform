@@ -73,7 +73,7 @@ def migrate(cr, version):
         len(views),
         backed_up,
     )
-    stats = Company._relink_legacy_homepage_live_data(views=views)
+    stats = Company._relink_legacy_homepage_live_data(views=views, insert_missing=True)
     for stat in stats:
         _logger.info(
             "Legacy homepage view %s (company %s): %s; relinked=%s inserted=%s "

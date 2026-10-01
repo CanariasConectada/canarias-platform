@@ -117,8 +117,34 @@ class TestLegacyHomepageLiveData(TransactionCase):
         values["website"] = website or self.website
         return str(self.env["ir.qweb"]._render(view.id, values))
 
-    def _relink(self, view):
-        return self.env["res.company"]._relink_legacy_homepage_live_data(views=view)
+    def _relink(self, view, insert_missing=False):
+        return self.env["res.company"]._relink_legacy_homepage_live_data(
+            views=view, insert_missing=insert_missing
+        )
+
+    def _builder_save(self, view, drop_xpath=None):
+        """Save ``view`` the way the website builder does: the html rendered
+        in edit mode goes back into the arch (``ir.ui.view.save``)."""
+        rendered = html.fromstring(self._render(view, editable=True))
+        wrap = rendered.xpath("//div[@id='wrap']")[0]
+        for element in wrap.xpath(drop_xpath) if drop_xpath else []:
+            element.getparent().remove(element)
+        view.with_context(website_id=self.website.id).save(
+            etree.tostring(wrap, encoding="unicode", method="html"),
+            xpath="/t/div",
+        )
+
+    def _migration_module(self):
+        path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "migrations",
+            "19.0.2.13.0",
+            "post-migration.py",
+        )
+        spec = importlib.util.spec_from_file_location("pmm_post_migration_2130", path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
 
     def _slots(self, *slots):
         self.env["microsite.opening.slot"].create(
@@ -222,7 +248,7 @@ class TestLegacyHomepageLiveData(TransactionCase):
         self._slots((0, 9.0, 14.0))
         view = self._legacy_page(CUSTOM_ARCH, slug="customshop")
 
-        [stat] = self._relink(view)
+        [stat] = self._relink(view, insert_missing=True)
 
         self.assertIn("hours", stat["inserted"])
         # A missing phone line is added next to its siblings.
@@ -237,7 +263,19 @@ class TestLegacyHomepageLiveData(TransactionCase):
         # The importer's literal &nbsp; is gone with the static address.
         self.assertNotIn("nbsp", page)
         self.assertIn("Calle Nueva 5, 35010 Las Palmas", page)
-        self.assertFalse(self._relink(view)[0]["written"])
+        self.assertFalse(self._relink(view, insert_missing=True)[0]["written"])
+
+    def test_only_the_migration_adds_what_the_page_lacks(self):
+        self._slots((0, 9.0, 14.0))
+        view = self._legacy_page(CUSTOM_ARCH, slug="noinsert")
+
+        [stat] = self._relink(view)
+
+        self.assertFalse(stat["inserted"])
+        self.assertNotIn(legacy_homepage.LIVE_TEMPLATES["phone"], view.arch_db)
+        self.assertNotIn('data-name="Horario"', view.arch_db)
+        # What is on the page is relinked all the same.
+        self.assertIn(legacy_homepage.LIVE_TEMPLATES["email"], view.arch_db)
 
     def test_a_page_without_a_contact_block_is_skipped_and_logged(self):
         view = self._legacy_page(
@@ -282,15 +320,10 @@ class TestLegacyHomepageLiveData(TransactionCase):
         guard puts the t-calls back so the page keeps following the shop."""
         view = self._legacy_page()
         self._relink(view)
+
         # Rendered the way the builder renders it: ``editable``, so a card
         # without a value (no hours here) is still on the page to be saved.
-        rendered = html.fromstring(self._render(view, editable=True))
-        wrap = rendered.xpath("//div[@id='wrap']")[0]
-
-        view.with_context(website_id=self.website.id).save(
-            etree.tostring(wrap, encoding="unicode", method="html"),
-            xpath="/t/div",
-        )
+        self._builder_save(view)
 
         arch = view.arch_db
         self.assertNotIn("928 11 11 11", arch)
@@ -355,18 +388,110 @@ class TestLegacyHomepageLiveData(TransactionCase):
         self.assertNotIn(view.id, [s["view_id"] for s in stats])
         self.assertEqual(view.arch_db, arch)
 
-    def test_contact_changes_empty_the_page_cache(self):
+    def test_a_line_deleted_in_the_builder_stays_deleted(self):
+        view = self._legacy_page()
+        self._relink(view)
+
+        self._builder_save(view, drop_xpath="//p[.//*[@data-cc-live='email']]")
+
+        arch = view.arch_db
+        self.assertNotIn(legacy_homepage.LIVE_TEMPLATES["email"], arch)
+        self.assertNotIn("shop@example.com", arch)
+        # The other, flattened lines are live again.
+        self.assertIn(legacy_homepage.LIVE_TEMPLATES["phone"], arch)
+        self.assertNotIn("928 11 11 11", arch)
+        self.assertNotIn("shop@example.com", self._render(view))
+
+    def test_a_failing_relink_never_breaks_a_save(self):
+        view = self._legacy_page()
+        new_arch = view.arch_db.replace("Our story", "Our new story")
+        target = (
+            "odoo.addons.partner_microsite_manager.models.res_company."
+            "legacy_homepage.relink_live_data"
+        )
+        with (
+            patch(target, side_effect=RuntimeError("boom")),
+            self.assertLogs(LOGGER, logging.WARNING) as logs,
+        ):
+            view.write({"arch": new_arch})
+
+        self.assertIn("Our new story", view.arch_db)
+        self.assertIn("928 00 00 00", view.arch_db)
+        self.assertIn(str(view.id), "\n".join(logs.output))
+
+    def test_the_page_cache_is_emptied_only_by_a_change(self):
         registry = self.env.registry
+        partner = self.company.partner_id
         with patch.object(type(registry), "clear_cache") as clear_cache:
-            self.company.partner_id.write({"phone": "928 22 22 22"})
+            partner.write({"phone": "928 22 22 22"})
+            partner.write({"phone": "928 22 22 22"})
+            self.assertEqual(clear_cache.call_count, 1)
             clear_cache.assert_called_with("templates")
             clear_cache.reset_mock()
+            partner.write({"comment": "unrelated"})
             self.env["res.partner"].create({"name": "Somebody"}).write(
                 {"phone": "600 00 00 00"}
             )
+            self.company.write({"microsite_delivery_info": "Home delivery in the zone"})
             clear_cache.assert_not_called()
             self.company.write({"microsite_delivery_info": "Changed"})
-            clear_cache.assert_called_with("templates")
+            clear_cache.assert_called_once_with("templates")
+
+    def test_only_http_links_reach_the_page(self):
+        partner = self.company.partner_id
+        for value in (
+            "javascript://x%0aalert(1)",
+            "JaVaScRiPt:alert(1)",
+            "java\tscript:alert(1)",
+            "data:text/html;base64,PHNjcmlwdD4=",
+        ):
+            partner.website = value
+            self.assertEqual(self.company._get_microsite_website_url(), "", value)
+            self.assertFalse(self.company._microsite_live_has("website"))
+        # Core stores a bare host as ``http://...``; the helper keeps it.
+        for value in (
+            "//shop.example.com",
+            "shop.example.com",
+            "https://shop.example.com/a",
+        ):
+            partner.website = value
+            url = self.company._get_microsite_website_url()
+            self.assertRegex(url, r"^https?://shop\.example\.com(/a)?$", value)
+        self.website.social_facebook = "javascript:alert(1)"
+        self.website.social_instagram = "https://www.instagram.com/shop"
+        hrefs = [link["href"] for link in self.website._pmm_footer_social_links()]
+        self.assertEqual(hrefs, ["https://www.instagram.com/shop"])
+        partner.website = "javascript:alert(1)"
+        view = self._legacy_page(
+            STANDARD_ARCH.replace(
+                '<p class="mb-2"><i class="fa fa-envelope',
+                '<p class="mb-2"><i class="fa fa-globe fa-fw"/>old.example</p>'
+                '<p class="mb-2"><i class="fa fa-envelope',
+            )
+        )
+        self._relink(view)
+        self.assertNotIn("javascript", self._render(view).lower())
+
+    def test_the_backup_restores_every_language(self):
+        self.env["res.lang"]._activate_lang("es_ES")
+        view = self._legacy_page()
+        # Without the guard: the page must reach the migration static.
+        view.with_context(pmm_live_relink=True).update_field_translations(
+            "arch_db", {"es_ES": {"Delivery available": "Entrega disponible"}}
+        )
+        original_en = view.with_context(lang="en_US").arch_db
+        original_es = view.with_context(lang="es_ES").arch_db
+        module = self._migration_module()
+        module.migrate(self.env.cr, "19.0.2.12.0")
+        view.invalidate_recordset()
+        self.assertNotIn("Entrega disponible", view.with_context(lang="es_ES").arch_db)
+
+        restored = self.env["res.company"]._restore_legacy_homepage_backup(view)
+
+        self.assertEqual(restored, view)
+        self.assertEqual(view.with_context(lang="en_US").arch_db, original_en)
+        self.assertEqual(view.with_context(lang="es_ES").arch_db, original_es)
+        self.assertIn("928 00 00 00", self._render(view))
 
     def test_the_address_is_decoded(self):
         self.company.partner_id.write(
@@ -380,15 +505,7 @@ class TestLegacyHomepageLiveData(TransactionCase):
     def test_the_post_migration_backs_up_and_relinks(self):
         view = self._legacy_page()
         original = view.arch_db
-        path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "migrations",
-            "19.0.2.13.0",
-            "post-migration.py",
-        )
-        spec = importlib.util.spec_from_file_location("pmm_post_migration_2130", path)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
+        module = self._migration_module()
 
         # A fresh install has no version and nothing to migrate.
         module.migrate(self.env.cr, None)
