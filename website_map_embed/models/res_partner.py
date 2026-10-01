@@ -1,5 +1,7 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+import html
+import re
 from urllib.parse import quote_plus
 
 from odoo import models
@@ -10,6 +12,23 @@ from odoo import models
 MAP_EMBED_URL = "https://maps.google.com/maps?q={query}&z={zoom}&ie=UTF8&output=embed"
 
 
+def clean_address_part(value):
+    """One address field as plain text: HTML entities decoded (the 2026
+    importer left literal ``&nbsp;`` in some streets), non-breaking spaces
+    as spaces, whitespace collapsed and trimmed."""
+    value = html.unescape(value or "").replace("\xa0", " ")
+    return re.sub(r"\s+", " ", value).strip()
+
+
+def street_without_zip(street, zip_code):
+    """``street`` without a trailing copy of ``zip_code`` (``Calle X 23
+    35010`` with zip 35010 -> ``Calle X 23``): the importer appended the
+    zip to the street, and the address would carry it twice."""
+    if zip_code and street.endswith(" " + zip_code):
+        return street[: -len(zip_code)].rstrip(" ,")
+    return street
+
+
 class ResPartner(models.Model):
     _inherit = "res.partner"
 
@@ -18,11 +37,17 @@ class ResPartner(models.Model):
 
         Field order and selection (street, city, zip; no street2) are the
         ones the microsites always used: the 218 existing sites must keep
-        a byte-identical URL after moving to this helper.
+        a byte-identical URL after moving to this helper. Each field is
+        cleaned (``clean_address_part``) and a zip the street repeats is
+        dropped (``street_without_zip``): a literal ``&nbsp;35010`` in the
+        street used to reach Google as ``%26nbsp%3B35010`` and give a
+        city-wide map.
         """
         self.ensure_one()
-        address = " ".join(part for part in (self.street, self.city, self.zip) if part)
-        return address.strip()
+        zip_code = clean_address_part(self.zip)
+        street = street_without_zip(clean_address_part(self.street), zip_code)
+        city = clean_address_part(self.city)
+        return " ".join(part for part in (street, city, zip_code) if part)
 
     def _canarias_map_embed_url(self, zoom=13):
         """Embeddable Google Maps URL for this partner's address.

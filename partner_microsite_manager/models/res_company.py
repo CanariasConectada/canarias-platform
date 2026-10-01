@@ -1,7 +1,6 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-import html
 import json
 import logging
 import re
@@ -15,6 +14,11 @@ from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tools.sql import column_exists
 from odoo.tools.translate import LazyTranslate
+
+from odoo.addons.website_map_embed.models.res_partner import (
+    clean_address_part,
+    street_without_zip,
+)
 
 from ..tools import legacy_homepage
 from ..tools import map_url as map_url_tools
@@ -641,13 +645,11 @@ class ResCompany(models.Model):
         partner = self.partner_id
 
         def clean(value):
-            value = html.unescape(value or "").replace("\xa0", " ")
-            return re.sub(r"\s+", " ", value).strip(" ,")
+            # Same cleaning as the map query (website_map_embed).
+            return clean_address_part(value).strip(" ,")
 
         zip_code, city = clean(partner.zip), clean(partner.city)
-        street = clean(partner.street)
-        if zip_code and street.endswith(" " + zip_code):
-            street = street[: -len(zip_code)].strip(" ,")
+        street = street_without_zip(clean(partner.street), zip_code)
         locality = " ".join(part for part in (zip_code, city) if part)
         return ", ".join(
             part for part in (street, clean(partner.street2), locality) if part

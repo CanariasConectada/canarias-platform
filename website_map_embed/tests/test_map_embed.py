@@ -89,3 +89,38 @@ class TestMapEmbed(TransactionCase):
 
     def test_template_renders_nothing_without_url(self):
         self.assertNotIn("<iframe", self._render({"map_url": False}))
+
+    def test_an_imported_street_with_nbsp_and_the_zip_is_cleaned(self):
+        partner = self.Partner.create(
+            {
+                "name": "Imported Shop",
+                "street": "Calle Fernando Guanarteme 118&nbsp;35010",
+                "zip": "35010",
+                "city": "Las Palmas de Gran Canaria",
+            }
+        )
+        self.assertEqual(
+            partner._canarias_map_embed_address(),
+            "Calle Fernando Guanarteme 118 Las Palmas de Gran Canaria 35010",
+        )
+        url = partner._canarias_map_embed_url()
+        self.assertNotIn("nbsp", url)
+        self.assertEqual(url.count("35010"), 1)
+        partner.street = "Calle Mayor\xa0 1  "
+        self.assertEqual(
+            partner._canarias_map_embed_address(),
+            "Calle Mayor 1 Las Palmas de Gran Canaria 35010",
+        )
+
+    def test_a_plain_address_is_unchanged(self):
+        partner = self.Partner.create(
+            {
+                "name": "Plain Shop",
+                "street": "Calle Mayor 35010-B",
+                "zip": "35010",
+                "city": "Telde",
+            }
+        )
+        self.assertEqual(
+            partner._canarias_map_embed_address(), "Calle Mayor 35010-B Telde 35010"
+        )
