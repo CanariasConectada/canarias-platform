@@ -265,7 +265,7 @@
                             <i class="fa fa-envelope fa-fw me-2"/>
                             <a t-attf-href="mailto:#{company.partner_id.email}" t-esc="company.partner_id.email"/>
                         </p>
-                        <p t-if="company.partner_id.website" class="mb-2">
+                        <p t-if="company._get_microsite_website_url()" class="mb-2">
                             <i class="fa fa-globe fa-fw me-2"/>
                             <a
                                 t-att-href="company._get_microsite_website_url()"
@@ -359,7 +359,13 @@
         <t t-set="company" t-value="website.company_id.sudo()"/>
         <t t-set="hours_pill" t-value="company._get_microsite_opening_hours_pill()"/>
         <t t-if="hours_pill">
-        <div class="o_microsite_hours" t-att-data-microsite-hours="hours_pill['payload']">
+        <!-- data-cc-live / o_not_editable: see microsite_live_data.xml. -->
+        <div
+            class="o_microsite_hours o_not_editable"
+            data-cc-live="hours"
+            contenteditable="false"
+            t-att-data-microsite-hours="hours_pill['payload']"
+        >
             <div class="accordion accordion-flush" t-attf-id="micrositeHours#{company.id}">
                 <div class="accordion-item">
                     <h2 class="accordion-header">

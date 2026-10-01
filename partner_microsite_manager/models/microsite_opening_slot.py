@@ -5,6 +5,7 @@ from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
 from ..tools.opening_hours import find_slot_problem, float_to_hhmm
+from .res_company import clear_templates_cache_on_commit
 
 # Keys follow ``date.weekday()`` (Monday = 0), the index the parser, the
 # template rows and the browser widget already agree on.
@@ -35,7 +36,8 @@ def slot_problem_message(env, weekday_field, problem):
             open=float_to_hhmm(open_time),
             close=float_to_hhmm(close_time),
         )
-    (day, open_a, close_a), (_day, open_b, close_b) = problem[1], problem[2]
+    day, open_a, close_a = problem[1]
+    open_b, close_b = problem[2][1:]
     return _(
         "%(day)s: %(first)s and %(second)s overlap. Each period of the day "
         "must end before the next one starts.",
@@ -68,6 +70,17 @@ class MicrositeOpeningSlot(models.Model):
     open_time = fields.Float(string="Opens", required=True)
     close_time = fields.Float(string="Closes", required=True)
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        # The hours text is a stored compute on the company: it never passes
+        # through res.company.write, so the page cache is emptied here.
+        clear_templates_cache_on_commit(self.env)
+        return super().create(vals_list)
+
+    def write(self, vals):
+        clear_templates_cache_on_commit(self.env)
+        return super().write(vals)
+
     def unlink(self):
         """A company left without rows shows no hours.
 
@@ -81,6 +94,7 @@ class MicrositeOpeningSlot(models.Model):
         touched, because it never has rows to delete.
         """
         companies = self.company_id
+        clear_templates_cache_on_commit(self.env)
         result = super().unlink()
         for company in companies:
             if not company.microsite_opening_slot_ids:

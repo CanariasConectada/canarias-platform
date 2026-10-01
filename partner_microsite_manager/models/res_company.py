@@ -3,16 +3,25 @@
 
 import json
 import logging
+import re
 from datetime import datetime
 from urllib.parse import parse_qs, quote_plus, urlsplit
 
+import psycopg2
 import pytz
 from lxml import etree
 
-from odoo import _, api, fields, models
-from odoo.exceptions import AccessError, UserError, ValidationError
+from odoo import SUPERUSER_ID, _, api, fields, models
+from odoo.exceptions import AccessError, ConcurrencyError, UserError, ValidationError
+from odoo.tools.sql import column_exists
 from odoo.tools.translate import LazyTranslate
 
+from odoo.addons.website_map_embed.models.res_partner import (
+    clean_address_part,
+    street_without_zip,
+)
+
+from ..tools import legacy_homepage
 from ..tools import map_url as map_url_tools
 from ..tools.opening_hours import (
     MAX_RANGES_PER_DAY,
@@ -20,6 +29,7 @@ from ..tools.opening_hours import (
     parse_opening_hours,
     slots_from_parsed,
 )
+from ..tools.safe_url import safe_http_url
 
 _lt = LazyTranslate(__name__)
 _logger = logging.getLogger(__name__)
@@ -30,8 +40,39 @@ _logger = logging.getLogger(__name__)
 # It never read the company, which is why editing the hours in the backend
 # changed nothing on the site. ``_relink_legacy_opening_hours_card`` swaps
 # that element -- and only that element -- for the dynamic card template.
-LEGACY_HOURS_CARD_CLASS = "horario-card-accordion"
-OPENING_HOURS_CARD_TEMPLATE = "partner_microsite_manager.microsite_opening_hours_card"
+LEGACY_HOURS_CARD_CLASS = legacy_homepage.LEGACY_HOURS_CARD_CLASS
+OPENING_HOURS_CARD_TEMPLATE = legacy_homepage.OPENING_HOURS_CARD_TEMPLATE
+
+# The imported homepages: the views of the "/" pages whose key the importer
+# chose. The dynamic homepage (``partner_microsite_manager.microsite_homepage_*``)
+# and theme homepages (company 100's ``theme_corporate_multi``) never match.
+LEGACY_HOMEPAGE_KEY_LIKE = ("website.homepage\\_%", "website.home-%")
+LEGACY_HOMEPAGE_KEY_RE = re.compile(r"^website\.(homepage_|home-)")
+# Errors Odoo's request retry handles (serialization failures, lock
+# timeouts): never swallowed, or the retry would not happen.
+RETRYABLE_ERRORS = (psycopg2.OperationalError, ConcurrencyError)
+# Set by ``_normalize_existing_map_urls``: a link converted by the cron is
+# not a person choosing a map, so the page is not relinked.
+MAP_NORMALIZE_CONTEXT_KEY = "pmm_map_normalize"
+# Attachment the 19.0.2.13.0 migration stores the original arch_db in.
+LEGACY_BACKUP_NAME = "legacy-homepage-backup-{view_id}-19.0.2.13.0.json"
+# Set while the relinker writes a page, so the builder-save guard on
+# ``ir.ui.view.write`` does not run again on its own write.
+LIVE_RELINK_CONTEXT_KEY = "pmm_live_relink"
+# The company fields the live blocks of a legacy homepage render: writing
+# any of them has to drop the one-hour page cache.
+LIVE_COMPANY_FIELDS = frozenset(
+    {
+        "microsite_phone",
+        "microsite_phone2",
+        "microsite_parking_info",
+        "microsite_delivery_info",
+        "microsite_map_url",
+        "microsite_map_share_url",
+        "microsite_opening_hours",
+        "microsite_opening_slot_ids",
+    }
+)
 
 # Only https map URLs are embeddable in the microsite contact iframe. A
 # 'javascript:' or 'data:' src would run in the visitor's page context
@@ -76,6 +117,50 @@ WEEKDAY_LABELS = (
     _lt("Saturday"),
     _lt("Sunday"),
 )
+
+
+def clear_templates_cache_on_commit(env):
+    """Empty the page/template cache once, when the transaction commits.
+
+    The public pages are cached for an hour per page; clearing on every
+    write would empty it for the whole platform many times per save, and
+    clearing before the commit lets a concurrent request cache the old
+    values again. ``retrying`` runs the post-commit hooks before it signals
+    the registry changes, so the other workers hear about it. Bounded: only
+    writes that really change a rendered value get here, and at most one
+    clear happens per committed transaction.
+    """
+    postcommit = env.cr.postcommit
+    if postcommit.data.get(_CLEAR_CACHE_KEY):
+        return
+    postcommit.data[_CLEAR_CACHE_KEY] = True
+    registry = env.registry
+    postcommit.add(lambda: registry.clear_cache("templates"))
+
+
+_CLEAR_CACHE_KEY = "partner_microsite_manager.clear_templates_cache"
+# Contexts of bulk operations (module install/upgrade, data import) in which
+# a contact change must not rewrite pages.
+BULK_CONTEXT_KEYS = ("install_mode", "module", "import_file")
+
+
+def _live_values_change(records, field_names, vals):
+    """Whether writing ``vals`` changes one of ``field_names`` on ``records``.
+
+    Empty values compare equal (``False``, ``""``, ``None``); a relational
+    command is always a change.
+    """
+    for name in field_names.intersection(vals):
+        if records._fields[name].type in ("one2many", "many2many"):
+            return True
+        new = vals[name] or False
+        if any((record[name] or False) != new for record in records):
+            return True
+    return False
+
+
+class _TranslationMismatch(Exception):
+    """A relink would have changed a language copy beyond its values."""
 
 
 class ResCompany(models.Model):
@@ -342,15 +427,11 @@ class ResCompany(models.Model):
         The ``_check_microsite_map_url`` constraint guarantees the stored
         value is either scheme-less or already https, so this only ever
         prepends a scheme; it never turns a rejected link into a valid one.
+        Anything that is not http(s) -- a value stored before the
+        constraint existed, or written around it -- gives ``""``, so the
+        iframe falls back to the address map (``tools/safe_url``).
         """
-        url = (url or "").strip()
-        if not url:
-            return ""
-        if url.startswith("//"):
-            return "https:" + url
-        if not urlsplit(url).scheme:
-            return "https://" + url
-        return url
+        return safe_http_url(url)
 
     def _get_microsite_opening_hours_rows(self):
         """Weekly schedule as ``[(day_index, day_label, 'HH:MM - HH:MM'), ...]``.
@@ -543,25 +624,463 @@ class ResCompany(models.Model):
     def _swap_legacy_opening_hours_card(self, view, arch):
         """Replace the legacy card(s) in ``arch`` and write it back to
         ``view``. Returns whether anything was replaced."""
-        tree = etree.fromstring(arch.encode("utf-8"))
-        cards = tree.xpath(
-            "//*[contains(concat(' ', normalize-space(@class), ' '), "
-            f"' {LEGACY_HOURS_CARD_CLASS} ')]"
+        tree = etree.fromstring(
+            arch.encode("utf-8"), parser=legacy_homepage.safe_parser()
         )
-        replaced = False
-        for card in cards:
-            parent = card.getparent()
-            if parent is None:
-                # A card nested inside a card already swapped out.
-                continue
-            call = etree.Element("t")
-            call.set("t-call", OPENING_HOURS_CARD_TEMPLATE)
-            call.tail = card.tail
-            parent.replace(card, call)
-            replaced = True
+        replaced = legacy_homepage.swap_legacy_hours_cards(tree)
         if replaced:
-            view.write({"arch_db": etree.tostring(tree, encoding="unicode")})
+            # Flagged: on an upgrade from before 19.0.2.8.0 the builder-save
+            # guard must not relink the page before 19.0.2.13.0 backed it up.
+            view.with_context(**{LIVE_RELINK_CONTEXT_KEY: True}).write(
+                {"arch_db": etree.tostring(tree, encoding="unicode")}
+            )
         return replaced
+
+    # ------------------------------------------------------------------
+    # Legacy homepages: every value read from the company
+    # ------------------------------------------------------------------
+    @staticmethod
+    def _get_microsite_tel_href(number):
+        """``tel:`` link for a number as the merchant typed it."""
+        digits = re.sub(r"[^\d+]", "", number or "")
+        return f"tel:{digits}" if digits else ""
+
+    def _get_microsite_live_address(self):
+        """One line: ``street, street2, zip city``.
+
+        The importer left a literal ``&nbsp;`` (and the zip again) in some
+        streets -- ``Calle X 23&nbsp;35010`` -- which QWeb would print
+        escaped; it is decoded, and a zip the street repeats is dropped.
+        """
+        self.ensure_one()
+        partner = self.partner_id
+
+        def clean(value):
+            # Same cleaning as the map query (website_map_embed).
+            return clean_address_part(value).strip(" ,")
+
+        zip_code, city = clean(partner.zip), clean(partner.city)
+        street = street_without_zip(clean(partner.street), zip_code)
+        locality = " ".join(part for part in (zip_code, city) if part)
+        return ", ".join(
+            part for part in (street, clean(partner.street2), locality) if part
+        )
+
+    def _microsite_live_has(self, kind):
+        """Whether the shop has the value a live block of ``kind`` shows.
+
+        Called from the ``t-if`` the relinker puts on each line and card of
+        a legacy homepage, so an emptied value takes its label with it.
+        """
+        self.ensure_one()
+        partner = self.partner_id
+        if kind == "address":
+            return bool(self._get_microsite_live_address())
+        if kind == "phone":
+            return bool(self.microsite_phone or partner.phone)
+        if kind == "phone2":
+            return bool(self.microsite_phone2)
+        if kind == "email":
+            return bool(partner.email)
+        if kind == "website":
+            return bool(self._get_microsite_website_url())
+        if kind == "map":
+            return bool(self._get_microsite_map_url())
+        if kind == "hours":
+            return bool(parse_opening_hours(self.microsite_opening_hours))
+        if kind in ("parking", "delivery"):
+            return bool(self[f"microsite_{kind}_info"])
+        if kind == "features":
+            return any(
+                self._microsite_live_has(name)
+                for name in ("hours", "parking", "delivery")
+            )
+        return False
+
+    def _get_microsite_live_facts(self):
+        """``{kind: bool}`` for the relinker (which missing lines to add)."""
+        self.ensure_one()
+        return {
+            kind: self._microsite_live_has(kind)
+            for kind in (
+                "address",
+                "phone",
+                "phone2",
+                "email",
+                "website",
+                "map",
+                "hours",
+            )
+        }
+
+    @api.model
+    def _get_legacy_homepage_views(self, view_ids=None):
+        """The imported homepages to relink, as ``ir.ui.view`` records.
+
+        Resolved in SQL so the migration does not depend on which optional
+        modules are loaded: the "/" page of a website, with an importer key,
+        whose company is not one of the three zone companies (their homepage
+        is a different, hand-built page; ``zone_company_key`` comes from
+        ``zone_company_ownership`` and is only looked at when its column
+        exists). ``self`` narrows to those companies when not empty;
+        ``view_ids`` narrows to those views.
+        """
+        query = """
+            SELECT DISTINCT v.id
+              FROM website_page p
+              JOIN ir_ui_view v ON v.id = p.view_id
+              JOIN website w ON w.id = p.website_id
+             WHERE p.url = '/'
+               -- Website-specific views only (all 207 on prod are): a
+               -- generic view is shared, and the builder's copy-on-write
+               -- creates the specific copy it edits rather than writing it.
+               AND v.website_id IS NOT NULL
+               AND (v.key LIKE %s OR v.key LIKE %s)
+        """
+        params = list(LEGACY_HOMEPAGE_KEY_LIKE)
+        if column_exists(self.env.cr, "res_company", "zone_company_key"):
+            query += """
+               AND w.company_id NOT IN (
+                   SELECT id FROM res_company WHERE zone_company_key IS NOT NULL
+               )
+            """
+        if self:
+            query += " AND w.company_id = ANY(%s)"
+            params.append(self.ids)
+        if view_ids is not None:
+            query += " AND v.id = ANY(%s)"
+            params.append(list(view_ids))
+        self.env.cr.execute(query + " ORDER BY v.id", params)
+        return (
+            self.env["ir.ui.view"]
+            .sudo()
+            .browse([row[0] for row in self.env.cr.fetchall()])
+        )
+
+    def _get_microsite_live_values(self):
+        """What the company says, for the migration's page comparison."""
+        self.ensure_one()
+        return {
+            "phone": self.microsite_phone or self.partner_id.phone or "",
+            "phone2": self.microsite_phone2 or "",
+            "email": self.partner_id.email or "",
+            "address": self._get_microsite_live_address(),
+            "website": self.partner_id.website or "",
+            "map": self.microsite_map_url or "",
+            "map_explicit": bool(self.microsite_map_url),
+        }
+
+    def _relink_legacy_homepage_live_data(self, views=None, mode="migration", kinds=()):
+        """Point the values of the legacy homepages at the company.
+
+        The importer typed phone, address, email, map, parking and delivery
+        into ~207 homepages, so the content editor saved the company and the
+        page never changed (Panambi still offered "Entrega disponible" after
+        the merchant emptied it). The design, the long texts and the labels
+        stay: only the VALUE nodes become t-calls of the live templates
+        (``views/microsite_live_data.xml``), see ``tools/legacy_homepage``.
+
+        "The migration preserves what each page shows; from then on, a human
+        edit wins." ``mode``:
+
+        - ``migration`` (19.0.2.13.0): phone, parking, delivery and hours go
+          live; email, address, web and map only where the page shows what
+          the company says (``report["kept_static"]`` lists the others);
+          the hours card is added where the shop has hours and the page
+          has none;
+        - ``guard`` (a builder save): only what is already live, or was
+          flattened by the save, is relinked; nothing is added;
+        - ``edit`` (a human changed ``kinds`` on the company or partner):
+          those kinds go live on the page whatever it showed.
+
+        ``views`` narrows the run; whatever it holds, only imported
+        homepages of non-zone shops are touched (``_get_legacy_homepage_views``).
+        One savepoint per page; the base arch is written with ``lang=None``
+        so the other languages re-map their unchanged terms, and the write
+        is undone when a language copy would lose or gain anything but the
+        relinked values (``_check_translation_terms``). Any error is logged
+        and the page keeps its arch: a relink never fails the run, the
+        builder save or the edit that triggered it. Idempotent.
+
+        Returns one dict per page: ``view_id``, ``company_id``, ``written``,
+        ``failed`` and the transformation report (``relinked``,
+        ``inserted``, ``dropped``, ``restored``, ``kept_static``, ``notes``,
+        ``skipped``).
+        """
+        assert mode in ("migration", "guard", "edit"), mode
+        targets = self._get_legacy_homepage_views(
+            view_ids=views.ids if views is not None else None
+        )
+        if mode != "migration":
+            # Before this module's 19.0.2.13.0 migration backed a page up,
+            # nothing but the migration touches it -- whatever other code
+            # (another module's migration, a shell script) writes first.
+            targets = targets.filtered(
+                lambda view: self._find_legacy_homepage_backup(view.id)
+            )
+        stats = []
+        for view in targets.with_context(lang=None):
+            company = view.website_id.company_id.sudo()
+            stat = {
+                "view_id": view.id,
+                "company_id": company.id,
+                "written": False,
+                "failed": False,
+            }
+            report = legacy_homepage.empty_report()
+            try:
+                with self.env.cr.savepoint():
+                    if mode == "migration":
+                        new_arch, report = self._relink_from_authoring_copy(
+                            view, company
+                        )
+                    else:
+                        new_arch, report = legacy_homepage.relink_live_data(
+                            view.arch_db or "",
+                            company._get_microsite_live_facts(),
+                            force=kinds if mode == "edit" else (),
+                        )
+                    if new_arch:
+                        before = self._get_arch_db_raw(view)
+                        view.with_context(
+                            lang=None, **{LIVE_RELINK_CONTEXT_KEY: True}
+                        ).write({"arch_db": new_arch})
+                        problem = self._check_translation_terms(
+                            view, before, self._get_arch_db_raw(view)
+                        )
+                        if problem:
+                            raise _TranslationMismatch(problem)
+                        stat["written"] = True
+            except _TranslationMismatch as mismatch:
+                # The savepoint undid the write; the cache still holds it.
+                self.env.invalidate_all()
+                _logger.warning(
+                    "Legacy homepage: view %s (company %s) skipped: translation "
+                    "structure mismatch (%s); every language kept as it was.",
+                    view.id,
+                    company.id,
+                    mismatch,
+                )
+                report = dict(report, skipped="translation structure mismatch")
+            except RETRYABLE_ERRORS:
+                raise
+            except Exception:
+                self.env.invalidate_all()
+                _logger.log(
+                    logging.ERROR if mode == "migration" else logging.WARNING,
+                    "Legacy homepage: could not relink view %s (company %s); "
+                    "the page keeps its arch as it was.",
+                    view.id,
+                    company.id,
+                    exc_info=True,
+                )
+                stat["failed"] = True
+                report = dict(legacy_homepage.empty_report(), skipped="error")
+            stat.update(report)
+            if report["skipped"] and not stat["failed"]:
+                _logger.info(
+                    "Legacy homepage: view %s (company %s) skipped: %s",
+                    view.id,
+                    company.id,
+                    report["skipped"],
+                )
+            stats.append(stat)
+        return stats
+
+    @api.model
+    def _relink_from_authoring_copy(self, view, company):
+        """The migration's transform of ``view``: keep/relink decided on the
+        copy in the website's default language, applied to the base arch.
+
+        The page was written in the website's language (Spanish); the base
+        (``en_US``) copy that a ``lang=None`` write rewrites holds machine
+        translations of the values, which never equal the company's. So the
+        email/address/web/map decisions are taken on the authoring copy
+        (website language, else ``es_ES``, else ``en_US``) and passed to the
+        transform of the base arch. A line one copy has and the other lacks
+        stays static and is noted.
+        """
+        raw = self._get_arch_db_raw(view)
+        base = raw.get("en_US") or view.arch_db or ""
+        lang = view.website_id.default_lang_id.code
+        authoring_lang = next(
+            (code for code in (lang, "es_ES", "en_US") if code and raw.get(code)),
+            "en_US",
+        )
+        facts = company._get_microsite_live_facts()
+        decisions, decided = legacy_homepage.decide_contact_kinds(
+            raw.get(authoring_lang) or base, facts, company._get_microsite_live_values()
+        )
+        new_arch, report = legacy_homepage.relink_live_data(
+            base, facts, insert_missing=True, decisions=decisions
+        )
+        kept = list(decided["kept_static"])
+        for kind in sorted(set(report["present"]) - set(decided["present"])):
+            report["notes"].append(
+                f"{kind} line not in the {authoring_lang} copy: kept"
+            )
+            kept.append(
+                {
+                    "kind": kind,
+                    "shown": "",
+                    "live": "",
+                    "reason": f"not_in_{authoring_lang}",
+                }
+            )
+        for kind in sorted(set(decided["present"]) - set(report["present"])):
+            report["notes"].append(f"{kind} line only in the {authoring_lang} copy")
+        report["kept_static"] = kept
+        report["notes"] = list(dict.fromkeys(decided["notes"] + report["notes"]))
+        return new_arch, report
+
+    @api.model
+    def _get_arch_db_raw(self, view):
+        """``{lang: arch}`` of ``view`` as stored (every language)."""
+        view.flush_recordset(["arch_db"])
+        self.env.cr.execute("SELECT arch_db FROM ir_ui_view WHERE id = %s", [view.id])
+        return self.env.cr.fetchone()[0] or {}
+
+    @api.model
+    def _check_translation_terms(self, view, before, after):
+        """Why the write broke a language copy, or ``""``.
+
+        A ``lang=None`` write re-maps every other language term by term, and
+        a copy whose terms do not line up with the source (a different term
+        count) silently gets the English source instead. Allowed: a language
+        losing the translation of a term the source lost (the static values
+        that became t-calls). Anything else -- another term lost, or a source
+        term appearing in a copy that did not have it -- is a mismatch.
+        """
+        field = view._fields["arch_db"]
+        source_before = before.get("en_US") or ""
+        source_after = after.get("en_US") or ""
+        source_terms_after = set(field.get_trans_terms(source_after))
+        removed = set(field.get_trans_terms(source_before)) - source_terms_after
+        for lang, old_value in before.items():
+            if lang == "en_US":
+                continue
+            new_value = after.get(lang) or ""
+            dictionary = field.get_translation_dictionary(
+                source_before, {lang: old_value}
+            )
+            allowed = {dictionary[term][lang] for term in removed if term in dictionary}
+            old_terms = set(field.get_trans_terms(old_value))
+            new_terms = set(field.get_trans_terms(new_value))
+            lost = old_terms - new_terms - allowed
+            gained = (new_terms - old_terms) & source_terms_after
+            if lost or gained:
+                return (
+                    f"{lang}: {len(lost)} terms lost, {len(gained)} source terms gained"
+                )
+        return ""
+
+    def _relink_after_human_edit(self, kinds):
+        """Make ``kinds`` live on the legacy homepages of ``self``.
+
+        Called after a person changed those values (company form, content
+        editor, directory): from then on the page follows the company even
+        where the migration kept the importer's text. Never during a module
+        update or an import, and never the reason the write fails.
+        """
+        context = self.env.context
+        if not kinds or not self or any(context.get(k) for k in BULK_CONTEXT_KEYS):
+            return []
+        try:
+            with self.env.cr.savepoint():
+                return self.sudo()._relink_legacy_homepage_live_data(
+                    mode="edit", kinds=frozenset(kinds)
+                )
+        except RETRYABLE_ERRORS:
+            raise
+        except Exception:
+            self.env.invalidate_all()
+            _logger.warning(
+                "Legacy homepage: relink of %s after an edit failed for "
+                "companies %s; the pages keep what they show.",
+                sorted(kinds),
+                self.ids,
+                exc_info=True,
+            )
+            return []
+
+    @api.model
+    def _find_legacy_homepage_backup(self, view_id):
+        """The migration's own backup of ``view_id``, or an empty recordset.
+
+        Only an attachment created by the superuser (the migration) counts,
+        and the first one: anybody who may create attachments could add a
+        later one with the same name.
+        """
+        return (
+            self.env["ir.attachment"]
+            .sudo()
+            .search(
+                [
+                    ("res_model", "=", "ir.ui.view"),
+                    ("res_id", "=", view_id),
+                    ("name", "=", LEGACY_BACKUP_NAME.format(view_id=view_id)),
+                    ("create_uid", "=", SUPERUSER_ID),
+                ],
+                order="id asc",
+                limit=1,
+            )
+        )
+
+    @staticmethod
+    def _is_valid_arch_backup(data):
+        """A backup is ``{language code: arch}`` with ``en_US`` in it."""
+        return (
+            isinstance(data, dict)
+            and isinstance(data.get("en_US"), str)
+            and all(
+                isinstance(lang, str)
+                and re.fullmatch(r"[a-z]{2,3}(_[A-Za-z0-9@]+)?", lang)
+                and isinstance(arch, str)
+                for lang, arch in data.items()
+            )
+        )
+
+    @api.model
+    def _restore_legacy_homepage_backup(self, views):
+        """Put back the arch (every language) the 19.0.2.13.0 migration saved.
+
+        Reads ``legacy-homepage-backup-<view_id>-19.0.2.13.0.json`` attached
+        to each view by the migration (``_find_legacy_homepage_backup``) and
+        writes that jsonb back as it was, so the language copies return byte
+        for byte; the builder-save guard is not involved (the column is
+        written directly). Views without a trustworthy backup are left alone
+        and logged. Returns the restored views.
+        """
+        restored = self.env["ir.ui.view"]
+        for view in views.sudo():
+            backup = self._find_legacy_homepage_backup(view.id)
+            if not backup:
+                _logger.warning("Legacy homepage: no backup for view %s.", view.id)
+                continue
+            try:
+                arch_db = json.loads(backup.raw)
+            except ValueError:
+                arch_db = None
+            if not self._is_valid_arch_backup(arch_db):
+                _logger.warning(
+                    "Legacy homepage: backup %s of view %s is not a "
+                    "{language: arch} map; not restored.",
+                    backup.id,
+                    view.id,
+                )
+                continue
+            view.flush_recordset()
+            self.env.cr.execute(
+                "UPDATE ir_ui_view SET arch_db = %s, write_date = now() AT TIME "
+                "ZONE 'UTC', write_uid = %s WHERE id = %s",
+                [json.dumps(arch_db), self.env.uid, view.id],
+            )
+            view.invalidate_recordset()
+            restored |= view
+            _logger.info("Legacy homepage: view %s restored from its backup.", view.id)
+        if restored:
+            clear_templates_cache_on_commit(self.env)
+        return restored
 
     def _get_microsite_website_url(self):
         """The shop's own site as a clickable absolute URL, or ``""``.
@@ -569,14 +1088,13 @@ class ResCompany(models.Model):
         Merchants type ``myshop.com`` as often as they type the full URL,
         and a bare host in an href is read as a relative path -- the link
         would point back into the microsite.
+
+        Only http(s): the value lands in an ``href`` on every page of the
+        shop, so ``javascript:``/``data:`` (any case, any obfuscation) give
+        ``""`` and the link is not rendered (``tools/safe_url``).
         """
         self.ensure_one()
-        url = (self.partner_id.website or "").strip()
-        if not url:
-            return ""
-        if "://" not in url:
-            return "https://" + url
-        return url
+        return safe_http_url(self.partner_id.website)
 
     def _get_microsite_website_host(self):
         """The host of the shop's own site (``www.myshop.com``), or ``""``.
@@ -762,7 +1280,7 @@ class ResCompany(models.Model):
                     share_url = company.microsite_map_share_url or (
                         stored if map_url_tools.is_share_link(stored) else False
                     )
-                    company.write(
+                    company.with_context(**{MAP_NORMALIZE_CONTEXT_KEY: True}).write(
                         {
                             "microsite_map_url": embed_url,
                             "microsite_map_share_url": share_url,
@@ -840,7 +1358,26 @@ class ResCompany(models.Model):
         write is the smallest thing that makes "cambio el logo" true
         everywhere the visitor looks.
         """
+        # The legacy homepages render these live, but public pages are
+        # served from a one-hour response cache keyed by page (see the
+        # content editor's save); without this a change shows up to an hour
+        # late. Only an actual change empties it: the cache serves every
+        # site, and saving a form rewrites values that did not move.
+        live_changed = _live_values_change(self, LIVE_COMPANY_FIELDS, vals)
+        map_changed = _live_values_change(self, frozenset({"microsite_map_url"}), vals)
         result = self._write_map_url_aware(vals)
+        if live_changed:
+            clear_templates_cache_on_commit(self.env)
+        if (
+            map_changed
+            and (vals.get("microsite_map_url") or "").strip()
+            and not self.env.context.get(MAP_NORMALIZE_CONTEXT_KEY)
+        ):
+            # A human set the shop's own map link: it wins over the page's.
+            # Only an explicit link: clearing the field must never turn a
+            # page's own map into the partner-address one, and the cron that
+            # converts stored links is not a human edit.
+            self.filtered("microsite_map_url")._relink_after_human_edit({"map"})
         if "logo" in vals:
             for company in self:
                 websites = company.website_id | self.env["website"].sudo().search(

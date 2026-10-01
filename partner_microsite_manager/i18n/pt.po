@@ -1346,6 +1346,7 @@ msgstr "Aberto agora"
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_opening_hours
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_live_hours_label
 msgid "Opening Hours"
 msgstr ""
 

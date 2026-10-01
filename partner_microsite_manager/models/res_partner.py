@@ -4,6 +4,36 @@
 from odoo import _, fields, models
 from odoo.exceptions import AccessError
 
+from ..tools.legacy_homepage import normalize_website
+from .res_company import _live_values_change, clear_templates_cache_on_commit
+
+# Partner fields the live blocks of a legacy homepage render.
+LIVE_PARTNER_FIELDS = frozenset(
+    {"phone", "email", "street", "street2", "zip", "city", "website"}
+)
+# The page kind each partner field feeds (the map follows the address: it
+# is built from it when the shop has no map link of its own).
+PARTNER_FIELD_KINDS = {
+    "email": ("email",),
+    "street": ("address", "map"),
+    "street2": ("address", "map"),
+    "zip": ("address", "map"),
+    "city": ("address", "map"),
+    "website": ("website",),
+}
+
+
+def _field_really_changes(partner, name, new_value):
+    """Whether writing ``new_value`` changes what ``name`` says on the page.
+
+    The web address is compared normalised (scheme, ``www.`` and a trailing
+    slash aside): core turns ``www.shop.com`` into ``http://www.shop.com``,
+    which is no person changing the shop's web.
+    """
+    if name == "website":
+        return normalize_website(partner.website) != normalize_website(new_value)
+    return _live_values_change(partner, frozenset({name}), {name: new_value})
+
 
 class ResPartner(models.Model):
     _inherit = "res.partner"
@@ -32,6 +62,46 @@ class ResPartner(models.Model):
         for partner in self:
             partner.microsite_company_id = mapping.get(partner.id, False)
             partner.has_microsite = bool(partner.microsite_company_id)
+
+    def write(self, vals):
+        """Keep the shop's legacy homepage in step with its contact data.
+
+        - The page cache is emptied (at commit) when a rendered value really
+          changes: public pages are cached an hour per page, and the company
+          form and the directory write the partner directly.
+        - The kinds a person just changed go live on the page, even where
+          the migration kept the importer's text because it differed: from
+          now on the human edit wins. A kind left empty is not forced.
+        """
+        live_changed = _live_values_change(self, LIVE_PARTNER_FIELDS, vals)
+        # Per partner: in a multi-record write, a partner that already had
+        # the value has nothing to relink.
+        changed_by_partner = {
+            partner.id: [
+                name
+                for name in PARTNER_FIELD_KINDS
+                if name in vals and _field_really_changes(partner, name, vals[name])
+            ]
+            for partner in self
+        }
+        result = super().write(vals)
+        if live_changed:
+            companies = (
+                self.env["res.company"]
+                .sudo()
+                .search([("partner_id", "in", self.ids), ("website_id", "!=", False)])
+            )
+            if companies:
+                clear_templates_cache_on_commit(self.env)
+                for company in companies:
+                    kinds = {
+                        kind
+                        for name in changed_by_partner.get(company.partner_id.id, [])
+                        for kind in PARTNER_FIELD_KINDS[name]
+                        if company._microsite_live_has(kind)
+                    }
+                    company._relink_after_human_edit(kinds)
+        return result
 
     def action_open_microsite_company(self):
         """Open the microsite content of this contact's shop.

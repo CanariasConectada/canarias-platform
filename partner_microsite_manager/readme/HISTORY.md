@@ -1,3 +1,92 @@
+## 19.0.2.13.0 (2026-10-01)
+
+- Legacy homepages follow the company (client report: the content editor
+  saved, the site did not change -- Panambi still offered "Entrega
+  disponible", Diaz Leja kept its old phone and showed no hours). The 207
+  imported homepages (`website.homepage_*` / `website.home-*`) had every
+  value typed into the arch. Only those VALUE nodes now point at the
+  company; the design, the long texts, the labels and the seven languages
+  stay as they were:
+  - contact lines (address, phone, second phone, email, web) become
+    t-calls of the new `microsite_live_*` templates; the map `iframe` gets
+    `t-att-src` from `_get_microsite_map_url()` and keeps its size;
+  - the parking / delivery cards render the company fields and, like every
+    contact line and the hours card, carry a `t-if`: an emptied field takes
+    its card or line off the public page (still shown while editing, so
+    the builder does not drop it from the arch);
+  - a line the page lacks while the shop has the value is added next to
+    its siblings; a page with no hours card gets one (before "Acerca") when
+    the shop has hours; the "Info Bar" variant's static hours are replaced.
+  Zone companies, theme homepages and the dynamic homepage are not touched;
+  a page without the contact block is skipped and logged.
+- Builder saves no longer undo it: saving a page in the website builder
+  writes the rendered html back into the arch. Every live block carries a
+  `data-cc-live` marker (and is `o_not_editable`), and a write of the arch
+  of a legacy homepage runs the relinker again, which puts the t-calls back.
+- Writing the shop's phone, email, address or web (partner) or the
+  `microsite_*` values rendered live (company) empties the one-hour page
+  cache, as the content editor already did.
+- Migration: each legacy homepage's `arch_db` (all languages) is saved as
+  a JSON attachment of its view
+  (`legacy-homepage-backup-<view_id>-19.0.2.13.0.json`), then relinked, one
+  savepoint and one log line per page. Idempotent. Only the migration adds
+  lines or an hours card a page lacks; later relinks (builder saves) only
+  relink what is on the page, so a line a merchant deletes stays deleted.
+- The migration preserves what each page shows; from then on a human edit
+  wins. Phone, second phone, parking, delivery and hours always go live.
+  Email, address and web go live only where the page shows what the
+  company says (email/web normalised, address by token-set similarity
+  >= 0.6); the map only when the shop has its own map link or its address
+  went live. The rest stays as typed, is logged (`kept_static=`) and is
+  listed in `legacy-homepage-review-19.0.2.13.0.csv` (attached to the main
+  company) for the consultants. These decisions are taken on the copy in
+  the website's language (else es_ES, else en_US) -- the en_US copies hold
+  machine translations of the values -- and applied to the base arch; a
+  line only one of the two copies has stays static. Contact lines are never added; the hours
+  card is, where the shop has hours and the page none. When a person later
+  changes the shop's email, address (the map follows), web or map link,
+  that value goes live on the page (not during module updates or imports;
+  an emptied value is not forced).
+- Translation safety net: a page whose other-language copies would lose or
+  gain anything but the relinked values is skipped and logged
+  (`translation structure mismatch`), every language untouched.
+- Contact lines with several icons or a bold label, a second contact
+  section and Horario sections with extra content are left as they are.
+  Any error on a page is logged and the run goes on.
+- The page cache is emptied once, at commit, and also when opening rows
+  change. The 19.0.2.8.0 hours relink no longer triggers the builder-save
+  relink (the page is backed up first).
+- Final reliability rules: only pages the 19.0.2.13.0 migration backed up
+  are relinked by builder saves or contact edits; a second line of a kind
+  is dropped only when its value is the live one (a third, unrelated phone
+  stays); a typed zip must be the contact's zip and street types are
+  compared, not dropped ("Av." is not "Calle"); a web address that only
+  gains a scheme or `www.` is no edit; Odoo's retryable database errors
+  are never swallowed; failed and translation-mismatch pages are listed in
+  the review CSV as kind `page`.
+- Intended behaviour, for the record:
+  - the hours card a page lacked, and an explicit map link set on the
+    company, go live as on the dynamic homepage;
+  - phone, second phone, parking and delivery are always live and hidden
+    when empty;
+  - imports and module-data loads do not relink pages: re-run
+    `env["res.company"]._relink_legacy_homepage_live_data(mode="edit",
+    kinds={...})` or save the contact by hand;
+  - restoring a backup is not a durable opt-out: a later builder save
+    relinks the always-live kinds again;
+  - a write from a cron or a shell commits its page-cache clear on the
+    local worker only; other workers keep their cached page until it
+    expires (one hour) or their next registry signal.
+- Rollback of one page (odoo shell, then commit):
+  `env["res.company"]._restore_legacy_homepage_backup(env["ir.ui.view"].browse(3897)); env.cr.commit()`
+  writes the backed-up `arch_db` back, every language as it was.
+- Links built from merchant data (the shop's web, the footer's social
+  links, the map URLs) only accept http(s); `javascript:`, `data:` and the
+  like render no link (`tools/safe_url.py`).
+- The builder-save relink never fails a save (errors are logged at WARNING
+  and the saved arch is kept), and the page cache is emptied only when a
+  rendered value really changes.
+
 ## 19.0.2.12.0 (2026-09-30)
 
 - Microsite map: any Google Maps link now shows a map (client request:

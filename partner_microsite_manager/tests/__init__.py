@@ -1,6 +1,8 @@
 from . import (
     test_content_editor,
     test_core_menu_gating,
+    test_legacy_homepage_live,
+    test_legacy_homepage_transform,
     test_legal_pages,
     test_logo_follows_company,
     test_map_url,
@@ -13,6 +15,7 @@ from . import (
     test_opening_hours,
     test_opening_slots,
     test_partner_microsite_button,
+    test_safe_url,
     test_translations,
     test_view_scoping,
     test_website_logo,
