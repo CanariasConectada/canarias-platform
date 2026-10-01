@@ -124,3 +124,16 @@ class TestMapEmbed(TransactionCase):
         self.assertEqual(
             partner._canarias_map_embed_address(), "Calle Mayor 35010-B Telde 35010"
         )
+
+    def test_a_short_zip_never_eats_the_street_number(self):
+        partner = self.Partner.create(
+            {
+                "name": "Short Zip",
+                "street": "Calle Mayor 10",
+                "zip": "10",
+                "city": "Telde",
+            }
+        )
+        self.assertEqual(
+            partner._canarias_map_embed_address(), "Calle Mayor 10 Telde 10"
+        )

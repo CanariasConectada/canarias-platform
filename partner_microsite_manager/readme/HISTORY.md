@@ -56,6 +56,27 @@
 - The page cache is emptied once, at commit, and also when opening rows
   change. The 19.0.2.8.0 hours relink no longer triggers the builder-save
   relink (the page is backed up first).
+- Final reliability rules: only pages the 19.0.2.13.0 migration backed up
+  are relinked by builder saves or contact edits; a second line of a kind
+  is dropped only when its value is the live one (a third, unrelated phone
+  stays); a typed zip must be the contact's zip and street types are
+  compared, not dropped ("Av." is not "Calle"); a web address that only
+  gains a scheme or `www.` is no edit; Odoo's retryable database errors
+  are never swallowed; failed and translation-mismatch pages are listed in
+  the review CSV as kind `page`.
+- Intended behaviour, for the record:
+  - the hours card a page lacked, and an explicit map link set on the
+    company, go live as on the dynamic homepage;
+  - phone, second phone, parking and delivery are always live and hidden
+    when empty;
+  - imports and module-data loads do not relink pages: re-run
+    `env["res.company"]._relink_legacy_homepage_live_data(mode="edit",
+    kinds={...})` or save the contact by hand;
+  - restoring a backup is not a durable opt-out: a later builder save
+    relinks the always-live kinds again;
+  - a write from a cron or a shell commits its page-cache clear on the
+    local worker only; other workers keep their cached page until it
+    expires (one hour) or their next registry signal.
 - Rollback of one page (odoo shell, then commit):
   `env["res.company"]._restore_legacy_homepage_backup(env["ir.ui.view"].browse(3897)); env.cr.commit()`
   writes the backed-up `arch_db` back, every language as it was.

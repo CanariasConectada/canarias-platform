@@ -23,8 +23,10 @@ def clean_address_part(value):
 def street_without_zip(street, zip_code):
     """``street`` without a trailing copy of ``zip_code`` (``Calle X 23
     35010`` with zip 35010 -> ``Calle X 23``): the importer appended the
-    zip to the street, and the address would carry it twice."""
-    if zip_code and street.endswith(" " + zip_code):
+    zip to the street, and the address would carry it twice. Only a real
+    postal code (4 or 5 digits) is stripped: with a zip of ``10``, ``Calle
+    Mayor 10`` keeps its number."""
+    if re.fullmatch(r"\d{4,5}", zip_code or "") and street.endswith(" " + zip_code):
         return street[: -len(zip_code)].rstrip(" ,")
     return street
 
@@ -36,8 +38,8 @@ class ResPartner(models.Model):
         """Address text used as the map query, or ``""`` when empty.
 
         Field order and selection (street, city, zip; no street2) are the
-        ones the microsites always used: the 218 existing sites must keep
-        a byte-identical URL after moving to this helper. Each field is
+        ones the microsites always used. An already-clean address gives the
+        same URL as before this helper cleaned anything; each field is
         cleaned (``clean_address_part``) and a zip the street repeats is
         dropped (``street_without_zip``): a literal ``&nbsp;35010`` in the
         street used to reach Google as ``%26nbsp%3B35010`` and give a

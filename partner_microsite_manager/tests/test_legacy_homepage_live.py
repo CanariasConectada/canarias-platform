@@ -11,6 +11,7 @@ from unittest.mock import patch
 
 from lxml import etree, html
 
+from odoo.exceptions import ConcurrencyError
 from odoo.tests.common import TransactionCase, new_test_user
 
 from ..tools import legacy_homepage
@@ -120,8 +121,24 @@ class TestLegacyHomepageLiveData(TransactionCase):
         return str(self.env["ir.qweb"]._render(view.id, values))
 
     def _relink(self, view, mode="migration", kinds=()):
+        if mode == "migration":
+            # As the migration does: back the page up first (later relinks
+            # only touch pages that have their 19.0.2.13.0 backup).
+            self._backup(view)
         return self.env["res.company"]._relink_legacy_homepage_live_data(
             views=view, mode=mode, kinds=kinds
+        )
+
+    def _backup(self, views):
+        for view in views:
+            self._migration_module()._backup_arch(self.env, view.id)
+
+    def _patch_relinker(self):
+        """Make the relinker itself fail, so the OUTER handlers are tested."""
+        return patch.object(
+            type(self.env["res.company"]),
+            "_relink_legacy_homepage_live_data",
+            side_effect=RuntimeError("boom"),
         )
 
     def _builder_save(self, view, drop_xpath=None):
@@ -278,6 +295,7 @@ class TestLegacyHomepageLiveData(TransactionCase):
         self._slots((0, 9.0, 14.0))
         view = self._legacy_page(CUSTOM_ARCH, slug="noinsert")
 
+        self._backup(view)
         [stat] = self._relink(view, mode="guard")
 
         self.assertFalse(stat["inserted"])
@@ -413,14 +431,14 @@ class TestLegacyHomepageLiveData(TransactionCase):
 
     def test_a_failing_relink_never_breaks_a_save(self):
         view = self._legacy_page()
+        self._backup(view)
         new_arch = view.arch_db.replace("Our story", "Our new story")
-        target = (
-            "odoo.addons.partner_microsite_manager.models.res_company."
-            "legacy_homepage.relink_live_data"
-        )
         with (
-            patch(target, side_effect=RuntimeError("boom")),
-            self.assertLogs(LOGGER, logging.WARNING) as logs,
+            self._patch_relinker(),
+            self.assertLogs(
+                "odoo.addons.partner_microsite_manager.models.ir_ui_view",
+                logging.WARNING,
+            ) as logs,
         ):
             view.write({"arch": new_arch})
 
@@ -634,14 +652,7 @@ class TestLegacyHomepageLiveData(TransactionCase):
     def test_a_failing_edit_relink_never_breaks_the_write(self):
         view = self._mismatching_page(slug="editfail")
         self._relink(view)
-        target = (
-            "odoo.addons.partner_microsite_manager.models.res_company."
-            "legacy_homepage.relink_live_data"
-        )
-        with (
-            patch(target, side_effect=RuntimeError("boom")),
-            self.assertLogs(LOGGER, logging.WARNING),
-        ):
+        with self._patch_relinker(), self.assertLogs(LOGGER, logging.WARNING):
             self.company.partner_id.write({"email": "new@example.com"})
         self.assertEqual(self.company.partner_id.email, "new@example.com")
 
@@ -938,3 +949,108 @@ class TestLegacyHomepageLiveData(TransactionCase):
         self.assertFalse(review.public)
         self.assertIn("public@example.com", review.raw.decode())
         self.assertEqual(planted.raw, b"planted")
+
+    # -- final reliability batch -------------------------------------------------
+    def test_nothing_but_the_migration_touches_a_page_not_backed_up(self):
+        view = self._mismatching_page(slug="nobackup")
+        arch = view.arch_db
+
+        self.company.partner_id.write({"email": "new@example.com"})
+        view.write({"arch": arch.replace("Our story", "Our new story")})
+
+        self.assertNotIn(legacy_homepage.LIVE_TEMPLATES["email"], view.arch_db)
+        self.assertIn("928 00 00 00", view.arch_db)
+        self.assertIn("Our new story", view.arch_db)
+        # Once backed up, a person's edit goes live as usual.
+        self._backup(view)
+        self.company.partner_id.write({"email": "newer@example.com"})
+        self.assertIn(legacy_homepage.LIVE_TEMPLATES["email"], view.arch_db)
+
+    def test_a_normalised_web_address_is_no_human_edit(self):
+        partner = self.company.partner_id
+        partner.website = "www.shop.com"
+        view = self._legacy_page(
+            STANDARD_ARCH.replace(
+                '<p class="mb-2"><i class="fa fa-envelope',
+                '<p class="mb-2"><i class="fa fa-globe fa-fw"/>old.example</p>'
+                '<p class="mb-2"><i class="fa fa-envelope',
+            ),
+            slug="webnorm",
+        )
+        self._relink(view)
+        arch = view.arch_db
+        self.assertNotIn(legacy_homepage.LIVE_TEMPLATES["website"], arch)
+
+        partner.website = "https://www.shop.com/"
+
+        self.assertEqual(view.arch_db, arch)
+        partner.website = "https://other.example"
+        self.assertIn(legacy_homepage.LIVE_TEMPLATES["website"], view.arch_db)
+
+    def test_a_multi_partner_write_relinks_only_what_changed(self):
+        other = self.env["res.company"].create(
+            {
+                "name": "Other Shop",
+                "street": "Calle Nueva 5",
+                "zip": "35010",
+                "city": "Las Palmas",
+                "email": "x@example.com",
+            }
+        )
+        other_site = self.env["website"].create(
+            {"name": "Other", "company_id": other.id}
+        )
+        mine = self._mismatching_page(slug="multimine")
+        theirs = self._legacy_page(
+            STANDARD_ARCH.replace("Shop @ example.com", "public@example.com"),
+            slug="multitheirs",
+            website=other_site,
+        )
+        self._relink(mine | theirs)
+        self.assertNotIn(legacy_homepage.LIVE_TEMPLATES["email"], theirs.arch_db)
+
+        (self.company.partner_id | other.partner_id).write({"email": "x@example.com"})
+
+        self.assertIn(legacy_homepage.LIVE_TEMPLATES["email"], mine.arch_db)
+        # The other shop already had that email: nothing changed for it.
+        self.assertNotIn(legacy_homepage.LIVE_TEMPLATES["email"], theirs.arch_db)
+        self.assertIn("public@example.com", theirs.arch_db)
+
+    def test_retryable_errors_are_not_swallowed(self):
+        view = self._mismatching_page(slug="retry")
+        self._relink(view)
+        with (
+            patch.object(
+                type(self.env["res.company"]),
+                "_relink_legacy_homepage_live_data",
+                side_effect=ConcurrencyError("busy"),
+            ),
+            self.assertRaises(ConcurrencyError),
+        ):
+            self.company.partner_id.write({"email": "new@example.com"})
+
+    def test_failed_and_mismatched_pages_are_in_the_review_list(self):
+        view = self._legacy_page(slug="reviewfailed")
+        module = self._migration_module()
+        target = (
+            "odoo.addons.partner_microsite_manager.models.res_company."
+            "legacy_homepage.relink_live_data"
+        )
+        with (
+            patch(target, side_effect=RuntimeError("boom")),
+            self.assertLogs(LOGGER, logging.ERROR),
+        ):
+            module.migrate(self.env.cr, "19.0.2.12.0")
+        review = self.env["ir.attachment"].search(
+            [("name", "=", "legacy-homepage-review-19.0.2.13.0.csv")]
+        )
+        rows = list(csv.DictReader(io.StringIO(review.raw.decode())))
+        self.assertIn(
+            ("page", "failed"),
+            [
+                (r["kind"], r["reason"])
+                for r in rows
+                if r["company_id"] == str(self.company.id)
+            ],
+        )
+        self.assertIn("928 00 00 00", view.arch_db)

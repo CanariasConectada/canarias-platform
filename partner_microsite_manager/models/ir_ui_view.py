@@ -5,7 +5,11 @@ import logging
 
 from odoo import models
 
-from .res_company import LEGACY_HOMEPAGE_KEY_RE, LIVE_RELINK_CONTEXT_KEY
+from .res_company import (
+    LEGACY_HOMEPAGE_KEY_RE,
+    LIVE_RELINK_CONTEXT_KEY,
+    RETRYABLE_ERRORS,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -43,6 +47,8 @@ class IrUiView(models.Model):
                     self.env["res.company"].sudo()._relink_legacy_homepage_live_data(
                         views=legacy, mode="guard"
                     )
+            except RETRYABLE_ERRORS:
+                raise
             except Exception:
                 _logger.warning(
                     "Legacy homepage: relink after save failed for views %s; "

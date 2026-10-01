@@ -134,6 +134,19 @@ def _write_review_csv(env, stats):
     Company = env["res.company"].sudo()
     for stat in stats:
         company = Company.browse(stat["company_id"])
+        if stat["failed"] or stat["skipped"] == "translation structure mismatch":
+            # The whole page kept its importer values: not only in the log.
+            writer.writerow(
+                [
+                    company.id,
+                    company.name,
+                    company.website_id.domain or "",
+                    "page",
+                    "",
+                    "",
+                    "failed" if stat["failed"] else "skipped_translation_mismatch",
+                ]
+            )
         for kept in stat["kept_static"]:
             writer.writerow(
                 [

@@ -7,11 +7,12 @@ import re
 from datetime import datetime
 from urllib.parse import parse_qs, quote_plus, urlsplit
 
+import psycopg2
 import pytz
 from lxml import etree
 
 from odoo import SUPERUSER_ID, _, api, fields, models
-from odoo.exceptions import AccessError, UserError, ValidationError
+from odoo.exceptions import AccessError, ConcurrencyError, UserError, ValidationError
 from odoo.tools.sql import column_exists
 from odoo.tools.translate import LazyTranslate
 
@@ -47,6 +48,9 @@ OPENING_HOURS_CARD_TEMPLATE = legacy_homepage.OPENING_HOURS_CARD_TEMPLATE
 # and theme homepages (company 100's ``theme_corporate_multi``) never match.
 LEGACY_HOMEPAGE_KEY_LIKE = ("website.homepage\\_%", "website.home-%")
 LEGACY_HOMEPAGE_KEY_RE = re.compile(r"^website\.(homepage_|home-)")
+# Errors Odoo's request retry handles (serialization failures, lock
+# timeouts): never swallowed, or the retry would not happen.
+RETRYABLE_ERRORS = (psycopg2.OperationalError, ConcurrencyError)
 # Set by ``_normalize_existing_map_urls``: a link converted by the cron is
 # not a person choosing a map, so the page is not relinked.
 MAP_NORMALIZE_CONTEXT_KEY = "pmm_map_normalize"
@@ -757,6 +761,8 @@ class ResCompany(models.Model):
         """What the company says, for the migration's page comparison."""
         self.ensure_one()
         return {
+            "phone": self.microsite_phone or self.partner_id.phone or "",
+            "phone2": self.microsite_phone2 or "",
             "email": self.partner_id.email or "",
             "address": self._get_microsite_live_address(),
             "website": self.partner_id.website or "",
@@ -805,6 +811,13 @@ class ResCompany(models.Model):
         targets = self._get_legacy_homepage_views(
             view_ids=views.ids if views is not None else None
         )
+        if mode != "migration":
+            # Before this module's 19.0.2.13.0 migration backed a page up,
+            # nothing but the migration touches it -- whatever other code
+            # (another module's migration, a shell script) writes first.
+            targets = targets.filtered(
+                lambda view: self._find_legacy_homepage_backup(view.id)
+            )
         stats = []
         for view in targets.with_context(lang=None):
             company = view.website_id.company_id.sudo()
@@ -849,6 +862,8 @@ class ResCompany(models.Model):
                     mismatch,
                 )
                 report = dict(report, skipped="translation structure mismatch")
+            except RETRYABLE_ERRORS:
+                raise
             except Exception:
                 self.env.invalidate_all()
                 _logger.log(
@@ -975,6 +990,8 @@ class ResCompany(models.Model):
                 return self.sudo()._relink_legacy_homepage_live_data(
                     mode="edit", kinds=frozenset(kinds)
                 )
+        except RETRYABLE_ERRORS:
+            raise
         except Exception:
             self.env.invalidate_all()
             _logger.warning(

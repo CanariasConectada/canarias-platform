@@ -251,13 +251,24 @@ def _find_contact_lines(root, report=None):
 # ----------------------------------------------------------------------
 # What the page shows vs. what the company says (migration only)
 # ----------------------------------------------------------------------
-# Words that say nothing about WHICH address it is: street types,
-# connectors, number markers (``s/n`` = no number) and the country.
-_STREET_TYPES = frozenset(
-    "calle calles c cl avenida av avda paseo plaza camino carretera ctra".split()
-)
+# Street-type abbreviations, read as the word they stand for: a different
+# street type is a different address ("Av. Mayor" is not "Calle Mayor").
+_STREET_TYPE_ALIASES = {
+    "calles": "calle",
+    "cl": "calle",
+    "av": "avenida",
+    "avda": "avenida",
+    "avd": "avenida",
+    "pza": "plaza",
+    "pl": "plaza",
+    "ctra": "carretera",
+    "ps": "paseo",
+    "po": "paseo",  # "Pº" once the accent marks are gone
+}
+# Words that say nothing about WHICH address it is: connectors, number
+# markers and the country. Single letters count ("Bloque C").
 _CONNECTORS = frozenset("de del la las el los y".split())
-_NUMBER_MARKERS = frozenset("numero num n no s sn".split())
+_NUMBER_MARKERS = frozenset("numero num no".split())
 _COUNTRY = frozenset({"espana"})
 _ZIP_RE = re.compile(r"^\d{5}$")
 
@@ -272,14 +283,29 @@ def _words(text):
     return [word for word in re.split(r"[^0-9a-z]+", _plain(text)) if word]
 
 
+def _address_words(text):
+    """``_words`` with "s/n" as one word and "C/" / "C." read as calle."""
+    plain = _plain(text)
+    plain = re.sub(r"\bs\s*/\s*n\b", " sn ", plain)
+    plain = re.sub(r"(^|[\s,;(])c\s*[/.]\s*", r"\1calle ", plain)
+    words = [word for word in re.split(r"[^0-9a-z]+", plain) if word]
+    return [_STREET_TYPE_ALIASES.get(word, word) for word in words]
+
+
 def address_tokens(text):
     """The tokens that tell an address apart: no accents, case or
-    punctuation; no street types, connectors, number markers, zips or
-    country. Street, number and city all count."""
-    dropped = _STREET_TYPES | _CONNECTORS | _NUMBER_MARKERS | _COUNTRY
+    punctuation; street types canonical; no connectors, number markers,
+    zips or country. Street type, name, number and city all count."""
+    dropped = _CONNECTORS | _NUMBER_MARKERS | _COUNTRY
     return {
-        word for word in _words(text) if word not in dropped and not _ZIP_RE.match(word)
+        word
+        for word in _address_words(text)
+        if word not in dropped and not _ZIP_RE.match(word)
     }
+
+
+def _zips(text):
+    return {word for word in _words(text) if _ZIP_RE.match(word)}
 
 
 def address_verdict(shown, live):
@@ -288,10 +314,14 @@ def address_verdict(shown, live):
     Relinked when every token the page shows is in the live address (street
     + street2 + zip + city): the contact says the same or more, so a page
     showing only the city gets the street -- but only if the contact names
-    the same city. ``live_poorer`` when the live address says strictly less
-    (the street or the number would be lost), ``differs`` otherwise. With
-    no token on either side, the texts must match, zips aside.
+    the same city. A zip the page shows must be the contact's zip.
+    ``live_poorer`` when the live address says strictly less (the street or
+    the number would be lost), ``differs`` otherwise. With no token on
+    either side, the texts must match, zips aside.
     """
+    shown_zips = _zips(shown)
+    if shown_zips and not shown_zips <= _zips(live):
+        return "differs"
     shown_tokens, live_tokens = address_tokens(shown), address_tokens(live)
     if not shown_tokens and not live_tokens:
 
@@ -306,6 +336,28 @@ def address_verdict(shown, live):
     return "differs"
 
 
+def _digits(value):
+    return re.sub(r"\D", "", value or "")
+
+
+def _extra_is_duplicate(kind, shown, live):
+    """Whether a second static line of ``kind`` shows nothing the live line
+    does not (so dropping it loses nothing)."""
+    if not live:
+        return False
+    if kind in ("phone", "phone2"):
+        numbers = {_digits(live.get("phone")), _digits(live.get("phone2"))} - {""}
+        return bool(_digits(shown)) and _digits(shown) in numbers
+    if kind == "email":
+        return _same_email(shown, live.get("email"))
+    if kind == "address":
+        value = live.get("address") or ""
+        return bool(value.strip()) and address_verdict(shown, value) is None
+    if kind == "website":
+        return _same_website(shown, live.get("website"))
+    return False
+
+
 def _same_email(shown, live):
     def norm(value):
         return re.sub(r"\s+", "", value or "").lower()
@@ -313,14 +365,19 @@ def _same_email(shown, live):
     return bool(norm(live)) and norm(shown) == norm(live)
 
 
-def _same_website(shown, live):
-    def norm(value):
-        url = safe_http_url(value).lower()
-        url = re.sub(r"^https?://", "", url)
-        url = re.sub(r"^www\.", "", url)
-        return url.rstrip("/")
+def normalize_website(value):
+    """A web address as compared: http(s) only, no scheme, no ``www.``, no
+    trailing slash, lower case (``""`` when not a usable link)."""
+    url = safe_http_url(value).lower()
+    url = re.sub(r"^https?://", "", url)
+    url = re.sub(r"^www\.", "", url)
+    return url.rstrip("/")
 
-    return bool(norm(live)) and norm(shown) == norm(live)
+
+def _same_website(shown, live):
+    return bool(normalize_website(live)) and (
+        normalize_website(shown) == normalize_website(live)
+    )
 
 
 def _line_shown(line, icon, kind):
@@ -373,38 +430,63 @@ def _relink_contact(root, report, live, force, decisions):
     report["present"].extend(kind for kind in CONDITIONAL_KINDS if lines.get(kind))
     for kind, _icon_class in CONTACT_LINES:
         entries = lines.get(kind, [])
-        for line, _icon in entries[1:]:
-            # The live line already shows every value of its kind; a second
-            # static copy would show it twice.
-            _remove_keep_tail(line)
-            report["dropped"].append(kind)
         if not entries:
             continue
         line, icon = entries[0]
-        if kind in CONDITIONAL_KINDS and not _line_is_live(line, kind):
-            if kind not in force:
-                if decisions is not None:
-                    # Decided on the copy the page was written in.
-                    if decisions.get(kind) != "relink":
-                        continue
-                elif live is None:
-                    # A builder save: a static line stays static.
-                    continue
-                else:
-                    shown = _line_shown(line, icon, kind)
-                    reason = _static_verdict(kind, shown, live)
-                    if reason:
-                        _keep_static(report, kind, shown, live, reason)
-                        continue
-        live_kinds.add(kind)
-        unchanged = _content_is(line, kind, after=icon) and line.get(
-            "t-if"
-        ) == VISIBLE_EXPR.format(kind=kind)
-        if not unchanged:
-            _set_content(line, kind, after=icon)
-            _set_visibility(line, kind)
-            report["relinked"].append(kind)
+        if _relink_contact_line(line, icon, kind, report, live, force, decisions):
+            live_kinds.add(kind)
+            _settle_extra_lines(entries[1:], kind, report, live, decisions)
     return live_kinds
+
+
+def _relink_contact_line(line, icon, kind, report, live, force, decisions):
+    """Make the first line of ``kind`` live when the rules allow; returns
+    whether it is live afterwards."""
+    if kind in CONDITIONAL_KINDS and not _line_is_live(line, kind):
+        if kind not in force:
+            if decisions is not None:
+                # Decided on the copy the page was written in.
+                if decisions.get(kind) != "relink":
+                    return False
+            elif live is None:
+                # A builder save: a static line stays static.
+                return False
+            else:
+                shown = _line_shown(line, icon, kind)
+                reason = _static_verdict(kind, shown, live)
+                if reason:
+                    _keep_static(report, kind, shown, live, reason)
+                    return False
+    unchanged = _content_is(line, kind, after=icon) and line.get(
+        "t-if"
+    ) == VISIBLE_EXPR.format(kind=kind)
+    if not unchanged:
+        _set_content(line, kind, after=icon)
+        _set_visibility(line, kind)
+        report["relinked"].append(kind)
+    return True
+
+
+def _settle_extra_lines(extras, kind, report, live, decisions):
+    """More static lines of a kind whose first line is live: dropped only
+    when they show nothing the live line does not; kept (and noted)
+    otherwise. Never decided on a builder save or a human edit."""
+    for number, (extra, extra_icon) in enumerate(extras, 1):
+        key = f"{kind}#{number}"
+        if decisions is not None:
+            duplicate = decisions.get(key) == "drop"
+        elif live is not None:
+            duplicate = _extra_is_duplicate(
+                kind, _line_shown(extra, extra_icon, kind), live
+            )
+            report["extras"][key] = "drop" if duplicate else "keep"
+        else:
+            duplicate = False
+        if duplicate:
+            _remove_keep_tail(extra)
+            report["dropped"].append(kind)
+        else:
+            report["notes"].append(f"extra {kind} line kept as typed")
 
 
 def _relink_map(root, report, live, force, address_live, decisions):
@@ -612,6 +694,7 @@ def empty_report():
         "restored": [],
         "kept_static": [],
         "present": [],
+        "extras": {},
         "notes": [],
         "skipped": None,
     }
@@ -695,4 +778,5 @@ def decide_contact_kinds(arch, facts, live):
         for kind in report["present"]
         if kind in CONDITIONAL_KINDS or kind == "map"
     }
+    decisions.update(report["extras"])
     return decisions, report

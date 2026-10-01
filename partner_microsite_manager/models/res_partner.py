@@ -4,6 +4,7 @@
 from odoo import _, fields, models
 from odoo.exceptions import AccessError
 
+from ..tools.legacy_homepage import normalize_website
 from .res_company import _live_values_change, clear_templates_cache_on_commit
 
 # Partner fields the live blocks of a legacy homepage render.
@@ -20,6 +21,18 @@ PARTNER_FIELD_KINDS = {
     "city": ("address", "map"),
     "website": ("website",),
 }
+
+
+def _field_really_changes(partner, name, new_value):
+    """Whether writing ``new_value`` changes what ``name`` says on the page.
+
+    The web address is compared normalised (scheme, ``www.`` and a trailing
+    slash aside): core turns ``www.shop.com`` into ``http://www.shop.com``,
+    which is no person changing the shop's web.
+    """
+    if name == "website":
+        return normalize_website(partner.website) != normalize_website(new_value)
+    return _live_values_change(partner, frozenset({name}), {name: new_value})
 
 
 class ResPartner(models.Model):
@@ -61,11 +74,16 @@ class ResPartner(models.Model):
           now on the human edit wins. A kind left empty is not forced.
         """
         live_changed = _live_values_change(self, LIVE_PARTNER_FIELDS, vals)
-        changed_fields = [
-            name
-            for name in PARTNER_FIELD_KINDS
-            if name in vals and _live_values_change(self, frozenset({name}), vals)
-        ]
+        # Per partner: in a multi-record write, a partner that already had
+        # the value has nothing to relink.
+        changed_by_partner = {
+            partner.id: [
+                name
+                for name in PARTNER_FIELD_KINDS
+                if name in vals and _field_really_changes(partner, name, vals[name])
+            ]
+            for partner in self
+        }
         result = super().write(vals)
         if live_changed:
             companies = (
@@ -78,7 +96,7 @@ class ResPartner(models.Model):
                 for company in companies:
                     kinds = {
                         kind
-                        for name in changed_fields
+                        for name in changed_by_partner.get(company.partner_id.id, [])
                         for kind in PARTNER_FIELD_KINDS[name]
                         if company._microsite_live_has(kind)
                     }

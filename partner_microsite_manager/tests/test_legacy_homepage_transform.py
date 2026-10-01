@@ -175,7 +175,7 @@ class TestLegacyHomepageTransform(BaseCase):
             (
                 "Calles Lepanto, 22, Las Palmas de Gran Canaria, 35018",
                 "Calle Lepanto, 22, 35010 Las Palmas de Gran Canaria",
-                None,  # anamargaritalepanto
+                "differs",  # anamargaritalepanto: zip 35018 vs 35010
             ),
             (
                 "Calle Pascal 9, Las Palmas de Gran Canaria, 35010",
@@ -208,6 +208,12 @@ class TestLegacyHomepageTransform(BaseCase):
             ),
             ("Las Palmas de Gran Canaria", "Calle Daoiz 34, 35010 Panama", "differs"),
         ]
+        cases += [
+            ("Calle Mayor 5, Bloque C", "Calle Mayor 5, Bloque B", "differs"),
+            ("Av. Mayor 5", "Calle Mayor 5", "differs"),
+            ("C/ Mayor 5", "Calle Mayor 5", None),
+            ("Calle Mayor s/n, Telde", "Calle Mayor S/N, 35200 Telde", None),
+        ]
         for shown, live, expected in cases:
             self.assertEqual(address_verdict(shown, live), expected, shown)
 
@@ -220,3 +226,55 @@ class TestLegacyHomepageTransform(BaseCase):
             )
         )
         self.assertEqual(address_verdict("Telde", "Arucas"), "differs")
+
+
+class TestLegacyHomepageExtraLines(BaseCase):
+    """More than one line of a kind: dropped only when nothing is lost."""
+
+    LIVE = dict(LIVE, phone="928 11 11 11", phone2="600 22 22 22")
+
+    def _contact(self, lines):
+        return page(ADDRESS_LINE + lines)
+
+    def test_two_emails_with_a_differing_first_are_both_kept(self):
+        emails = (
+            '<p class="mb-2"><i class="fa fa-envelope fa-fw"/>public@example.com</p>'
+            '<p class="mb-2"><i class="fa fa-envelope fa-fw"/>shop@example.com</p>'
+        )
+        new_arch, report = relink_live_data(
+            self._contact(emails), FACTS, live=self.LIVE
+        )
+        self.assertIn("public@example.com", new_arch)
+        self.assertIn("shop@example.com", new_arch)
+        self.assertNotIn("email", report["dropped"])
+
+    def test_phones_equal_to_the_shop_numbers_collapse(self):
+        phones = (
+            '<p class="mb-2"><i class="fa fa-phone fa-fw"/>928 11 11 11</p>'
+            '<p class="mb-2"><i class="fa fa-phone fa-fw"/>600 22 22 22</p>'
+            '<p class="mb-2"><i class="fa fa-phone fa-fw"/>928111111</p>'
+        )
+        new_arch, report = relink_live_data(
+            self._contact(phones), FACTS, live=self.LIVE
+        )
+        self.assertIn(legacy_homepage.LIVE_TEMPLATES["phone"], new_arch)
+        self.assertIn(legacy_homepage.LIVE_TEMPLATES["phone2"], new_arch)
+        self.assertNotIn("928111111", new_arch)
+        self.assertIn("phone2", report["dropped"])
+
+    def test_an_unrelated_third_phone_is_kept(self):
+        phones = (
+            '<p class="mb-2"><i class="fa fa-phone fa-fw"/>928 11 11 11</p>'
+            '<p class="mb-2"><i class="fa fa-phone fa-fw"/>600 22 22 22</p>'
+            '<p class="mb-2"><i class="fa fa-phone fa-fw"/>699 99 99 99</p>'
+        )
+        new_arch, report = relink_live_data(
+            self._contact(phones), FACTS, live=self.LIVE
+        )
+        self.assertIn("699 99 99 99", new_arch)
+        self.assertIn("extra phone2 line kept as typed", report["notes"])
+        # The same decisions carried from another language copy.
+        decisions, _report = legacy_homepage.decide_contact_kinds(
+            self._contact(phones), FACTS, self.LIVE
+        )
+        self.assertEqual(decisions["phone2#1"], "keep")
