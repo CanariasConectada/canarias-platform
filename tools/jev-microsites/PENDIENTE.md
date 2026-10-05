@@ -154,3 +154,19 @@ Pendiente tras la aplicación:
 - Redirecciones 301 de los 30 subdominios antiguos del zip: `microsite-redirects.yml`, instalado por el usuario en `/etc/dokploy/traefik/dynamic/`. 30/30 verificadas (maquifer, fijando la IP; el caché DNS local aún tenía la dirección de IONOS).
 - Pendiente: decidir el destino de `cafeteriaastrid` (dos sites Astrid); 10 subdominios sin comercio en prod; comprobar la renovación del certificado comodín antes del 2026-11-24 (requiere validación DNS).
 - Si se borran registros individuales en IONOS: mantener el dominio raíz, los MX, el SPF y cualquier TXT/CNAME; un nombre con más registros se borra entero o no se toca.
+
+## 11. Imágenes faltantes y títulos del listón 2 (2026-10-05, solo lectura)
+
+- Inventario: `inventario_portadas.py` → `/home/odoo/Pending/jev-work/data/2026-10-05/portadas.json`. Excel: `informe_imagenes.py` → `/home/odoo/microsites_imagenes_faltantes_2026-10-05.xlsx` (206 comercios; 93 con alguna imagen faltante).
+- Hallazgo: los fondos `/web/content/<id>/…` de los sites 130, 134, 161 y 162 apuntan a 10 adjuntos que **no existen** en `prod` (ids 20578-20691): se cuentan como imagen rota, no como presente.
+- Hallazgo: las 69 compañías con `write_uid = 207` las escribió nuestro `aplicar.py` del 2026-09-23 (cuenta admin del dueño); se cruzan con `backup.jsonl` y no cuentan como edición manual.
+- Listón 2: `propuesta_s2.py` (títulos a mano en `s2_borrador.json`, Jev de encaje ≥ 0,85) → `s2_texts.json`, `s2_translations.json`, `cambios_s2.csv` (134 sites, 268 filas). QA de traducciones: `qa_traducciones.py s2_translations.json s2_translations_qa.json`.
+- Aplicar (pendiente del usuario, nada aplicado):
+  ```
+  python3 aplicar.py --csv cambios_s2.csv --offline
+  python3 aplicar.py --csv cambios_s2.csv                              # dry-run conectado
+  python3 aplicar.py --csv cambios_s2.csv --apply --only-site 68       # piloto
+  # cuando termine la cola de website_auto_translate:
+  python3 corregir_traducciones.py --translations s2_translations.json --qa s2_translations_qa.json --views-csv cambios_s2.csv
+  ```
+- Las filas `Separador.h2` y `res_company.microsite_banner_title` van en pareja: si una no se aplica, la otra tampoco.
