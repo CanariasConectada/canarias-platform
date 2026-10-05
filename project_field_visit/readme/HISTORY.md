@@ -1,3 +1,12 @@
+## 19.0.1.3.0 (2026-10-05)
+
+* Importer, tracking list: a sheet whose title names a field consultant (full
+  or first name, case and accents ignored, exactly one active user) assigns
+  that consultant to its rows with an empty assignment column, so a
+  consultant's own sheet needs no *ASIGNACION* column. A value in the column
+  still wins over the sheet title. A business on several consultants' sheets
+  gets all of them as assignees; a re-import only adds assignees.
+
 ## 19.0.1.2.0 (2026-09-25)
 
 * Importer: second format, the consultants' tracking list. Every sheet with a
