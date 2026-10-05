@@ -16,7 +16,7 @@ try:
 except ImportError:  # pragma: no cover
     openpyxl = None
 
-from .common import FieldVisitCase
+from .common import CONSULTANT, FieldVisitCase
 
 MANAGER = "project_field_visit.group_field_visit_manager"
 
@@ -390,6 +390,54 @@ class TestFieldVisitTracking(FieldVisitCase):
         )
         self.assertFalse(self.env["project.project"]._field_visit_grant_admins())
         self.assertNotIn(other, group.user_ids)
+
+    def _consultant(self, name, login):
+        return self.env["res.users"].create(
+            {
+                "name": name,
+                "login": login,
+                "company_id": self.owner.id,
+                "company_ids": [(6, 0, self.owner.ids)],
+                "group_ids": [(6, 0, self.env.ref(CONSULTANT).ids)],
+            }
+        )
+
+    def test_assignment_by_sheet_title(self):
+        """One sheet per consultant: the title assigns the rows without a
+        value in the assignment column; the column wins when filled."""
+        ana = self._consultant("Zzfvana Lopez", "zzfv_ana")
+        luis = self._consultant("Zzfvluís Pérez", "zzfv_luis")
+        sheets = [
+            (
+                "MASTER",
+                [
+                    ["Nombre", "ZONA", "TLF"],
+                    ["Zzfv Bakery Demo", "G", "600"],
+                    ["Zzfv Ferreteria Central", "FG", "601"],
+                ],
+            ),
+            (
+                "ZZFVANA",
+                [
+                    ["Nombre", "ZONA", "ASIGNACION"],
+                    ["Zzfv Bakery Demo", "G", None],
+                    ["Zzfv Ferreteria Central", "FG", "zzfvluis"],
+                ],
+            ),
+            # No assignment column at all, accents and case differ.
+            ("Zzfvluis ", [["Nombre", "ZONA", "TLF"], ["Zzfv Bakery Demo", "G", "6"]]),
+        ]
+        wizard = self._import(sheets=sheets)
+        self.assertIn("Assigned to a consultant user: 2", wizard.summary)
+        tasks = self._tasks()
+        bakery = tasks.filtered(lambda t: t.business_company_id == self.business)
+        hardware = tasks - bakery
+        self.assertEqual(bakery.user_ids, ana | luis, "every sheet adds its own")
+        self.assertEqual(hardware.user_ids, luis, "the column wins over the title")
+        # Re-import: assignees are only ever added.
+        hardware.user_ids = [(4, self.consultant.id)]
+        self._import(sheets=sheets)
+        self.assertEqual(hardware.user_ids, luis | self.consultant)
 
     def test_csv_tracking_list(self):
         rows = [

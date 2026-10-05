@@ -1002,6 +1002,21 @@ class ProjectFieldVisitImport(models.TransientModel):
         return self.env["res.users"]
 
     @api.model
+    def _row_consultant(self, record, index, by_sheet):
+        """The consultant of one row: its own column, else its sheet's title.
+
+        The workbook has one sheet per consultant (``BERTA``, ``DAVID``...),
+        not all of them with an assignment column. A value in the column
+        always wins, even when it names nobody.
+        """
+        if record["consultant"]:
+            return self._match_consultant(record["consultant"], index)
+        sheet = record["sheet"]
+        if sheet not in by_sheet:
+            by_sheet[sheet] = self._match_consultant(sheet, index)
+        return by_sheet[sheet]
+
+    @api.model
     def _planned_visit(self, dates):
         """Latest visit round of a row, at noon so no timezone moves its day."""
         if not dates:
@@ -1081,7 +1096,7 @@ class ProjectFieldVisitImport(models.TransientModel):
 
         :return: (groups in sheet order, review lines)
         """
-        groups, review = {}, {}
+        groups, review, by_sheet = {}, {}, {}
         task_names = self._task_name_index(existing)
         for record in records:
             display = record["trade_name"]
@@ -1106,8 +1121,12 @@ class ProjectFieldVisitImport(models.TransientModel):
                 key = f"partner:{prospect.id}"
             else:
                 key = "new:%s" % name_key(display)
+            # Every sheet naming a consultant adds one: rows of a business
+            # on several consultants' sheets assign all of them.
+            user = self._row_consultant(record, consultants, by_sheet)
             if key in groups:
                 tracking.merge_tracking(groups[key]["record"], record)
+                groups[key]["users"] |= user
                 continue
             groups[key] = {
                 "key": key,
@@ -1115,14 +1134,17 @@ class ProjectFieldVisitImport(models.TransientModel):
                 "company": company,
                 "website": website,
                 "method": method or "prospect",
+                "users": user,
             }
         for group in groups.values():
             record = group["record"]
-            user = self._match_consultant(record["consultant"], consultants)
-            group["user"] = user
+            unknown = record["consultant"] and not self._match_consultant(
+                record["consultant"], consultants
+            )
+            group["consultant_text"] = bool(unknown)
             props = dict(record["props"])
             labels = dict(record["labels"])
-            if record["consultant"] and not user:
+            if unknown:
                 props[tracking.CONSULTANT_PROPERTY[0]] = record["consultant"]
                 labels[tracking.CONSULTANT_PROPERTY[0]] = tracking.CONSULTANT_PROPERTY[
                     1
@@ -1170,10 +1192,8 @@ class ProjectFieldVisitImport(models.TransientModel):
         for group in groups:
             company, record = group["company"], group["record"]
             counts[group["method"]] += 1
-            counts["consultant"] += bool(group["user"])
-            counts["consultant_text"] += bool(
-                record["consultant"] and not group["user"]
-            )
+            counts["consultant"] += bool(group["users"])
+            counts["consultant_text"] += group["consultant_text"]
             counts["planned"] += bool(group["planned"])
             if not company:
                 unmatched.append(record["trade_name"])
@@ -1226,7 +1246,7 @@ class ProjectFieldVisitImport(models.TransientModel):
             "field_visit_contact_name": record["contact"],
             "field_visit_zone": record["zone"],
         }
-        planned, user = group["planned"], group["user"]
+        planned, users = group["planned"], group["users"]
         vals = {}
         if company:
             vals["business_company_id"] = company.id
@@ -1248,8 +1268,11 @@ class ProjectFieldVisitImport(models.TransientModel):
                 or (overwrite and planned != task.date_deadline)
             ):
                 vals["date_deadline"] = planned
-            if user and user not in task.user_ids:
-                vals["user_ids"] = [Command.link(user.id)]
+            # Assignees are only added: never removed by a re-import.
+            if users - task.user_ids:
+                vals["user_ids"] = [
+                    Command.link(user.id) for user in users - task.user_ids
+                ]
             if props:
                 vals["task_properties"] = self._merged_properties(
                     task, props, overwrite
@@ -1260,7 +1283,7 @@ class ProjectFieldVisitImport(models.TransientModel):
             vals.update(
                 name=record["trade_name"] or company.name,
                 project_id=self.project_id.id,
-                user_ids=[Command.set(user.ids)],
+                user_ids=[Command.set(users.ids)],
             )
             if planned:
                 vals["date_deadline"] = planned
