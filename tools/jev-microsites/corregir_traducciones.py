@@ -50,14 +50,27 @@ def view_ids_from_args(views: str | None, views_csv: str | None) -> list[int]:
     return sorted({int(r["v"]) for r in json.loads(Path(views).read_text(encoding="utf-8"))})
 
 
-def plan_term_writes(terms: list[dict], translations: dict, qa: dict | None) -> tuple[list[tuple[dict, str]], dict]:
+# Job states after which the queue no longer rewrites the terms.
+SETTLED_JOB_STATES = ("done", "locked")
+
+
+def _job_id(term: dict):
+    value = term.get("job_id")
+    return value[0] if isinstance(value, (list, tuple)) else value
+
+
+def plan_term_writes(terms: list[dict], translations: dict, qa: dict | None,
+                     job_states: dict | None = None) -> tuple[list[tuple[dict, str]], dict]:
     """Decide which terms get a reviewed translation.
 
     Returns ``(todo, counts)``: ``todo`` is ``[(term, new_text)]`` and
     ``counts`` has ``same`` (already holds it), ``held_back`` (Jev QA not
-    ok) and ``unknown`` (sentence not in the translations file)."""
+    ok), ``unknown`` (sentence not in the translations file) and
+    ``queue_pending`` (its translation job is not done yet, so the queue
+    could overwrite the hand translation later: re-run when it is).
+    ``job_states`` maps job id to state; ``None`` skips that check."""
     todo: list[tuple[dict, str]] = []
-    counts = {"same": 0, "held_back": 0, "unknown": 0}
+    counts = {"same": 0, "held_back": 0, "unknown": 0, "queue_pending": 0}
     for term in terms:
         per_lang = translations.get(term["source_text"])
         if not per_lang:
@@ -69,11 +82,20 @@ def plan_term_writes(terms: list[dict], translations: dict, qa: dict | None) -> 
         if qa is not None and not qa.get(term["source_text"], {}).get(term["lang"], {}).get("ok"):
             counts["held_back"] += 1
             continue
+        if job_states is not None and job_states.get(_job_id(term)) not in SETTLED_JOB_STATES:
+            counts["queue_pending"] += 1
+            continue
         if (term["translated_text"] or "") == new:
             counts["same"] += 1
             continue
         todo.append((term, new))
     return todo, counts
+
+
+def preview_line(term: dict, new: str) -> str:
+    """Console preview; ``translated_text`` is ``False`` over XML-RPC when empty."""
+    old = term.get("translated_text") or ""
+    return f"  {term['lang']}  {old[:60]!r}\n        -> {new[:60]!r}"
 
 
 def main() -> int:
@@ -98,15 +120,15 @@ def main() -> int:
 
     jobs = client.search_read("auto.translate.job",
                               [("model_name", "=", "ir.ui.view"), ("res_id", "in", view_ids),
-                               ("field_name", "=", "arch_db")], ["id"])
+                               ("field_name", "=", "arch_db")], ["id", "state"])
     terms = client.search_read("auto.translate.term", [("job_id", "in", [j["id"] for j in jobs])],
-                               ["id", "lang", "source_text", "translated_text", "state"])
-    todo, counts = plan_term_writes(terms, translations, qa)
+                               ["id", "job_id", "lang", "source_text", "translated_text", "state"])
+    todo, counts = plan_term_writes(terms, translations, qa, {j["id"]: j["state"] for j in jobs})
     print(f"[{mode}] views {len(view_ids)} · terms {len(terms)} · to write {len(todo)} · "
           f"already equal {counts['same']} · held back by QA {counts['held_back']} · "
-          f"other sentences {counts['unknown']}")
+          f"other sentences {counts['unknown']} · translation job not done yet {counts['queue_pending']}")
     for t, new in todo[:8]:
-        print(f"  {t['lang']}  {t['translated_text'][:60]!r}\n        -> {new[:60]!r}")
+        print(preview_line(t, new))
     if not args.apply:
         print("dry-run: nothing written. Re-run with --apply.")
         return 0
