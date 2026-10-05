@@ -54,11 +54,17 @@ Acerca), then column, heading and background edits.
 
 Strip 2 ("Separador") title: ``ir_ui_view.<id>.Separador.h2`` and
 ``res_company.microsite_banner_title`` rows of a site go together (same
-text; one line, at most 60 characters, not all capitals). The company row
-is processed first; the heading is skipped when the company row is not
-applied, and the company write is unstaged when the heading is not
-applied, so the static page and the field read by the dynamic template
-never diverge. A company row alone is valid (dynamic pages). Hand
+text; one line, at most 60 characters, not all capitals). While planning,
+the heading is skipped when the company row is not applicable and the
+company write is unstaged when the heading is not. At write time the page
+is written first and the company write depends on it (a failed page write
+skips the field); if the field write fails after the page was written,
+both rows are reported as a split pair and a re-run aligns them. A company
+row alone is only accepted when the homepage has no ``Separador`` section
+(dynamic template); it is refused when its heading row was dropped
+(unparsable, duplicated, below --min-confianza). Strip rows use their own
+backup file (``backup_s2.jsonl`` by default) and are refused against the
+September ``backup.jsonl``; every backup line carries the run id. Hand
 translations of the new title are written afterwards with
 ``corregir_traducciones.py --views-csv`` (see its docstring).
 
@@ -268,8 +274,25 @@ def _changed_on_server(ctx: SiteContext, change: lib.Change, current) -> Outcome
     return None
 
 
+def _lone_strip_company_row(ctx: SiteContext, change: lib.Change) -> str:
+    """A company strip title without its heading row is only allowed when
+    the homepage has no ``Separador`` section (dynamic template)."""
+    if not lib.is_strip_title_target(change.target) or lib.strip_title_sibling(change, ctx.rows) is not None:
+        return ""
+    view_id = getattr(ctx, "homepage_view", None)
+    if view_id is None:
+        return ""
+    if lib.find_section(ctx.original_arch(view_id), lib.STRIP_SECTION) is None:
+        return ""
+    return (f"homepage view {view_id} has a {lib.STRIP_SECTION} section: the company strip title needs its "
+            f"ir_ui_view.{view_id}.{lib.STRIP_SECTION}.h2 row in the same CSV")
+
+
 def prepare_company_field(ctx: SiteContext, change: lib.Change) -> Outcome:
     field_name = change.target.field
+    lone = _lone_strip_company_row(ctx, change)
+    if lone:
+        return Outcome(change, STATUS_FAIL, lone)
     raw = ctx.company_value(field_name)
     if field_name == "category_id":
         current = str(raw[0]) if isinstance(raw, (list, tuple)) and raw else ""
@@ -537,6 +560,7 @@ def prepare_site(client, site: int, rows: list[lib.Change], langs: list[str], ar
     except lib.OdooError as exc:
         return [Outcome(row, STATUS_FAIL, f"cannot resolve site: {exc}") for row in rows]
     ctx = SiteContext(client, site, company_id, langs, args, rows)
+    ctx.homepage_view = homepage_view
     for change in rows:
         target = change.target
         if target.model == lib.MODEL_VIEW and homepage_view is None:
@@ -544,8 +568,9 @@ def prepare_site(client, site: int, rows: list[lib.Change], langs: list[str], ar
         elif target.model == lib.MODEL_VIEW and target.view_id != homepage_view:
             outcome = Outcome(change, STATUS_FAIL, f"view {target.view_id} is not the homepage view of site {site} "
                                                    f"(homepage view is {homepage_view})")
-        elif strip_title_error(change, rows):
-            outcome = Outcome(change, STATUS_FAIL, strip_title_error(change, rows))
+        elif strip_title_error(change, rows, getattr(args, "dropped_strip_sites", None)):
+            outcome = Outcome(change, STATUS_FAIL,
+                              strip_title_error(change, rows, getattr(args, "dropped_strip_sites", None)))
         else:
             try:
                 outcome = PREPARERS[target.kind](ctx, change)
@@ -556,12 +581,18 @@ def prepare_site(client, site: int, rows: list[lib.Change], langs: list[str], ar
     return ctx
 
 
-def strip_title_error(change: lib.Change, rows: list[lib.Change]) -> str:
+def strip_title_error(change: lib.Change, rows: list[lib.Change], dropped: dict | None = None) -> str:
     """Shape and pairing checks of a strip-title row (``""`` when fine or
-    when the row is not a strip title)."""
+    when the row is not a strip title). ``dropped`` maps sites whose
+    ``Separador.h2`` row will not be processed to the reason."""
     if not lib.is_strip_title_target(change.target):
         return ""
-    return lib.check_strip_title(change.valor_nuevo) or lib.strip_title_pair_error(change, rows)
+    error = lib.check_strip_title(change.valor_nuevo) or lib.strip_title_pair_error(change, rows)
+    if error:
+        return error
+    if change.target.kind == lib.KIND_COMPANY_FIELD and change.site in (dropped or {}):
+        return f"company strip title not written alone: {dropped[change.site]}"
+    return ""
 
 
 # ---------------------------------------------------------------------------
@@ -601,7 +632,7 @@ def execute_site(ctx: SiteContext, backup: lib.BackupWriter, stop_on_error: bool
     its unit and failed, so no background is written pointing at a missing
     image."""
     failed_deps: set[tuple] = set()
-    for unit in ctx.units.values():
+    for unit in _units_in_write_order(ctx):
         excluded: set[int] = set()
         for change in unit.changes:
             dep = ctx.dependencies.get(id(change))
@@ -645,6 +676,50 @@ def execute_site(ctx: SiteContext, backup: lib.BackupWriter, stop_on_error: bool
     return True
 
 
+def _strip_pairs(ctx: SiteContext) -> list[tuple[lib.Change, lib.Change]]:
+    """(heading row, company row) strip pairs of the site where both are staged."""
+    pairs = []
+    for change in ctx.rows:
+        if change.target.kind != lib.KIND_VIEW_H2 or change.target.section != lib.STRIP_SECTION:
+            continue
+        sibling = lib.strip_title_sibling(change, ctx.rows)
+        head, comp = ctx.outcome_for(change), ctx.outcome_for(sibling) if sibling else None
+        if head and comp and head.status == STATUS_PLAN and comp.status == STATUS_PLAN:
+            pairs.append((change, sibling))
+    return pairs
+
+
+def _units_in_write_order(ctx: SiteContext) -> list[WriteUnit]:
+    """Staging order, except that a company strip-title write goes after
+    the view write of its heading and depends on it: if the page cannot be
+    written, the field is not written either."""
+    late: list[WriteUnit] = []
+    for heading, company_row in _strip_pairs(ctx):
+        ctx.dependencies[id(company_row)] = (lib.MODEL_VIEW, heading.target.view_id, lib.FIELD_ARCH)
+        for unit in ctx.units.values():
+            if unit.model == lib.MODEL_COMPANY and company_row in unit.changes and unit not in late:
+                late.append(unit)
+    return [u for u in ctx.units.values() if u not in late] + late
+
+
+def _report_split_pairs(ctx: SiteContext) -> None:
+    """After execution: a pair with one half applied and the other failed
+    leaves page and field different. Say so on both rows."""
+    for change in ctx.rows:
+        if not lib.is_strip_title_target(change.target) or change.target.kind != lib.KIND_VIEW_H2:
+            continue
+        sibling = lib.strip_title_sibling(change, ctx.rows)
+        head = ctx.outcome_for(change)
+        comp = ctx.outcome_for(sibling) if sibling else None
+        if not head or not comp:
+            continue
+        statuses = {head.status, comp.status}
+        if STATUS_FAIL in statuses and STATUS_APPLIED in statuses:
+            note = "strip pair split: page heading and company field now differ; fix the cause and re-run this site"
+            for outcome in (head, comp):
+                outcome.reason = f"{outcome.reason}; {note}" if outcome.reason else note
+
+
 def _finalize_outcomes(ctx: SiteContext) -> None:
     """Turn WOULD APPLY into APPLIED or FAIL according to the write units."""
     for outcome in ctx.outcomes:
@@ -658,6 +733,7 @@ def _finalize_outcomes(ctx: SiteContext) -> None:
             outcome.status = STATUS_APPLIED
         else:
             outcome.status, outcome.reason = STATUS_FAIL, "not written (stopped)"
+    _report_split_pairs(ctx)
 
 
 # ---------------------------------------------------------------------------
@@ -706,8 +782,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--csv", type=Path, default=lib.DEFAULT_CSV, help="proposals file")
     parser.add_argument("--zip-root", type=Path, default=lib.DEFAULT_ZIP_ROOT,
                         help="root directory that image paths are relative to")
-    parser.add_argument("--backup", type=Path, default=lib.DEFAULT_BACKUP,
-                        help="backup JSON lines file (kept outside the git tree)")
+    parser.add_argument("--backup", type=Path, default=None,
+                        help="backup JSON lines file (kept outside the git tree); default "
+                             f"{lib.DEFAULT_BACKUP}, or {lib.S2_BACKUP} when the CSV has strip-2 title rows "
+                             "(those are refused against the September file)")
     parser.add_argument("--apply", action="store_true", help="perform the writes (default: dry-run)")
     parser.add_argument("--offline", action="store_true",
                         help="validate and print the plan from the CSV alone, without connecting")
@@ -757,6 +835,45 @@ def confirm_prod(args) -> bool:
     return True
 
 
+def _has_strip_rows(changes: list[lib.Change], invalid: list[lib.InvalidRow]) -> bool:
+    return any(lib.is_strip_title_target(c.target) for c in changes) or any(
+        f".{lib.STRIP_SECTION}." in r.campo or r.campo.endswith(lib.STRIP_TITLE_FIELD) for r in invalid)
+
+
+def resolve_backup(args, changes: list[lib.Change], invalid: list[lib.InvalidRow]) -> str:
+    """Pick the backup file. Strip-2 rows get their own file and are never
+    written into the September one (revertir.py restores the earliest line
+    per record, which there is the pre-September value). Returns an error
+    message or ``""``."""
+    strip = _has_strip_rows(changes, invalid)
+    if args.backup is None:
+        args.backup = lib.S2_BACKUP if strip else lib.DEFAULT_BACKUP
+    if strip and lib.same_path(args.backup, lib.DEFAULT_BACKUP):
+        return (f"refusing to use {lib.DEFAULT_BACKUP} for strip-2 title rows: it holds the 2026-09-23 "
+                f"backups of the same records; use --backup {lib.S2_BACKUP}")
+    return ""
+
+
+def dropped_strip_sites(changes: list[lib.Change], invalid: list[lib.InvalidRow],
+                        kept: list[lib.Change]) -> dict[int, str]:
+    """Sites whose ``Separador.h2`` row was in the CSV but will not be
+    processed (unparsable, duplicated, below --min-confianza, filtered):
+    their company strip row must not be written alone."""
+    kept_ids = {id(c) for c in kept}
+    dropped: dict[int, str] = {}
+    for change in changes:
+        t = change.target
+        if t.kind == lib.KIND_VIEW_H2 and t.section == lib.STRIP_SECTION and id(change) not in kept_ids:
+            dropped[change.site] = f"its {change.campo} row was dropped before processing"
+    for row in invalid:
+        if f".{lib.STRIP_SECTION}." in row.campo:
+            try:
+                dropped[int(row.site)] = f"its {row.campo} row is unparsable"
+            except ValueError:
+                pass
+    return dropped
+
+
 def select_changes(changes: list[lib.Change], args) -> tuple[list[lib.Change], list[Outcome]]:
     """Apply --only-site, duplicate detection and --min-confianza.
 
@@ -779,10 +896,10 @@ def select_changes(changes: list[lib.Change], args) -> tuple[list[lib.Change], l
     return kept, outcomes
 
 
-def validate_offline(change: lib.Change, rows: list[lib.Change], zip_root: Path) -> str:
+def validate_offline(change: lib.Change, rows: list[lib.Change], zip_root: Path, dropped: dict | None = None) -> str:
     """Checks that do not need the server. Returns an error message or ``""``."""
     target = change.target
-    strip_error = strip_title_error(change, rows)
+    strip_error = strip_title_error(change, rows, dropped)
     if strip_error:
         return strip_error
     if target.kind == lib.KIND_COMPANY_IMAGE:
@@ -837,7 +954,7 @@ def run_offline(grouped: dict[int, list[lib.Change]], args) -> list[Outcome]:
         for site in sites:
             print(f" site {site}")
             for change in grouped[site]:
-                error = validate_offline(change, grouped[site], args.zip_root)
+                error = validate_offline(change, grouped[site], args.zip_root, getattr(args, "dropped_strip_sites", None))
                 outcome = Outcome(change, STATUS_FAIL if error else STATUS_PLAN, error)
                 outcomes.append(outcome)
                 status = "FAIL" if error else "PLAN"
@@ -858,7 +975,13 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     for row in invalid:
         print(f"  csv row {row.line} site {row.site!r} {row.campo!r}: FAIL | {row.error}")
+    error = resolve_backup(args, changes, invalid)
+    if error:
+        print(error, file=sys.stderr)
+        return 2
+    args.dropped_strip_sites = set()
     kept, outcomes = select_changes(changes, args)
+    args.dropped_strip_sites = dropped_strip_sites(changes, invalid, kept)
     for outcome in outcomes:
         print(f"  site {outcome.change.site} {outcome.change.campo}: {outcome.status} | {outcome.reason}")
     grouped = lib.group_by_site(kept)
@@ -890,9 +1013,10 @@ def main(argv: list[str] | None = None) -> int:
           f"(views written in {args.primary_lang} only)")
     mode = "APPLY" if args.apply else "DRY-RUN"
 
-    backup = lib.BackupWriter(args.backup)
+    backup = lib.BackupWriter(args.backup, run_id=lib.new_run_id())
     if args.apply:
         backup.open()
+        print(f"backup: {args.backup} (run {backup.run_id})")
 
     stopped = False
     site_batches = list(lib.batches(list(grouped), args.batch_size))
