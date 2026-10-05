@@ -49,6 +49,10 @@ DEFAULT_DB = "prod"
 DEFAULT_CSV = HERE / "cambios.csv"
 # Outside the git tree: the backup holds full archs and base64 images.
 DEFAULT_BACKUP = Path("/home/odoo/Pending/jev-work/backup.jsonl")
+# Strip-2 runs keep their own backup: revertir.py restores the EARLIEST line
+# per record, and the September file holds the pre-September archs and the
+# empty company image fields of the same records.
+S2_BACKUP = Path("/home/odoo/Pending/jev-work/backup_s2.jsonl")
 DEFAULT_ZIP_ROOT = Path("/home/odoo/Pending/jev-work/zip/HTML_LIMPIO_WORK_FINAL/COMPLETOS")
 DEFAULT_PRIMARY_LANG = "es_ES"
 # Odoo keeps en_US in every translated jsonb value as the fallback, active
@@ -1160,8 +1164,9 @@ class BackupWriter:
       ``applied=true``). It carries no values.
     """
 
-    def __init__(self, path: Path):
+    def __init__(self, path: Path, run_id: str | None = None):
         self.path = Path(path)
+        self.run_id = run_id
         self._fh = None
 
     def open(self) -> None:
@@ -1176,6 +1181,8 @@ class BackupWriter:
     def _write(self, record: dict) -> None:
         if not self._fh:
             raise RuntimeError("backup file is not open")
+        if self.run_id:
+            record["run"] = self.run_id
         self._fh.write(json.dumps(record, ensure_ascii=False) + "\n")
 
     def flush(self) -> None:
@@ -1245,6 +1252,15 @@ class BackupWriter:
     def append_applied(self, **fields) -> None:
         """Flushed right after the RPC write succeeded."""
         self._append_event(EVENT_APPLIED, **fields)
+
+
+def new_run_id() -> str:
+    """Identifier stamped on every backup line of one aplicar.py run."""
+    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+
+
+def same_path(a: Path, b: Path) -> bool:
+    return Path(a).expanduser().resolve() == Path(b).expanduser().resolve()
 
 
 def read_backup(path: Path) -> list[dict]:

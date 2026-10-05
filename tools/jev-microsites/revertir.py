@@ -38,12 +38,23 @@ accepted; the old per-language view lines are rejected with an error.
 
 Dry-run by default (views: languages, sizes and whether the current primary
 language differs are printed, nothing is executed); ``--apply`` performs the
-writes. The default backup path lives outside the git tree
-(``/home/odoo/Pending/jev-work/backup.jsonl``).
+writes.
+
+``--backup`` is required: the September run lives in
+``/home/odoo/Pending/jev-work/backup.jsonl`` and the strip-2 runs in
+``backup_s2.jsonl``. Every line written by the current ``aplicar.py``
+carries a ``run`` id; when a file holds more than one run (lines without an
+id count as one "legacy" run) ``--run`` is required, so a revert never
+reaches back to the earliest line of an older, unrelated run.
+
+After a view is restored (or would be), the ``auto.translate.term`` rows
+locked for the texts that run introduced and any translation job of the view
+still pending are REPORTED, never deleted: they stay behind for the operator.
 """
 from __future__ import annotations
 
 import argparse
+import html
 import json
 import re
 import secrets
@@ -87,6 +98,7 @@ class Restore:
     line: int
     ts: str = ""
     primary_lang: str = lib.DEFAULT_PRIMARY_LANG
+    new_texts: tuple = ()
     status: str = ""
     reason: str = ""
 
@@ -152,13 +164,59 @@ def collect_restores(records: list[dict]) -> list[Restore]:
             site=int(record["site"]), campo=record["campo"], model=record["model"],
             res_id=int(record["res_id"]), field=record["field"], lang=record.get("lang"),
             valor_anterior=record.get("valor_anterior"), applied=False, line=record["_line"],
-            ts=record.get("ts", ""), primary_lang=record.get("primary_lang") or lib.DEFAULT_PRIMARY_LANG)
+            ts=record.get("ts", ""), primary_lang=record.get("primary_lang") or lib.DEFAULT_PRIMARY_LANG,
+            new_texts=tuple(r.get("valor_nuevo") or "" for r in record.get("rows") or []
+                            if str(r.get("campo", "")).endswith(".h2")))
         current = earliest.get(key)
         if current is None or (candidate.ts, candidate.line) < (current.ts, current.line):
             earliest[key] = candidate
     for key, restore in earliest.items():
         restore.applied = key in applied_keys
     return sorted(earliest.values(), key=lambda r: (r.site, r.model, r.res_id, r.field, r.lang or "", r.line))
+
+
+LEGACY_RUN = "legacy"
+
+
+def run_of(record: dict) -> str:
+    return record.get("run") or LEGACY_RUN
+
+
+def select_run(records: list[dict], run: str | None) -> tuple[list[dict], str]:
+    """Keep the lines of one run. Returns ``(records, error)``; error when
+    the file mixes runs and none was chosen, or the chosen one is absent."""
+    runs = sorted({run_of(r) for r in records})
+    if run is None:
+        if len(runs) > 1:
+            return [], (f"the backup file holds {len(runs)} runs ({', '.join(runs)}); pass --run to choose one "
+                        "(restoring across runs would bring back values older than that run)")
+        return records, ""
+    if run not in runs:
+        return [], f"run {run!r} not in the backup file (runs: {', '.join(runs) or 'none'})"
+    return [r for r in records if run_of(r) == run], ""
+
+
+def report_translation_leftovers(client, restore: Restore) -> None:
+    """Print, without touching them, the hand-locked terms of the texts this
+    run put in the view and the view's translation jobs still pending."""
+    search = getattr(client, "search_read", None)
+    if search is None:
+        return
+    try:
+        jobs = search("auto.translate.job", [("model_name", "=", lib.MODEL_VIEW), ("res_id", "=", restore.res_id),
+                                             ("field_name", "=", lib.FIELD_ARCH)], ["id", "state", "lang"])
+        pending = [j for j in jobs if j.get("state") == "pending"]
+        sources = [html.escape(t, quote=False) for t in restore.new_texts if t]
+        locked = search("auto.translate.term", [("job_id", "in", [j["id"] for j in jobs]), ("state", "=", "locked"),
+                                                ("source_text", "in", sources)], ["id", "lang"]) \
+            if jobs and sources else []
+    except lib.OdooError as exc:
+        print(f"    translations: could not check leftovers ({exc})")
+        return
+    if pending or locked:
+        print(f"    translations left behind for view {restore.res_id} (not deleted): "
+              f"{len(locked)} locked term(s) {sorted(t['id'] for t in locked)}; "
+              f"{len(pending)} pending job(s) {sorted(j['id'] for j in pending)}")
 
 
 def restore_value(restore: Restore):
@@ -306,7 +364,12 @@ def build_parser() -> argparse.ArgumentParser:
                     "XML-RPC, views through one psql transaction per batch.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     lib.add_connection_args(parser)
-    parser.add_argument("--backup", type=Path, default=lib.DEFAULT_BACKUP, help="backup JSON lines file")
+    parser.add_argument("--backup", type=Path, required=True,
+                        help=f"backup JSON lines file ({lib.DEFAULT_BACKUP} for the September run, "
+                             f"{lib.S2_BACKUP} for strip-2 runs)")
+    parser.add_argument("--run", default=None,
+                        help="only restore the lines of this aplicar.py run id ('legacy' = lines without an id); "
+                             "required when the file holds several runs")
     parser.add_argument("--apply", action="store_true", help="perform the writes (default: dry-run)")
     parser.add_argument("--only-site", type=lib.parse_site_list, default=None,
                         help="comma separated website ids to restore")
@@ -355,6 +418,8 @@ def restore_views(client: lib.OdooClient, views: list[Restore], args) -> bool:
             restore.status, restore.reason, ok = STATUS_FAIL, str(exc), False
         # With --apply the SQL runs after every view of the batch is checked.
         print_view_restore(restore, diffs, "TO RESTORE" if args.apply and restore.status == STATUS_PLAN else "")
+        if restore.status == STATUS_PLAN:
+            report_translation_leftovers(client, restore)
         if not ok and args.stop_on_error:
             return False
     if not todo or not args.apply:
@@ -384,7 +449,10 @@ def main(argv: list[str] | None = None) -> int:
         print(str(exc), file=sys.stderr)
         return 2
     try:
-        records = lib.read_backup(args.backup)
+        records, run_error = select_run(lib.read_backup(args.backup), args.run)
+        if run_error:
+            print(run_error, file=sys.stderr)
+            return 2
         restores = collect_restores(records)
     except (OSError, ValueError) as exc:
         print(f"cannot load {args.backup}: {exc}", file=sys.stderr)
