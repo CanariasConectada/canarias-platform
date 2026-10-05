@@ -21,7 +21,7 @@ from odoo.addons.website_map_embed.models.res_partner import (
     street_without_zip,
 )
 
-from ..tools import legacy_homepage
+from ..tools import homepage_completeness, legacy_homepage
 from ..tools import map_url as map_url_tools
 from ..tools.opening_hours import (
     MAX_RANGES_PER_DAY,
@@ -48,6 +48,17 @@ OPENING_HOURS_CARD_TEMPLATE = legacy_homepage.OPENING_HOURS_CARD_TEMPLATE
 # and theme homepages (company 100's ``theme_corporate_multi``) never match.
 LEGACY_HOMEPAGE_KEY_LIKE = ("website.homepage\\_%", "website.home-%")
 LEGACY_HOMEPAGE_KEY_RE = re.compile(r"^website\.(homepage_|home-)")
+# The dynamic homepage reads the company fields; an imported one has them
+# typed into its arch (``_get_microsite_missing_items``).
+DYNAMIC_HOMEPAGE_KEY_PREFIX = "partner_microsite_manager.microsite_homepage_"
+# Image slot of the homepage -> company field the dynamic page shows.
+COMPANY_IMAGE_SLOTS = {
+    "hero": "microsite_hero_image",
+    "intro": "microsite_intro_image",
+    "strip": "microsite_banner_image",
+}
+# Strip-2 title the importer gave every shop: not the shop's own.
+DEFAULT_STRIP_TITLE = "Consume Productos Canarios"
 # Errors Odoo's request retry handles (serialization failures, lock
 # timeouts): never swallowed, or the retry would not happen.
 RETRYABLE_ERRORS = (psycopg2.OperationalError, ConcurrencyError)
@@ -712,6 +723,137 @@ class ResCompany(models.Model):
                 "hours",
             )
         }
+
+    def _microsite_item_labels(self):
+        """Labels of the items ``_get_microsite_missing_items`` checks."""
+        _ = self.env._
+        return {
+            "hero": _("Hero image"),
+            "intro": _("Section 1 image"),
+            "strip": _("Strip 2 image"),
+            "intro_title": _("Intro title"),
+            "about": _("About text"),
+            "services": _("Services text"),
+            "strip_title": _("Strip 2 title"),
+            "logo": _("Logo"),
+            "phone": _("Phone"),
+            "email": _("Email"),
+            "address": _("Address"),
+            "hours": _("Opening hours"),
+            "category": _("Business category"),
+        }
+
+    def _get_microsite_missing_items(self):
+        """What the microsite of each company still lacks.
+
+        The homepage is the ``/`` page of the company's first website. A
+        static imported page is read from its ``es_ES`` arch, where an image
+        counts only when the attachment (or company image) it points to
+        exists; the dynamic homepage, or no homepage at all, from the
+        company fields the dynamic template renders. The strip-2 title the
+        importer put everywhere counts as missing. A few queries for the
+        whole recordset: meant to be called on many companies at once.
+
+        :return: ``{company_id: [label, ...]}``, an empty list when complete
+        """
+        companies = self.sudo()
+        labels = self._microsite_item_labels()
+        pages = {}
+        for page in (
+            self.env["website.page"]
+            .sudo()
+            .search(
+                [("url", "=", "/"), ("website_id.company_id", "in", companies.ids)],
+                order="website_id, id",
+            )
+        ):
+            pages.setdefault(page.website_id.company_id.id, page)
+        # Spanish is the language the merchants write in (en_US otherwise).
+        installed = dict(self.env["res.lang"].get_installed())
+        lang = "es_ES" if "es_ES" in installed else self.env.lang
+        static = {
+            company_id: homepage_completeness.read_static_homepage(
+                page.view_id.with_context(lang=lang).arch_db
+            )
+            for company_id, page in pages.items()
+            if not (page.view_id.key or "").startswith(DYNAMIC_HOMEPAGE_KEY_PREFIX)
+        }
+        Attachment = self.env["ir.attachment"].sudo()
+        images = {
+            (att["res_id"], att["res_field"])
+            for att in Attachment.search_read(
+                [
+                    ("res_model", "=", "res.company"),
+                    ("res_id", "in", companies.ids),
+                    ("res_field", "in", list(COMPANY_IMAGE_SLOTS.values())),
+                ],
+                ["res_id", "res_field"],
+            )
+        }
+        logos = {
+            att["res_id"]
+            for att in Attachment.search_read(
+                [
+                    ("res_model", "=", "res.partner"),
+                    ("res_id", "in", companies.partner_id.ids),
+                    ("res_field", "=", "image_1920"),
+                ],
+                ["res_id"],
+            )
+        }
+        linked = {
+            ref
+            for shown in static.values()
+            for kind, ref in shown["images"].values()
+            if kind == "attachment"
+        }
+        existing = set(Attachment.browse(linked).exists().ids)
+        has_category = "category_id" in companies._fields
+
+        def image_present(company, kind, ref):
+            if kind == "attachment":
+                return ref in existing
+            if kind == "company":
+                return ref[0] == company.id and ref in images
+            return kind == "other"
+
+        result = {}
+        for company in companies:
+            shown = static.get(company.id)
+            if shown is None:
+                present = {
+                    slot: (company.id, field) in images
+                    for slot, field in COMPANY_IMAGE_SLOTS.items()
+                }
+                shown = {
+                    "intro_title": company.microsite_intro_title,
+                    "about": company.microsite_about_text,
+                    "services": company.microsite_services_text,
+                    "strip_title": company.microsite_banner_title,
+                }
+            else:
+                present = {
+                    slot: image_present(company, kind, ref)
+                    for slot, (kind, ref) in shown["images"].items()
+                }
+            strip_title = (shown["strip_title"] or "").strip()
+            done = {
+                **present,
+                **{
+                    key: bool((shown[key] or "").strip())
+                    for key in ("intro_title", "about", "services")
+                },
+                "strip_title": bool(strip_title)
+                and strip_title.casefold() != DEFAULT_STRIP_TITLE.casefold(),
+                "logo": company.partner_id.id in logos,
+                "category": not has_category or bool(company.category_id),
+            }
+            for kind in ("phone", "email", "address", "hours"):
+                done[kind] = company._microsite_live_has(kind)
+            result[company.id] = [
+                label for key, label in labels.items() if not done[key]
+            ]
+        return result
 
     @api.model
     def _get_legacy_homepage_views(self, view_ids=None):

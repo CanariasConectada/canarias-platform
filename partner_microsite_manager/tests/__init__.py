@@ -10,6 +10,7 @@ from . import (
     test_merchant_server_actions,
     test_microsite_company,
     test_microsite_company_picker,
+    test_microsite_completeness,
     test_microsite_hero,
     test_microsite_render,
     test_microsite_settings,

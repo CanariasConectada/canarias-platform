@@ -1,3 +1,13 @@
+## 19.0.2.14.0 (2026-10-05)
+
+- `res.company._get_microsite_missing_items()`: what each microsite still
+  lacks (homepage images, intro / about / services / strip-2 texts, logo,
+  phone, email, address, opening hours, business category), batched over a
+  recordset. Static imported homepages are read from their `es_ES` arch and
+  an image only counts when its attachment exists; the dynamic homepage
+  from the company fields. The importer's "Consume Productos Canarios"
+  strip title counts as missing. Read-only: nothing is written.
+
 ## 19.0.2.13.0 (2026-10-01)
 
 - Legacy homepages follow the company (client report: the content editor
