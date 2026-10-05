@@ -1,3 +1,14 @@
+## 19.0.1.4.0 (2026-10-05)
+
+* Microsite completeness on the task: a task linked to a platform business
+  shows what its microsite still lacks (*Missing microsite information*,
+  from ``partner_microsite_manager``) and whether it is *Information
+  complete*, in the form, the kanban card and the lists, with an
+  *Incomplete information* filter. Refreshed when the task's business
+  changes, every day by a cron (one batched check for all tasks) and by the
+  managers' *Refresh microsite status* action. New dependency:
+  ``partner_microsite_manager``.
+
 ## 19.0.1.3.0 (2026-10-05)
 
 * Importer, tracking list: a sheet whose title names a field consultant (full

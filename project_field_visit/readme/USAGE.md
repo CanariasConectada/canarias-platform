@@ -41,5 +41,12 @@ switch to the calendar to see the week. Managers also get *All visits*,
 grouped by zone. The planned date of a task is a
 reminder in your activities; *Log visit* can set the next one.
 
+To check that every merchant has all its information, filter the visits by
+*Incomplete information*: each task linked to a platform business lists what
+its microsite lacks (homepage images, intro, about, services and strip
+texts, logo, phone, e-mail, address, opening hours, business category). The
+list is refreshed every night; managers can select tasks and run *Action >
+Refresh microsite status* after a merchant updates the site.
+
 For the next phase, create a new project, enable *Door-to-door field
 visits* and add its own fields from the task form (*Add Properties*).
