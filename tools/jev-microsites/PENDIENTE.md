@@ -96,8 +96,8 @@ export ODOO_LOGIN=...                           # la contraseña se pide por get
 python3 aplicar.py                              # dry-run conectado: comprueba que la vista es la portada del site y compara con el servidor
 python3 aplicar.py --apply --only-site 68       # primer site (Little Beach, 3 imágenes); pide confirmar "prod" salvo --yes
 python3 aplicar.py --apply                      # todo cambios.csv en lotes de 10 sites
-python3 revertir.py                             # dry-run de la reversión
-python3 revertir.py --apply                     # restaura desde /home/odoo/Pending/jev-work/backup.jsonl
+python3 revertir.py --backup /home/odoo/Pending/jev-work/backup.jsonl           # dry-run de la reversión (--backup es obligatorio)
+python3 revertir.py --backup /home/odoo/Pending/jev-work/backup.jsonl --apply   # restaura la ejecución de septiembre
 ```
 
 Reglas de seguridad de `aplicar.py` (tras la revisión de riesgo + fiabilidad):
@@ -161,12 +161,18 @@ Pendiente tras la aplicación:
 - Hallazgo: los fondos `/web/content/<id>/…` de los sites 130, 134, 161 y 162 apuntan a 10 adjuntos que **no existen** en `prod` (ids 20578-20691): se cuentan como imagen rota, no como presente.
 - Hallazgo: las 69 compañías con `write_uid = 207` las escribió nuestro `aplicar.py` del 2026-09-23 (cuenta admin del dueño); se cruzan con `backup.jsonl` y no cuentan como edición manual.
 - Listón 2: `propuesta_s2.py` (títulos a mano en `s2_borrador.json`, Jev de encaje ≥ 0,85) → `s2_texts.json`, `s2_translations.json`, `cambios_s2.csv` (134 sites, 268 filas). QA de traducciones: `qa_traducciones.py s2_translations.json s2_translations_qa.json`.
-- Aplicar (pendiente del usuario, nada aplicado):
+- Aplicar (pendiente del usuario, nada aplicado). El listón 2 usa SU PROPIO backup (`backup_s2.jsonl`); `aplicar.py` se niega a escribir filas del listón 2 en el `backup.jsonl` de septiembre, porque `revertir.py` restaura la línea más antigua de cada registro y devolvería las portadas y las imágenes a su estado anterior a septiembre.
   ```
-  python3 aplicar.py --csv cambios_s2.csv --offline
-  python3 aplicar.py --csv cambios_s2.csv                              # dry-run conectado
-  python3 aplicar.py --csv cambios_s2.csv --apply --only-site 68       # piloto
-  # cuando termine la cola de website_auto_translate:
+  B=/home/odoo/Pending/jev-work/backup_s2.jsonl
+  python3 aplicar.py --csv cambios_s2.csv --backup $B --offline
+  python3 aplicar.py --csv cambios_s2.csv --backup $B                                          # dry-run conectado
+  python3 aplicar.py --csv cambios_s2.csv --backup $B --apply --stop-on-error --only-site 68   # piloto; anota el "run" que imprime
+  python3 aplicar.py --csv cambios_s2.csv --backup $B --apply --stop-on-error                  # resto, lotes de 10
+  # cuando la cola de website_auto_translate de esas vistas esté terminada (los términos con trabajo pendiente se saltan):
   python3 corregir_traducciones.py --translations s2_translations.json --qa s2_translations_qa.json --views-csv cambios_s2.csv
+  # revertir el piloto (si el fichero tiene varias ejecuciones, --run es obligatorio):
+  python3 revertir.py --backup $B --only-site 68 --run <run>             # dry-run; lista términos bloqueados y trabajos pendientes que quedan
+  python3 revertir.py --backup $B --only-site 68 --run <run> --apply
   ```
-- Las filas `Separador.h2` y `res_company.microsite_banner_title` van en pareja: si una no se aplica, la otra tampoco.
+- Las filas `Separador.h2` y `res_company.microsite_banner_title` van en pareja: se escribe primero la portada y el campo depende de ella; si falla el campo tras escribir la portada, ambas filas salen como «strip pair split» y basta con relanzar el site. Una fila de compañía sola solo se acepta si la portada no tiene sección Separador (plantilla dinámica).
+- `revertir.py` no borra las traducciones a mano (`auto.translate.term` bloqueados) ni los trabajos pendientes de la cola: solo los lista.
