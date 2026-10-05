@@ -2,7 +2,10 @@
 """Jev QA of the reviewed translations before they are written.
 
 One Decisions request per Spanish source with one ``noul`` question per
-language. A translation passes when Jev gives >= 0.85. Output:
+language. A translation passes when Jev gives >= 0.85.
+
+Usage: qa_traducciones.py [TRANSLATIONS.json [OUT_QA.json]]
+Defaults: /home/odoo/Pending/jev-work/data/translations.json ->
 /home/odoo/Pending/jev-work/data/translations_qa.json
 """
 import json
@@ -19,8 +22,11 @@ LANGS = {"en_US": "English", "de_DE": "German", "fr_FR": "French", "it_IT": "Ita
 THRESHOLD = 0.85
 
 
-def main() -> int:
-    tr = json.loads((DATA / "translations.json").read_text(encoding="utf-8"))
+def main(argv: list[str] | None = None) -> int:
+    argv = sys.argv[1:] if argv is None else argv
+    src_path = Path(argv[0]) if argv else DATA / "translations.json"
+    out_path = Path(argv[1]) if len(argv) > 1 else DATA / "translations_qa.json"
+    tr = json.loads(src_path.read_text(encoding="utf-8"))
     qa = {}
     for i, (src, per_lang) in enumerate(tr.items()):
         state = ("Website copy for a local shop in Gran Canaria, translated from Spanish. "
@@ -36,7 +42,7 @@ def main() -> int:
             for l in LANGS}
         ans = jev_client.decide(state, questions, tag=f"qa-tr-{i}")["answers"]
         qa[src] = {l: {"p": round(float(ans[l]["noul"]), 3), "ok": float(ans[l]["noul"]) >= THRESHOLD} for l in LANGS}
-    (DATA / "translations_qa.json").write_text(json.dumps(qa, ensure_ascii=False, indent=1), encoding="utf-8")
+    out_path.write_text(json.dumps(qa, ensure_ascii=False, indent=1), encoding="utf-8")
     flat = [(s, l, v["p"]) for s, d in qa.items() for l, v in d.items()]
     bad = [x for x in flat if x[2] < THRESHOLD]
     print(f"checked {len(flat)} translations · ok {len(flat) - len(bad)} · below {THRESHOLD}: {len(bad)} · cost so far {jev_client.total_cost():.4f} USD")
