@@ -1,6 +1,7 @@
 from . import (
     test_content_editor,
     test_core_menu_gating,
+    test_homepage_completeness,
     test_legacy_homepage_live,
     test_legacy_homepage_transform,
     test_legal_pages,
