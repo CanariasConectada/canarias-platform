@@ -52,6 +52,16 @@ missing; ``Acerca.insert`` (JSON payload) inserts the whole two-column
 section after SEC1 (or Hero). Within a site, inserts run first (SEC1 before
 Acerca), then column, heading and background edits.
 
+Strip 2 ("Separador") title: ``ir_ui_view.<id>.Separador.h2`` and
+``res_company.microsite_banner_title`` rows of a site go together (same
+text; one line, at most 60 characters, not all capitals). The company row
+is processed first; the heading is skipped when the company row is not
+applied, and the company write is unstaged when the heading is not
+applied, so the static page and the field read by the dynamic template
+never diverge. A company row alone is valid (dynamic pages). Hand
+translations of the new title are written afterwards with
+``corregir_traducciones.py --views-csv`` (see its docstring).
+
 Multiple rows targeting the same view are combined in memory and written
 once. Credentials: ``--login``/``ODOO_LOGIN`` and
 ``ODOO_PASSWORD`` (or an interactive prompt); there is no password flag.
@@ -226,6 +236,14 @@ class SiteContext:
         unit.changes.append(change)
         self._company_values[field_name] = value
 
+    def unstage_company(self, change: lib.Change) -> None:
+        """Drop a staged company write (and its backup line) of ``change``."""
+        for key, unit in list(self.units.items()):
+            if unit.model == lib.MODEL_COMPANY and change in unit.changes:
+                del self.units[key]
+                self._company_values.pop(unit.field, None)
+        self.backup_entries = [e for e in self.backup_entries if e.change is not change]
+
     def outcome_for(self, change: lib.Change) -> Outcome | None:
         for outcome in self.outcomes:
             if outcome.change is change:
@@ -314,9 +332,43 @@ def _section_missing(ctx: SiteContext, view_id: int, section: str) -> str | None
         f"section {section!r} not found in view {view_id} ({ctx.primary_lang})"
 
 
+def _strip_sibling_blocker(ctx: SiteContext, change: lib.Change) -> Outcome | None:
+    """A strip-title heading is only written when its company row (processed
+    first: company fields come before view edits) is written too or already
+    holds the value, so page and field never diverge."""
+    sibling = lib.strip_title_sibling(change, ctx.rows)
+    outcome = ctx.outcome_for(sibling) if sibling is not None else None
+    if outcome is None or outcome.status == STATUS_PLAN:
+        return None
+    if outcome.status == STATUS_SKIP and outcome.reason == REASON_ALREADY:
+        return None
+    return Outcome(change, STATUS_SKIP,
+                   f"paired res_company.{lib.STRIP_TITLE_FIELD} row is not applied ({outcome.status}: {outcome.reason})")
+
+
+def release_strip_sibling(ctx: SiteContext, change: lib.Change, outcome: Outcome) -> None:
+    """When a strip-title heading is not going to be written, its company
+    row must not be written either: unstage it and mark it SKIP."""
+    if not lib.is_strip_title_target(change.target) or change.target.kind != lib.KIND_VIEW_H2:
+        return
+    if outcome.status == STATUS_PLAN or (outcome.status == STATUS_SKIP and outcome.reason == REASON_ALREADY):
+        return
+    sibling = lib.strip_title_sibling(change, ctx.rows)
+    sibling_outcome = ctx.outcome_for(sibling) if sibling is not None else None
+    if sibling_outcome is None or sibling_outcome.status != STATUS_PLAN:
+        return
+    ctx.unstage_company(sibling)
+    sibling_outcome.status = STATUS_SKIP
+    sibling_outcome.reason = f"paired strip heading {change.campo} is not applied ({outcome.status}: {outcome.reason})"
+
+
 def prepare_view_h2(ctx: SiteContext, change: lib.Change) -> Outcome:
     view_id, section = change.target.view_id, change.target.section
     text = change.valor_nuevo
+    if section == lib.STRIP_SECTION:
+        blocked = _strip_sibling_blocker(ctx, change)
+        if blocked:
+            return blocked
     missing = _section_missing(ctx, view_id, section)
     if missing:
         return Outcome(change, STATUS_FAIL, missing)
@@ -487,22 +539,29 @@ def prepare_site(client, site: int, rows: list[lib.Change], langs: list[str], ar
     ctx = SiteContext(client, site, company_id, langs, args, rows)
     for change in rows:
         target = change.target
-        if target.model == lib.MODEL_VIEW:
-            if homepage_view is None:
-                ctx.outcomes.append(Outcome(change, STATUS_FAIL,
-                                            f"site {site} has no homepage page (website.page url='/')"))
-                continue
-            if target.view_id != homepage_view:
-                ctx.outcomes.append(Outcome(change, STATUS_FAIL,
-                                            f"view {target.view_id} is not the homepage view of site {site} "
-                                            f"(homepage view is {homepage_view})"))
-                continue
-        try:
-            outcome = PREPARERS[target.kind](ctx, change)
-        except (lib.OdooError, lib.ArchError, OSError, ValueError) as exc:
-            outcome = Outcome(change, STATUS_FAIL, f"{type(exc).__name__}: {exc}")
+        if target.model == lib.MODEL_VIEW and homepage_view is None:
+            outcome = Outcome(change, STATUS_FAIL, f"site {site} has no homepage page (website.page url='/')")
+        elif target.model == lib.MODEL_VIEW and target.view_id != homepage_view:
+            outcome = Outcome(change, STATUS_FAIL, f"view {target.view_id} is not the homepage view of site {site} "
+                                                   f"(homepage view is {homepage_view})")
+        elif strip_title_error(change, rows):
+            outcome = Outcome(change, STATUS_FAIL, strip_title_error(change, rows))
+        else:
+            try:
+                outcome = PREPARERS[target.kind](ctx, change)
+            except (lib.OdooError, lib.ArchError, OSError, ValueError) as exc:
+                outcome = Outcome(change, STATUS_FAIL, f"{type(exc).__name__}: {exc}")
         ctx.outcomes.append(outcome)
+        release_strip_sibling(ctx, change, outcome)
     return ctx
+
+
+def strip_title_error(change: lib.Change, rows: list[lib.Change]) -> str:
+    """Shape and pairing checks of a strip-title row (``""`` when fine or
+    when the row is not a strip title)."""
+    if not lib.is_strip_title_target(change.target):
+        return ""
+    return lib.check_strip_title(change.valor_nuevo) or lib.strip_title_pair_error(change, rows)
 
 
 # ---------------------------------------------------------------------------
@@ -723,6 +782,9 @@ def select_changes(changes: list[lib.Change], args) -> tuple[list[lib.Change], l
 def validate_offline(change: lib.Change, rows: list[lib.Change], zip_root: Path) -> str:
     """Checks that do not need the server. Returns an error message or ``""``."""
     target = change.target
+    strip_error = strip_title_error(change, rows)
+    if strip_error:
+        return strip_error
     if target.kind == lib.KIND_COMPANY_IMAGE:
         try:
             path = lib.zip_image_path(zip_root, change.valor_nuevo)

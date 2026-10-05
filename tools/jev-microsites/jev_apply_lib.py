@@ -132,6 +132,13 @@ ACERCA_COLUMN_DEFAULTS = {
 ACERCA_PAYLOAD_KEYS = ("about_title", "about", "services_title", "services", "slug")
 ACERCA_SLUG_RE = re.compile(r"^[A-Za-z0-9_-]+$")
 
+# Strip 2 ("listón 2"): the second full-width banner of the homepage. Its
+# title lives in the ``<h2>`` of the static page and in the company field
+# that the dynamic template reads.
+STRIP_SECTION = "Separador"
+STRIP_TITLE_FIELD = "microsite_banner_title"
+STRIP_TITLE_MAX = 60
+
 
 class ArchError(ValueError):
     """The arch does not contain what the operation needs."""
@@ -378,6 +385,70 @@ def bg_url_field(url: str) -> str | None:
 
 def company_image_url(company_id: int, field: str) -> str:
     return f"{COMPANY_IMAGE_URL_PREFIX}{int(company_id)}/{field}"
+
+
+# --- Strip 2 ("Separador") title --------------------------------------------
+
+def is_strip_title_target(target: Target) -> bool:
+    """True for the two places that hold the strip-2 title: the ``<h2>`` of
+    the homepage ``Separador`` section and ``res.company.microsite_banner_title``
+    (read by the dynamic template)."""
+    if target.kind == KIND_VIEW_H2:
+        return target.section == STRIP_SECTION
+    return target.kind == KIND_COMPANY_FIELD and target.field == STRIP_TITLE_FIELD
+
+
+def check_strip_title(text: str) -> str:
+    """Return an error message when ``text`` is not an acceptable strip-2
+    title, ``""`` otherwise: one line, not empty, at most
+    :data:`STRIP_TITLE_MAX` characters, no markup and not written entirely
+    in capitals (LibreTranslate breaks all-caps text)."""
+    value = text or ""
+    if not value.strip():
+        return "empty strip title"
+    if value != value.strip():
+        return "strip title has leading or trailing whitespace"
+    if "\n" in value or "\r" in value:
+        return "strip title must be a single line"
+    if len(value) > STRIP_TITLE_MAX:
+        return f"strip title is {len(value)} characters long (max {STRIP_TITLE_MAX})"
+    if "<" in value or ">" in value:
+        return "strip title must not contain markup"
+    letters = [ch for ch in value if ch.isalpha()]
+    if letters and all(ch.isupper() for ch in letters):
+        return "strip title is all capitals"
+    return ""
+
+
+def strip_title_pair_error(change: Change, rows: Iterable[Change]) -> str:
+    """A ``Separador.h2`` row must travel with a ``microsite_banner_title``
+    row of the same site carrying the same text, so the static page and the
+    company field never diverge. A company row alone is valid (dynamic
+    pages have no view row). Returns an error message or ``""``."""
+    if change.target.kind != KIND_VIEW_H2 or change.target.section != STRIP_SECTION:
+        return ""
+    sibling = strip_title_sibling(change, rows)
+    if sibling is None:
+        return f"no res_company.{STRIP_TITLE_FIELD} row of site {change.site} goes with this strip title"
+    if normalize_text(sibling.valor_nuevo) != normalize_text(change.valor_nuevo):
+        return f"res_company.{STRIP_TITLE_FIELD} row of site {change.site} carries a different text"
+    return ""
+
+
+def strip_title_sibling(change: Change, rows: Iterable[Change]) -> Change | None:
+    """The other half of a strip-title pair (view h2 <-> company field)."""
+    want_view = change.target.kind == KIND_COMPANY_FIELD
+    for row in rows:
+        if row is change or row.site != change.site or not is_strip_title_target(row.target):
+            continue
+        if (row.target.kind == KIND_VIEW_H2) == want_view:
+            return row
+    return None
+
+
+def view_ids_of_changes(changes: Iterable[Change]) -> list[int]:
+    """Sorted distinct view ids touched by the ``ir_ui_view.*`` rows."""
+    return sorted({c.target.view_id for c in changes if c.target.model == MODEL_VIEW})
 
 
 # ---------------------------------------------------------------------------
