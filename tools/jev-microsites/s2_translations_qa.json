@@ -1,0 +1,5306 @@
+{
+ "24 HORAS SAVAGE, tienda abierta 24 horas en Guanarteme": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "3RJ Surf Time: clases de surf en la playa de Las Canteras": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.96,
+   "ok": true
+  }
+ },
+ "Aashirwad: tecnología y móviles en Tamaraceite": {
+  "en_US": {
+   "p": 0.92,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "ABILIO ORTEGA SANABRIA: formación de directivos y líderes": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.89,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "ABinformática: ordenadores, periféricos y montaje gaming": {
+  "en_US": {
+   "p": 0.92,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.83,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.78,
+   "ok": false
+  },
+  "it_IT": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.9,
+   "ok": true
+  }
+ },
+ "AEROPATÍN: patinetes eléctricos y movilidad sostenible": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Aluminios Armas: carpintería de aluminio a medida": {
+  "en_US": {
+   "p": 0.92,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.82,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.89,
+   "ok": true
+  }
+ },
+ "Amor Bijoux: bisutería handmade y pedidos personalizados": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.85,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.77,
+   "ok": false
+  }
+ },
+ "Ana Margarita Academy San José: clases para todas las edades": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.96,
+   "ok": true
+  }
+ },
+ "Ana Margarita Academy Lepanto: clases desde los 6 años": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "Ana Margarita Academy Zaragoza: inglés y apoyo escolar": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "CC Arco Iris: papelería y material escolar al por mayor": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.85,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.88,
+   "ok": true
+  }
+ },
+ "Asesoría C.R.G.: asesoría fiscal, laboral y contable": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.89,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.9,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "Auto Cristal Ralarsa: reparación y sustitución de lunas": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.89,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.82,
+   "ok": false
+  }
+ },
+ "Baby Arcoíris: ropa y accesorios personalizados para bebés": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Bazar Corina: productos prácticos para tu hogar": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.96,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.97,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "Boira: regalos, ropa y joyería con identidad canaria": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Boutique Nara: joyería, porcelana artística y decoración": {
+  "en_US": {
+   "p": 0.89,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "CAFETERÍA CAPRICCI, tu cafetería en Guanarteme": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Cafeteriarubi: pizzería y cafetería en Guanarteme": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.86,
+   "ok": true
+  }
+ },
+ "CANARIENSE SEGUROS: seguros de vida, salud, hogar y más": {
+  "en_US": {
+   "p": 0.91,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Carnicería Isaac: carnes frescas y preparados": {
+  "en_US": {
+   "p": 0.91,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.88,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.83,
+   "ok": false
+  },
+  "pt_PT": {
+   "p": 0.79,
+   "ok": false
+  }
+ },
+ "CJ Photoedición: fotos de bodas, comuniones y maternidad": {
+  "en_US": {
+   "p": 0.91,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.87,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "CLUB DEPORTIVO GODAN: aikido, jiu-jitsu y defensa personal": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.88,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "Coffee and Bike: café de especialidad y bicicletas": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.86,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.76,
+   "ok": false
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "Coquetta by Naira Peláez: ropa y complementos para mujer": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Creaciones Huertas: moda de invitada y alquiler de tocados": {
+  "en_US": {
+   "p": 0.87,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.8,
+   "ok": false
+  },
+  "it_IT": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.74,
+   "ok": false
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "Cristalerías Sánchez: cristalería con servicio a domicilio": {
+  "en_US": {
+   "p": 0.79,
+   "ok": false
+  },
+  "de_DE": {
+   "p": 0.72,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Cuartango: sabor argentino en Las Palmas de Gran Canaria": {
+  "en_US": {
+   "p": 0.91,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "Detailing Study: estética del automóvil en Lomo los Frailes": {
+  "en_US": {
+   "p": 0.86,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.84,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.83,
+   "ok": false
+  },
+  "it_IT": {
+   "p": 0.82,
+   "ok": false
+  },
+  "pl_PL": {
+   "p": 0.81,
+   "ok": false
+  },
+  "pt_PT": {
+   "p": 0.76,
+   "ok": false
+  }
+ },
+ "Deytextil: ropa laboral y textiles para empresas": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Duke Fotografía: servicios de fotografía en Tamaraceite": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.88,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "EL BEJEQUE RESTAURANTE: arroces y carnes a la brasa": {
+  "en_US": {
+   "p": 0.91,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.82,
+   "ok": false
+  },
+  "it_IT": {
+   "p": 0.78,
+   "ok": false
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.88,
+   "ok": true
+  }
+ },
+ "El Tucán 24H: tu tienda abierta 24 horas en Lomo los Frailes": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "Electro Guanarteme: material eléctrico e iluminación": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "Ensimisma: clases de pintura para adultos y niños": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.96,
+   "ok": true
+  }
+ },
+ "Esardas: joyas artesanales con piedras y perlas": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.97,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.96,
+   "ok": true
+  }
+ },
+ "Escuela infantil LA GALLINA TURULETA, desde 2002": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.9,
+   "ok": true
+  }
+ },
+ "Espacio Artístico Evohé: canto, baile e interpretación": {
+  "en_US": {
+   "p": 0.89,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.86,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.87,
+   "ok": true
+  }
+ },
+ "FAME: rehabilitación de fachadas e impermeabilización": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Fermo Asesores: asesoría fiscal, contable y de fincas": {
+  "en_US": {
+   "p": 0.9,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "FERRETERÍA FEBRILUZ: herramientas para hogar y construcción": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.84,
+   "ok": false
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "Ferretería Joca: herramientas y materiales para tu proyecto": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Fitness Nutrition Las Palmas: suplementos para deportistas": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.87,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.9,
+   "ok": true
+  }
+ },
+ "Flamboyant: moda de playa, calzado y bolsos de piel": {
+  "en_US": {
+   "p": 0.92,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.65,
+   "ok": false
+  }
+ },
+ "FLASH PRINT, comercio de alimentación en Guanarteme": {
+  "en_US": {
+   "p": 0.92,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.87,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.89,
+   "ok": true
+  }
+ },
+ "FRANELA ROSA, tienda de moda en Guanarteme": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.97,
+   "ok": true
+  }
+ },
+ "GACMARK: servicios de publicidad en Guanarteme": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "GANADERÍA LA CANCELA: carnes frescas de crianza responsable": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Greenery: flores, aceites y cosmética de CBD": {
+  "en_US": {
+   "p": 0.86,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.86,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.79,
+   "ok": false
+  },
+  "pt_PT": {
+   "p": 0.89,
+   "ok": true
+  }
+ },
+ "IMPILATES: clases de pilates en Guanarteme": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.96,
+   "ok": true
+  }
+ },
+ "INELSAN: servicios de electricidad en Guanarteme": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.88,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "INK Canarias: suministros para tatuaje y piercing": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.87,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Insular Automoción: vehículos de segunda mano con garantía": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.96,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Kayaman's Farm: productos de CBD en Tamaraceite": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "La Belle Dog: peluquería y estética canina": {
+  "en_US": {
+   "p": 0.91,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.86,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.88,
+   "ok": true
+  }
+ },
+ "LA BUENA TIERRA, dulcería en Guanarteme": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "La Orden 66: Funkos, figuras y coleccionismo en Las Palmas": {
+  "en_US": {
+   "p": 0.87,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.87,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.89,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "SALA FAST: comida para llevar en Guanarteme": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Leselect, boutique de moda en Guanarteme": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.83,
+   "ok": false
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "Let's Got Fit: entrenamiento personal y nutrición deportiva": {
+  "en_US": {
+   "p": 0.85,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.85,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "Librería Atlantic: libros, papelería y material escolar": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.84,
+   "ok": false
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "Little Beach: cócteles y deporte en directo en Guanarteme": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "Luis Competición: taller mecánico desde 1998": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "MÁS QUE XURROS CAFÉ, cafetería en Guanarteme": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "Los Milagros Bar y Tapas: amplia terraza y pet friendly": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.9,
+   "ok": true
+  }
+ },
+ "MINIMERCADO CA-SONG, tu minimercado en Guanarteme": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Modas Chupete: moda infantil de 0 meses a 12 años": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.96,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Muebles MG: muebles de diseño y decoración para tu hogar": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "MUEBLES SIONY: muebles modernos y artículos de decoración": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "MUNDO BURGER, hamburguesería en Guanarteme": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "Natur Weed Home: grow shop y CBD en Tamaraceite": {
+  "en_US": {
+   "p": 0.89,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.87,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.87,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.85,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.9,
+   "ok": true
+  }
+ },
+ "Nebula Mascotas: alimentación y cuidado para tu mascota": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Nopal Tex Mex: burritos y cocina Tex-Mex en Guanarteme": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.81,
+   "ok": false
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Nunchi, tienda de moda en Lomo los Frailes": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.96,
+   "ok": true
+  }
+ },
+ "NUTRI EXPERT: suplementos y entrenamientos en Guanarteme": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.88,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "NutriExpert Tamaraceite: nutrición deportiva y suplementos": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Only Love: moda femenina Boho Chic y complementos étnicos": {
+  "en_US": {
+   "p": 0.92,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "ÓPTICA 1500: salud visual y lentillas en Tamaraceite": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.86,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Organic Jungle: brunch-café saludable y sostenible": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.81,
+   "ok": false
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Ortopedia Bentejui Tamaraceite: ortesis y prótesis": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.96,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Peluquería Billy: cortes, color y peinados con trato cercano": {
+  "en_US": {
+   "p": 0.91,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.87,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.76,
+   "ok": false
+  },
+  "it_IT": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.8,
+   "ok": false
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "CAC'HER: más de 25 años cuidando tu cabello": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Peluquería Luna y Mar: belleza unisex, uñas y estética": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.89,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.87,
+   "ok": true
+  }
+ },
+ "Peluquería Venus: estilismo con atención personalizada": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.84,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.84,
+   "ok": false
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.82,
+   "ok": false
+  }
+ },
+ "PELUSO: libros y juguetes educativos de 0 a 12 años": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.89,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Pensión Neptuno: a pasos de la playa de Las Canteras": {
+  "en_US": {
+   "p": 0.9,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "Perfumerías Arkay Luis Morote: perfumería de autor": {
+  "en_US": {
+   "p": 0.77,
+   "ok": false
+  },
+  "de_DE": {
+   "p": 0.86,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.85,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.9,
+   "ok": true
+  }
+ },
+ "Perfumerías Arkay Ripoche: fragancias, maquillaje y skincare": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.85,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.81,
+   "ok": false
+  }
+ },
+ "Pirotecnia Volcan: tracas, voladores y fuegos artificiales": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.9,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "Pirotecnia Volcán II, pirotecnia en Lomo los Frailes": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "Pizzeria Hipopótamo: pizzas, pastas, arroces y carnes": {
+  "en_US": {
+   "p": 0.9,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.9,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.78,
+   "ok": false
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "RAFFAELE RAVO, pizzería napolitana en Guanarteme": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "PORTA PIZZA TAMARACEITE, tu pizzería en Tamaraceite": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.96,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "PORTAPIZZA GUANARTEME: pizzas a domicilio": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.89,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.84,
+   "ok": false
+  }
+ },
+ "Professional Beauty by Estefanía: perfumes y cosmética": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.87,
+   "ok": true
+  }
+ },
+ "Relocan: reparación de relojes y joyería en Las Palmas": {
+  "en_US": {
+   "p": 0.91,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "RINCÓN DE TRIANA: cocina casera con ingredientes frescos": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "ROCK ISLANDS Surf Shop: 40 años de surf en Las Palmas": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.88,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Somaphi: psicología clínica en Las Palmas de Gran Canaria": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.87,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.96,
+   "ok": true
+  }
+ },
+ "SUNGLASS CORNER BY BALI: gafas de sol de moda en Guanarteme": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.9,
+   "ok": true
+  }
+ },
+ "Talleres Grima: reparación y mantenimiento de vehículos": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.97,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "Talleres Palermo: eventos, coworking y talleres creativos": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "URBAN NAILS, centro de estética en Guanarteme": {
+  "en_US": {
+   "p": 0.91,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Vadelabores: materiales para labores y manualidades": {
+  "en_US": {
+   "p": 0.92,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.89,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.82,
+   "ok": false
+  },
+  "pl_PL": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.87,
+   "ok": true
+  }
+ },
+ "VIAJES CANATOUR: tu agencia de viajes desde 1968": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "Visonic: souvenirs y moda en Guanarteme": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.84,
+   "ok": false
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "Viva mi Pepa: chuches, helados, tabaco y lotería": {
+  "en_US": {
+   "p": 0.92,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "MI PEQUEÑO MICOS, moda en Guanarteme": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "VM Motor: coches de ocasión y segunda mano": {
+  "en_US": {
+   "p": 0.81,
+   "ok": false
+  },
+  "de_DE": {
+   "p": 0.73,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.79,
+   "ok": false
+  },
+  "it_IT": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.64,
+   "ok": false
+  },
+  "pt_PT": {
+   "p": 0.88,
+   "ok": true
+  }
+ },
+ "Voyka Skate Shop: tablas, repuestos y ropa de skate": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Yaiza Ruiz Estética: micropigmentación y medicina estética": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "Zapatería Tamarana: arreglo de zapatos y copia de llaves": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Zen Canteras: estética y terapias alternativas desde 2008": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.84,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.9,
+   "ok": true
+  }
+ },
+ "Zig Zag Mercería: telas, hilos y botones para tus proyectos": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "Adventure Mode, comercio de Guanarteme": {
+  "en_US": {
+   "p": 0.85,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.84,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.8,
+   "ok": false
+  },
+  "it_IT": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.87,
+   "ok": true
+  }
+ },
+ "Arakai: comida casera y saludable para llevar": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.89,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "MENDOZA AUTOMOCION: taller mecánico en Guanarteme": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "Bendita Hamburguesa: hamburguesería en Guanarteme": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "Café Central Las Palmas: cafetería en Guanarteme": {
+  "en_US": {
+   "p": 0.81,
+   "ok": false
+  },
+  "de_DE": {
+   "p": 0.83,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.86,
+   "ok": true
+  }
+ },
+ "Centro Estudios Lakota, en el barrio de Guanarteme": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Cafetería Churreria Astrid: churros y café en Guanarteme": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.88,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "Compra y Venta Segunda Mano, tienda en Guanarteme": {
+  "en_US": {
+   "p": 0.89,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.89,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.9,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "CORTICAN, tu tienda de cortinas en Guanarteme": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Darens: estudio de dibujo y pintura en Guanarteme": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.96,
+   "ok": true
+  }
+ },
+ "Decoratina: decoración y hogar en Guanarteme": {
+  "en_US": {
+   "p": 0.9,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.88,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.89,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.88,
+   "ok": true
+  }
+ },
+ "Diaz Leja Servicios: reformas e instalaciones": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.89,
+   "ok": true
+  }
+ },
+ "Electromecánica Adrian, taller en Guanarteme": {
+  "en_US": {
+   "p": 0.91,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Eventtos Canarias: banderas, rotulación y regalo promocional": {
+  "en_US": {
+   "p": 0.87,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.84,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.9,
+   "ok": true
+  }
+ },
+ "Evocars, comercio del automóvil en Guanarteme": {
+  "en_US": {
+   "p": 0.84,
+   "ok": false
+  },
+  "de_DE": {
+   "p": 0.82,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.88,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.81,
+   "ok": false
+  },
+  "pl_PL": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.9,
+   "ok": true
+  }
+ },
+ "joyerialucia, joyería en Guanarteme": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "LAFUCHA EKOTIENDA: productos ecológicos y de proximidad": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.84,
+   "ok": false
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Papaya Fitness: funcional, Hybrid, GAP y halterofilia": {
+  "en_US": {
+   "p": 0.91,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.86,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.84,
+   "ok": false
+  },
+  "it_IT": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.87,
+   "ok": true
+  }
+ },
+ "LA TRASTIENDA BIOMARKET: productos frescos en Guanarteme": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "Laura Hernández Estética: centro de estética en Guanarteme": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "MAGIART: arte y artesanía en Guanarteme": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "MOTORGC: el mundo de la moto en Guanarteme": {
+  "en_US": {
+   "p": 0.91,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "The Ninja Games: gimnasio en Guanarteme": {
+  "en_US": {
+   "p": 0.9,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "NOKHOI: alimentación, accesorios y peluquería para mascotas": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.78,
+   "ok": false
+  },
+  "pt_PT": {
+   "p": 0.84,
+   "ok": false
+  }
+ },
+ "Oh Qué Bueno, en Guanarteme": {
+  "en_US": {
+   "p": 0.88,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.83,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Orleans Pastelería Artesanal: dulces artesanos en Guanarteme": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.88,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Panambi, comercio de Guanarteme": {
+  "en_US": {
+   "p": 0.84,
+   "ok": false
+  },
+  "de_DE": {
+   "p": 0.83,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.8,
+   "ok": false
+  },
+  "it_IT": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.85,
+   "ok": true
+  }
+ },
+ "Pastelería Panadería David Reze: pan y dulces en Guanarteme": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.85,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.89,
+   "ok": true
+  }
+ },
+ "Podologica Besay: podología en Guanarteme": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.82,
+   "ok": false
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "PURA SATIVA: grow shop en Guanarteme": {
+  "en_US": {
+   "p": 0.9,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.81,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.86,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.82,
+   "ok": false
+  },
+  "pl_PL": {
+   "p": 0.83,
+   "ok": false
+  },
+  "pt_PT": {
+   "p": 0.88,
+   "ok": true
+  }
+ },
+ "Ramcast Distribucion: distribución desde Guanarteme": {
+  "en_US": {
+   "p": 0.91,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "Veterinaria Acuarican: cuidado veterinario en Guanarteme": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.89,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "CON TODA SEGURIDAD: agencia de viajes en Guanarteme": {
+  "en_US": {
+   "p": 0.86,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.89,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.89,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "SICRAB TATTOO: estudio de tatuaje en Guanarteme": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.96,
+   "ok": true
+  }
+ },
+ "suval: fontanería en Guanarteme": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.85,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Terraza el Pilar, tu bar en Guanarteme": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "The Captain 13: bebidas y música en vivo en Guanarteme": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "MAQUIFER INDUSTRIAL: ferretería en Guanarteme": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.89,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.75,
+   "ok": false
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "mascotasbeach: veterinaria en Guanarteme": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.82,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.89,
+   "ok": true
+  }
+ },
+ "101Racing: tintado de lunas y tuning desde 2004": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.8,
+   "ok": false
+  },
+  "it_IT": {
+   "p": 0.85,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.85,
+   "ok": true
+  }
+ },
+ "Lola Ecomarket: productos ecológicos y café de especialidad": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.83,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.82,
+   "ok": false
+  },
+  "pl_PL": {
+   "p": 0.8,
+   "ok": false
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "NEXO, comercio de Canarias Conectada": {
+  "en_US": {
+   "p": 0.85,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.83,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.76,
+   "ok": false
+  },
+  "it_IT": {
+   "p": 0.77,
+   "ok": false
+  },
+  "pl_PL": {
+   "p": 0.73,
+   "ok": false
+  },
+  "pt_PT": {
+   "p": 0.79,
+   "ok": false
+  }
+ },
+ "The Organic Beauty Lab: estética y perfumería en Guanarteme": {
+  "en_US": {
+   "p": 0.87,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.81,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.86,
+   "ok": true
+  }
+ },
+ "Clínica Jennifer Martín: medicina estética avanzada": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.85,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "Fisioterapia Guanarteme, tu centro de fisioterapia": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.9,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Mardome: comida para llevar con oferta del día": {
+  "en_US": {
+   "p": 0.92,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.8,
+   "ok": false
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "FERTA, comercio de suministros": {
+  "en_US": {
+   "p": 0.8,
+   "ok": false
+  },
+  "de_DE": {
+   "p": 0.84,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.89,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.84,
+   "ok": false
+  },
+  "pl_PL": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.89,
+   "ok": true
+  }
+ },
+ "Zarpas Pet Shop: alimentación y accesorios para mascotas": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.96,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "EL TEMPLO DE ELEGGUA II: tarot, velas y esoterismo": {
+  "en_US": {
+   "p": 0.86,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.84,
+   "ok": false
+  }
+ },
+ "Moonkies: café y algo dulce a cualquier hora": {
+  "en_US": {
+   "p": 0.88,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.88,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.77,
+   "ok": false
+  }
+ },
+ "Peluquería Soraya Godoy: cortes, color y peinados": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "TINTORERIA LAVANDERIA GALAXY'S en Guanarteme": {
+  "en_US": {
+   "p": 0.88,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.88,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Docky Pet Shop: todo para tu mascota en Guanarteme": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.96,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "M&amp;G Moda: moda y complementos para cada ocasión": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.97,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Juan Hernández: aprende a dibujar y pintar en Guanarteme": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.88,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Alma Verde: herbolario natural en Guanarteme": {
+  "en_US": {
+   "p": 0.83,
+   "ok": false
+  },
+  "de_DE": {
+   "p": 0.87,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "Restaurante Cafetería San Fernando: cocina de siempre": {
+  "en_US": {
+   "p": 0.89,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.87,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.89,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.85,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.87,
+   "ok": true
+  }
+ },
+ "La Bulé: cafetería acogedora para hacer una pausa": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Microdisk: tienda de informática y tecnología": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "PC Store: equipos, componentes y servicio técnico": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Loreto Avilés: centro de estética y tratamientos": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Muévete: entrena a tu ritmo en Tamaraceite": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Enamora, en Guanarteme": {
+  "en_US": {
+   "p": 0.51,
+   "ok": false
+  },
+  "de_DE": {
+   "p": 0.77,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.82,
+   "ok": false
+  },
+  "it_IT": {
+   "p": 0.82,
+   "ok": false
+  },
+  "pl_PL": {
+   "p": 0.83,
+   "ok": false
+  },
+  "pt_PT": {
+   "p": 0.86,
+   "ok": true
+  }
+ },
+ "Profesional Biuty by Estefanía: estética en Guanarteme": {
+  "en_US": {
+   "p": 0.83,
+   "ok": false
+  },
+  "de_DE": {
+   "p": 0.76,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.9,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.84,
+   "ok": false
+  },
+  "pl_PL": {
+   "p": 0.82,
+   "ok": false
+  },
+  "pt_PT": {
+   "p": 0.88,
+   "ok": true
+  }
+ },
+ "Herbolario La Corteza: productos naturales para cuidarte": {
+  "en_US": {
+   "p": 0.91,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.88,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.9,
+   "ok": true
+  }
+ },
+ "Manhattan Computer: informática con asesoramiento honesto": {
+  "en_US": {
+   "p": 0.89,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.88,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.88,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.82,
+   "ok": false
+  },
+  "pt_PT": {
+   "p": 0.9,
+   "ok": true
+  }
+ },
+ "Let's Go Fit: gimnasio para todos los niveles": {
+  "en_US": {
+   "p": 0.92,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "DVD Consolas: reparación de consolas y electrónica": {
+  "en_US": {
+   "p": 0.92,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Elixir Perfumería: perfumería y estética": {
+  "en_US": {
+   "p": 0.91,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.89,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.89,
+   "ok": true
+  }
+ },
+ "Cafetería Churrería Astrid Olaf Palme: churros y chocolate": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Optica 1500 La Aldea de San Nicolás: gafas y salud visual": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Panadería La Baguette: pan y bollería en Guanarteme": {
+  "en_US": {
+   "p": 0.92,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.89,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.89,
+   "ok": true
+  }
+ },
+ "Aroma de café, cafetería en Guanarteme": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.89,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Atelier La Ventana: costura y arreglos a medida": {
+  "en_US": {
+   "p": 0.91,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.89,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.82,
+   "ok": false
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.77,
+   "ok": false
+  }
+ },
+ "DIGITALOVER: marketing digital en Guanarteme": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "FARMATURAL: parafarmacia, dietética y herbolario": {
+  "en_US": {
+   "p": 0.88,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.81,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.89,
+   "ok": true
+  }
+ },
+ "Fashionbrand: moda y complementos en Guanarteme": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "Kioscochurruca, en Guanarteme": {
+  "en_US": {
+   "p": 0.91,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.81,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "La Cage aux Folles: moda con personalidad en Guanarteme": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.86,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "Marestilo: moda vintage y piezas únicas": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "Martín Dorado: venta y montaje de neumáticos": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.97,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.97,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "Rapsodia Floral: ramos y decoración floral para eventos": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.89,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.9,
+   "ok": true
+  }
+ },
+ "Rubí Lotería: lotería y juegos del Estado en Guanarteme": {
+  "en_US": {
+   "p": 0.9,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.89,
+   "ok": true
+  }
+ },
+ "Spazio Moda: calzado y moda para hombre y mujer": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.85,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Tatys Peluqueros Unisex: peluquería para toda la familia": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "THE CRUNCH IBÉRICOS: cafetería en Guanarteme": {
+  "en_US": {
+   "p": 0.64,
+   "ok": false
+  },
+  "de_DE": {
+   "p": 0.81,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.85,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.85,
+   "ok": true
+  }
+ },
+ "Área Surf Skate y Bodyboard: tablas y ropa de surf y skate": {
+  "en_US": {
+   "p": 0.83,
+   "ok": false
+  },
+  "de_DE": {
+   "p": 0.88,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "Joyería Habana, tu joyería en Guanarteme": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.87,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Neverí Artesanal: obrador y panadería artesanal": {
+  "en_US": {
+   "p": 0.8,
+   "ok": false
+  },
+  "de_DE": {
+   "p": 0.84,
+   "ok": false
+  },
+  "fr_FR": {
+   "p": 0.85,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.85,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.71,
+   "ok": false
+  }
+ }
+}
