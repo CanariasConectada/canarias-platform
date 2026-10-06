@@ -548,6 +548,8 @@ msgstr ""
 "lista vacía para no mostrar horario."
 
 #. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_company_picker__selected_company_website_url
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__website_url
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.website_view_list_merchant
@@ -1555,6 +1557,8 @@ msgid "Opening Periods"
 msgstr "Franjas horarias"
 
 #. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_opening_hours
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
@@ -1695,6 +1699,8 @@ msgid "Personalización (necesaria)"
 msgstr "Personalización (necesaria)"
 
 #. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_phone
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 msgid "Phone"
@@ -2412,3 +2418,75 @@ msgstr "Micrositios: reintentar los enlaces cortos de Google Maps sin resolver"
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 msgid "The Google Maps link must be an http:// or https:// address; '%(scheme)s:' links are not allowed."
 msgstr "El enlace de Google Maps debe ser una dirección http:// o https://; no se permiten enlaces «%(scheme)s:»."
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid "No microsite homepage"
+msgstr "Sin página de inicio del micrositio"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid "Custom homepage, check by hand"
+msgstr "Página de inicio personalizada, revisar a mano"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid "Hero image"
+msgstr "Imagen de portada"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid "Section 1 image"
+msgstr "Imagen de la sección 1"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid "Strip 2 image"
+msgstr "Imagen de la franja 2"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid "Intro title"
+msgstr "Título de presentación"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid "About text"
+msgstr "Texto «Sobre nosotros»"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid "Services text"
+msgstr "Texto de servicios"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid "Strip 2 title"
+msgstr "Título de la franja 2"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid "Logo"
+msgstr "Logotipo"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid "Email"
+msgstr "Correo electrónico"
+
+#. module: partner_microsite_manager
+#. odoo-python
+#: code:addons/partner_microsite_manager/models/res_company.py:0
+msgid "Business category"
+msgstr "Categoría del negocio"

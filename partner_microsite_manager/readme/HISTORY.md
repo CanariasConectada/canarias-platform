@@ -1,3 +1,23 @@
+## 19.0.2.14.0 (2026-10-05)
+
+- `res.company._get_microsite_missing_items()`: item codes of what each
+  microsite still lacks (homepage images, intro / about / services /
+  strip-2 texts, logo, phone, email, address, opening hours, business
+  category); `_microsite_item_labels()` gives their labels. Batched over
+  a recordset, read-only.
+  - Homepage: the published microsite page, else the `/` page of the
+    company's website, else of its lowest website; none at all is
+    reported (`homepage`).
+  - Importer pages (`website.homepage_*` / `website.home-*`) are read from
+    their `es_ES` arch: an image counts when it is external, a public
+    attachment or one of the company (or its contact), or the company's
+    own image; stock snippet images and dangling ids do not. The dynamic
+    homepage is read from the company fields; any other page is reported
+    as `custom_page` (check by hand).
+  - Importer boilerplate texts ("Descubre lo que tenemos para ti",
+    "Consume Productos Canarios"...) count as missing; "Bienvenidos a
+    <shop>" does not.
+
 ## 19.0.2.13.0 (2026-10-01)
 
 - Legacy homepages follow the company (client report: the content editor
