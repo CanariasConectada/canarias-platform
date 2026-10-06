@@ -45,10 +45,13 @@ class TestFieldVisitMicrositeStatus(FieldVisitCase):
     def test_status_on_link_and_cron(self):
         # Checked as soon as the task names its business.
         self.assertFalse(self.task.field_visit_microsite_complete)
-        self.assertIn("Hero image", self.task.field_visit_microsite_missing)
-        # No website at all: reported, never a false "complete".
+        # The website still shows Odoo's stock homepage: not an importer
+        # page, so it is left for a manager to check by hand.
+        self.assertIn(
+            "Custom homepage, check by hand", self.task.field_visit_microsite_missing
+        )
         codes = self.task.field_visit_microsite_missing_codes.split(",")
-        self.assertEqual(codes[:2], ["homepage", "hero"])
+        self.assertEqual(codes[0], "custom_page")
         self.assertIn(self.task, self._incomplete())
         other = self.env["project.task"].create(
             {"name": "Zzfv prospect", "project_id": self.project.id}
@@ -106,4 +109,4 @@ class TestFieldVisitMicrositeStatus(FieldVisitCase):
         )
         self.assertFalse(task.field_visit_microsite_missing_codes)
         task.project_id = self.project
-        self.assertIn("homepage", task.field_visit_microsite_missing_codes)
+        self.assertIn("custom_page", task.field_visit_microsite_missing_codes)
