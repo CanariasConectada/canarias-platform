@@ -3,7 +3,7 @@
 
 from odoo.tests.common import BaseCase
 
-from ..tools.homepage_completeness import read_static_homepage
+from ..tools.homepage_completeness import classify_url, read_static_homepage
 
 # The importer's homepage, trimmed: background images on the sections,
 # texts in SEC1 / Separador headings and the Acerca collapse cards.
@@ -54,3 +54,18 @@ class TestHomepageCompleteness(BaseCase):
             "<div><h2>Own &amp; only</h2></div></section></t>"
         )
         self.assertEqual(read_static_homepage(arch)["intro_title"], "Own & only")
+
+    def test_classify_url(self):
+        cases = {
+            "/web/image/ir.attachment/5/datas": ("attachment", 5),
+            "/web/content/6": ("attachment", 6),
+            "/web/image/7-ab12/photo.jpg": ("attachment", 7),
+            "/web/image/res.partner/3/image_1920": ("partner", (3, "image_1920")),
+            "https://cdn.example.com/a.jpg": ("external", None),
+            # Stock snippet pictures are not the shop's.
+            "/web/image/website.s_cover_default_image": ("other", None),
+            "/website/static/src/img/snippets_demo/s_cover.jpg": ("other", None),
+            "": ("none", None),
+        }
+        for url, expected in cases.items():
+            self.assertEqual(classify_url(url), expected, url)

@@ -33,7 +33,11 @@ _BG_SHORTHAND_RE = re.compile(r"(?<![\w-])background\s*:\s*[^;]*;?\s*", re.S)
 _ATTACHMENT_URL_RE = re.compile(
     r"^/web/(?:image|content)/(?:ir\.attachment/)?(\d+)(?:[/?_-]|$)"
 )
-_COMPANY_URL_RE = re.compile(r"^/web/(?:image|content)/res\.company/(\d+)/(\w+)")
+# ``/web/image/res.company/<id>/<field>`` or ``res.partner``.
+_RECORD_URL_RE = re.compile(
+    r"^/web/(?:image|content)/(res\.company|res\.partner)/(\d+)/(\w+)"
+)
+_EXTERNAL_URL_RE = re.compile(r"^https?://", re.I)
 _COLUMN_ID_RE = re.compile(r"^acerca(\d+)_")
 _CARD_BODY = (
     ".//div[contains(concat(' ', normalize-space(@class), ' '), ' card ')"
@@ -63,16 +67,25 @@ def background_url(section):
 
 
 def classify_url(url):
-    """``(kind, ref)``: ``("attachment", id)``, ``("company", (id, field))``,
-    ``("other", None)`` (any other picture) or ``("none", None)``."""
+    """``(kind, ref)`` of a background URL.
+
+    ``("attachment", id)`` for ``/web/image|content/<id>`` and
+    ``/web/image/ir.attachment/<id>/datas``; ``("company", (id, field))``
+    and ``("partner", (id, field))`` for a record image; ``("external",
+    None)`` for an ``http(s)://`` picture; ``("other", None)`` for anything
+    else (the stock snippet images); ``("none", None)`` without URL.
+    """
     if not url:
         return "none", None
-    match = _COMPANY_URL_RE.match(url)
+    match = _RECORD_URL_RE.match(url)
     if match:
-        return "company", (int(match.group(1)), match.group(2))
+        kind = "company" if match.group(1) == "res.company" else "partner"
+        return kind, (int(match.group(2)), match.group(3))
     match = _ATTACHMENT_URL_RE.match(url)
     if match:
         return "attachment", int(match.group(1))
+    if _EXTERNAL_URL_RE.match(url):
+        return "external", None
     return "other", None
 
 
