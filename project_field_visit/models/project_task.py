@@ -113,6 +113,24 @@ class ProjectTask(models.Model):
     )
     field_visit_phone = fields.Char(string="Business phone", groups=CONSULTANT_GROUP)
     field_visit_email = fields.Char(string="Business email", groups=CONSULTANT_GROUP)
+    # Filled by ``_field_visit_refresh_microsite_status`` (daily cron, the
+    # managers' action and a change of business), not computed: checking a
+    # microsite reads its homepage arch and attachments. Item codes are
+    # stored; the labels follow the reader's language.
+    field_visit_microsite_missing_codes = fields.Char(
+        groups=CONSULTANT_GROUP, readonly=True, copy=False
+    )
+    field_visit_microsite_missing = fields.Text(
+        string="Missing microsite information",
+        compute="_compute_field_visit_microsite_missing",
+        groups=CONSULTANT_GROUP,
+    )
+    field_visit_microsite_complete = fields.Boolean(
+        string="Information complete",
+        groups=CONSULTANT_GROUP,
+        readonly=True,
+        copy=False,
+    )
     field_visit_contact_name = fields.Char(
         string="Contact person", groups=CONSULTANT_GROUP
     )
@@ -207,12 +225,22 @@ class ProjectTask(models.Model):
                 MAPS_SEARCH_URL + quote_plus(address) if address else False
             )
 
+    @api.depends("field_visit_microsite_missing_codes")
+    def _compute_field_visit_microsite_missing(self):
+        labels = self.env["res.company"]._microsite_item_labels()
+        for task in self:
+            codes = (task.field_visit_microsite_missing_codes or "").split(",")
+            task.field_visit_microsite_missing = (
+                "\n".join(labels.get(code, code) for code in codes if code) or False
+            )
+
     @api.model_create_multi
     def create(self, vals_list):
         tasks = super().create(vals_list)
         tasks.filtered(
             lambda t: t.is_field_visit_project and t.date_deadline and t.user_ids
         )._field_visit_sync_reminders()
+        tasks.filtered("is_field_visit_project")._field_visit_refresh_microsite_status()
         return tasks
 
     def write(self, vals):
@@ -225,7 +253,44 @@ class ProjectTask(models.Model):
             "state",
         } & vals.keys():
             self._field_visit_sync_reminders()
+        if {"business_company_id", "project_id"} & vals.keys():
+            self.filtered(
+                "is_field_visit_project"
+            )._field_visit_refresh_microsite_status()
         return res
+
+    def _field_visit_refresh_microsite_status(self):
+        """Store what the microsite of each task's business still lacks.
+
+        One check per business (``_get_microsite_missing_items`` is batched).
+        A task without a business (a prospect) has no status; a task is only
+        written when its status changed.
+        """
+        tasks = self.sudo()
+        companies = tasks.business_company_id
+        missing = companies._get_microsite_missing_items() if companies else {}
+        for task in tasks:
+            company = task.business_company_id
+            items = missing.get(company.id, [])
+            values = {
+                "field_visit_microsite_missing_codes": ",".join(items) or False,
+                "field_visit_microsite_complete": bool(company) and not items,
+            }
+            if any(task[name] != value for name, value in values.items()):
+                task.write(values)
+
+    @api.model
+    def _cron_field_visit_refresh_microsite_status(self):
+        self.sudo().search(
+            [
+                ("is_field_visit_project", "=", True),
+                ("business_company_id", "!=", False),
+            ]
+        )._field_visit_refresh_microsite_status()
+
+    def action_field_visit_refresh_microsite_status(self):
+        self._check_field_visit_access(MANAGER_GROUP)
+        self._field_visit_refresh_microsite_status()
 
     def _field_visit_sync_reminders(self):
         """One *Field visit* activity per assigned consultant, on the visit day.

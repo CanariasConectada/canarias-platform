@@ -1,1 +1,6 @@
-from . import test_field_visit, test_field_visit_import, test_field_visit_tracking
+from . import (
+    test_field_visit,
+    test_field_visit_import,
+    test_field_visit_microsite_status,
+    test_field_visit_tracking,
+)

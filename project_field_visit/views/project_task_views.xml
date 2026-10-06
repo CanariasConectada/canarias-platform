@@ -72,6 +72,14 @@
                             name="field_visit_last_outcome"
                             invisible="not field_visit_last_outcome"
                         />
+                        <field
+                            name="field_visit_microsite_complete"
+                            invisible="not business_company_id"
+                        />
+                        <field
+                            name="field_visit_microsite_missing"
+                            invisible="not field_visit_microsite_missing"
+                        />
                     </group>
                 </group>
                 <group
@@ -127,6 +135,11 @@
                     widget="date"
                     invisible="not is_field_visit_project or not field_visit_last_date"
                 />
+                <field
+                    name="field_visit_microsite_missing"
+                    invisible="not is_field_visit_project or not field_visit_microsite_missing"
+                    class="text-warning small"
+                />
             </field>
         </field>
     </record>
@@ -140,6 +153,7 @@
                 <field name="business_name" optional="show" />
                 <field name="field_visit_last_date" optional="hide" />
                 <field name="field_visit_last_outcome" optional="hide" />
+                <field name="field_visit_microsite_complete" optional="hide" />
             </field>
         </field>
     </record>
@@ -161,6 +175,12 @@
                     string="My visits"
                     name="field_visit_mine"
                     domain="[('user_ids', 'in', uid), ('is_field_visit_project', '=', True)]"
+                    groups="project_field_visit.group_field_visit_consultant"
+                />
+                <filter
+                    string="Incomplete information"
+                    name="field_visit_microsite_incomplete"
+                    domain="[('is_field_visit_project', '=', True), ('business_company_id', '!=', False), ('field_visit_microsite_complete', '=', False)]"
                     groups="project_field_visit.group_field_visit_consultant"
                 />
             </filter>
@@ -205,6 +225,8 @@
                 <field name="stage_id" optional="show" />
                 <field name="field_visit_last_date" optional="show" />
                 <field name="field_visit_last_outcome" optional="hide" />
+                <field name="field_visit_microsite_complete" optional="show" />
+                <field name="field_visit_microsite_missing" optional="hide" />
                 <field name="activity_ids" widget="list_activity" optional="show" />
                 <field name="project_id" optional="hide" />
                 <button
