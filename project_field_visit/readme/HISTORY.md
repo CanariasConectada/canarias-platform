@@ -17,6 +17,10 @@
   consultant's own sheet needs no *ASIGNACION* column. A value in the column
   still wins over the sheet title. A business on several consultants' sheets
   gets all of them as assignees; a re-import only adds assignees.
+* The import summary lists the consultant each sheet title assigns ("no
+  user", "ambiguous (N users)") and warns about the titles that name no
+  single consultant, so the dry run shows the mapping before anything is
+  written. Re-importing the same file writes nothing on the tasks.
 
 ## 19.0.1.2.0 (2026-09-25)
 
