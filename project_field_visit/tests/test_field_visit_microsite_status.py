@@ -46,6 +46,9 @@ class TestFieldVisitMicrositeStatus(FieldVisitCase):
         # Checked as soon as the task names its business.
         self.assertFalse(self.task.field_visit_microsite_complete)
         self.assertIn("Hero image", self.task.field_visit_microsite_missing)
+        # No website at all: reported, never a false "complete".
+        codes = self.task.field_visit_microsite_missing_codes.split(",")
+        self.assertEqual(codes[:2], ["homepage", "hero"])
         self.assertIn(self.task, self._incomplete())
         other = self.env["project.task"].create(
             {"name": "Zzfv prospect", "project_id": self.project.id}
@@ -71,10 +74,36 @@ class TestFieldVisitMicrositeStatus(FieldVisitCase):
             task.action_field_visit_refresh_microsite_status()
         self.consultant.group_ids = [(4, self.env.ref(MANAGER).id)]
         calls = []
-        with self._patched(["Logo", "Phone"], calls):
+        with self._patched(["logo", "phone"], calls):
             task.action_field_visit_refresh_microsite_status()
+        self.assertEqual(self.task.field_visit_microsite_missing_codes, "logo,phone")
         self.assertEqual(self.task.field_visit_microsite_missing, "Logo\nPhone")
         action = self.env.ref(
             "project_field_visit.action_server_field_visit_microsite_status"
         )
         self.assertEqual(action.group_ids, self.env.ref(MANAGER))
+
+    def test_same_status_writes_nothing(self):
+        Task = type(self.env["project.task"])
+        original, written = Task.write, []
+
+        def spy(records, vals):
+            written.append(vals)
+            return original(records, vals)
+
+        with patch.object(Task, "write", spy):
+            self.task._field_visit_refresh_microsite_status()
+        self.assertEqual(written, [])
+
+    def test_only_field_visit_tasks(self):
+        other_project = self.env["project.project"].create({"name": "Zzfv other"})
+        task = self.env["project.task"].create(
+            {
+                "name": "Zzfv not a visit",
+                "project_id": other_project.id,
+                "business_company_id": self.business.id,
+            }
+        )
+        self.assertFalse(task.field_visit_microsite_missing_codes)
+        task.project_id = self.project
+        self.assertIn("homepage", task.field_visit_microsite_missing_codes)

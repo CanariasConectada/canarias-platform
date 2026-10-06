@@ -8,6 +8,10 @@
   changes, every day by a cron (one batched check for all tasks) and by the
   managers' *Refresh microsite status* action. New dependency:
   ``partner_microsite_manager``.
+* The status is stored as item codes and shown in the reader's language; a
+  refresh writes a task only when its codes change. Only tasks of
+  field-visit projects are checked, also when a task moves into one. The
+  upgrade fills the status of the tasks that already exist.
 
 ## 19.0.1.3.0 (2026-10-05)
 

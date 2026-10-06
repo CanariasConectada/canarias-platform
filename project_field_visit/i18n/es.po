@@ -1029,3 +1029,58 @@ msgstr ""
 #: code:addons/project_field_visit/wizards/field_visit_import.py:0
 msgid "subdomain '%s' belongs to several websites"
 msgstr "el subdominio '%s' pertenece a varios sitios web"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_task__field_visit_microsite_missing
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_task_view_form_field_visit
+msgid "Missing microsite information"
+msgstr "Información del micrositio que falta"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_task__field_visit_microsite_complete
+msgid "Information complete"
+msgstr "Información completa"
+
+#. module: project_field_visit
+#: model:ir.model.fields,field_description:project_field_visit.field_project_task__field_visit_microsite_missing_codes
+msgid "Field Visit Microsite Missing Codes"
+msgstr "Códigos de la información que falta"
+
+#. module: project_field_visit
+#: model_terms:ir.ui.view,arch_db:project_field_visit.project_task_view_search_field_visit
+msgid "Incomplete information"
+msgstr "Información incompleta"
+
+#. module: project_field_visit
+#: model:ir.actions.server,name:project_field_visit.action_server_field_visit_microsite_status
+msgid "Refresh microsite status"
+msgstr "Actualizar estado del micrositio"
+
+#. module: project_field_visit
+#: model:ir.actions.server,name:project_field_visit.ir_cron_field_visit_microsite_status_ir_actions_server
+msgid "Field visits: refresh microsite status"
+msgstr "Visitas de campo: actualizar estado del micrositio"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Consultant of each sheet (by its title):"
+msgstr "Consultor de cada hoja (por su título):"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "- '%(title)s' -> ambiguous (%(count)s users)"
+msgstr "- '%(title)s' -> ambiguo (%(count)s usuarios)"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "- '%s' -> no user"
+msgstr "- '%s' -> sin usuario"
+
+#. module: project_field_visit
+#. odoo-python
+#: code:addons/project_field_visit/wizards/field_visit_import.py:0
+msgid "Warning: %s sheet title(s) name no single consultant; their rows without a consultant column value stay unassigned."
+msgstr "Aviso: %s título(s) de hoja no nombran a un único consultor; sus filas sin consultor en la columna quedan sin asignar."
