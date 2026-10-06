@@ -4,7 +4,7 @@
     "name": "Project Field Visits",
     "summary": "Door-to-door consultant visits to the platform businesses, "
     "one project per phase with its own checklist fields",
-    "version": "19.0.1.2.0",
+    "version": "19.0.1.3.0",
     "author": "Canarias Conectada",
     "website": "https://github.com/CanariasConectada/canarias-platform",
     "category": "Services/Project",

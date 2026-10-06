@@ -18,6 +18,13 @@ sheets) is imported the same way, into the same phase project: each business
 gets its address, zone, contact, phone, planned visit and follow-up columns.
 Import it after the checklist so both land on the same tasks.
 
+The assignee of a business comes from its *ASIGNACION* (or *Consultor*)
+column. A sheet named after a consultant (``BERTA``, ``David``: full or first
+name of exactly one active field consultant) assigns its rows whose column is
+empty, or all of them when the sheet has no such column. A business listed on
+several consultants' sheets is assigned to all of them; re-imports add
+assignees and never remove one.
+
 Headers are matched by their text. Columns that look like credentials
 (password, *clave*, PIN, user login) make the whole sheet skipped, and
 personal identifiers (NIF/CIF/DNI/NIE, IBAN...) are never read; the summary

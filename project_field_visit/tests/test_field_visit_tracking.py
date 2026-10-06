@@ -5,6 +5,7 @@ import base64
 import datetime
 import io
 import unittest
+from unittest.mock import patch
 
 from odoo import fields
 from odoo.tests import tagged
@@ -16,7 +17,7 @@ try:
 except ImportError:  # pragma: no cover
     openpyxl = None
 
-from .common import FieldVisitCase
+from .common import CONSULTANT, FieldVisitCase
 
 MANAGER = "project_field_visit.group_field_visit_manager"
 
@@ -390,6 +391,102 @@ class TestFieldVisitTracking(FieldVisitCase):
         )
         self.assertFalse(self.env["project.project"]._field_visit_grant_admins())
         self.assertNotIn(other, group.user_ids)
+
+    def _consultant(self, name, login):
+        return self.env["res.users"].create(
+            {
+                "name": name,
+                "login": login,
+                "company_id": self.owner.id,
+                "company_ids": [(6, 0, self.owner.ids)],
+                "group_ids": [(6, 0, self.env.ref(CONSULTANT).ids)],
+            }
+        )
+
+    def test_assignment_by_sheet_title(self):
+        """One sheet per consultant: the title assigns the rows without a
+        value in the assignment column; the column wins when filled."""
+        ana = self._consultant("Zzfvana Lopez", "zzfv_ana")
+        luis = self._consultant("Zzfvluís Pérez", "zzfv_luis")
+        sheets = [
+            (
+                "MASTER",
+                [
+                    ["Nombre", "ZONA", "TLF"],
+                    ["Zzfv Bakery Demo", "G", "600"],
+                    ["Zzfv Ferreteria Central", "FG", "601"],
+                ],
+            ),
+            (
+                "ZZFVANA",
+                [
+                    ["Nombre", "ZONA", "ASIGNACION"],
+                    ["Zzfv Bakery Demo", "G", None],
+                    ["Zzfv Ferreteria Central", "FG", "zzfvluis"],
+                ],
+            ),
+            # No assignment column at all, accents and case differ.
+            ("Zzfvluis ", [["Nombre", "ZONA", "TLF"], ["Zzfv Bakery Demo", "G", "6"]]),
+        ]
+        wizard = self._import(sheets=sheets)
+        self.assertIn("Assigned to a consultant user: 2", wizard.summary)
+        tasks = self._tasks()
+        bakery = tasks.filtered(lambda t: t.business_company_id == self.business)
+        hardware = tasks - bakery
+        self.assertEqual(bakery.user_ids, ana | luis, "every sheet adds its own")
+        self.assertEqual(hardware.user_ids, luis, "the column wins over the title")
+        # Re-import: assignees are only ever added.
+        hardware.user_ids = [(4, self.consultant.id)]
+        self._import(sheets=sheets)
+        self.assertEqual(hardware.user_ids, luis | self.consultant)
+
+    def test_sheet_titles_that_assign_nobody(self):
+        """Shared first name, inactive user, unknown title, and a column
+        naming nobody next to a title that matches: nobody is assigned and
+        the dry run says why, sheet by sheet."""
+        self._consultant("Zzfvmar One", "zzfv_mar1")
+        self._consultant("Zzfvmar Two", "zzfv_mar2")
+        self._consultant("Zzfvpia Off", "zzfv_pia").active = False
+        luis = self._consultant("Zzfvluis Perez", "zzfv_luis")
+        head = ["Nombre", "ZONA", "ASIGNACION"]
+        sheets = [
+            ("MASTER", [head, ["Zzfv Bakery Demo", "G", None]]),
+            ("ZZFVMAR", [head, ["Zzfv Bakery Demo", "G", None]]),
+            ("Zzfvpia", [head, ["Zzfv Ferreteria Central", "FG", None]]),
+            ("Zzfvluis", [head, ["Zzfv Ferreteria Central", "FG", "Zzfvnadie"]]),
+            ("ZONA NORTE", [head, ["Zzfv Bakery Demo", "G", None]]),
+        ]
+        summary = self._import(sheets=sheets, dry_run=True).summary
+        self.assertIn("- 'ZZFVMAR' -> ambiguous (2 users)", summary)
+        self.assertIn("- 'Zzfvpia' -> no user", summary)
+        self.assertIn(f"- 'Zzfvluis' -> {luis.name}", summary)
+        self.assertIn("- 'ZONA NORTE' -> no user", summary)
+        self.assertIn("Warning: 4 sheet title(s) name no single consultant", summary)
+        self.assertIn("Assigned to a consultant user: 0", summary)
+        self._import(sheets=sheets)
+        tasks = self._tasks()
+        self.assertEqual(len(tasks), 2)
+        self.assertFalse(tasks.user_ids)
+        hardware = tasks.filtered(lambda t: t.business_company_id == self.hardware)
+        self.assertEqual(self._props(hardware)["fv_consultant"], "Zzfvnadie")
+
+    def test_same_file_twice_writes_nothing(self):
+        self._import()
+        tasks = self._tasks()
+        assignees = {task.id: task.user_ids for task in tasks}
+        Task = type(self.env["project.task"])
+        original, written = Task.write, []
+
+        def spy(records, vals):
+            if records.filtered(lambda t: t.project_id == self.project):
+                written.append(vals)
+            return original(records, vals)
+
+        with patch.object(Task, "write", spy):
+            self._import()
+        self.assertEqual(self._tasks(), tasks)
+        self.assertEqual({task.id: task.user_ids for task in tasks}, assignees)
+        self.assertEqual(written, [])
 
     def test_csv_tracking_list(self):
         rows = [
