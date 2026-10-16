@@ -44,7 +44,10 @@
          opens with belongs to OCA `res_company_search_view`, hence the hard
          dependency. Its `name` field is what the search box types into, so
          that domain is restated here with the trade name added: an
-         inherited attribute replaces, it cannot append. -->
+         inherited attribute replaces, it cannot append. The bridge
+         `website_directory_partner_microsite` restates this filter_domain
+         in turn (adding `microsite_name`) and must be updated in step
+         whenever the leaves below change. -->
     <record id="view_res_company_search_zone" model="ir.ui.view">
         <field name="name">res.company.search.zone</field>
         <field name="model">res.company</field>
