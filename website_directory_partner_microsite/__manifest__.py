@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website Directory - Merchant Self-Service",
-    "version": "19.0.2.0.0",
+    "version": "19.0.2.1.0",
     "category": "Website",
     "summary": "Set the directory category from the merchant's own page-content screen",
     "description": """
@@ -23,10 +23,12 @@
     "development_status": "Beta",
     "depends": [
         "partner_microsite_manager",
+        "res_company_zone",
         "website_directory",
     ],
     "data": [
         "views/microsite_content_views.xml",
+        "views/res_company_search_views.xml",
     ],
     "installable": True,
     # Same as the other directory bridges: whoever has both halves wants it.
