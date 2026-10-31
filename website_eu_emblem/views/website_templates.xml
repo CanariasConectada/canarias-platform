@@ -71,31 +71,37 @@
          `<div class="o_footer_copyright">`;
          `partner_microsite_manager.footer_platform_legal_links` appends its
          legal links bar `o_pmm_footer_legal` to the same footer at priority
-         110. Inserting the strip immediately before `<div id="footer">`
-         makes it the first child of `footer#bottom`, directly above the
-         site's own footer content, the copyright bar and the legal links.
-         It stays outside any `oe_structure`, so the website editor neither
-         offers it as a snippet nor lets a site drag it away.
+         110. Inserting the strip before the FIRST child of `footer#bottom`
+         makes it the first row of the footer on every site: above the
+         site's own footer content, the copyright bar and the legal links
+         alike. It stays outside any `oe_structure`, so the website editor
+         neither offers it as a snippet nor lets a site drag it away.
 
-         Priority 120: every footer variant of `website` (`footer_custom`,
-         `template_footer_descriptive`, ...) replaces `//div[@id='footer']`
-         at the default priority (16). Inherited views apply in priority
-         order, so this template runs after all of those replacements and
-         after the legal links (110), finds the replaced node and anchors on
-         it; the strip sits in the same place whichever footer variant a site
-         has chosen.
+         The anchor is `footer#bottom`'s first child, NOT `div#footer`:
+         `partner_microsite_manager.microsite_corporate_footer` (priority
+         100) replaces `div#footer` with two branches, the black corporate
+         footer under `t-if="website.is_microsite_themed"` and the original
+         node under `t-else`, so the combined arch carries two `div#footer`
+         and an xpath on that id lands inside the themed branch, i.e. nowhere
+         on the portal and the zone sites. Anchoring on the footer's first
+         child keeps the strip outside both branches.
 
-         Contract: the xpath depends on every footer variant keeping a
-         `<div id="footer">`. If a variant replaced it with a node without
-         that id, this view would fail to load with a hard error, which is
-         the intended loud failure rather than a silently missing strip.
+         Priority 120 is still required: the footer variants of `website`
+         (`footer_custom`, `template_footer_descriptive`, ...) replace
+         `div#footer` at the default priority (16) and the corporate footer
+         does so at 100. Inherited views apply in priority order, so this
+         template runs after all of them and anchors on whatever ended up as
+         the footer's first child. The only contract is that `footer#bottom`
+         has at least one child, which the base layout guarantees; a layout
+         without one would fail to load with a hard xpath error, which is
+         the intended loud failure.
 
          The image is the same 962x220 strip `partner_microsite_manager`
          (microsite homepages) and `website_login_branding` (auth card) each
          ship a copy of; those two should point here in a later cleanup. -->
     <template id="funding_footer" inherit_id="website.layout"
               name="Funding strip in the footer" priority="120">
-        <xpath expr="//div[@id='footer']" position="before">
+        <xpath expr="//footer[@id='bottom']/*[1]" position="before">
             <div t-if="website._cc_show_funding_footer(main_object)"
                  class="o_cc_funding_footer o_not_editable">
                 <img src="/website_eu_emblem/static/src/img/funding_strip.png"
