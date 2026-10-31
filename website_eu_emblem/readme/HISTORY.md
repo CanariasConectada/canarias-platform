@@ -1,3 +1,15 @@
+## 19.0.1.6.0 (2026-10-31)
+
+- The funding strip moves from the last row of the footer to its first row:
+  it is inserted immediately before `div#footer`, so it is the first row of
+  `footer#bottom`, directly above the site's own footer content, the
+  copyright bar and the legal links (owner's screenshot of 2026-10-31: the
+  strip hung under the black footer of the zone sites and the themed
+  microsites). The band gains a hairline on its bottom edge so it stays
+  delimited from a light footer as well. Same pages as before, same guard,
+  same markup class; no migration, the view is reloaded from the file on
+  update.
+
 ## 19.0.1.5.0 (2026-09-22)
 
 - The funding strip is a band of its own at the foot of the footer: white,

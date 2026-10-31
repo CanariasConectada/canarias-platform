@@ -1,24 +1,24 @@
 // Copyright 2026 Canarias Conectada
 // License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-// The funding strip closes every page as the last block of `footer#bottom`
-// (see views/website_templates.xml). Until 19.0.1.5.0 it carried no colour
-// of its own and inherited the footer's colour combination, which on the
-// zone sites and the themed microsites -- whose `.o_pmm_footer` renders a
-// black inner <footer> -- read as a loose white band hanging under the
-// footer (client screenshot, 2026-09-22). The band is now deliberate: a
-// light strip with a hairline on top, glued to whatever precedes it, with
-// the image centred and capped so it neither stretches on a wide screen nor
-// overflows a phone.
+// The funding strip is the first row of `footer#bottom` (see
+// views/website_templates.xml), directly above `div#footer`: the black inner
+// <footer> of `.o_pmm_footer` on the zone sites and the themed microsites,
+// the legal links bar on the portal, or the copyright bar on a stock site.
+// A light band delimited by a hairline on each side, with the image centred
+// and capped so it neither stretches on a wide screen nor overflows a phone.
+// History of the placement and colour: readme/HISTORY.md.
 .o_cc_funding_footer {
-    // Continuous with the footer above: no margin of its own, ever. The
-    // preceding block is the black inner footer on themed sites, the legal
-    // links bar on the portal, or the copyright bar on a stock site.
+    // No margin of its own, continuous with the page above and the footer
+    // below. The hairlines delimit the band from a light page body above and
+    // from a light footer below; the bottom one is barely visible against a
+    // black footer.
     margin: 0;
     padding: 1.25rem 1rem;
     background-color: #fff;
     color: #212529;
     border-top: 1px solid rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
     text-align: center;
 
     .o_cc_funding_strip_img {

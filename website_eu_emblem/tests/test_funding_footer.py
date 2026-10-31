@@ -13,7 +13,8 @@ MICROSITE_TEMPLATE = "partner_microsite_manager.microsite_homepage_content"
 
 @tagged("post_install", "-at_install")
 class TestFundingFooter(HttpCase):
-    """The strip has to close every public page and never appear twice.
+    """The strip has to be the first row of the footer of every public page
+    and never appear twice.
 
     Through real HTTP: the condition depends on the request path and on the
     page object the layout receives, both of which only exist in a served
@@ -54,30 +55,33 @@ class TestFundingFooter(HttpCase):
         self.assertEqual(page.count(STRIP), expected, response.url)
         self.assertEqual(page.count(FOOTER_CLASS), expected, response.url)
 
-    def _assert_strip_is_the_last_thing_in_the_footer(self, page):
-        """Below the editable footer, the copyright bar and the legal links.
+    def _assert_strip_is_above_the_footer_content(self, page):
+        """The strip is the first row of ``footer#bottom``.
 
-        Whichever of those a site renders (the default site has switched its
-        copyright bar off, `partner_microsite_manager` adds legal links at
-        priority 110), the strip comes after all of them and nothing but the
-        footer's closing tag follows it.
+        It comes after the footer's opening tag and before ``div#footer``
+        (the site's own footer content), which every page renders. The
+        copyright bar and the legal links are optional (the default site has
+        switched its copyright bar off, `partner_microsite_manager` adds the
+        legal links at priority 110); whichever of them a page renders comes
+        after the strip as well.
         """
         strip = page.index(FOOTER_CLASS)
-        for earlier in ('id="footer"', "o_footer_copyright", "o_pmm_footer_legal"):
-            if earlier in page:
-                self.assertLess(page.index(earlier), strip, earlier)
-        tail = page[strip:]
-        tail = tail[tail.index("</div>") + len("</div>") :]
-        self.assertEqual(tail.lstrip()[: len("</footer>")], "</footer>")
+        self.assertLess(page.index('<footer id="bottom"'), strip)
+        footer = re.search(r'<div[^>]*\bid="footer"', page)
+        self.assertTrue(footer, "the page has to render div#footer")
+        self.assertLess(strip, footer.start())
+        for marker in ("o_footer_copyright", "o_pmm_footer_legal"):
+            if marker in page:
+                self.assertLess(strip, page.index(marker), marker)
 
     # -- present ---------------------------------------------------------------
 
-    def test_the_shop_closes_with_the_strip(self):
+    def test_the_shop_shows_the_strip_as_the_first_row_of_the_footer(self):
         response = self._get("/shop")
         self._assert_strip_count(response, 1)
-        self._assert_strip_is_the_last_thing_in_the_footer(response.text)
+        self._assert_strip_is_above_the_footer_content(response.text)
 
-    def test_a_product_page_closes_with_the_strip(self):
+    def test_a_product_page_shows_the_strip_as_the_first_row_of_the_footer(self):
         product = self.env["product.template"].create(
             {
                 "name": "Funding Footer Test Product",
@@ -86,47 +90,56 @@ class TestFundingFooter(HttpCase):
                 "list_price": 1.0,
             }
         )
-        self._assert_strip_count(self._get(product.website_url), 1)
+        response = self._get(product.website_url)
+        self._assert_strip_count(response, 1)
+        self._assert_strip_is_above_the_footer_content(response.text)
 
-    def test_a_plain_page_closes_with_the_strip_inside_the_footer(self):
-        """Asked for on 2026-09-22: the strip is part of the footer, not a
-        band hanging under it.
-
-        A page of its own (no marker in its arch, not the homepage), so the
-        assertion is about the layout and nothing else: exactly one strip,
-        and it sits between the opening tag of ``footer#bottom`` and the
-        closing tag of that same footer -- the LAST ``</footer>`` of the
-        page, since the themed sites nest their own ``<footer>`` inside the
-        editable area. The login page, whose auth card carries the strip,
-        stays without a second one.
+    def test_a_plain_page_shows_the_strip_as_the_first_row_of_the_footer(self):
+        """A page of its own (no marker in its arch, not the homepage), so
+        the assertion is about the layout and nothing else: exactly one
+        strip, rendered as the first row of ``footer#bottom``. The login
+        page, whose auth card carries the strip, stays without a second one.
         """
         page = self._page_with("<p>Nothing about funding here.</p>")
         response = self._get(page.url)
         self._assert_strip_count(response, 1)
-        html = response.text
-        strip = html.index(FOOTER_CLASS)
-        self.assertLess(html.index('<footer id="bottom"'), strip)
-        self.assertLess(strip, html.rindex("</footer>"))
-        self._assert_strip_is_the_last_thing_in_the_footer(html)
+        self._assert_strip_is_above_the_footer_content(response.text)
         login = self._get("/web/login")
         self.assertEqual(login.status_code, 200)
         self.assertNotIn(FOOTER_CLASS, login.text)
 
-    def test_the_band_is_styled_as_the_footer_s_last_row(self):
+    def test_the_band_is_styled_as_the_first_row_of_the_footer(self):
         """The rules that make it read as part of the footer, from the served
-        bundle: a colour of its own, a hairline on top, no margin, and an
-        image that fills the width up to 1100px and no further."""
+        bundle: a colour of its own, a hairline on each side, no margin, and
+        an image that fills the width up to 1100px and no further.
+
+        Each declaration is matched up to its terminator (``;`` or the end of
+        the rule), with the compiled whitespace stripped, so ``margin:0``
+        cannot be satisfied by ``margin:0 auto``.
+        """
         css = self._stylesheet(self._get("/shop"))
-        rule = re.search(r"\.o_cc_funding_footer\s*\{([^}]*)\}", css)
-        self.assertTrue(rule, "the band has to have a rule of its own")
-        band = re.sub(r"\s+", "", rule.group(1))
-        for declaration in ("margin:0", "background-color:#fff", "border-top:1pxsolid"):
-            self.assertIn(declaration, band)
-        image = re.search(r"\.o_cc_funding_strip_img\s*\{([^}]*)\}", css)
-        self.assertTrue(image, "the image has to have a rule of its own")
-        image = re.sub(r"\s+", "", image.group(1))
-        for declaration in ("width:100%", "max-width:1100px", "height:auto"):
-            self.assertIn(declaration, image)
+        self._assert_declarations(
+            css,
+            "o_cc_funding_footer",
+            (
+                "margin:0",
+                "background-color:#fff",
+                r"border-top:1pxsolidrgba\(0,0,0,0?\.08\)",
+                r"border-bottom:1pxsolidrgba\(0,0,0,0?\.08\)",
+            ),
+        )
+        self._assert_declarations(
+            css,
+            "o_cc_funding_strip_img",
+            ("width:100%", "max-width:1100px", "height:auto"),
+        )
+
+    def _assert_declarations(self, css, selector, declarations):
+        rule = re.search(r"\." + re.escape(selector) + r"\s*\{([^}]*)\}", css)
+        self.assertTrue(rule, f".{selector} has to have a rule of its own")
+        body = re.sub(r"\s+", "", rule.group(1)) + ";"
+        for declaration in declarations:
+            self.assertRegex(body, "(^|;)" + declaration + ";", declaration)
 
     def _stylesheet(self, response):
         self.assertEqual(response.status_code, 200)
@@ -138,15 +151,19 @@ class TestFundingFooter(HttpCase):
         self.assertEqual(bundle.status_code, 200)
         return bundle.text
 
-    def test_the_directory_closes_with_the_strip(self):
+    def test_the_directory_shows_the_strip_as_the_first_row_of_the_footer(self):
         if not self._installed("website_directory"):
             self.skipTest("website_directory not installed")
-        self._assert_strip_count(self._get("/comercio"), 1)
+        response = self._get("/comercio")
+        self._assert_strip_count(response, 1)
+        self._assert_strip_is_above_the_footer_content(response.text)
 
-    def test_the_events_page_closes_with_the_strip(self):
+    def test_the_events_page_shows_the_strip_as_the_first_row_of_the_footer(self):
         if not self._installed("website_event"):
             self.skipTest("website_event not installed")
-        self._assert_strip_count(self._get("/event"), 1)
+        response = self._get("/event")
+        self._assert_strip_count(response, 1)
+        self._assert_strip_is_above_the_footer_content(response.text)
 
     # -- absent ----------------------------------------------------------------
 
