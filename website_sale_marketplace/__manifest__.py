@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website Sale Marketplace",
-    "version": "19.0.1.5.0",
+    "version": "19.0.1.8.1",
     "category": "Website/eCommerce",
     "summary": "Aggregate the published products of every company on a "
     "marketplace website while merchant sites stay isolated",
@@ -14,6 +14,9 @@
     "depends": [
         "website_sale",
         "product_multi_company",
+        # The in_store delivery method every merchant shop is given
+        # (res.company._ensure_shop_pickup_carrier).
+        "website_sale_collect",
     ],
     "data": [
         "views/website_views.xml",

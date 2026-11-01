@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_company_facility_category_user,company.facility.category user read,model_company_facility_category,base.group_user,1,0,0,0
+access_company_facility_category_manager,company.facility.category manager,model_company_facility_category,company_facilities.group_facility_manager,1,1,1,1
+access_company_facility_user,company.facility user read,model_company_facility,base.group_user,1,0,0,0
+access_company_facility_manager,company.facility manager,model_company_facility,company_facilities.group_facility_manager,1,1,1,1

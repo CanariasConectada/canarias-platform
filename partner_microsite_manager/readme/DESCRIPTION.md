@@ -12,5 +12,12 @@ There is no HTML generation, no view rewriting and no synchronization
 step. A one-time **Publish Homepage** action installs the template as the
 homepage of the company website; from then on everything is live.
 
+The homepages imported from the legacy platform keep their own design and
+texts, but their values (contact lines, map, parking, delivery, opening
+hours) are rendered from the company too: the importer's literal values
+were replaced by small live templates (`views/microsite_live_data.xml`),
+and saving such a page in the website builder puts them back if the
+builder flattened them.
+
 The contact form on `res.partner` keeps a *Microsite* smart button that
 jumps to the owning company, since users often land on the contact first.

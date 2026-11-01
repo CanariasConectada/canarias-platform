@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.form.eu.emblem</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="website.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='website_info_settings']" position="inside">
+                <setting id="eu_emblem_setting"
+                         string="European Union emblem"
+                         help="Shown next to the site logo on every website.">
+                    <field name="eu_emblem_enabled"/>
+                    <div class="content-group mt-2" invisible="not eu_emblem_enabled">
+                        <div class="row">
+                            <label for="eu_emblem_statement" class="col-lg-4 o_light_label"/>
+                            <field name="eu_emblem_statement"
+                                   placeholder="Financiado por la Unión Europea – NextGenerationEU"/>
+                        </div>
+                        <div class="row">
+                            <label for="eu_emblem_url" class="col-lg-4 o_light_label"/>
+                            <field name="eu_emblem_url"
+                                   placeholder="https://…"/>
+                        </div>
+                        <div class="text-muted mt-2">
+                            The EU's visual identity rules normally require the
+                            emblem to appear together with the name of the fund.
+                            Ask whoever administers the grant for the exact
+                            wording before leaving this empty.
+                        </div>
+                    </div>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+</odoo>

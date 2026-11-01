@@ -23,3 +23,4 @@ access_local_content_image_user,website.local.content.image.user,model_website_l
 access_local_content_image_manager,website.local.content.image.manager,model_website_local_content_image,group_local_content_manager,1,1,1,1
 access_local_content_like_user,website.local.content.like.user,model_website_local_content_like,base.group_user,1,0,0,0
 access_local_content_like_manager,website.local.content.like.manager,model_website_local_content_like,group_local_content_manager,1,1,1,1
+access_local_content_item_start_manager,website.local.content.item.start.manager,model_website_local_content_item_start,group_local_content_manager,1,1,1,1

@@ -2,7 +2,7 @@
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl).
 {
     "name": "Website Login Loader",
-    "version": "19.0.2.0.0",
+    "version": "19.0.2.1.0",
     "category": "Website",
     "summary": "Visible progress while the auth page and the next one load",
     "author": "MikeColangelo",

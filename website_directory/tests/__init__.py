@@ -2,5 +2,7 @@ from . import (
     test_directory_controller,
     test_entry_sync,
     test_self_service_category,
+    test_translations,
+    test_zone_filters,
     test_zone_resolution,
 )

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="microsite_creation_wizard_form" model="ir.ui.view">
+        <field name="name">microsite.creation.wizard.form</field>
+        <field name="model">microsite.creation.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Create Microsite">
+                <field name="company_id" invisible="1"/>
+                <field name="domain_suffix" invisible="1"/>
+                <div class="alert alert-info" role="alert">
+                    Point the DNS record at this server <strong>before</strong>
+                    publishing. Until it resolves, the address below answers
+                    nothing.
+                </div>
+                <group>
+                    <field name="subdomain" placeholder="neveri"/>
+                    <field name="address" widget="url"/>
+                    <field name="dns_record"/>
+                </group>
+                <footer>
+                    <button
+                        name="action_create_microsite"
+                        type="object"
+                        string="Create Microsite"
+                        class="btn-primary"
+                        data-hotkey="q"
+                    />
+                    <button
+                        string="Cancel"
+                        class="btn-secondary"
+                        special="cancel"
+                        data-hotkey="x"
+                    />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_microsite_creation_wizard" model="ir.actions.act_window">
+        <field name="name">Create Microsite</field>
+        <field name="res_model">microsite.creation.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="base.model_res_company"/>
+        <field name="binding_view_types">form</field>
+    </record>
+
+</odoo>

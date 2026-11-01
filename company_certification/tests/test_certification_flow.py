@@ -78,10 +78,10 @@ class TestCertificationFlow(CertificationCase):
         self.assertEqual(len(answer), 1)
         self.assertFalse(answer.test_entry)
 
-    def test_positive_items(self):
-        self.env["certification.positive.item"].create(
+    def test_triggered_items(self):
+        self.env["certification.highlight"].create(
             {
-                "survey_id": self.survey.id,
+                "type_id": self.cert_type.id,
                 "question_id": self.questions[0].id,
                 "min_score": 2,
                 "label": "First question OK",
@@ -89,10 +89,7 @@ class TestCertificationFlow(CertificationCase):
             }
         )
         self._run_evaluation(3)
-        items = self.company._get_certification_positive_items(self.cert_type)
-        # `description` is always present, and empty here: the microsite
-        # template loops over these and over the vertical's curated
-        # highlights with one body, so both sources hand it the same keys.
+        items = self.company._get_certification_amenities(self.cert_type)
         self.assertEqual(
             items,
             [
@@ -105,7 +102,7 @@ class TestCertificationFlow(CertificationCase):
         )
         # Below min_score the item disappears.
         self.company.certification_ids.user_input_id.user_input_line_ids.unlink()
-        self.assertFalse(self.company._get_certification_positive_items(self.cert_type))
+        self.assertFalse(self.company._get_certification_amenities(self.cert_type))
 
     def test_expiry_cron_drops_stale_status(self):
         self._run_evaluation(3)

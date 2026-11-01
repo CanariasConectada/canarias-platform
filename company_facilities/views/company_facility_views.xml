@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="view_company_facility_list" model="ir.ui.view">
+        <field name="name">company.facility.list</field>
+        <field name="model">company.facility</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="category_id"/>
+                <field name="name"/>
+                <field name="icon" placeholder="fa-wifi"/>
+                <field name="description" optional="show"/>
+                <field name="active" widget="boolean_toggle" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_company_facility_form" model="ir.ui.view">
+        <field name="name">company.facility.form</field>
+        <field name="model">company.facility</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Step-free access"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="category_id"/>
+                            <field name="icon" placeholder="fa-wheelchair"/>
+                            <field name="sequence"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="description"
+                                   placeholder="Ramp at the main entrance"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Offered by" name="companies">
+                            <field name="company_ids" widget="many2many_tags"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_company_facility_search" model="ir.ui.view">
+        <field name="name">company.facility.search</field>
+        <field name="model">company.facility</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="category_id"/>
+                <filter name="archived" string="Archived"
+                        domain="[('active', '=', False)]"/>
+                <separator/>
+                <group name="group_by">
+                    <filter name="by_category" string="Subdivision"
+                            context="{'group_by': 'category_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_company_facility" model="ir.actions.act_window">
+        <field name="name">Facilities and services</field>
+        <field name="res_model">company.facility</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_by_category': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Add something a shop can offer</p>
+            <p>
+                Every shop picks from this list on its own form. Rename an item
+                here and it changes on every microsite at once — which is also
+                why it only has to be translated once.
+            </p>
+        </field>
+    </record>
+
+</odoo>

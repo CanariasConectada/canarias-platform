@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 {
     "name": "Website PWA Chat",
-    "version": "19.0.2.0.0",
+    "version": "19.0.6.6.0",
     "category": "Website",
     "summary": "Community chat page of the Canarias Conectada app, served "
     "inside the public website layout",
@@ -50,6 +50,10 @@
         # onto every website of the platform. `discuss_channel_zone` drags
         # `mail` in anyway, but not `bus`, so it is declared here.
         "bus",
+        # The foreground chime (`@mail_push_guest/js/chime`): one throttle and
+        # one mute switch shared with the push listener of website_pwa_push
+        # and with the backend's Discuss.
+        "mail_push_guest",
     ],
     "data": [
         # The support group is referenced by the cron's own reasoning and by
@@ -57,13 +61,35 @@
         "security/website_pwa_chat_groups.xml",
         "views/website_views.xml",
         "views/templates.xml",
+        # After the group it is gated on and after the templates, so the
+        # backend queue can be read by the same people who answer it.
+        "views/support_views.xml",
         "data/discuss_channel_data.xml",
         "data/ir_cron_data.xml",
     ],
     "assets": {
         "web.assets_frontend": [
             "website_pwa_chat/static/src/js/community_chat.js",
+            "website_pwa_chat/static/src/js/support_window.js",
             "website_pwa_chat/static/src/scss/community_chat.scss",
+        ],
+        # The backend Discuss app, where the agents answer: the collapsible
+        # Soporte category that keeps 218 shops' conversations out of the
+        # Direct messages list.
+        "web.assets_backend": [
+            "website_pwa_chat/static/src/backend/support_sidebar_category.js",
+            # "Request support" for everybody who is not an agent: merchants
+            # and walk-in guests live in the backend, not on the website.
+            "website_pwa_chat/static/src/backend/support_name_dialog.js",
+            "website_pwa_chat/static/src/backend/support_name_dialog.xml",
+            "website_pwa_chat/static/src/backend/support_request_button.js",
+            "website_pwa_chat/static/src/backend/support_request_button.xml",
+        ],
+        # The browser checks run by the HttpCase suite.
+        "web.assets_tests": [
+            "website_pwa_chat/static/tests/tours/support_request_discuss.js",
+            "website_pwa_chat/static/tests/tours/support_request_discuss_guest.js",
+            "website_pwa_chat/static/tests/tours/support_window_size.js",
         ],
     },
     "installable": True,

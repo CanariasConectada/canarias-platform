@@ -3,175 +3,651 @@
      License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
 <odoo>
 
-    <!-- Legal pages shared by every microsite. Content is data-driven from
-         the website company, so a single set of templates serves all the
-         microsites. Linked from the corporate footer. -->
+    <!-- Legal pages shared by every microsite.
+
+         The body text is the canonical text the legacy platform served on 211
+         sites from ``theme_corporate_multi`` (ported verbatim on 2026-08-18,
+         legacy views ws1), completed with the sections the RGPD requires that
+         the legacy text lacked: legal bases, AEPD complaint right, an accurate
+         cookie table, and a prevailing-language clause. The legacy claim that
+         the site used Google Analytics was NOT ported: this platform sets no
+         analytics cookie and the policy must describe what actually happens.
+
+         Identity is data-driven from the website company (``t-field``), so a
+         single set of global templates (no website_id) serves all the sites:
+         merchant microsites identify the merchant, the zones their zone
+         company and the portal identifies company 1 — exactly as the legacy
+         per-site pages did. Fields still blank on the company render nothing
+         instead of breaking (guarded lists).
+
+         Each page is split into a ``*_content`` template called from the
+         ``website.layout`` wrapper so tests can render the content without
+         the full frontend layout. -->
+
+    <!-- Shared machine-translation notice: the non-Spanish versions of these
+         pages are produced by website_auto_translate. -->
+    <template id="microsite_legal_language_note" name="Legal Language Note">
+        <p class="text-muted mt-5">
+            <small>
+                Las versiones de esta página en idiomas distintos del español
+                son traducciones automáticas que se ofrecen únicamente a
+                título informativo. En caso de discrepancia, prevalecerá la
+                versión en español.
+            </small>
+        </p>
+    </template>
+
+    <!-- ================= Política de Privacidad ================= -->
+
+    <template
+        id="microsite_privacy_policy_content"
+        name="Política de Privacidad (contenido)"
+    >
+        <t t-set="pmm_company" t-value="website.company_id.sudo()"/>
+        <div id="wrap" class="oe_structure">
+            <section class="s_title pt48 pb24" data-name="Title">
+                <div class="container">
+                    <h1 class="text-center">Política de Privacidad</h1>
+                </div>
+            </section>
+            <section class="s_text_block pt24 pb48" data-name="Text">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <h2>Introducción</h2>
+                            <p>
+                                Mediante la presente Política de Privacidad,
+                                <strong t-field="pmm_company.name"/> pretende
+                                mostrar su compromiso respecto al cumplimiento
+                                de las normativas y legislaciones que se deriva
+                                del tratamiento de la información necesaria
+                                para la prestación de sus servicios.
+                            </p>
+                            <p>En particular, se consideran como marco de referencia:</p>
+                            <ul>
+                                <li>
+                                    Reglamento (UE) 2016/679 del Parlamento
+                                    Europeo y del Consejo (RGPD)
+                                </li>
+                                <li>
+                                    Ley Orgánica 3/2018 de Protección de Datos
+                                    Personales y garantía de los derechos
+                                    digitales (LOPDGDD)
+                                </li>
+                                <li>
+                                    Ley 34/2002, de servicios de la sociedad de
+                                    la información y de comercio electrónico
+                                    (LSSI)
+                                </li>
+                            </ul>
+
+                            <h2 class="mt-4">1. Responsable del tratamiento</h2>
+                            <p>El responsable del tratamiento de datos es:</p>
+                            <ul>
+                                <li>
+                                    <strong>Nombre: </strong>
+                                    <span t-field="pmm_company.name"/>
+                                </li>
+                                <li t-if="pmm_company.vat">
+                                    <strong>NIF/CIF: </strong>
+                                    <span t-field="pmm_company.vat"/>
+                                </li>
+                                <li t-if="pmm_company.street">
+                                    <strong>Dirección: </strong>
+                                    <span t-field="pmm_company.street"/>,
+                                    <span t-field="pmm_company.city"/>
+                                </li>
+                                <li t-if="pmm_company.email">
+                                    <strong>Correo electrónico: </strong>
+                                    <span t-field="pmm_company.email"/>
+                                </li>
+                                <li t-if="pmm_company.phone">
+                                    <strong>Teléfono: </strong>
+                                    <span t-field="pmm_company.phone"/>
+                                </li>
+                            </ul>
+
+                            <h2 class="mt-4">
+                                2. Información y datos personales que recopilamos
+                            </h2>
+                            <p>
+                                La información de carácter personal se refiere
+                                a cualquier información que se relacione con
+                                una persona física identificada o
+                                identificable.
+                            </p>
+                            <p>En este sitio web recopilamos:</p>
+                            <ul>
+                                <li>Información de contacto (nombre, email, teléfono)</li>
+                                <li>Datos necesarios para la prestación de nuestros servicios</li>
+                                <li>Información de navegación (cookies, dirección IP)</li>
+                            </ul>
+
+                            <h2 class="mt-4">3. Finalidades y bases jurídicas</h2>
+                            <p>
+                                Los datos se tratan para las siguientes
+                                finalidades, cada una amparada en la base
+                                jurídica del artículo 6.1 del RGPD que se
+                                indica:
+                            </p>
+                            <ul>
+                                <li>
+                                    <strong>Atender sus consultas y solicitudes
+                                    de contacto:</strong> consentimiento del
+                                    interesado (art. 6.1.a RGPD).
+                                </li>
+                                <li>
+                                    <strong>Prestar los servicios solicitados y
+                                    gestionar pedidos:</strong> ejecución de un
+                                    contrato o aplicación de medidas
+                                    precontractuales (art. 6.1.b RGPD).
+                                </li>
+                                <li>
+                                    <strong>Cumplir obligaciones legales</strong>
+                                    (fiscales, mercantiles o de consumo):
+                                    obligación legal (art. 6.1.c RGPD).
+                                </li>
+                                <li>
+                                    <strong>Garantizar la seguridad y el
+                                    correcto funcionamiento del sitio
+                                    web:</strong> interés legítimo (art. 6.1.f
+                                    RGPD).
+                                </li>
+                            </ul>
+
+                            <h2 class="mt-4">4. Cómo protegemos la información</h2>
+                            <p>
+                                Implementamos medidas de seguridad técnicas y
+                                organizativas para proteger sus datos
+                                personales contra accesos no autorizados,
+                                alteraciones, pérdidas o destrucción.
+                            </p>
+
+                            <h2 class="mt-4">
+                                5. Derechos de los titulares de los datos
+                            </h2>
+                            <p>Usted tiene derecho a:</p>
+                            <ul>
+                                <li>
+                                    <strong>Acceso:</strong> obtener
+                                    confirmación de si se están tratando sus
+                                    datos
+                                </li>
+                                <li>
+                                    <strong>Rectificación:</strong> modificar
+                                    datos inexactos o erróneos
+                                </li>
+                                <li>
+                                    <strong>Supresión:</strong> solicitar la
+                                    eliminación de sus datos
+                                </li>
+                                <li>
+                                    <strong>Oposición:</strong> oponerse al
+                                    tratamiento de sus datos
+                                </li>
+                                <li>
+                                    <strong>Limitación:</strong> solicitar la
+                                    limitación del tratamiento
+                                </li>
+                                <li>
+                                    <strong>Portabilidad:</strong> recibir sus
+                                    datos en un formato estructurado
+                                </li>
+                            </ul>
+                            <p>
+                                Cuando el tratamiento se base en el
+                                consentimiento, puede retirarlo en cualquier
+                                momento sin que ello afecte a la licitud del
+                                tratamiento previo.
+                            </p>
+                            <p t-if="pmm_company.email">
+                                Para ejercer estos derechos, contacte con
+                                nosotros a través del email:
+                                <span t-field="pmm_company.email"/>.
+                            </p>
+                            <p>
+                                Asimismo, si considera que el tratamiento de
+                                sus datos no se ajusta a la normativa, tiene
+                                derecho a presentar una reclamación ante la
+                                autoridad de control: la Agencia Española de
+                                Protección de Datos (<a
+                                    href="https://www.aepd.es"
+                                    target="_blank"
+                                    rel="noopener"
+                                >www.aepd.es</a>).
+                            </p>
+
+                            <h2 class="mt-4">6. Conservación de los datos</h2>
+                            <p>
+                                Conservamos sus datos personales durante el
+                                tiempo necesario para cumplir con la finalidad
+                                para la cual fueron obtenidos, así como para
+                                atender posibles responsabilidades derivadas
+                                del tratamiento, y en todo caso durante los
+                                plazos de prescripción que establezca la
+                                legislación aplicable.
+                            </p>
+
+                            <h2 class="mt-4">7. Cookies</h2>
+                            <p>
+                                La información sobre las cookies que utiliza
+                                este sitio web está disponible en la
+                                <a href="/politica-cookies">Política de Cookies</a>.
+                            </p>
+
+                            <h2 class="mt-4">8. Ley aplicable y jurisdicción</h2>
+                            <p>
+                                La resolución de conflictos se regirá por la
+                                legislación española. Nos sometemos a los
+                                Jueces y Tribunales de Las Palmas de Gran
+                                Canaria.
+                            </p>
+
+                            <p class="text-muted mt-4">
+                                <small>
+                                    Esta política puede ser actualizada
+                                    periódicamente. Le recomendamos revisarla
+                                    con frecuencia. Última actualización:
+                                    agosto de 2026.
+                                </small>
+                            </p>
+                            <t t-call="partner_microsite_manager.microsite_legal_language_note"/>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </template>
 
     <template id="microsite_privacy_policy" name="Política de Privacidad">
         <t t-call="website.layout">
-            <t t-set="pmm_company" t-value="website.company_id.sudo()"/>
-            <div id="wrap" class="oe_structure">
-                <section class="s_title pt48 pb24" data-name="Title">
-                    <div class="container">
-                        <h1 class="text-center">Política de Privacidad</h1>
-                    </div>
-                </section>
-                <section class="s_text_block pt24 pb48" data-name="Text">
-                    <div class="container">
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <p>
-                                    Mediante la presente Política de Privacidad,
-                                    <strong t-esc="pmm_company.name"/>
-                                    muestra su compromiso con el cumplimiento de
-                                    la normativa aplicable al tratamiento de datos
-                                    personales (RGPD UE 2016/679, LOPDGDD 3/2018 y
-                                    LSSI 34/2002).
-                                </p>
-                                <h2 class="mt-4">1. Responsable del tratamiento</h2>
-                                <ul>
-                                    <li>
-                                        <strong>Nombre:</strong>
-                                        <span t-esc="pmm_company.name"/>
-                                    </li>
-                                    <li t-if="pmm_company.street">
-                                        <strong>Dirección:</strong>
-                                        <span t-esc="pmm_company.street"/>,
-                                        <span t-esc="pmm_company.city"/>
-                                    </li>
-                                    <li t-if="pmm_company.email">
-                                        <strong>Correo electrónico:</strong>
-                                        <span t-esc="pmm_company.email"/>
-                                    </li>
-                                </ul>
-                                <h2 class="mt-4">2. Datos que recopilamos</h2>
-                                <ul>
-                                    <li>Información de contacto (nombre, email, teléfono).</li>
-                                    <li>Datos necesarios para la prestación de nuestros servicios.</li>
-                                    <li>Información de navegación (cookies, dirección IP).</li>
-                                </ul>
-                                <h2 class="mt-4">3. Derechos de los interesados</h2>
-                                <p>
-                                    Puede ejercer sus derechos de acceso,
-                                    rectificación, supresión, oposición, limitación
-                                    y portabilidad escribiendo a
-                                    <span t-esc="pmm_company.email"/>.
-                                </p>
-                                <h2 class="mt-4">4. Ley aplicable</h2>
-                                <p>
-                                    La resolución de conflictos se rige por la
-                                    legislación española y los juzgados y tribunales
-                                    de Las Palmas de Gran Canaria.
-                                </p>
+            <t t-call="partner_microsite_manager.microsite_privacy_policy_content"/>
+        </t>
+    </template>
+
+    <!-- ================= Política de Cookies ================= -->
+
+    <template
+        id="microsite_cookies_policy_content"
+        name="Política de Cookies (contenido)"
+    >
+        <t t-set="pmm_company" t-value="website.company_id.sudo()"/>
+        <div id="wrap" class="oe_structure">
+            <section class="s_title pt48 pb24" data-name="Title">
+                <div class="container">
+                    <h1 class="text-center">Política de Cookies</h1>
+                </div>
+            </section>
+            <section class="s_text_block pt24 pb48" data-name="Text">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <h2>¿Qué son las cookies?</h2>
+                            <p>
+                                Las cookies son pequeños archivos de datos que
+                                se envían al ordenador del Usuario, teléfono
+                                móvil u otro dispositivo de acceso cuando
+                                visita una página web y que permiten obtener y
+                                recopilar información relativa a su navegación.
+                            </p>
+                            <p>
+                                Las cookies son esenciales para el
+                                funcionamiento de Internet, aportando
+                                innumerables ventajas en la prestación de
+                                servicios interactivos, facilitando la
+                                navegación y usabilidad de las páginas web.
+                            </p>
+
+                            <h2 class="mt-4">¿Qué cookies utilizamos?</h2>
+
+                            <h4 class="mt-3">1. Cookies propias</h4>
+                            <p>
+                                <strong>Cookies técnicas estrictamente
+                                necesarias:</strong> Son aquellas que permiten
+                                al usuario la navegación a través de una página
+                                web, plataforma o aplicación y la utilización
+                                de las diferentes opciones o servicios que en
+                                ella existan como, por ejemplo, controlar el
+                                tráfico y la comunicación de datos, identificar
+                                la sesión, acceder a partes de acceso
+                                restringido, realizar el proceso de compra de
+                                un pedido.
+                            </p>
+                            <p>
+                                <strong>Cookies de personalización:</strong>
+                                Son aquellas que permiten al usuario acceder al
+                                servicio con algunas características generales
+                                predefinidas en función de una serie de
+                                criterios en el terminal del usuario, como por
+                                ejemplo idioma, tipo de navegador,
+                                configuración regional, etc.
+                            </p>
+                            <p>
+                                En concreto, este sitio web utiliza las
+                                siguientes cookies propias:
+                            </p>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Cookie</th>
+                                            <th>Tipo</th>
+                                            <th>Finalidad</th>
+                                            <th>Duración</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><code>session_id</code></td>
+                                            <td>Técnica (necesaria)</td>
+                                            <td>
+                                                Identifica la sesión del
+                                                usuario y permite el acceso a
+                                                zonas restringidas y al proceso
+                                                de compra
+                                            </td>
+                                            <td>7 días</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>frontend_lang</code></td>
+                                            <td>Personalización (necesaria)</td>
+                                            <td>
+                                                Recuerda el idioma elegido para
+                                                mostrar el sitio
+                                            </td>
+                                            <td>1 año</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>website_cookies_bar</code></td>
+                                            <td>Técnica (necesaria)</td>
+                                            <td>
+                                                Guarda su decisión sobre el uso
+                                                de cookies para no volver a
+                                                preguntarle
+                                            </td>
+                                            <td>Hasta 1 año</td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <code>odoo_utm_campaign</code>,
+                                                <code>odoo_utm_source</code>,
+                                                <code>odoo_utm_medium</code>
+                                            </td>
+                                            <td>Medición de campañas (no necesaria)</td>
+                                            <td>
+                                                Registran el origen de la
+                                                visita cuando se llega al sitio
+                                                desde un enlace de campaña;
+                                                solo se instalan si usted
+                                                acepta las cookies opcionales
+                                            </td>
+                                            <td>31 días</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
+
+                            <h4 class="mt-3">2. Cookies de terceros</h4>
+                            <p>
+                                Este sitio web no utiliza cookies analíticas de
+                                terceros (como Google Analytics) ni cookies
+                                publicitarias.
+                            </p>
+                            <p>
+                                Algunas páginas pueden incorporar contenido de
+                                terceros, como vídeos, mapas o publicaciones de
+                                redes sociales. Ese contenido permanece
+                                bloqueado hasta que usted acepta las cookies
+                                opcionales en el aviso de cookies; al
+                                aceptarlas, el tercero correspondiente puede
+                                instalar sus propias cookies conforme a sus
+                                políticas.
+                            </p>
+
+                            <h2 class="mt-4">Consentimiento</h2>
+                            <p>
+                                Al acceder al sitio web se muestra un aviso de
+                                cookies desde el que puede aceptar o rechazar
+                                las cookies no necesarias. Las cookies técnicas
+                                estrictamente necesarias no requieren
+                                consentimiento. Puede retirar su consentimiento
+                                en cualquier momento eliminando las cookies
+                                almacenadas en su navegador; el aviso volverá a
+                                mostrarse en su siguiente visita.
+                            </p>
+
+                            <h2 class="mt-4">Bloqueo de cookies</h2>
+                            <p>
+                                El usuario puede permitir, bloquear o eliminar
+                                las cookies instaladas en su equipo mediante la
+                                configuración de las opciones del navegador
+                                instalado en su ordenador o dispositivo móvil:
+                            </p>
+                            <ul>
+                                <li>
+                                    <a
+                                        href="https://support.google.com/chrome/answer/95647"
+                                        target="_blank"
+                                        rel="noopener"
+                                    >Google Chrome</a>
+                                </li>
+                                <li>
+                                    <a
+                                        href="https://support.mozilla.org/es/kb/habilitar-y-deshabilitar-cookies-sitio-web"
+                                        target="_blank"
+                                        rel="noopener"
+                                    >Mozilla Firefox</a>
+                                </li>
+                                <li>
+                                    <a
+                                        href="https://support.microsoft.com/es-es/microsoft-edge/eliminar-las-cookies-en-microsoft-edge-63947406-40ac-c3b8-57b9-2a946a29ae09"
+                                        target="_blank"
+                                        rel="noopener"
+                                    >Microsoft Edge</a>
+                                </li>
+                                <li>
+                                    <a
+                                        href="https://support.apple.com/es-es/guide/safari/sfri11471/mac"
+                                        target="_blank"
+                                        rel="noopener"
+                                    >Safari</a>
+                                </li>
+                            </ul>
+
+                            <p class="text-muted mt-4">
+                                <small>
+                                    Esta política de cookies puede ser
+                                    modificada en cualquier momento. Le
+                                    recomendamos revisarla periódicamente.
+                                    Última actualización: agosto de 2026.
+                                </small>
+                            </p>
+                            <t t-call="partner_microsite_manager.microsite_legal_language_note"/>
                         </div>
                     </div>
-                </section>
-            </div>
-        </t>
+                </div>
+            </section>
+        </div>
     </template>
 
     <template id="microsite_cookies_policy" name="Política de Cookies">
         <t t-call="website.layout">
-            <t t-set="pmm_company" t-value="website.company_id.sudo()"/>
-            <div id="wrap" class="oe_structure">
-                <section class="s_title pt48 pb24" data-name="Title">
-                    <div class="container">
-                        <h1 class="text-center">Política de Cookies</h1>
-                    </div>
-                </section>
-                <section class="s_text_block pt24 pb48" data-name="Text">
-                    <div class="container">
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <h2>¿Qué son las cookies?</h2>
-                                <p>
-                                    Las cookies son pequeños archivos de datos que
-                                    se almacenan en su dispositivo al visitar una
-                                    página web y permiten recopilar información
-                                    relativa a su navegación.
-                                </p>
-                                <h2 class="mt-4">¿Qué cookies utilizamos?</h2>
-                                <p>
-                                    <strong>Técnicas:</strong> imprescindibles para
-                                    la navegación y el proceso de compra.
-                                    <strong>De personalización:</strong> recuerdan
-                                    sus preferencias (idioma, región).
-                                    <strong>Analíticas y de terceros:</strong>
-                                    permiten medir el uso del sitio y la
-                                    interacción con redes sociales.
-                                </p>
-                                <h2 class="mt-4">Gestión de cookies</h2>
-                                <p>
-                                    Puede permitir, bloquear o eliminar las cookies
-                                    instaladas mediante la configuración de su
-                                    navegador.
-                                </p>
-                            </div>
+            <t t-call="partner_microsite_manager.microsite_cookies_policy_content"/>
+        </t>
+    </template>
+
+    <!-- ================= Términos y Condiciones ================= -->
+
+    <template
+        id="microsite_terms_conditions_content"
+        name="Términos y Condiciones (contenido)"
+    >
+        <t t-set="pmm_company" t-value="website.company_id.sudo()"/>
+        <div id="wrap" class="oe_structure">
+            <section class="s_title pt48 pb24" data-name="Title">
+                <div class="container">
+                    <h1 class="text-center">Términos y Condiciones</h1>
+                </div>
+            </section>
+            <section class="s_text_block pt24 pb48" data-name="Text">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <h2>1. Introducción</h2>
+                            <p>
+                                Las presentes condiciones generales de uso
+                                regulan los términos y condiciones de acceso y
+                                uso de este sitio web, propiedad de
+                                <strong t-field="pmm_company.name"/>, que el
+                                usuario deberá leer y aceptar para usar todos
+                                los servicios e información que se facilitan
+                                desde el sitio.
+                            </p>
+                            <p>
+                                El mero acceso y/o utilización del sitio web
+                                significa la plena aceptación de las presentes
+                                condiciones generales de uso.
+                            </p>
+
+                            <h2 class="mt-4">2. Condiciones de uso</h2>
+                            <p>
+                                <strong>Exención de responsabilidad para
+                                productos y servicios de terceros:</strong>
+                            </p>
+                            <ul>
+                                <li>
+                                    El sitio web actúa únicamente como
+                                    intermediario de información sobre
+                                    productos y servicios.
+                                </li>
+                                <li>
+                                    No garantizamos la exactitud, integridad o
+                                    actualidad de la información proporcionada.
+                                </li>
+                                <li>
+                                    No asumimos responsabilidad por la calidad,
+                                    disponibilidad, precio o cualquier otro
+                                    aspecto de los productos o servicios
+                                    ofrecidos por terceros.
+                                </li>
+                                <li>
+                                    Cualquier transacción que realice con
+                                    establecimientos terceros se realiza bajo
+                                    su propio riesgo.
+                                </li>
+                            </ul>
+
+                            <h2 class="mt-4">3. Modificaciones</h2>
+                            <p>
+                                <span t-field="pmm_company.name"/> se reserva
+                                la facultad de modificar en cualquier momento
+                                las condiciones generales de uso del sitio web.
+                                Se recomienda consultar periódicamente estos
+                                términos.
+                            </p>
+
+                            <h2 class="mt-4">4. Obligaciones del usuario</h2>
+                            <p>
+                                El usuario deberá respetar en todo momento los
+                                términos y condiciones establecidos. De forma
+                                expresa el usuario manifiesta que:
+                            </p>
+                            <ul>
+                                <li>Utilizará el sitio web de forma diligente</li>
+                                <li>No transmitirá virus o código dañino</li>
+                                <li>No realizará actividades ilícitas o lesivas</li>
+                                <li>No interferirá en el funcionamiento normal del sitio</li>
+                            </ul>
+
+                            <h2 class="mt-4">5. Propiedad intelectual e industrial</h2>
+                            <p>
+                                Todos los contenidos, marcas, logos, dibujos,
+                                documentación, programas informáticos o
+                                cualquier otro elemento susceptible de
+                                protección por la legislación de propiedad
+                                intelectual o industrial, que sean accesibles
+                                en el sitio web corresponden exclusivamente a
+                                <span t-field="pmm_company.name"/> o a sus
+                                legítimos titulares.
+                            </p>
+                            <p>
+                                Queda expresamente prohibida la reproducción,
+                                distribución o transformación de cualquier
+                                contenido sin autorización previa.
+                            </p>
+
+                            <h2 class="mt-4">6. Privacidad y protección de datos</h2>
+                            <p>
+                                El tratamiento de datos personales se realiza
+                                de conformidad con nuestra
+                                <a href="/politica-privacidad">Política de Privacidad</a>
+                                y la normativa vigente en materia de protección
+                                de datos.
+                            </p>
+
+                            <h2 class="mt-4">7. Cookies</h2>
+                            <p>
+                                Este sitio web utiliza cookies. Para más
+                                información, consulte nuestra
+                                <a href="/politica-cookies">Política de Cookies</a>.
+                            </p>
+
+                            <h2 class="mt-4">8. Idioma</h2>
+                            <p>
+                                Estas condiciones se han redactado en español.
+                                Las versiones en otros idiomas son traducciones
+                                automáticas que se ofrecen únicamente a título
+                                informativo; en caso de discrepancia,
+                                prevalecerá la versión en español.
+                            </p>
+
+                            <h2 class="mt-4">9. Legislación aplicable y jurisdicción</h2>
+                            <p>
+                                Las presentes condiciones se rigen y se
+                                interpretan de acuerdo con las Leyes de España.
+                                Para cualquier reclamación serán competentes
+                                los jueces y tribunales de Las Palmas de Gran
+                                Canaria.
+                            </p>
+
+                            <h2 class="mt-4">10. Contacto</h2>
+                            <p>
+                                Para cualquier consulta relacionada con estos
+                                términos y condiciones, puede contactarnos en:
+                            </p>
+                            <ul>
+                                <li t-if="pmm_company.email">
+                                    <strong>Email: </strong>
+                                    <span t-field="pmm_company.email"/>
+                                </li>
+                                <li t-if="pmm_company.street">
+                                    <strong>Dirección: </strong>
+                                    <span t-field="pmm_company.street"/>,
+                                    <span t-field="pmm_company.city"/>
+                                </li>
+                            </ul>
+
+                            <p class="text-muted mt-4">
+                                <small>Última actualización: agosto de 2026</small>
+                            </p>
+                            <t t-call="partner_microsite_manager.microsite_legal_language_note"/>
                         </div>
                     </div>
-                </section>
-            </div>
-        </t>
+                </div>
+            </section>
+        </div>
     </template>
 
     <template id="microsite_terms_conditions" name="Términos y Condiciones">
         <t t-call="website.layout">
-            <t t-set="pmm_company" t-value="website.company_id.sudo()"/>
-            <div id="wrap" class="oe_structure">
-                <section class="s_title pt48 pb24" data-name="Title">
-                    <div class="container">
-                        <h1 class="text-center">Términos y Condiciones</h1>
-                    </div>
-                </section>
-                <section class="s_text_block pt24 pb48" data-name="Text">
-                    <div class="container">
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <h2>1. Introducción</h2>
-                                <p>
-                                    Las presentes condiciones regulan el acceso y
-                                    uso de este sitio web, propiedad de
-                                    <strong t-esc="pmm_company.name"/>. El acceso
-                                    al sitio implica la aceptación de estas
-                                    condiciones.
-                                </p>
-                                <h2 class="mt-4">2. Condiciones de uso</h2>
-                                <p>
-                                    El sitio actúa como intermediario de información
-                                    sobre productos y servicios y no garantiza la
-                                    exactitud, disponibilidad o precio de los
-                                    ofrecidos por terceros.
-                                </p>
-                                <h2 class="mt-4">3. Propiedad intelectual</h2>
-                                <p>
-                                    Los contenidos, marcas y logotipos corresponden
-                                    a <span t-esc="pmm_company.name"/> o a sus
-                                    legítimos titulares. Queda prohibida su
-                                    reproducción sin autorización.
-                                </p>
-                                <h2 class="mt-4">4. Legislación aplicable</h2>
-                                <p>
-                                    Estas condiciones se rigen por la legislación
-                                    española y los juzgados de Las Palmas de Gran
-                                    Canaria.
-                                </p>
-                                <p class="mt-4">
-                                    Consulte también nuestra
-                                    <a href="/politica-privacidad">Política de Privacidad</a>
-                                    y nuestra
-                                    <a href="/politica-cookies">Política de Cookies</a>.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </div>
+            <t t-call="partner_microsite_manager.microsite_terms_conditions_content"/>
         </t>
     </template>
 
     <!-- Published pages that expose the templates at stable URLs. Website-
-         agnostic (no website_id): available on every microsite. -->
+         agnostic (no website_id): available on every microsite. The per-site
+         copies the migration inherited from the legacy are retired by the
+         19.0.2.0.0 post-migration so these global pages serve every site. -->
     <record id="microsite_privacy_page" model="website.page">
         <field name="name">Política de Privacidad</field>
         <field name="url">/politica-privacidad</field>
@@ -201,75 +677,80 @@
          asesoría still has to supply are marked in the page itself instead
          of being invented here — a placeholder that says so is honest,
          inventing legal text is not. -->
+    <template id="microsite_legal_notice_content" name="Aviso Legal (contenido)">
+        <t t-set="pmm_company" t-value="website.company_id.sudo()"/>
+        <div id="wrap" class="oe_structure">
+            <section class="s_title pt48 pb24" data-name="Title">
+                <div class="container">
+                    <h1 class="text-center">Aviso Legal</h1>
+                </div>
+            </section>
+            <section class="pb48" data-name="Text">
+                <div class="container">
+                    <h2>Titular del sitio web</h2>
+                    <p>
+                        En cumplimiento del artículo 10 de la Ley 34/2002,
+                        de servicios de la sociedad de la información y de
+                        comercio electrónico (LSSI-CE), se informa de los
+                        siguientes datos identificativos:
+                    </p>
+                    <ul>
+                        <li>
+                            <strong>Denominación: </strong>
+                            <span t-field="pmm_company.name"/>
+                        </li>
+                        <li t-if="pmm_company.vat">
+                            <strong>NIF/CIF: </strong>
+                            <span t-field="pmm_company.vat"/>
+                        </li>
+                        <li t-if="pmm_company.partner_id.contact_address">
+                            <strong>Domicilio: </strong>
+                            <span
+                                t-field="pmm_company.partner_id.contact_address"
+                            />
+                        </li>
+                        <li t-if="pmm_company.email">
+                            <strong>Correo electrónico: </strong>
+                            <span t-field="pmm_company.email"/>
+                        </li>
+                        <li t-if="pmm_company.phone">
+                            <strong>Teléfono: </strong>
+                            <span t-field="pmm_company.phone"/>
+                        </li>
+                        <li t-if="website.domain">
+                            <strong>Sitio web: </strong>
+                            <span t-field="website.domain"/>
+                        </li>
+                    </ul>
+                    <h2>Condiciones de uso</h2>
+                    <p class="text-muted">
+                        <em>
+                            Pendiente del texto definitivo de la asesoría
+                            jurídica. Hasta que se incorpore, siguen siendo
+                            de aplicación la
+                            <a href="/politica-privacidad">
+                                Política de Privacidad
+                            </a>
+                            , la
+                            <a href="/politica-cookies">
+                                Política de Cookies
+                            </a>
+                            y los
+                            <a href="/terminos-condiciones">
+                                Términos y Condiciones
+                            </a>
+                            de este sitio.
+                        </em>
+                    </p>
+                    <t t-call="partner_microsite_manager.microsite_legal_language_note"/>
+                </div>
+            </section>
+        </div>
+    </template>
+
     <template id="microsite_legal_notice" name="Aviso Legal">
         <t t-call="website.layout">
-            <t t-set="pmm_company" t-value="website.company_id.sudo()"/>
-            <div id="wrap" class="oe_structure">
-                <section class="s_title pt48 pb24" data-name="Title">
-                    <div class="container">
-                        <h1 class="text-center">Aviso Legal</h1>
-                    </div>
-                </section>
-                <section class="pb48" data-name="Text">
-                    <div class="container">
-                        <h2>Titular del sitio web</h2>
-                        <p>
-                            En cumplimiento del artículo 10 de la Ley 34/2002,
-                            de servicios de la sociedad de la información y de
-                            comercio electrónico (LSSI-CE), se informa de los
-                            siguientes datos identificativos:
-                        </p>
-                        <ul>
-                            <li>
-                                <strong>Denominación: </strong>
-                                <span t-field="pmm_company.name"/>
-                            </li>
-                            <li t-if="pmm_company.vat">
-                                <strong>NIF/CIF: </strong>
-                                <span t-field="pmm_company.vat"/>
-                            </li>
-                            <li t-if="pmm_company.partner_id.contact_address">
-                                <strong>Domicilio: </strong>
-                                <span
-                                    t-field="pmm_company.partner_id.contact_address"
-                                />
-                            </li>
-                            <li t-if="pmm_company.email">
-                                <strong>Correo electrónico: </strong>
-                                <span t-field="pmm_company.email"/>
-                            </li>
-                            <li t-if="pmm_company.phone">
-                                <strong>Teléfono: </strong>
-                                <span t-field="pmm_company.phone"/>
-                            </li>
-                            <li t-if="website.domain">
-                                <strong>Sitio web: </strong>
-                                <span t-field="website.domain"/>
-                            </li>
-                        </ul>
-                        <h2>Condiciones de uso</h2>
-                        <p class="text-muted">
-                            <em>
-                                Pendiente del texto definitivo de la asesoría
-                                jurídica. Hasta que se incorpore, siguen siendo
-                                de aplicación la
-                                <a href="/politica-privacidad">
-                                    Política de Privacidad
-                                </a>
-                                , la
-                                <a href="/politica-cookies">
-                                    Política de Cookies
-                                </a>
-                                y los
-                                <a href="/terminos-condiciones">
-                                    Términos y Condiciones
-                                </a>
-                                de este sitio.
-                            </em>
-                        </p>
-                    </div>
-                </section>
-            </div>
+            <t t-call="partner_microsite_manager.microsite_legal_notice_content"/>
         </t>
     </template>
 

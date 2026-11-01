@@ -34,6 +34,32 @@
         <field name="model">survey.user_input</field>
         <field name="inherit_id" ref="survey.survey_user_input_view_tree"/>
         <field name="arch" type="xml">
+            <!-- The way in, next to the list it fills. The menu entry exists
+                 too, but somebody who is already looking at their evaluations
+                 and wants another one should not have to go back to the menu
+                 to find out that starting one is possible. Gated on
+                 `certification_display` because this list view is core's and
+                 is reached from Surveys as well, where the button would open
+                 a dialog about seals to somebody reading a satisfaction
+                 questionnaire.
+
+                 `display="always"` is what puts it in the control panel beside
+                 where "New" would be. Without it the list renderer files a
+                 header button under the bar that only appears once rows are
+                 ticked (`list_controller.xml`: the always-buttons slot tests
+                 `button.display === 'always'`), so on a screen opened with
+                 nothing selected there was no visible way in at all, which
+                 is exactly how this list has been shipping. -->
+            <xpath expr="//list" position="inside">
+                <header>
+                    <button name="%(company_certification.action_certification_evaluation_start)d"
+                            type="action"
+                            string="New Evaluation"
+                            class="btn-primary"
+                            display="always"
+                            invisible="not context.get('certification_display')"/>
+                </header>
+            </xpath>
             <xpath expr="//list" position="attributes">
                 <attribute name="decoration-info">certification_level == 'bronze'</attribute>
                 <attribute name="decoration-primary">certification_level == 'silver'</attribute>

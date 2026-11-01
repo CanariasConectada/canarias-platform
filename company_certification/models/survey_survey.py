@@ -16,7 +16,7 @@ class SurveySurvey(models.Model):
     positive_item_ids = fields.One2many(
         "certification.positive.item",
         "survey_id",
-        string="Positive Items",
-        help="Items displayed on the company microsite when the related "
-        "question was answered above its minimum score.",
+        string="Positive Items (deprecated)",
+        help="Deprecated: replaced by the items of the certification type. "
+        "Kept only so the migrated rows stay readable.",
     )

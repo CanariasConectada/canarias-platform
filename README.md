@@ -26,6 +26,15 @@ certificaciones (Silver Economy, Sostenibilidad), reseñas y puntos de interés.
 | `zones_toolbar_fix` | Toolbar de controles en páginas de zonas |
 | `zzz_zone_fix` | Fixes del sistema de zonas (carga al final) |
 
+## Permisos
+
+Los grupos se asignan **a mano en la ficha de cada usuario**. La plataforma
+dejó de usar `base_user_role` (y el `base_user_role_template` propio) el
+2026-09-09: no hay roles ni recomposición automática de grupos. Un grupo
+marcado en la ficha se queda; uno desmarcado, también. Cuando un módulo pide
+un grupo (`website_pwa_chat`, `company_facilities`…), se marca en Ajustes ▸
+Usuarios.
+
 ## Compatibilidad
 
 - **Odoo:** 19.0 Community

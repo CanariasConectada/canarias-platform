@@ -1,0 +1,160 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* website_pwa_push
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-25 01:24+0000\n"
+"PO-Revision-Date: 2026-09-25 01:24+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.pwa_notify_card
+msgid ""
+"<i class=\"fa fa-bell me-1\" role=\"img\" aria-hidden=\"true\"/>\n"
+"                Turn on notifications"
+msgstr ""
+"<i class=\"fa fa-bell me-1\" role=\"img\" aria-hidden=\"true\"/> Activar "
+"notificaciones"
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.s_pwa_push
+msgid ""
+"Activa los avisos y te llegará una notificación al\n"
+"                        móvil cuando te escriban, aunque no tengas la web\n"
+"                        abierta."
+msgstr ""
+"Activa los avisos y te llegará una notificación al móvil cuando te escriban,"
+" aunque no tengas la web abierta."
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.s_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.snippet_pwa_push
+msgid "Activar avisos"
+msgstr "Activar avisos"
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.s_pwa_push
+msgid "Avisos activados en este dispositivo."
+msgstr "Avisos activados en este dispositivo."
+
+#. module: website_pwa_push
+#: model:ir.model.fields,field_description:website_pwa_push.field_website__pwa_push_enabled
+msgid "Avisos push"
+msgstr "Avisos push"
+
+#. module: website_pwa_push
+#: model:ir.model.fields,field_description:website_pwa_push.field_website__display_name
+msgid "Display Name"
+msgstr "Nombre mostrado"
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.s_pwa_push
+msgid ""
+"En iPhone o iPad, los avisos solo funcionan con la web\n"
+"                        instalada: pulsa\n"
+"                        <strong>Compartir</strong>\n"
+"                        , luego\n"
+"                        <strong>Añadir a pantalla de inicio</strong>\n"
+"                        y abre la app desde ahí para activarlos."
+msgstr ""
+"En iPhone o iPad, los avisos solo funcionan con la web instalada: pulsa "
+"<strong>Compartir</strong> , luego <strong>Añadir a pantalla de "
+"inicio</strong> y abre la app desde ahí para activarlos."
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.pwa_notify_card
+msgid ""
+"Get a notification on this device when someone writes to you,\n"
+"                even when the app is closed."
+msgstr ""
+"Recibe un aviso en este dispositivo cuando alguien te escriba, aunque la app"
+" esté cerrada."
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.s_pwa_push
+msgid ""
+"Has bloqueado los avisos para esta web. Puedes\n"
+"                        volver a permitirlos desde los ajustes del navegador,\n"
+"                        en el candado de la barra de direcciones."
+msgstr ""
+"Has bloqueado los avisos para esta web. Puedes volver a permitirlos desde "
+"los ajustes del navegador, en el candado de la barra de direcciones."
+
+#. module: website_pwa_push
+#: model:ir.model.fields,field_description:website_pwa_push.field_website__id
+msgid "ID"
+msgstr "ID"
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.s_pwa_push
+msgid "No te pierdas ningún mensaje"
+msgstr "No te pierdas ningún mensaje"
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.pwa_notify_card
+msgid "Not now"
+msgstr "Ahora no"
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.pwa_notify_card
+msgid ""
+"Notifications allowed. Sign in and they will start arriving on\n"
+"                this device."
+msgstr ""
+"Notificaciones permitidas. Inicia sesión y empezarán a llegar a este "
+"dispositivo."
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.pwa_notify_card
+msgid ""
+"Notifications are blocked for this app. You can allow them\n"
+"                again from the notification settings of your phone or browser."
+msgstr ""
+"Las notificaciones están bloqueadas para esta app. Puedes volver a "
+"permitirlas en los ajustes de notificaciones del móvil o del navegador."
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.pwa_notify_card
+msgid "Notifications are on for this device."
+msgstr "Notificaciones activadas en este dispositivo."
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.pwa_notify_card
+msgid ""
+"On iPhone and iPad, notifications only work in the installed\n"
+"                app: add it to the Home Screen and open it from there."
+msgstr ""
+"En iPhone y iPad, las notificaciones solo funcionan en la app instalada: "
+"añádela a la pantalla de inicio y ábrela desde ahí."
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.pwa_notify_card
+msgid "Turn on notifications"
+msgstr "Activar notificaciones"
+
+#. module: website_pwa_push
+#: model:ir.model,name:website_pwa_push.model_website
+msgid "Website"
+msgstr "Sitio web"
+
+#. module: website_pwa_push
+#: model:ir.model.fields,help:website_pwa_push.field_website__pwa_push_enabled
+msgid ""
+"When enabled, visitors of this website can allow notifications and receive "
+"chat messages while the site is closed. Independent from the app switch on "
+"purpose: the app can be installable everywhere while push is piloted on a "
+"single website."
+msgstr ""
+"Si se activa, los visitantes de este sitio web pueden permitir los avisos y "
+"recibir los mensajes del chat con el sitio cerrado. Independiente del "
+"interruptor de la app a propósito: la app puede ser instalable en todas "
+"partes mientras los avisos se prueban en un solo sitio."

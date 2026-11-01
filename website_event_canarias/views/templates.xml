@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- Tells the visitor the page fell back to the history (see the
+         controller): without this line, past events would silently pose as
+         the programme. -->
+    <template id="index_past_notice"
+              inherit_id="website_event.index"
+              name="Events: past-events fallback notice">
+        <xpath expr="//div[hasclass('o_wevent_events_list')]" position="before">
+            <div t-if="wec_showing_past"
+                 class="alert alert-info d-flex align-items-center o_wec_past_notice mb-3"
+                 role="status">
+                <i class="fa fa-history me-2" role="presentation"/>
+                <span>No hay eventos próximos programados. Estos son los eventos ya celebrados.</span>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Embedded venue map on the event page, the same one the merchant
+         microsites show (website_map_embed). The "Get directions" link
+         stays; the map is skipped when the venue has no street or city so
+         a name-only venue never shows a map centred on nothing.
+         "website_event.opt_event_location_block" is only the on/off switch
+         of the block; the markup lives in event_description_full. -->
+    <template id="event_description_full_map"
+              inherit_id="website_event.event_description_full"
+              name="Events: embedded venue map">
+        <xpath expr="//div[@itemprop='location']//a[@t-att-href='event._google_map_link()']"
+               position="before">
+            <t t-call="website_map_embed.map_iframe">
+                <t t-set="map_url" t-value="event.address_id._canarias_map_embed_url()"/>
+                <t t-set="map_title" t-value="event.address_id.display_name"/>
+                <t t-set="map_classes" t-value="'o_wec_event_map mb-3'"/>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>

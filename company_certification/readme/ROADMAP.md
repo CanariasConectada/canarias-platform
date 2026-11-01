@@ -16,3 +16,7 @@
   website pages if the content is still wanted.
 - Notification emails could move to the type record (templates per
   vertical) if verticals ever need different wording.
+- Homepage seals flattened by a builder save: today only detected
+  (`website._cc_flattened_seals_homepages()`, logged by the 19.0.2.9.0
+  post-migration, callable from a shell). A scheduled check that re-inserts
+  the `t-call` (or at least warns the platform team) is still to be built.

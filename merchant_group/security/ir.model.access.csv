@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_loyalty_program_merchant,loyalty.program merchant,loyalty.model_loyalty_program,group_merchant,1,1,1,1
+access_loyalty_rule_merchant,loyalty.rule merchant,loyalty.model_loyalty_rule,group_merchant,1,1,1,1
+access_loyalty_reward_merchant,loyalty.reward merchant,loyalty.model_loyalty_reward,group_merchant,1,1,1,1
+access_loyalty_mail_merchant,loyalty.mail merchant,loyalty.model_loyalty_mail,group_merchant,1,1,1,1
+access_loyalty_card_merchant,loyalty.card merchant,loyalty.model_loyalty_card,group_merchant,1,1,1,1

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- The company search box is the one `res_company_zone` already widened
+         with the trade name. The heading a merchant types on their microsite
+         (`microsite_name`) is what the operators see on the site and ask for
+         by, so the same box must find a company by it too. An inherited
+         attribute replaces, it cannot append, hence the whole domain is
+         restated here with one more leaf; the field itself belongs to
+         `partner_microsite_manager`, the search view to `res_company_zone`,
+         which is why this bridge is where the two meet. -->
+    <record id="view_res_company_search_microsite" model="ir.ui.view">
+        <field name="name">res.company.search.microsite</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="res_company_zone.view_res_company_search_zone" />
+        <field name="arch" type="xml">
+            <field name="name" position="attributes">
+                <attribute name="filter_domain">['|', '|', '|', '|',
+                    ('name', 'ilike', self),
+                    ('comercial', 'ilike', self),
+                    ('microsite_name', 'ilike', self),
+                    ('vat', 'ilike', self),
+                    ('company_registry', 'ilike', self)]</attribute>
+            </field>
+            <field name="comercial" position="after">
+                <field name="microsite_name" />
+            </field>
+        </field>
+    </record>
+
+</odoo>

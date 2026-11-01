@@ -27,13 +27,13 @@
         <field name="consumed" eval="True"/>
     </record>
 
-    <!-- Contains a forbidden word ("timo"), so it is auto-held. -->
+    <!-- Contains a forbidden word ("estafa"), so it is auto-held. -->
     <record id="demo_review_pending" model="rating.rating">
         <field name="res_model_id" ref="base.model_res_company"/>
         <field name="res_id" eval="ref('demo_company_reviews')"/>
         <field name="partner_id" ref="demo_partner_customer_2"/>
         <field name="rating">1</field>
-        <field name="feedback">Un timo, no volveré.</field>
+        <field name="feedback">Una estafa, no volveré.</field>
         <field name="consumed" eval="True"/>
     </record>
 

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<templates xml:space="preserve">
+
+    <t t-name="website_pwa.CanariasHomeSystray">
+        <div class="o_cc_home_systray o_nav_entry">
+            <a
+                class="d-flex align-items-center text-reset text-decoration-none"
+                t-att-href="homeUrl"
+                t-att-title="title"
+                t-att-aria-label="title"
+            >
+                <i class="fa fa-home fa-lg" role="img" aria-hidden="true" />
+                <!-- Hidden on phones, where the navbar has no room and the
+                     icon alone has to do; the user menu carries the words. -->
+                <span class="d-none d-md-inline ms-1">Canarias Conectada</span>
+            </a>
+        </div>
+    </t>
+
+</templates>

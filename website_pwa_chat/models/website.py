@@ -129,6 +129,31 @@ class Website(models.Model):
             return False
         return self._chat_absolute_url(host, "/chat")
 
+    def _chat_support_url(self):
+        """Where the floating button points, or False for none.
+
+        Same two shapes and the same opt-in as :meth:`_chat_menu_url`, but at
+        ``/chat/soporte``: the private conversation, not the public square.
+
+        A floating button is the one control a visitor looks for when they
+        want to ask something, and the one that was there answered "no
+        operator is available, try again later" -- Odoo's live chat, whose six
+        agents are only ever connected during office hours, on a platform
+        where nobody sits in a console. Our own support page needs nobody
+        connected: it opens a conversation, asks for a name so the reply has
+        somewhere to go, and files it in a queue that agents read when they
+        read it.
+        """
+        self.ensure_one()
+        if not self.chat_link_enabled:
+            return False
+        if self.chat_enabled:
+            return "/chat/soporte"
+        host = self._chat_host_website()
+        if not host:
+            return False
+        return self._chat_absolute_url(host, "/chat/soporte")
+
     @staticmethod
     def _chat_absolute_url(host, path):
         """``host.domain`` + ``path``, or False when the domain is unusable.

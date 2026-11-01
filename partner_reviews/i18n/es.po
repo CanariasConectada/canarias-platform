@@ -31,11 +31,6 @@ msgid "Administrator"
 msgstr "Administrador"
 
 #. module: partner_reviews
-#: model_terms:ir.ui.view,arch_db:partner_reviews.review_forbidden_word_view_search
-msgid "Archived"
-msgstr "Archivado"
-
-#. module: partner_reviews
 #: model:ir.model.fields,field_description:partner_reviews.field_res_company__review_avg
 msgid "Average Rating"
 msgstr "Valoración media"
@@ -87,7 +82,6 @@ msgstr "Habilitar página de reseñas"
 
 #. module: partner_reviews
 #: model:ir.ui.menu,name:partner_reviews.menu_partner_reviews_forbidden_words
-#: model:ir.actions.act_window,name:partner_reviews.action_review_forbidden_word
 msgid "Forbidden Words"
 msgstr "Palabras prohibidas"
 
@@ -174,6 +168,8 @@ msgstr "Reseña pendiente de moderación"
 #: model:ir.ui.menu,name:partner_reviews.menu_partner_reviews_root
 #: model:ir.ui.menu,name:partner_reviews.menu_partner_reviews_reviews
 #: model_terms:ir.ui.view,arch_db:partner_reviews.view_company_form_inherit_reviews
+#: model_terms:ir.ui.view,arch_db:partner_reviews.view_company_form_microsite_reviews
+#: model_terms:ir.ui.view,arch_db:partner_reviews.view_microsite_content_editor_form_reviews
 msgid "Reviews"
 msgstr "Reseñas"
 
@@ -248,11 +244,6 @@ msgid "Moderation Status"
 msgstr "Estado de moderación"
 
 #. module: partner_reviews
-#: model:ir.model.fields,field_description:partner_reviews.field_review_forbidden_word__name
-msgid "Word"
-msgstr "Palabra"
-
-#. module: partner_reviews
 #: model:ir.model.fields,field_description:partner_reviews.field_res_config_settings__partner_reviews_allow_comments
 msgid "Allow Review Comments"
 msgstr "Permitir comentarios en reseñas"
@@ -312,3 +303,53 @@ msgstr "Reseñas de"
 #: model_terms:ir.ui.view,arch_db:partner_reviews.reviews_list
 msgid "Visitor"
 msgstr "Visitante"
+
+#. module: partner_reviews
+#: model:ir.model.fields,field_description:partner_reviews.field_microsite_content_editor__enable_reviews
+#: model_terms:ir.ui.view,arch_db:partner_reviews.view_company_form_microsite_reviews
+msgid "Enable reviews page"
+msgstr "Activar página de reseñas"
+
+#. module: partner_reviews
+#: model:ir.model.fields,help:partner_reviews.field_microsite_content_editor__enable_reviews
+msgid "Publish a page on your website where your customers can rate your shop and leave comments."
+msgstr "Publica en tu sitio web una página donde tus clientes pueden valorar tu comercio y dejar comentarios."
+
+#. module: partner_reviews
+#: model:ir.model.fields,field_description:partner_reviews.field_microsite_content_editor__review_avg
+#: model_terms:ir.ui.view,arch_db:partner_reviews.view_company_form_microsite_reviews
+msgid "Average rating"
+msgstr "Valoración media"
+
+#. module: partner_reviews
+#: model:ir.model.fields,field_description:partner_reviews.field_microsite_content_editor__review_count
+#: model_terms:ir.ui.view,arch_db:partner_reviews.view_company_form_microsite_reviews
+msgid "Published reviews"
+msgstr "Reseñas publicadas"
+
+#. module: partner_reviews
+#: model:ir.model.fields,field_description:partner_reviews.field_microsite_content_editor__reviews_page_url
+msgid "Reviews page"
+msgstr "Página de reseñas"
+
+#. module: partner_reviews
+#: model:ir.model.fields,field_description:partner_reviews.field_res_company__reviews_page_url
+msgid "Reviews Page"
+msgstr "Página de reseñas"
+
+#. module: partner_reviews
+#: model:ir.model.fields,help:partner_reviews.field_res_company__reviews_page_url
+msgid "Public address of the reviews page on this company's website."
+msgstr "Dirección pública de la página de reseñas en el sitio web de esta compañía."
+
+#. module: partner_reviews
+#: model_terms:ir.ui.view,arch_db:partner_reviews.view_microsite_content_editor_form_reviews
+msgid "When the page is enabled, your site's menu shows a Reviews entry leading to it. Changes apply when you save."
+msgstr "Con la página activada, el menú de tu sitio muestra una entrada «Reseñas» que lleva a ella. Los cambios se aplican al guardar."
+
+#. module: partner_reviews
+#: model:ir.model.fields,help:partner_reviews.field_rating_rating__requires_moderation
+msgid ""
+"Set automatically when the customer comment matches an entry of the shared "
+"forbidden words list (Settings > Moderation)."
+msgstr "Se marca automáticamente cuando el comentario del cliente coincide con una entrada de la lista compartida de palabras prohibidas (Ajustes > Moderación)."

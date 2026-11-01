@@ -6,6 +6,8 @@ import json
 from odoo import http
 from odoo.http import request
 
+from odoo.addons.website_pwa.models.website import ICON_SIZES
+
 # The service worker can only control the pages under its own path, so it has
 # to be served from the root for the whole microsite to be in scope. That is
 # why this route is /service-worker.js and not something under /website_pwa/.
@@ -169,7 +171,10 @@ class WebsitePWA(http.Controller):
         )
 
     @http.route(
-        "/website_pwa/icon/<int:size>.png",
+        [
+            "/website_pwa/icon/<int:size>.png",
+            "/website_pwa/icon/maskable/<int:size>.png",
+        ],
         type="http",
         auth="public",
         website=True,
@@ -182,11 +187,17 @@ class WebsitePWA(http.Controller):
         icon must really be a PNG of the declared size, and merchant logos are
         a mix of JPEG, transparent PNG and odd aspect ratios. This normalises
         them so the browser accepts the app as installable.
+
+        The ``maskable`` path returns the same mark inside the safe zone a
+        launcher is allowed to crop to. Two URLs rather than a query parameter
+        because these end up in a manifest and in the browser's icon cache,
+        where a distinct path is what makes them distinct entries.
         """
         website = request.env["website"]._pwa_current()
-        if not website or size not in (192, 512):
+        if not website or size not in ICON_SIZES:
             return request.not_found()
-        image = website._pwa_icon_png(size)
+        maskable = "/maskable/" in request.httprequest.path
+        image = website._pwa_icon_png(size, maskable=maskable)
         if not image:
             return request.not_found()
         return request.make_response(
