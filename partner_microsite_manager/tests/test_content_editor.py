@@ -1,12 +1,18 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+from unittest.mock import patch
+
 from lxml import etree
 
 from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tests import tagged
 from odoo.tests.common import TransactionCase, new_test_user
 from odoo.tools.translate import code_translations
+
+from odoo.addons.partner_microsite_manager.wizards.microsite_content_editor import (
+    ADDRESS_FIELDS,
+)
 
 
 @tagged("post_install", "-at_install")
@@ -414,3 +420,136 @@ class TestMicrositeContentEditor(TransactionCase):
         )
         self.assertEqual(action["res_model"], "microsite.content.editor")
         self.assertEqual(action["name"], "Contenido de la página")
+
+    # ------------------------------------------------------------------
+    # Postal address. Owner report 2026-11-03 (churreriaastridolafpalme):
+    # "Find us" showed only the city because the partner had no street,
+    # and this screen had nowhere to type one.
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _address_writes(calls):
+        """The ``res.partner.write`` calls among ``calls`` that carried an
+        address field (the company write also reaches the partner, through
+        the related ``website`` field; those calls are not counted)."""
+        found = []
+        for call in calls:
+            vals = call.args[1] if len(call.args) > 1 else call.kwargs.get("vals", {})
+            if set(vals) & set(ADDRESS_FIELDS):
+                found.append(call)
+        return found
+
+    def _watching_partner_writes(self):
+        """Patch ``res.partner.write`` so its calls are recorded AND still run."""
+        partner_cls = type(self.shop.partner_id)
+        return patch.object(
+            partner_cls, "write", autospec=True, side_effect=partner_cls.write
+        )
+
+    def test_the_address_opens_cleaned_from_the_partner(self):
+        """The 2026 importer left a literal ``&nbsp;`` in 31 streets. The
+        merchant sees plain text, as the page prints it."""
+        self.shop.partner_id.sudo().write(
+            {
+                "street": "Calle Castillejos 37-39&nbsp;35010",
+                "zip": "35010",
+                "city": "Las Palmas de Gran Canaria",
+            }
+        )
+        values = self._editor().default_get(["street", "zip", "city"])
+        self.assertNotIn("&nbsp;", values["street"])
+        self.assertTrue(values["street"].startswith("Calle Castillejos 37-39"))
+        self.assertEqual(values["zip"], "35010")
+        self.assertEqual(values["city"], "Las Palmas de Gran Canaria")
+
+    def test_saving_the_address_reaches_the_partner_and_the_page(self):
+        editor = self._editor().create(
+            {
+                "street": "Calle Lepanto 10",
+                "zip": "35010",
+                "city": "Las Palmas de Gran Canaria",
+            }
+        )
+        editor.action_save()
+        partner = self.shop.partner_id
+        self.assertEqual(partner.street, "Calle Lepanto 10")
+        self.assertEqual(partner.zip, "35010")
+        self.assertEqual(partner.city, "Las Palmas de Gran Canaria")
+        self.assertEqual(
+            self.shop._get_microsite_live_address(),
+            "Calle Lepanto 10, 35010 Las Palmas de Gran Canaria",
+        )
+
+    def test_saving_the_address_writes_the_partner_once(self):
+        """Every ``res.partner.write`` flushes the page cache and relinks the
+        legacy homepage; the four fields must travel in ONE write, not in one
+        write each as ``res.company``'s related inverses would do it."""
+        editor = self._editor().create(
+            {"street": "Calle Lepanto 10", "city": "Las Palmas de Gran Canaria"}
+        )
+        with self._watching_partner_writes() as write:
+            editor.action_save()
+        self.assertEqual(len(self._address_writes(write.call_args_list)), 1)
+        self.assertEqual(self.shop.partner_id.street, "Calle Lepanto 10")
+        self.assertEqual(self.shop.partner_id.city, "Las Palmas de Gran Canaria")
+
+    def test_opening_and_saving_does_not_touch_an_untouched_address(self):
+        """Opening the screen cleans the entity out of the street; saving the
+        screen unchanged must not write the cleaned text back. A partner write
+        makes the address line of a legacy homepage live, and only a human
+        edit may do that."""
+        raw = "Calle Castillejos 37-39&nbsp;35010"
+        self.shop.partner_id.sudo().write({"street": raw, "zip": "35010"})
+        opened = self._editor().default_get(list(ADDRESS_FIELDS))
+        editor = self._editor().create({name: opened[name] for name in ADDRESS_FIELDS})
+        with self._watching_partner_writes() as write:
+            editor.action_save()
+        # The recorder did see the save (the company write reaches the
+        # partner through its related fields), so an empty list below is a
+        # real absence, not a patch that recorded nothing.
+        self.assertTrue(write.called, "the recorder must have seen the save")
+        self.assertEqual(self._address_writes(write.call_args_list), [])
+        self.assertEqual(self.shop.partner_id.street, raw)
+
+    def test_only_the_fields_that_changed_are_written(self):
+        """Changing the postal code must not rewrite the street the importer
+        left with a literal entity: the partner keeps it as it was, and the
+        one write carries the postal code alone."""
+        raw = "Calle Castillejos 37-39&nbsp;35010"
+        self.shop.partner_id.sudo().write({"street": raw, "zip": "35010"})
+        opened = self._editor().default_get(list(ADDRESS_FIELDS))
+        values = {name: opened[name] for name in ADDRESS_FIELDS}
+        values["zip"] = "35011"
+        editor = self._editor().create(values)
+        with self._watching_partner_writes() as write:
+            editor.action_save()
+        writes = self._address_writes(write.call_args_list)
+        self.assertEqual(len(writes), 1)
+        self.assertEqual(writes[0].args[1], {"zip": "35011"})
+        self.assertEqual(self.shop.partner_id.street, raw)
+        self.assertEqual(self.shop.partner_id.zip, "35011")
+
+    def test_clearing_the_address_clears_it_on_the_partner(self):
+        """An emptied field is written as ``False``: the address is the
+        shop's own, and the page then shows no "Find us" line."""
+        self.shop.partner_id.sudo().write(
+            {"street": "Calle Lepanto 10", "zip": "35010", "city": "Las Palmas"}
+        )
+        editor = self._editor().create({"street": " ", "zip": False, "city": ""})
+        editor.action_save()
+        partner = self.shop.partner_id
+        self.assertFalse(partner.street)
+        self.assertFalse(partner.zip)
+        self.assertFalse(partner.city)
+        self.assertFalse(self.shop._get_microsite_live_address())
+
+    def test_a_merchant_cannot_write_the_partner_directly_but_the_screen_can(self):
+        """Why the address goes through the screen: ``res.partner`` is
+        read-only for ``base.group_user`` (writing it takes
+        ``base.group_partner_manager``, implied by ``base.group_system``
+        alone), and a merchant is neither."""
+        with self.assertRaises(AccessError):
+            self.shop.partner_id.with_user(self.merchant).write({"street": "x"})
+        editor = self._editor().create({"street": "Calle Lepanto 10"})
+        editor.action_save()
+        self.assertEqual(self.shop.partner_id.street, "Calle Lepanto 10")

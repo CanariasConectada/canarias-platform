@@ -1,3 +1,10 @@
+## 19.0.2.15.0 (2026-11-03)
+
+- The page content editor lets the merchant type the postal address
+  (street, floor/door, postal code, city); it is written to the company's
+  partner in one write, so the 'Find us' line and the map of the page
+  follow it.
+
 ## 19.0.2.14.0 (2026-10-05)
 
 - `res.company._get_microsite_missing_items()`: item codes of what each

@@ -50,6 +50,22 @@
                             </group>
                         </page>
                         <page string="Practical information" name="practical">
+                            <!-- The postal address lives on the company's
+                                 partner (see ADDRESS_FIELDS in the wizard);
+                                 the page prints it under "Find us" and the
+                                 map is placed from it when no map link was
+                                 pasted. -->
+                            <group string="Address" name="address">
+                                <p class="text-muted" colspan="2">Shown under "Find us" on your page. The map is placed from it when you have not pasted a map link below.</p>
+                                <group>
+                                    <field name="street" placeholder="Calle Mayor 12"/>
+                                    <field name="street2" placeholder="Local 3"/>
+                                </group>
+                                <group>
+                                    <field name="zip" placeholder="35010"/>
+                                    <field name="city" placeholder="Las Palmas de Gran Canaria"/>
+                                </group>
+                            </group>
                             <!-- One row per opening period, typed with the
                                  clock widget. A day with a morning and an
                                  afternoon shift is two rows. The line under

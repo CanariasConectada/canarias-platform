@@ -552,6 +552,7 @@ msgstr ""
 #: code:addons/partner_microsite_manager/models/res_company.py:0
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_company_picker__selected_company_website_url
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__website_url
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.website_view_list_merchant
 msgid "Address"
 msgstr "Dirección"
@@ -654,6 +655,11 @@ msgstr "Elige cuál de tus tiendas quieres editar"
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_company_picker_form
 msgid "Choose your shop"
 msgstr "Elige tu tienda"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__city
+msgid "City"
+msgstr "Ciudad"
 
 #. module: partner_microsite_manager
 #. odoo-python
@@ -1058,6 +1064,11 @@ msgstr "Finalidad"
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
 msgid "Find Us"
 msgstr "Dónde estamos"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__street2
+msgid "Floor, door, premises"
+msgstr "Piso, puerta, local"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
@@ -1773,6 +1784,11 @@ msgid "Política de privacidad"
 msgstr "Política de privacidad"
 
 #. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__zip
+msgid "Postal code"
+msgstr "Código postal"
+
+#. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "Practical information"
@@ -1985,10 +2001,33 @@ msgid "Shown on the page"
 msgstr "Así se verá en la página"
 
 #. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_microsite_content_editor__street
+msgid ""
+"Shown under \"Find us\" on your page, and used to place the map when you "
+"have not pasted a map link."
+msgstr ""
+"Se muestra bajo «Encuéntranos» en tu página y sitúa el mapa cuando no has "
+"pegado un enlace de mapa."
+
+#. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid ""
+"Shown under \"Find us\" on your page. The map is placed from it when you "
+"have not pasted a map link below."
+msgstr ""
+"Se muestra bajo «Encuéntranos» en tu página. El mapa se sitúa a partir de "
+"ella cuando no has pegado un enlace de mapa más abajo."
+
+#. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
 msgid "Social networks"
 msgstr "Redes sociales"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__street
+msgid "Street and number"
+msgstr "Calle y número"
 
 #. module: partner_microsite_manager
 #. odoo-python
