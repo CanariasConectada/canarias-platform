@@ -4,9 +4,9 @@
 <odoo>
 
     <!-- The company search box is the one `res_company_zone` already widened
-         with the trade name. The heading a merchant types on their microsite
-         (`microsite_name`) is what the operators see on the site and ask for
-         by, so the same box must find a company by it too. An inherited
+         with the trade name. The cover title a merchant types on their
+         microsite (`microsite_name`) is what the operators see on the site
+         and ask for by, so the same box must find a company by it too. An inherited
          attribute replaces, it cannot append, hence the whole domain is
          restated here with one more leaf; the field itself belongs to
          `partner_microsite_manager`, the search view to `res_company_zone`,

@@ -1,2 +1,1 @@
-from . import microsite_content_editor
-from . import res_company
+from . import microsite_content_editor, res_company, res_partner
