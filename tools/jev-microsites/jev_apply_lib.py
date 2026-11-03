@@ -8,7 +8,8 @@ Contents:
   (``find_section``, ``replace_section_h2``, ``set_section_background``,
   ``insert_sec1_after_hero``, ``extract_section_h2``, ``extract_section_bg``)
   and for the legacy "Acerca" block (``set_acerca_column``,
-  ``extract_acerca_column``, ``insert_acerca_section``,
+  ``extract_acerca_column``, ``replace_acerca_heading``,
+  ``extract_acerca_heading``, ``insert_acerca_section``,
   ``extract_acerca_section``).
   ``find_section`` is depth aware (nested ``<section>`` elements are
   handled). The document is left byte-identical outside the edited span; the
@@ -101,6 +102,8 @@ SEC1_SKELETON = (
     "</section>"
 )
 
+SEPARADOR_SKELETON = SEC1_SKELETON.replace('data-name="SEC1"', 'data-name="Separador"')
+
 # Row kinds, in the order they must be processed inside one site: images are
 # uploaded before the backgrounds that reference them, and section inserts
 # happen before any column/heading/background edit of the same arch.
@@ -109,6 +112,8 @@ KIND_COMPANY_IMAGE = "company_image"
 KIND_VIEW_INSERT = "view_insert"
 KIND_VIEW_COLUMN = "view_column"
 KIND_VIEW_H2 = "view_h2"
+KIND_VIEW_H1 = "view_h1"
+KIND_VIEW_H6 = "view_h6"
 KIND_VIEW_BG = "view_bg"
 KIND_ORDER = {
     KIND_COMPANY_FIELD: 0,
@@ -116,16 +121,25 @@ KIND_ORDER = {
     KIND_VIEW_INSERT: 2,
     KIND_VIEW_COLUMN: 3,
     KIND_VIEW_H2: 4,
+    KIND_VIEW_H1: 4,
+    KIND_VIEW_H6: 4,
     KIND_VIEW_BG: 5,
 }
 
 # Sections that support ``.insert`` and their order among inserts of one
-# site: SEC1 goes first because the Acerca insert is anchored after it.
-INSERT_ORDER = {"SEC1": 0, "Acerca": 1}
+# site: SEC1 goes first because the Acerca insert is anchored after it, and
+# the strip ("Separador") goes last because it is anchored before the form,
+# after whatever Acerca/SEC1 the run has inserted.
+INSERT_ORDER = {"SEC1": 0, "Acerca": 1, "Separador": 2}
+
+# Top cover section of the homepage. The builder names it "Hero"; a few
+# legacy pages (``s_adventure``) kept the Spanish "Portada". Inserts anchored
+# on the cover accept either name (:func:`_hero_section`).
+HERO_NAMES = ("Hero", "Portada")
 
 # The legacy "Acerca" block (About us / Our services).
 ACERCA_SECTION = "Acerca"
-ACERCA_OPS = ("insert", "col1", "col2")
+ACERCA_OPS = ("insert", "col1", "col2", "h6_1", "h6_2")
 ACERCA_PREVIEW_LEN = 120
 ACERCA_READ_MORE = "Leer más"
 # column number -> (icon class, default title)
@@ -177,11 +191,11 @@ class Target:
     field: str
     view_id: int | None = None
     section: str | None = None
-    column: int | None = None   # 1-based, only for KIND_VIEW_COLUMN
+    column: int | None = None   # 1-based, only for KIND_VIEW_COLUMN and KIND_VIEW_H6
 
 
 _CAMPO_COMPANY_RE = re.compile(r"^res_company\.([A-Za-z_][A-Za-z0-9_]*)$")
-_CAMPO_VIEW_RE = re.compile(r"^ir_ui_view\.(\d+)\.([^.]+)\.(h2|bg|insert|col\d+)$")
+_CAMPO_VIEW_RE = re.compile(r"^ir_ui_view\.(\d+)\.([^.]+)\.(h1|h2|bg|insert|col\d+|h6_\d+)$")
 
 
 def parse_campo(campo: str) -> Target:
@@ -190,14 +204,18 @@ def parse_campo(campo: str) -> Target:
     Supported formats::
 
         res_company.<field>
+        ir_ui_view.<view_id>.<SectionName>.h1   (hero headline)
         ir_ui_view.<view_id>.<SectionName>.h2
         ir_ui_view.<view_id>.<SectionName>.bg
         ir_ui_view.<view_id>.SEC1.insert
+        ir_ui_view.<view_id>.Separador.insert   (valor_nuevo: strip title; the section must be missing)
         ir_ui_view.<view_id>.Acerca.insert   (valor_nuevo: JSON payload)
         ir_ui_view.<view_id>.Acerca.col1     (valor_nuevo: full text)
         ir_ui_view.<view_id>.Acerca.col2
+        ir_ui_view.<view_id>.Acerca.h6_1     (valor_nuevo: heading text of column 1)
+        ir_ui_view.<view_id>.Acerca.h6_2
 
-    ``colN`` and ``insert`` on ``Acerca`` only accept the ops of
+    ``colN``, ``h6_N`` and ``insert`` on ``Acerca`` only accept the ops of
     :data:`ACERCA_OPS`.
     """
     campo = campo.strip()
@@ -216,8 +234,16 @@ def parse_campo(campo: str) -> Target:
                                  f"only {ACERCA_SECTION}.col1/col2 exist")
             kind = KIND_VIEW_COLUMN
             column = int(op[3:])
+        elif op.startswith("h6_"):
+            if section != ACERCA_SECTION or op not in ACERCA_OPS:
+                raise CampoError(f"unsupported heading op {op!r} for section {section!r} in {campo!r}; "
+                                 f"only {ACERCA_SECTION}.h6_1/h6_2 exist")
+            kind = KIND_VIEW_H6
+            column = int(op[3:])
         elif op == "h2":
             kind = KIND_VIEW_H2
+        elif op == "h1":
+            kind = KIND_VIEW_H1
         elif op == "bg":
             kind = KIND_VIEW_BG
         else:
@@ -462,6 +488,8 @@ def view_ids_of_changes(changes: Iterable[Change]) -> list[int]:
 _SECTION_TOKEN_RE = re.compile(r"<section\b[^>]*>|</section\s*>")
 _H2_TOKEN_RE = re.compile(r"<section\b[^>]*>|</section\s*>|<h2\b[^>]*>")
 _H2_CLOSE_RE = re.compile(r"</h2\s*>")
+_H1_TOKEN_RE = re.compile(r"<section\b[^>]*>|</section\s*>|<h1\b[^>]*>")
+_H1_CLOSE_RE = re.compile(r"</h1\s*>")
 _STYLE_RE = re.compile(r"""\sstyle=(["'])(.*?)\1""", re.S)
 _BG_URL_RE = re.compile(r"""background-image\s*:\s*url\(\s*(['"]?)(.*?)\1\s*\)""", re.S)
 _BG_DECL_RE = re.compile(r"background-image\s*:\s*[^;]*", re.S)
@@ -531,24 +559,60 @@ def _require_section(arch: str, section_name: str) -> Section:
     return section
 
 
-def _first_h2(section: Section) -> tuple[int, int] | None:
-    """(inner_start, inner_end) of the first ``<h2>`` of the section that is
-    not inside a nested ``<section>``; absolute indexes into ``section.arch``."""
+def _first_heading(section: Section, tag: str) -> tuple[int, int] | None:
+    """(inner_start, inner_end) of the first ``<tag>`` (``h1`` or ``h2``) of
+    the section that is not inside a nested ``<section>``; absolute indexes
+    into ``section.arch``."""
+    token_re, close_re = (_H1_TOKEN_RE, _H1_CLOSE_RE) if tag == "h1" else (_H2_TOKEN_RE, _H2_CLOSE_RE)
     depth = 0
-    for token in _H2_TOKEN_RE.finditer(section.arch, section.open_end, section.close_start):
+    for token in token_re.finditer(section.arch, section.open_end, section.close_start):
         text = token.group(0)
         if text.startswith("</"):
             depth -= 1
         elif text.startswith("<section") and not text.endswith("/>"):
             depth += 1
-        elif text.startswith("<h2") and depth == 0:
+        elif text.startswith("<" + tag) and depth == 0:
             if text.endswith("/>"):
                 continue
-            close = _H2_CLOSE_RE.search(section.arch, token.end(), section.close_start)
+            close = close_re.search(section.arch, token.end(), section.close_start)
             if not close:
-                raise ArchError(f"section {section.name!r}: <h2> without </h2>")
+                raise ArchError(f"section {section.name!r}: <{tag}> without </{tag}>")
             return token.end(), close.start()
     return None
+
+
+def _first_h2(section: Section) -> tuple[int, int] | None:
+    return _first_heading(section, "h2")
+
+
+def extract_section_h1(arch: str, section_name: str) -> str | None:
+    """Plain text of the section's first (non nested) ``<h1>``; the Hero
+    headline wraps it in a ``<span>``, which is stripped. ``None`` when the
+    section has no ``<h1>``. Raises :class:`SectionNotFound`."""
+    section = _require_section(arch, section_name)
+    span = _first_heading(section, "h1")
+    if span is None:
+        return None
+    return normalize_text(_TAG_RE.sub("", arch[span[0]:span[1]]))
+
+
+_H1_SPAN_RE = re.compile(r"^(\s*<span\b[^>]*>)(.*?)(</span>\s*)$", re.S)
+
+
+def replace_section_h1(arch: str, section_name: str, text: str) -> str:
+    """Replace the text of the section's first (non nested) ``<h1>`` with
+    ``text`` (HTML-escaped). When the headline is wrapped in a single
+    ``<span>`` (the Hero template) the span is kept and only its text
+    changes. Everything else stays byte-identical."""
+    section = _require_section(arch, section_name)
+    span = _first_heading(section, "h1")
+    if span is None:
+        raise ArchError(f"section {section_name!r} has no <h1>")
+    inner = arch[span[0]:span[1]]
+    escaped = html.escape(text, quote=False)
+    wrapped = _H1_SPAN_RE.match(inner)
+    new_inner = wrapped.group(1) + escaped + wrapped.group(3) if wrapped else escaped
+    return arch[:span[0]] + new_inner + arch[span[1]:]
 
 
 def normalize_text(value) -> str:
@@ -634,13 +698,28 @@ def set_section_background(arch: str, section_name: str, url: str) -> str:
     return arch[:section.start] + new_open + arch[section.open_end:]
 
 
+def _hero_section(arch: str) -> Section | None:
+    """First (in document order) cover section: the ``<section>`` whose
+    ``data-name`` is one of :data:`HERO_NAMES`. ``None`` when there is none."""
+    found = [section for section in (find_section(arch, name) for name in HERO_NAMES) if section is not None]
+    return min(found, key=lambda section: section.start) if found else None
+
+
+def _require_hero_section(arch: str) -> Section:
+    hero = _hero_section(arch)
+    if hero is None:
+        raise SectionNotFound("/".join(HERO_NAMES))
+    return hero
+
+
 def insert_sec1_after_hero(arch: str, text: str) -> str:
-    """Insert the SEC1 skeleton right after the ``Hero`` section, using the
-    Hero line's indentation. Raises :class:`ArchError` when SEC1 already
-    exists and :class:`SectionNotFound` when there is no Hero."""
+    """Insert the SEC1 skeleton right after the cover section (``Hero`` or
+    ``Portada``, see :data:`HERO_NAMES`), using the cover line's indentation.
+    Raises :class:`ArchError` when SEC1 already exists and
+    :class:`SectionNotFound` when there is no cover."""
     if find_section(arch, "SEC1"):
         raise ArchError("section 'SEC1' already exists")
-    hero = _require_section(arch, "Hero")
+    hero = _require_hero_section(arch)
     line_start = arch.rfind("\n", 0, hero.start) + 1
     indent = arch[line_start:hero.start]
     if indent.strip():
@@ -648,6 +727,34 @@ def insert_sec1_after_hero(arch: str, text: str) -> str:
     skeleton = SEC1_SKELETON.replace("{TEXT}", html.escape(text, quote=False))
     block = "\n".join(indent + line for line in skeleton.split("\n"))
     return arch[:hero.end] + "\n" + block + arch[hero.end:]
+
+
+def insert_separador_before_form(arch: str, text: str) -> str:
+    """Insert the strip-2 ("Separador") skeleton before the ``Formulario``
+    section, or after the last of Acerca/SEC1/cover (``Hero`` or ``Portada``)
+    when the page has no form, using that anchor line's indentation. Raises
+    :class:`ArchError` when the section already exists and
+    :class:`SectionNotFound` when none of the anchors exists."""
+    if find_section(arch, STRIP_SECTION):
+        raise ArchError(f"section {STRIP_SECTION!r} already exists")
+    skeleton = SEPARADOR_SKELETON.replace("{TEXT}", html.escape(text, quote=False))
+    form = find_section(arch, "Formulario")
+    if form:
+        line_start = arch.rfind("\n", 0, form.start) + 1
+        indent = arch[line_start:form.start]
+        if indent.strip():
+            indent = ""
+        block = "\n".join(indent + line for line in skeleton.split("\n"))
+        return arch[:line_start] + block + "\n" + arch[line_start:]
+    for previous in (find_section(arch, "Acerca"), find_section(arch, "SEC1"), _hero_section(arch)):
+        if previous:
+            line_start = arch.rfind("\n", 0, previous.start) + 1
+            indent = arch[line_start:previous.start]
+            if indent.strip():
+                indent = ""
+            block = "\n".join(indent + line for line in skeleton.split("\n"))
+            return arch[:previous.end] + "\n" + block + arch[previous.end:]
+    raise SectionNotFound("no Formulario, Acerca, SEC1 or Hero/Portada section to anchor the strip on")
 
 
 # --- Legacy "Acerca" block ---------------------------------------------------
@@ -781,6 +888,39 @@ def extract_acerca_column(arch: str, n: int) -> str:
         return ""
     span = _card_body_span(arch, column)
     return _plain(arch[span[0]:span[1]]) if span else ""
+
+
+def extract_acerca_heading(arch: str, n: int) -> str | None:
+    """Plain text of the ``<h6>`` heading of the column in slot ``n`` (see
+    :func:`acerca_column_slots`) of the Acerca section, or ``None`` when that
+    slot is absent or has no ``<h6>``. Raises :class:`SectionNotFound` /
+    :class:`ArchError`."""
+    column = acerca_column_slots(arch).get(n)
+    if column is None:
+        return None
+    span = _inner_span(arch, column, _H6_OPEN_RE, _H6_CLOSE_RE)
+    if span is None:
+        return None
+    return normalize_text(_TAG_RE.sub("", arch[span[0]:span[1]]))
+
+
+def replace_acerca_heading(arch: str, n: int, text: str) -> str:
+    """Replace the text of the ``<h6>`` heading of the column in slot ``n``
+    (1 or 2) of the Acerca section with ``text`` (HTML-escaped). The ``<h6>``
+    attributes and everything else stay byte-identical. Unlike
+    :func:`set_acerca_column`, a missing column is never created: raises
+    :class:`ArchError` when the slot or its heading is missing."""
+    if n not in ACERCA_COLUMN_DEFAULTS:
+        raise ArchError(f"unsupported Acerca column {n}")
+    if not (text or "").strip():
+        raise ArchError(f"empty heading for Acerca column {n}")
+    column = acerca_column_slots(arch).get(n)
+    if column is None:
+        raise ArchError(f"Acerca column {n} is missing (use col{n} to create it)")
+    span = _inner_span(arch, column, _H6_OPEN_RE, _H6_CLOSE_RE)
+    if span is None:
+        raise ArchError(f"Acerca column {n} has no <h6> heading")
+    return arch[:span[0]] + html.escape(text, quote=False) + arch[span[1]:]
 
 
 def _acerca_slug(arch: str, section: Section, site_id: int | None) -> str:
@@ -937,27 +1077,29 @@ def extract_acerca_section(arch: str) -> str:
 
 def acerca_anchor_name(arch: str) -> str | None:
     """Section the Acerca insert is anchored after: ``"SEC1"`` when present,
-    else ``"Hero"`` when present, else ``None``."""
-    for name in ("SEC1", "Hero"):
-        if find_section(arch, name) is not None:
-            return name
-    return None
+    else the cover's name (``"Hero"`` or ``"Portada"``) when present, else
+    ``None``."""
+    if find_section(arch, "SEC1") is not None:
+        return "SEC1"
+    hero = _hero_section(arch)
+    return hero.name if hero is not None else None
 
 
 def insert_acerca_section(arch: str, payload: dict) -> str:
     """Insert a full two-column Acerca section right after SEC1 when present,
-    otherwise right after Hero, using the anchor line's indentation.
-    ``payload`` is validated with :func:`parse_acerca_payload` rules (blank
-    titles fall back to the column defaults). Raises :class:`ArchError` when
-    an Acerca section already exists and :class:`SectionNotFound` when
-    neither SEC1 nor Hero exists."""
+    otherwise right after the cover (``Hero`` or ``Portada``), using the
+    anchor line's indentation. ``payload`` is validated with
+    :func:`parse_acerca_payload` rules (blank titles fall back to the column
+    defaults). Raises :class:`ArchError` when an Acerca section already
+    exists and :class:`SectionNotFound` when neither SEC1 nor a cover
+    exists."""
     if find_section(arch, ACERCA_SECTION):
         raise ArchError(f"section {ACERCA_SECTION!r} already exists")
     try:
         payload = parse_acerca_payload(json.dumps(payload))
     except (TypeError, ValueError) as exc:
         raise ArchError(str(exc)) from exc
-    anchor = find_section(arch, "SEC1") or _require_section(arch, "Hero")
+    anchor = find_section(arch, "SEC1") or _require_hero_section(arch)
     indent = _line_indent(arch, anchor.start)
     if arch[arch.rfind("\n", 0, anchor.start) + 1:anchor.start].strip():
         indent = ""

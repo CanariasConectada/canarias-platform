@@ -33,7 +33,8 @@ Safety rules per row:
 * ``--apply`` against db ``prod`` asks for interactive confirmation unless
   ``--yes`` is given.
 
-Languages: view rows (h2, bg, SEC1/Acerca insert, Acerca columns) are
+Languages: view rows (h1, h2, bg, SEC1/Acerca insert, Acerca columns and
+headings) are
 transformed, checked and written in the primary language only
 (``--primary-lang``, default ``es_ES``): one write per view with context
 ``{'lang': primary}``. ``ir.ui.view.arch_db`` is an xml_translate field, so
@@ -48,9 +49,13 @@ backed up.
 
 Legacy "Acerca" block: ``Acerca.col1``/``Acerca.col2`` set the full text
 (and its 120 char preview) of a column, appending the column when it is
-missing; ``Acerca.insert`` (JSON payload) inserts the whole two-column
-section after SEC1 (or Hero). Within a site, inserts run first (SEC1 before
-Acerca), then column, heading and background edits.
+missing; ``Acerca.h6_1``/``Acerca.h6_2`` rewrite the ``<h6>`` heading of an
+existing column (compared like ``.h1``, never created); ``Separador.insert``
+(strip title) inserts the strip-2 section before the form when the page has
+none; ``Acerca.insert`` (JSON payload) inserts the whole two-column section
+after SEC1 (or the cover: ``Hero``, or ``Portada`` on a few legacy pages).
+Within a site, inserts run first (SEC1 before Acerca), then column, heading
+and background edits.
 
 Strip 2 ("Separador") title: ``ir_ui_view.<id>.Separador.h2`` and
 ``res_company.microsite_banner_title`` rows of a site go together (same
@@ -385,6 +390,44 @@ def release_strip_sibling(ctx: SiteContext, change: lib.Change, outcome: Outcome
     sibling_outcome.reason = f"paired strip heading {change.campo} is not applied ({outcome.status}: {outcome.reason})"
 
 
+def prepare_view_h1(ctx: SiteContext, change: lib.Change) -> Outcome:
+    """Hero headline (``<h1>``): compared and replaced like a section ``<h2>``."""
+    view_id, section = change.target.view_id, change.target.section
+    text = change.valor_nuevo
+    if not text.strip():
+        return Outcome(change, STATUS_FAIL, "empty headline")
+    missing = _section_missing(ctx, view_id, section)
+    if missing:
+        return Outcome(change, STATUS_FAIL, missing)
+    current = lib.extract_section_h1(ctx.work_arch(view_id), section)
+    skip = _decide(ctx, change, current, lib.normalize_text(current) == lib.normalize_text(text))
+    if skip:
+        return skip
+    ctx.stage_arch(change, view_id, lambda arch, s=section, t=text: lib.replace_section_h1(arch, s, t))
+    return Outcome(change, STATUS_PLAN, "", lib.truncate(current))
+
+
+def prepare_view_h6(ctx: SiteContext, change: lib.Change) -> Outcome:
+    """Acerca column heading (``<h6>``): compared and replaced like the Hero
+    ``<h1>``, in the primary language only. The column must already exist."""
+    view_id, section, n = change.target.view_id, change.target.section, change.target.column
+    text = change.valor_nuevo
+    if not text.strip():
+        return Outcome(change, STATUS_FAIL, f"empty heading for {section}.h6_{n}")
+    missing = _section_missing(ctx, view_id, section)
+    if missing:
+        return Outcome(change, STATUS_FAIL, missing)
+    current = lib.extract_acerca_heading(ctx.work_arch(view_id), n)
+    if current is None:
+        return Outcome(change, STATUS_FAIL,
+                       f"{section} column {n} or its <h6> not found in view {view_id} ({ctx.primary_lang})")
+    skip = _decide(ctx, change, current, lib.normalize_text(current) == lib.normalize_text(text))
+    if skip:
+        return skip
+    ctx.stage_arch(change, view_id, lambda arch, c=n, t=text: lib.replace_acerca_heading(arch, c, t))
+    return Outcome(change, STATUS_PLAN, "", lib.truncate(current))
+
+
 def prepare_view_h2(ctx: SiteContext, change: lib.Change) -> Outcome:
     view_id, section = change.target.view_id, change.target.section
     text = change.valor_nuevo
@@ -518,9 +561,34 @@ def prepare_acerca_insert(ctx: SiteContext, change: lib.Change) -> Outcome:
     return Outcome(change, STATUS_PLAN, "", lib.truncate(current))
 
 
+def prepare_strip_insert(ctx: SiteContext, change: lib.Change) -> Outcome:
+    """Insert the strip-2 section with its title. Only for pages that have no
+    ``Separador`` yet: an existing strip is edited through ``Separador.h2``,
+    which carries the pairing rule with ``microsite_banner_title``."""
+    view_id = change.target.view_id
+    text = change.valor_nuevo
+    error = lib.check_strip_title(text)
+    if error:
+        return Outcome(change, STATUS_FAIL, error)
+    if lib.find_section(ctx.work_arch(view_id), lib.STRIP_SECTION):
+        return Outcome(change, STATUS_FAIL,
+                       f"section {lib.STRIP_SECTION!r} already exists in view {view_id}; use .h2 to change its title")
+    skip = _decide(ctx, change, None, False)
+    if skip:
+        return skip
+    op = lambda arch, t=text: lib.insert_separador_before_form(arch, t)  # noqa: E731
+    error = _dry_run_op(ctx, view_id, op)
+    if error:
+        return Outcome(change, STATUS_FAIL, error)
+    ctx.stage_arch(change, view_id, op)
+    return Outcome(change, STATUS_PLAN, "", "")
+
+
 def prepare_view_insert(ctx: SiteContext, change: lib.Change) -> Outcome:
     if change.target.section == lib.ACERCA_SECTION:
         return prepare_acerca_insert(ctx, change)
+    if change.target.section == lib.STRIP_SECTION:
+        return prepare_strip_insert(ctx, change)
     view_id = change.target.view_id
     text = change.valor_nuevo
     exists = lib.find_section(ctx.work_arch(view_id), "SEC1") is not None
@@ -543,6 +611,8 @@ PREPARERS = {
     lib.KIND_COMPANY_FIELD: prepare_company_field,
     lib.KIND_COMPANY_IMAGE: prepare_company_image,
     lib.KIND_VIEW_H2: prepare_view_h2,
+    lib.KIND_VIEW_H1: prepare_view_h1,
+    lib.KIND_VIEW_H6: prepare_view_h6,
     lib.KIND_VIEW_BG: prepare_view_bg,
     lib.KIND_VIEW_INSERT: prepare_view_insert,
     lib.KIND_VIEW_COLUMN: prepare_view_column,
@@ -910,8 +980,13 @@ def validate_offline(change: lib.Change, rows: list[lib.Change], zip_root: Path,
         if not path.is_file():
             return f"image file not found: {path}"
     elif target.section == lib.ACERCA_SECTION and target.model == lib.MODEL_VIEW:
-        op = f"col{target.column}" if target.kind == lib.KIND_VIEW_COLUMN else \
-            {lib.KIND_VIEW_INSERT: "insert", lib.KIND_VIEW_H2: "h2", lib.KIND_VIEW_BG: "bg"}[target.kind]
+        if target.kind == lib.KIND_VIEW_COLUMN:
+            op = f"col{target.column}"
+        elif target.kind == lib.KIND_VIEW_H6:
+            op = f"h6_{target.column}"
+        else:
+            op = {lib.KIND_VIEW_INSERT: "insert", lib.KIND_VIEW_H2: "h2", lib.KIND_VIEW_H1: "h1",
+                  lib.KIND_VIEW_BG: "bg"}[target.kind]
         if op not in lib.ACERCA_OPS:
             return f"unsupported op {op!r} for section 'Acerca' (supported: {', '.join(lib.ACERCA_OPS)})"
         if target.kind == lib.KIND_VIEW_INSERT:
