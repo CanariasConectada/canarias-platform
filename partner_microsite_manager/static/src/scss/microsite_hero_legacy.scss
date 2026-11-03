@@ -25,29 +25,30 @@
 // are `s_kickoff` and keep their look.
 
 $o-pmm-legacy-hero: 'section.s_cover[data-name="Hero"]:not(.o_pmm_hero), section.s_adventure[data-name="Portada"]';
-$o-pmm-legacy-hero-desktop-min: 320px;
 $o-pmm-legacy-hero-desktop-ratio: 42.86vw; // 9 / 21 of the width
 $o-pmm-legacy-hero-desktop-padding: 48px;
+$o-pmm-legacy-hero-mobile-ratio: 56.25vw; // 9 / 16 of the width
 
+// `!important` only where the arch fights back: the attachment, the height
+// and the paddings. Size, position and repeat are left to the inline style
+// (already cover / center) so a builder edit of the picture keeps working.
 #{$o-pmm-legacy-hero} {
     // The picture fills the BOX, not the viewport.
     background-attachment: scroll !important;
-    background-size: cover !important;
-    background-position: center !important;
-    background-repeat: no-repeat !important;
-    // A 21:9 strip that follows the width, never taller than the dynamic
-    // hero's 60vh, never thinner than 320px (a 1366px screen gives 460px).
-    // Not `aspect-ratio` + `max-height`: a max-height transfers through the
-    // ratio into a max-WIDTH and the section shrinks to 1075px on a 1366px
-    // screen (measured). `clamp()` on the height alone leaves the width be.
-    min-height: clamp(
-        $o-pmm-legacy-hero-desktop-min,
-        $o-pmm-legacy-hero-desktop-ratio,
-        $o-pmm-hero-desktop-height
-    ) !important;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    // The dynamic hero's 60vh, or a 21:9 strip when that is shorter (a
+    // landscape phone at 844x390 keeps today's 234px). A floor, not a cap:
+    // the content can always grow past it. Not `aspect-ratio` +
+    // `max-height`: a max-height transfers through the ratio into a
+    // max-WIDTH and the section shrinks to 1075px on a 1366px screen
+    // (measured).
+    // Written as a string: libsass takes `min()` for its own function and
+    // refuses to compare vh with vw; the browser's `min()` has no such issue.
+    min-height: #{"min(#{$o-pmm-hero-desktop-height}, #{$o-pmm-legacy-hero-desktop-ratio})"} !important;
     padding-top: $o-pmm-legacy-hero-desktop-padding !important;
     padding-bottom: $o-pmm-legacy-hero-desktop-padding !important;
-    overflow: hidden;
 
     // No imported hero carries one today; if a merchant drops a picture
     // into the section it fills the box like the background does.
@@ -61,9 +62,10 @@ $o-pmm-legacy-hero-desktop-padding: 48px;
 
 @media (max-width: $o-pmm-hero-mobile-breakpoint) {
     #{$o-pmm-legacy-hero} {
-        // Same box as the dynamic hero: the picture's own proportion.
-        min-height: 0 !important;
-        aspect-ratio: 16 / 9;
+        // The picture's own 16:9 as a floor that grows with the content: a
+        // two-line title, a paragraph and a button never lose the button.
+        min-height: $o-pmm-legacy-hero-mobile-ratio !important;
+        aspect-ratio: auto;
         padding-top: $o-pmm-hero-mobile-padding !important;
         padding-bottom: $o-pmm-hero-mobile-padding !important;
 
