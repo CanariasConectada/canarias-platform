@@ -1,3 +1,28 @@
+## 19.0.2.17.0 (2026-11-03)
+
+- Legacy hero capped (client report: the cover is too tall and on a phone
+  the picture is not seen -- ganaderialacancela, nunchi, peluqueriabilly,
+  suval). The 204 imported homepages paint the hero with the geometry typed
+  in the arch: `min-height: 60vh`, `background-attachment: fixed` and
+  `pt96 pb96`. `fixed` sizes the picture to the viewport, so on a 390px
+  phone a landscape photo keeps 390 of its 844px-tall scaling and turns
+  into a smear. New `microsite_hero_legacy.scss` (in `web.assets_frontend`,
+  so it reaches every website) targets exactly those sections --
+  `section.s_cover[data-name="Hero"]:not(.o_pmm_hero)` (200) and
+  `section.s_adventure[data-name="Portada"]` (4) -- and gives them the
+  dynamic hero's box: desktop `min-height: clamp(320px, 42.86vw, 60vh)`
+  with 48px padding and the picture attached to the box; phone (<768px)
+  `aspect-ratio: 16 / 9`, 1.25rem padding, title and button sized down.
+  Measured on 1366x768 / 390x844: desktop 461px -> 461px (diazleja 568 ->
+  461), phone 506px -> 219px; the 16 dynamic heroes are untouched.
+  `microsite_hero.scss` now exposes its values as SCSS variables and a
+  mixin that the legacy file reuses.
+- "About" section of 3 imported homepages (diazlejaservicios,
+  segundamano3b, thecaptain13): the `col-lg-8 offset-lg-2` column inside a
+  `row.justify-content-center` lands right of centre (342px left / 114px
+  right on 1366px). The offset is neutralised; the row centres it
+  (228 / 228).
+
 ## 19.0.2.16.0 (2026-11-03)
 
 - `microsite_name` is relabelled **Microsite cover title** (was "Microsite
