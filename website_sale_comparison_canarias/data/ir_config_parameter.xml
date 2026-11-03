@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo noupdate="1">
+
+    <!-- The comparator ships switched OFF (client decision, 2026-09-22) and
+         stays whatever the admin sets afterwards: noupdate, so a module
+         update never flips it back. Turn it on from Website > Configuration >
+         Settings > "Price comparator", or set this parameter to True. -->
+    <record id="param_comparison_enabled" model="ir.config_parameter">
+        <field name="key">website_sale_comparison_canarias.enabled</field>
+        <field name="value">False</field>
+    </record>
+
+</odoo>

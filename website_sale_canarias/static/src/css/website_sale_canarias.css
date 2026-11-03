@@ -47,3 +47,60 @@
         flex: 0 0 260px !important;
     }
 }
+
+/* Curated category tiles above the grid: a horizontal, snap-scrolling row
+ * below lg (a phone's width never fits more than a couple of squares
+ * anyway), a real grid at lg+. The image box keeps a fixed aspect ratio so
+ * a merchant's portrait or landscape cover_image upload never distorts
+ * the row's rhythm. */
+.o_wsc_category_tiles_row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 4px;
+}
+
+.o_wsc_category_tile {
+    flex: 0 0 auto;
+    width: 140px;
+    scroll-snap-align: start;
+    color: inherit;
+}
+
+.o_wsc_category_tile_img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #f1f1f1;
+}
+
+.o_wsc_category_tile_img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.o_wsc_category_tile_label {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+    color: #212529;
+}
+
+@media (min-width: 992px) {
+    .o_wsc_category_tiles_row {
+        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        overflow-x: visible;
+    }
+
+    .o_wsc_category_tile {
+        width: auto;
+    }
+}

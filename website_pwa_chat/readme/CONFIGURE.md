@@ -9,14 +9,14 @@ puts it on the list only for the people who could already open it.
 Every visitor who opens **Hablar con soporte** gets a private conversation of
 their own, and it lands in the Discuss sidebar of everybody who answers.
 Administrators are there automatically. To add somebody who is *not* an
-administrator, give them the role **Soporte (chat de visitantes)**.
+administrator, tick **Soporte: atender a los visitantes** on their user form
+(Settings > Users, under Website).
 
-A ROLE, not the group. This platform runs `base_user_role`: every
-`res.users` write re-derives the user's groups from their roles, so ticking
-**Soporte: atender a los visitantes** on a user form saves without complaint
-and is gone by the next write. The role is created by
-`f41_support_role` in the migration-script repo and is the only grant that
-lasts.
+Roles are gone: until 2026-09-09 the platform ran `base_user_role`, every
+`res.users` write re-derived the user's groups from their roles, and the
+group had to be granted through the role *Soporte (chat de visitantes)*.
+The roles were retired and permissions are managed per user; the group on
+the form is the grant that lasts.
 
 Somebody appointed today joins the conversations that were already waiting:
 the nightly cron *Chat: sentar a los agentes de soporte en las conversaciones

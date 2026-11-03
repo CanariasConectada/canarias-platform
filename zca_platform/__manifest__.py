@@ -1,6 +1,6 @@
 {
     'name': 'ZCA Platform',
-    'version': '19.0.1.3.0',
+    'version': '19.0.1.4.0',
     'post_init_hook': 'post_init',
     'category': 'Website',
     'summary': 'Plataforma de Zonas Comerciales Abiertas',
@@ -9,13 +9,14 @@
         Incluye directorio público, microsites por comercio, filtros avanzados y AJAX.
     ''',
     'author': 'MikeColangelo',
-    'depends': ['website', 'website_sale', 'sale', 'stock', 'account', 'purchase', 'crm', 'project', 'hr'],
+    'depends': ['website', 'website_sale', 'sale', 'stock', 'account', 'purchase', 'crm', 'project', 'hr', 'spreadsheet_dashboard'],
     'data': [
         'data/zca_groups.xml',
         'security/ir_model_access.xml',
         'security/ir_rule.xml',
         'views/zca_comercio_views.xml',
         'views/zca_menu.xml',
+        'views/core_menu_gating.xml',
         'templates/directorio.xml',
         'templates/microsite.xml',
     ],

@@ -25,4 +25,93 @@
         </xpath>
     </template>
 
+    <!-- One notification card, three homes: the login page block, the
+         in-app prompt below and anything else that wants one. It carries the
+         classes pwa_push.js drives (the s_pwa_push snippet uses the same), so
+         the permission rules live in one script.
+
+         Parameters (all optional, set with t-set before the t-call):
+         - pwa_push_context: "login" on auth pages, see pushTarget() in JS;
+         - pwa_push_standalone: only inside the installed app;
+         - pwa_push_prompt_only: only while permission is undecided, with a
+           "not now" close button;
+         - pwa_push_class: extra classes for the card. -->
+    <template id="pwa_notify_card" name="PWA Push: notification card">
+        <div
+            t-attf-class="o_pwa_push_card d-none #{pwa_push_class or ''}"
+            t-att-data-pwa-push-context="pwa_push_context or None"
+            t-att-data-pwa-push-standalone="'1' if pwa_push_standalone else None"
+            t-att-data-pwa-push-prompt-only="'1' if pwa_push_prompt_only else None"
+        >
+            <button
+                t-if="pwa_push_prompt_only"
+                type="button"
+                class="btn-close float-end o_pwa_push_dismiss"
+                aria-label="Not now"
+                title="Not now"
+            />
+            <div class="fw-bold mb-1">
+                <i class="fa fa-bell me-1" role="img" aria-hidden="true" />
+                Turn on notifications
+            </div>
+            <p class="small text-muted mb-2">
+                Get a notification on this device when someone writes to you,
+                even when the app is closed.
+            </p>
+            <button
+                type="button"
+                class="btn btn-primary btn-sm o_pwa_push_button d-none"
+            >
+                Turn on notifications
+            </button>
+            <div class="o_pwa_push_done d-none small text-success">
+                Notifications are on for this device.
+            </div>
+            <div class="o_pwa_push_deferred d-none small text-success">
+                Notifications allowed. Sign in and they will start arriving on
+                this device.
+            </div>
+            <div class="o_pwa_push_denied d-none small text-muted">
+                Notifications are blocked for this app. You can allow them
+                again from the notification settings of your phone or browser.
+            </div>
+            <div class="o_pwa_push_ios_hint d-none small text-muted">
+                On iPhone and iPad, notifications only work in the installed
+                app: add it to the Home Screen and open it from there.
+            </div>
+        </div>
+    </template>
+
+    <!-- The prompt inside the installed app, for signed-in users.
+
+         Why it is needed: the app opens on the website, and until now nothing
+         on the website ever asked for permission (the s_pwa_install and
+         s_pwa_push snippets are placed on no page, and push is switched off
+         on every website), so an installed app that was never taken through
+         core's own prompt in Discuss had no subscription at all. iOS only
+         lets a page ask from a tap, hence a button and not an automatic
+         request.
+
+         Rendered only for signed-in users on a website with the app enabled,
+         and revealed by the script only inside the installed app while the
+         permission is undecided. Public pages, which may be cached, are
+         untouched. -->
+    <template
+        id="pwa_push_layout_prompt"
+        inherit_id="website.layout"
+        name="PWA Push: in-app notification prompt"
+    >
+        <xpath expr="//div[@id='wrapwrap']" position="inside">
+            <t
+                t-if="website and website.pwa_enabled and not request.env.user._is_public()"
+            >
+                <t t-call="website_pwa_push.pwa_notify_card">
+                    <t t-set="pwa_push_class" t-value="'o_pwa_push_prompt p-3 rounded-3 shadow'" />
+                    <t t-set="pwa_push_standalone" t-value="True" />
+                    <t t-set="pwa_push_prompt_only" t-value="True" />
+                </t>
+            </t>
+        </xpath>
+    </template>
+
 </odoo>

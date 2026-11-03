@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Core's header text element ships demo placeholders (a +1 US phone,
+         info@yourcompany.example.com) hardcoded in the master arch, so every
+         microsite header advertised a fake number. Each branch now reads the
+         owning company's real phone/email and renders nothing when unset.
+         A merchant who edits their header in the builder gets a COW copy
+         that wins over this, which is the right precedence. -->
+    <template
+        id="header_text_element_company_contact"
+        inherit_id="website.header_text_element"
+        name="Header contact from company"
+    >
+        <xpath expr="//t[@t-elif=&quot;_txt_elt_content == 'phone_mail'&quot;]" position="replace">
+            <t t-elif="_txt_elt_content == 'phone_mail'">
+                <div t-attf-class="s_text_block #{_div_class}" data-name="Text">
+                    <a
+                        t-if="website.company_id.phone"
+                        t-attf-href="tel:#{website.company_id.phone}"
+                        class="nav-link o_nav-link_secondary"
+                    >
+                        <small>
+                            <i class="fa fa-1x fa-fw fa-phone me-1"/>
+                            <span class="o_force_ltr" t-out="website.company_id.phone"/>
+                        </small>
+                    </a>
+                    <a
+                        t-if="website.company_id.email"
+                        t-attf-href="mailto:#{website.company_id.email}"
+                        class="nav-link o_nav-link_secondary"
+                    >
+                        <small>
+                            <i class="fa fa-1x fa-fw fa-envelope me-1"/>
+                            <span t-out="website.company_id.email"/>
+                        </small>
+                    </a>
+                </div>
+            </t>
+        </xpath>
+        <xpath expr="//t[@t-elif=&quot;_txt_elt_content == 'mail'&quot;]" position="replace">
+            <t t-elif="_txt_elt_content == 'mail'">
+                <div t-attf-class="s_text_block #{_div_class}" data-name="Text">
+                    <a
+                        t-if="website.company_id.email"
+                        t-attf-href="mailto:#{website.company_id.email}"
+                        class="nav-link o_nav-link_secondary"
+                    >
+                        <small>
+                            <i class="fa fa-1x fa-fw fa-envelope me-1"/>
+                            <span t-out="website.company_id.email"/>
+                        </small>
+                    </a>
+                </div>
+            </t>
+        </xpath>
+        <xpath expr="//t[@t-elif=&quot;_txt_elt_content == 'mail_stretched'&quot;]" position="replace">
+            <t t-elif="_txt_elt_content == 'mail_stretched'">
+                <div t-attf-class="s_text_block #{_div_class}" data-name="Text">
+                    <a
+                        t-if="website.company_id.phone"
+                        t-attf-href="tel:#{website.company_id.phone}"
+                        class="nav-link o_nav-link_secondary p-2 o_navlink_background_hover d-flex align-items-center h-100 text-reset"
+                    >
+                        <i class="fa fa-1x fa-fw fa-phone me-1"/>
+                        <span class="o_force_ltr"><small t-out="website.company_id.phone"/></span>
+                    </a>
+                </div>
+            </t>
+        </xpath>
+        <xpath expr="//t[@t-else='']" position="replace">
+            <t t-else="">
+                <div t-attf-class="s_text_block #{_div_class}" data-name="Text">
+                    <a
+                        t-if="website.company_id.phone"
+                        t-attf-href="tel:#{website.company_id.phone}"
+                        class="nav-link o_nav-link_secondary p-2"
+                    >
+                        <i class="fa fa-1x fa-fw fa-phone me-1"/>
+                        <span class="o_force_ltr"><small t-out="website.company_id.phone"/></span>
+                    </a>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>

@@ -8,8 +8,13 @@ from urllib.parse import urlsplit
 
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
+from odoo.tools import SQL, sql
 
 from odoo.addons.rating.models import rating_data
+
+# Partial unique index: one rating per partner per item, scoped to this
+# model only so core ratings of other models are never constrained.
+RATING_PARTNER_UNIQUE_INDEX = "website_local_content_rating_partner_uniq"
 
 MIN_PHOTO_YEAR = 1840  # First photographs of the Canary Islands era.
 # Only these schemes may reach an ``href``. Anything else (``javascript:``,
@@ -57,10 +62,25 @@ class LocalContentItem(models.Model):
     category_id = fields.Many2one(
         comodel_name="website.local.content.category",
         string="Category",
-        required=True,
+        # No longer required: since the activity axis exists, an item
+        # classified only by what can be done there is legitimate data (the
+        # imported places arrived exactly like that). The form still invites
+        # completion; it just does not block it.
+        required=False,
         index=True,
         ondelete="restrict",
-        domain="[('type_id', '=', type_id)]",
+        domain="[('type_id', '=', type_id), ('axis', '=', 'place')]",
+    )
+    activity_category_ids = fields.Many2many(
+        comodel_name="website.local.content.category",
+        relation="website_local_content_item_activity_rel",
+        column1="item_id",
+        column2="category_id",
+        string="Activities",
+        domain="[('type_id', '=', type_id), ('axis', '=', 'activity')]",
+        help="What can be done at this place. Complementary to the "
+        "category: a sports facility (category) may host outdoor sport "
+        "and sports events (activities).",
     )
     subcategory_id = fields.Many2one(
         comodel_name="website.local.content.subcategory",
@@ -256,12 +276,23 @@ class LocalContentItem(models.Model):
                     )
                 )
 
-    @api.constrains("type_id", "category_id", "subcategory_id")
+    @api.constrains(
+        "type_id", "category_id", "subcategory_id", "activity_category_ids"
+    )
     def _check_taxonomy_consistency(self):
         for record in self:
-            if record.category_id.type_id != record.type_id:
+            # Guarded: an item may carry no category at all now that the
+            # activity axis exists (the imported places arrived classified
+            # only by activity). An empty category is fine; a WRONG one is
+            # still not.
+            if record.category_id and record.category_id.type_id != record.type_id:
                 raise ValidationError(
                     _("The category does not belong to the selected content type.")
+                )
+            if record.category_id and record.category_id.axis != "place":
+                raise ValidationError(
+                    _("The category must be a place type; activities go in "
+                      "their own field.")
                 )
             if (
                 record.subcategory_id
@@ -270,6 +301,12 @@ class LocalContentItem(models.Model):
                 raise ValidationError(
                     _("The subcategory does not belong to the selected category.")
                 )
+            for activity in record.activity_category_ids:
+                if activity.type_id != record.type_id or activity.axis != "activity":
+                    raise ValidationError(
+                        _("Activities must be activity-axis categories of "
+                          "the same content type.")
+                    )
 
     # --- Computes ------------------------------------------------------------
     @api.depends("photo_year")
@@ -294,6 +331,43 @@ class LocalContentItem(models.Model):
             ("consumed", "=", True),
             ("rating", ">=", rating_data.RATING_LIMIT_MIN),
         ]
+
+    def init(self):
+        """Guarantee one rating per partner per item at the database level.
+
+        Existing duplicates (migrated legacy ratings) are collapsed first,
+        keeping the most recent row of each (item, partner) pair. Ratings
+        without a partner are left untouched.
+        """
+        super().init()
+        cr = self.env.cr
+        if sql.index_exists(cr, RATING_PARTNER_UNIQUE_INDEX):
+            return
+        cr.execute(
+            SQL(
+                """
+                DELETE FROM rating_rating AS older
+                 USING rating_rating AS newer
+                 WHERE older.res_model = %(model)s
+                   AND newer.res_model = %(model)s
+                   AND older.partner_id IS NOT NULL
+                   AND older.res_id = newer.res_id
+                   AND older.partner_id = newer.partner_id
+                   AND (older.write_date, older.id) < (newer.write_date, newer.id)
+                """,
+                model=self._name,
+            )
+        )
+        sql.create_index(
+            cr,
+            RATING_PARTNER_UNIQUE_INDEX,
+            "rating_rating",
+            ["res_id", "partner_id"],
+            where=cr.mogrify(
+                "res_model = %s AND partner_id IS NOT NULL", [self._name]
+            ).decode(),
+            unique=True,
+        )
 
     @api.depends("rating_ids.rating", "rating_ids.consumed")
     def _compute_rating_stats(self):
@@ -372,10 +446,18 @@ class LocalContentItem(models.Model):
         return not self.website_ids or website in self.website_ids
 
     # --- Public rendering helpers -----------------------------------------
-    def get_image_url(self):
-        """URL of the streamed public image (see the ``/img`` route)."""
+    def get_image_url(self, size=None):
+        """URL of the streamed public image (see the ``/img`` route).
+
+        ``size`` selects a pre-computed variant of ``image.mixin`` (512 for
+        the grid cards, 1024 for the detail page); the full ``image_1920``
+        is served when no size is given.
+        """
         self.ensure_one()
-        return f"/explora/{self.type_id.url_slug}/img/{self.id}"
+        url = f"/explora/{self.type_id.url_slug}/img/{self.id}"
+        if size:
+            url += f"?size={size}"
+        return url
 
     def get_external_website_url(self):
         """Safe ``href`` for the external link shown on the detail page.

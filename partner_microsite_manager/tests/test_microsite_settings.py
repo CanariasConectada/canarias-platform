@@ -12,9 +12,7 @@ class TestMicrositeSettings(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.company = cls.env["res.company"].create(
-            {"name": "Settings Test Company"}
-        )
+        cls.company = cls.env["res.company"].create({"name": "Settings Test Company"})
         cls.website = cls.env["website"].create(
             {
                 "name": "Settings Test Website",
@@ -45,9 +43,7 @@ class TestMicrositeSettings(TransactionCase):
         # Rendering the website settings form applies our inherited view;
         # a broken xpath would raise here, and the field must be present.
         arch = self.env["res.config.settings"].get_view(
-            view_id=self.env.ref(
-                "website.res_config_settings_view_form"
-            ).id,
+            view_id=self.env.ref("website.res_config_settings_view_form").id,
             view_type="form",
         )["arch"]
         self.assertIn("is_microsite_themed", arch)

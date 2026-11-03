@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <data noupdate="1">
+    <!-- Merchants complete their microsite between visits: once a day,
+         every field-visit task linked to a business is checked again. -->
+    <record id="ir_cron_field_visit_microsite_status" model="ir.cron">
+        <field name="name">Field visits: refresh microsite status</field>
+        <field name="model_id" ref="project.model_project_task" />
+        <field name="state">code</field>
+        <field
+            name="code"
+        >model._cron_field_visit_refresh_microsite_status()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="active" eval="True" />
+    </record>
+    </data>
+
+    <record
+        id="action_server_field_visit_microsite_status"
+        model="ir.actions.server"
+    >
+        <field name="name">Refresh microsite status</field>
+        <field name="model_id" ref="project.model_project_task" />
+        <field name="binding_model_id" ref="project.model_project_task" />
+        <field name="binding_view_types">list,form</field>
+        <field
+            name="group_ids"
+            eval="[(4, ref('project_field_visit.group_field_visit_manager'))]"
+        />
+        <field name="state">code</field>
+        <field
+            name="code"
+        >records.action_field_visit_refresh_microsite_status()</field>
+    </record>
+</odoo>

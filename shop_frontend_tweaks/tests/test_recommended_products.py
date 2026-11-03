@@ -28,7 +28,11 @@ class TestRecommendedProducts(HttpCase):
         )
 
     def _page(self):
-        """A product page whose carousel is populated (curated alternatives)."""
+        """A product page whose carousel is populated (curated alternatives).
+
+        The request language is pinned to the website's default: since the
+        seven-language rollout the anonymous negotiation can land on en_US,
+        and these cases assert wording, not negotiation."""
         product = self.env["product.template"].create(
             {
                 "name": "Main product",
@@ -36,6 +40,8 @@ class TestRecommendedProducts(HttpCase):
                 "alternative_product_ids": [(6, 0, self.companion.ids)],
             }
         )
+        website = self.env["website"].search([], limit=1)
+        self.opener.cookies["frontend_lang"] = website.default_lang_id.code
         response = self.url_open(product.website_url)
         self.assertEqual(response.status_code, 200)
         return response.text

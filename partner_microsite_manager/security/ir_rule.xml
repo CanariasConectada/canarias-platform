@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+     Merchants carry `website.group_website_restricted_editor` (it is what
+     opens their "Page content" screen and, with the platform now serving
+     seven languages, the frontend Translate mode on their own site). Core
+     ships no record rule scoping WHICH views that group may write, so a
+     merchant reaching another shop's subdomain could edit that shop's pages.
+
+     The first rule confines writing to copy-on-write views of the websites
+     of the merchant's own company. A view without `website_id` is a master
+     template shared by all 218 sites and is nobody's page in particular, so
+     it is not writable through this rule either: editing one from the site
+     builder copies it onto the current website first, and the copy is what
+     the rule then measures.
+
+     The second rule hands designers everything back. Record rules of the
+     groups a user belongs to are OR-ed, `group_website_designer` implies the
+     restricted group, and the platform's own staff (`zca_platform` grants
+     designer) must keep editing every site. Without it the first rule would
+     confine the very people who run the place.
+
+     Read is deliberately untouched: rendering any page needs its views. -->
+<odoo>
+
+    <record id="rule_restricted_editor_own_website_views" model="ir.rule">
+        <field name="name">Restricted editors write only their own site's views</field>
+        <field name="model_id" ref="base.model_ir_ui_view"/>
+        <field name="groups" eval="[(4, ref('website.group_website_restricted_editor'))]"/>
+        <field name="domain_force">[('website_id.company_id', '=', user.company_id.id)]</field>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <record id="rule_designer_all_website_views" model="ir.rule">
+        <field name="name">Designers keep writing every site's views</field>
+        <field name="model_id" ref="base.model_ir_ui_view"/>
+        <field name="groups" eval="[(4, ref('website.group_website_designer'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- Opening slots follow the company they belong to: a user sees the
+         rows of the companies in their allowed list, like every other
+         company-owned record on the platform. The public microsite never
+         reads the rows (it reads the generated text on the company, with
+         sudo), so this rule only shapes the backend. -->
+    <record id="rule_microsite_opening_slot_company" model="ir.rule">
+        <field name="name">Opening slots of allowed companies</field>
+        <field name="model_id" ref="model_microsite_opening_slot"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="global" eval="True"/>
+    </record>
+
+    <!-- Odoo 19 gives transient models no implicit "owner only" rule any
+         more: they use plain ACLs and record rules. The editor and its rows
+         are writable by every merchant (that is what lets them save), so
+         without these two rules a merchant could, through a raw RPC call on
+         a guessed id, edit another merchant's still-open editor, and that
+         merchant's own Save would then write the tampered content to THEIR
+         shop with sudo. A screen is its author's, and nobody else's. -->
+    <record id="rule_microsite_content_editor_owner" model="ir.rule">
+        <field name="name">Page content editor: only its author</field>
+        <field name="model_id" ref="model_microsite_content_editor"/>
+        <field name="domain_force">[('create_uid', '=', user.id)]</field>
+        <field name="global" eval="True"/>
+    </record>
+
+    <record id="rule_microsite_content_editor_slot_owner" model="ir.rule">
+        <field name="name">Page content editor rows: only their author</field>
+        <field name="model_id" ref="model_microsite_content_editor_slot"/>
+        <field name="domain_force">[('editor_id.create_uid', '=', user.id)]</field>
+        <field name="global" eval="True"/>
+    </record>
+
+</odoo>

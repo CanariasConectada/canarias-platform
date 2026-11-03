@@ -73,7 +73,7 @@ class WebsiteChat(http.Controller):
         "/chat/soporte", type="http", auth="public", website=True, sitemap=False
     )
     @add_guest_to_context
-    def chat_support(self, **kwargs):
+    def chat_support(self, frame=None, **kwargs):
         """The visitor's own private line to support.
 
         A static segment, so it cannot be mistaken for a channel id nor for
@@ -86,33 +86,192 @@ class WebsiteChat(http.Controller):
         participation and it needs somewhere private to be answered. Without
         an identity the conversation would be keyed on ``base.public_partner``
         -- one room shared by every anonymous visitor on the platform -- which
-        is why ``_support_key`` refuses to key on it at all.
+        is why ``_support_key`` refuses to key on it at all. The guest also
+        has to exist before the page's websocket connects, because that is
+        when the cookie is read for the bus subscription.
 
-        The page rendered is the ordinary conversation page. Support is a
-        conversation; it deserves the composer, the held-message notice and
-        the live catch-up that every other conversation has, not a second
-        implementation of them.
+        The CONVERSATION, on the other hand, is not created here. A page view
+        is not participation: with the window's frame on every page of 218
+        sites, opening one per visit left about ninety empty conversations a
+        day behind. The page renders with no channel and the composer's first
+        message opens it through ``/website_pwa_chat/support/open``.
+
+        The page rendered is the conversation template, with ``is_support``
+        switching off everything that belongs to the community channels: the
+        channel list link, the description, the "held for review" card and
+        the invitation to register. Support publishes nothing; it is a
+        private line to the team, and the page says only that.
+
+        ``frame=1`` is that same page dressed for the floating window: the
+        button on every site opens it in an <iframe> instead of navigating
+        away. One template, one controller -- the flag only strips the site
+        chrome (``no_header``/``no_footer`` are ``web.frontend_layout``'s own
+        switches) and tells the template it is inside the window, so the
+        conversation, the composer and the identify line are THE ones the
+        full page has, not a copy that drifts.
+        """
+        website = request.env["website"]._chat_current()
+        if not website:
+            return request.not_found()
+        self._chat_ensure_guest()
+        Channel = request.env["discuss.channel"]
+        if not Channel._support_key():
+            # Only reachable if the guest could not be created at all; the
+            # login page is where an identity comes from, guest door included.
+            return request.redirect("%s?redirect=/chat/soporte" % LOGIN_URL)
+        # Empty until the visitor writes: the template renders the composer
+        # either way and the interaction opens the conversation on the first
+        # message.
+        channel = Channel._support_channel_existing()
+        # The literal "1" and nothing else: bool() on a query string is True
+        # for "0", "false" and "no" alike, and a visitor who edits the URL to
+        # frame=0 means the full page, not the stripped one.
+        framed = frame == "1"
+        messages = channel._website_chat_messages() if channel else []
+        return request.render(
+            "website_pwa_chat.chat_channel",
+            {
+                "channel": channel,
+                "messages": channel._website_chat_message_values(messages),
+                # Nothing on the support line is ever held for review.
+                "pending": [],
+                "is_support": True,
+                "chat_in_frame": framed,
+                "no_header": framed,
+                "no_footer": framed,
+                # Lets the stylesheet silence what the site layout adds to
+                # every page (cookie bar, backend shortcut): inside the window
+                # they belong to the page around it, not to the conversation.
+                "body_classname": "o_cc_chat_in_frame" if framed else "",
+                **self._chat_identify_values(channel),
+                **self._chat_visitor_values("/chat/soporte"),
+            },
+        )
+
+    @http.route(
+        "/chat/soporte/identificarme",
+        type="http",
+        auth="public",
+        website=True,
+        methods=["POST"],
+        csrf=True,
+        sitemap=False,
+    )
+    @add_guest_to_context
+    def chat_support_identify(self, name=None, email=None, frame=None, **kwargs):
+        """Record who is asking. The conversation comes from the session.
+
+        Nothing here trusts the form about WHICH conversation to write on:
+        ``_support_channel()`` resolves that from the visitor's own account or
+        guest cookie, exactly as the page itself does. The form contributes a
+        name and an optional email and nothing else.
+
+        An empty name is not an error worth a page: the visitor simply stays
+        anonymous, which is a perfectly good answer to "who are you".
+
+        ``frame`` rides along as a hidden field so a form posted from inside
+        the floating window lands back inside it: redirecting to the bare page
+        would swap the window's content for the full site, header and all,
+        nested in a 380px box.
         """
         website = request.env["website"]._chat_current()
         if not website:
             return request.not_found()
         self._chat_ensure_guest()
         channel = request.env["discuss.channel"]._support_channel()
-        if not channel:
-            # Only reachable if the guest could not be created at all; the
-            # login page is where an identity comes from, guest door included.
-            return request.redirect("%s?redirect=/chat/soporte" % LOGIN_URL)
-        messages = channel._website_chat_messages()
-        return request.render(
-            "website_pwa_chat.chat_channel",
-            {
-                "channel": channel,
-                "messages": channel._website_chat_message_values(messages),
-                "pending": channel._website_chat_pending(),
-                "is_support": True,
-                **self._chat_visitor_values("/chat/soporte"),
-            },
+        if channel:
+            channel._support_identify(name, email)
+        return request.redirect(
+            "/chat/soporte?frame=1" if frame == "1" else "/chat/soporte"
         )
+
+    @http.route(
+        "/website_pwa_chat/support/open",
+        type="jsonrpc",
+        auth="public",
+        website=True,
+    )
+    @add_guest_to_context
+    def chat_support_open(self):
+        """Open the caller's support conversation, and say which one it is.
+
+        Called by the composer right before the FIRST message, and only then:
+        once the page knows the channel id it posts straight to
+        ``/mail/message/post`` like any other conversation. Idempotent -- a
+        second call answers the same id -- so a retry costs nothing.
+
+        Nothing here is taken from the caller: the conversation is resolved
+        from the session by ``_support_channel``, exactly as the page does.
+        Not ``readonly``: this is the one route on the page that writes.
+        """
+        if not request.env["website"]._chat_current():
+            return {"channel_id": False}
+        self._chat_ensure_guest()
+        channel = request.env["discuss.channel"]._support_channel()
+        return {"channel_id": channel.id or False}
+
+    @http.route(
+        "/website_pwa_chat/support/request",
+        type="jsonrpc",
+        auth="user",
+    )
+    def chat_support_request(self, name=None, email=None):
+        """The "Request support" entry of the backend Discuss sidebar.
+
+        No ``website=True`` and no ``_chat_current()`` gate: this is asked
+        from the backend, where there is no "current website" to be switched
+        off, and the conversation belongs to the account, not to a site.
+        Refused to the agents themselves by the model, not by the button
+        being hidden. ``name`` and ``email`` come from the dialog a walk-in
+        community guest is shown; the model validates them and ignores them
+        for everybody else.
+        """
+        channel = request.env["discuss.channel"]._support_request_from_discuss(
+            name=name, email=email
+        )
+        return {"channel_id": channel.id}
+
+    @http.route(
+        "/website_pwa_chat/support/identify",
+        type="jsonrpc",
+        auth="public",
+        website=True,
+    )
+    @add_guest_to_context
+    def chat_support_identify_inline(self, name=None, email=None):
+        """The identify line, sent in place from the floating window.
+
+        The same thing as ``/chat/soporte/identificarme`` without the
+        redirect: reloading the page to save a name made the whole window
+        blink and jump back to the top. Same trust model -- the conversation
+        comes from the session, the caller contributes a name and an email.
+
+        Anonymous callers only, like the line itself: a logged-in account is
+        named after the account, and a walk-in community guest gives a name
+        in the Discuss dialog (``/website_pwa_chat/support/request``).
+        """
+        if not request.env["website"]._chat_current():
+            return {"identified": False}
+        if not request.env.user._is_public():
+            return {"identified": False}
+        self._chat_ensure_guest()
+        channel = request.env["discuss.channel"]._support_channel()
+        if channel:
+            channel._support_identify(name, email)
+        return {"identified": bool(channel and channel.support_identified)}
+
+    def _chat_identify_values(self, channel):
+        """Whether the "who are you" line is shown at all.
+
+        Only to an ANONYMOUS visitor who has not answered yet. A logged-in
+        account already says who it is; a walk-in community guest gives a
+        name in the Discuss "Request support" dialog, and asking again on the
+        website stacked a second form over the conversation.
+        """
+        return {
+            "show_identify": not channel.support_identified
+            and request.env.user._is_public(),
+        }
 
     @http.route(
         "/chat/<int:channel_id>",
@@ -174,6 +333,13 @@ class WebsiteChat(http.Controller):
                 "messages": channel._website_chat_message_values(messages),
                 "pending": channel._website_chat_pending(),
                 "is_support": False,
+                # Declared even though `is_support` short-circuits before it
+                # is read: a template that depends on evaluation order is a
+                # template that breaks the day somebody reorders the test.
+                "show_identify": False,
+                # Community channels render as full pages only; the floating
+                # window is the support line's door, not theirs.
+                "chat_in_frame": False,
                 **self._chat_visitor_values(self._chat_channel_url(channel)),
             },
         )

@@ -201,6 +201,18 @@ class ResUsers(models.Model):
             users = users.filtered(lambda user: public_group not in user.all_group_ids)
         return users
 
+    def _zone_self_managed_users(self):
+        """The subset of ``self`` that picks its own community channels.
+
+        Hook, empty here. A self-managed user is SEATED like everybody else
+        (on create and when its zone changes) but never UNSEATED by the sync,
+        and the nightly reconciliation skips it: after the first seat, joining
+        and leaving the community channels is the user's own choice, so a
+        channel it left must not come back overnight and a channel it joined
+        must not be taken away. ``discuss_community`` returns its guests.
+        """
+        return self.browse()
+
     def _sync_zone_channels(self):
         """Make channel membership match ``_get_chat_zone`` for ``self``.
 
@@ -281,8 +293,11 @@ class ResUsers(models.Model):
             )
             counters["added"] += len(missing)
 
+        # Self-managed users keep every seat they have: the sync only adds.
+        self_managed_partner_ids = set(users._zone_self_managed_users().partner_id.ids)
         stale = existing.filtered(
             lambda member: member.partner_id.id not in wanted[member.channel_id]
+            and member.partner_id.id not in self_managed_partner_ids
         )
         counters["removed"] = len(stale)
         stale.unlink()
@@ -331,6 +346,9 @@ class ResUsers(models.Model):
         prints zeros, and a non-zero line is a fact worth reading.
         """
         users = self.sudo().search([])
+        # Self-managed users chose their channels after the first seat; the
+        # reconciliation would undo that choice (see the hook).
+        users -= users._zone_self_managed_users()
         totals = {"added": 0, "removed": 0}
         for start in range(0, len(users), batch_size):
             counters = users[start : start + batch_size]._sync_zone_channels()

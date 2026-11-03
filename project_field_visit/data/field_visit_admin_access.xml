@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo noupdate="1">
+    <!-- Runs at install only: a <function> inside a noupdate block is
+         skipped by every later upgrade (odoo/tools/convert.py,
+         _tag_function: "if self.noupdate and self.mode != 'init'").
+         Databases that already had the module get the same step once from
+         migrations/19.0.1.2.0. Idempotent either way, and a no-op once
+         somebody was appointed manager. -->
+    <function model="project.project" name="_field_visit_grant_admins" />
+</odoo>

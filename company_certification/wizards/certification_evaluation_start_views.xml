@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="certification_evaluation_start_view_form" model="ir.ui.view">
+        <field name="name">certification.evaluation.start.form</field>
+        <field name="model">certification.evaluation.start</field>
+        <field name="arch" type="xml">
+            <form string="New Evaluation">
+                <!-- The seal is asked first and on its own, because it is the
+                     only decision being made here. -->
+                <group>
+                    <field name="available_type_ids" invisible="1"/>
+                    <field name="certification_type_id"
+                           options="{'no_create': True, 'no_open': True}"
+                           domain="[('id', 'in', available_type_ids)]"
+                           widget="radio"/>
+                    <field name="company_id"/>
+                </group>
+                <div class="alert alert-warning" role="alert" invisible="not blocker">
+                    <field name="blocker" nolabel="1" readonly="1"/>
+                </div>
+                <footer>
+                    <button name="action_start" type="object" string="Start"
+                            class="btn-primary"
+                            invisible="not certification_type_id or blocker"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_certification_evaluation_start" model="ir.actions.act_window">
+        <field name="name">New Evaluation</field>
+        <field name="res_model">certification.evaluation.start</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Sequence 15: immediately under Evaluaciones, which is the list this
+         dialog adds a row to. Deliberately without a group of its own, for
+         the same reason Evaluaciones has none: the seal modules open the
+         Certificaciones menu for their own holders, and a group here would
+         close the door those modules just opened. Who may sit which
+         evaluation is decided by `certification.type.group_user_id`, both in
+         the picker and again in the model method behind it. -->
+    <menuitem id="menu_certification_evaluation_start"
+              name="New Evaluation"
+              parent="menu_certification_root"
+              action="action_certification_evaluation_start"
+              sequence="15"/>
+
+</odoo>

@@ -1,0 +1,36 @@
+// Copyright 2026 Canarias Conectada
+// License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+// Deliberately restrained: the microsites carry their own theme per zone, so
+// this only gives the block rhythm and lets the icon inherit whatever colour
+// the site already uses.
+.o_cf_facilities {
+    &__title {
+        font-weight: 600;
+    }
+
+    &__group {
+        font-weight: 600;
+    }
+
+    &__group-icon {
+        color: var(--o-cc-text-color, currentColor);
+        opacity: .75;
+        width: 1.25em;
+        text-align: center;
+    }
+}
+
+.o_cf_facility {
+    &__icon {
+        color: var(--o-cc-text-color, currentColor);
+        opacity: .55;
+        width: 1.25em;
+        text-align: center;
+        flex: 0 0 auto;
+    }
+
+    &__name {
+        line-height: 1.35;
+    }
+}

@@ -1,9 +1,11 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+import re
+
 from dateutil.relativedelta import relativedelta
 
 from odoo import fields
-from odoo.tests import tagged
+from odoo.tests import HttpCase, tagged
 from odoo.tests.common import TransactionCase
 
 from odoo.addons.website_directory_company_certification.controllers.main import (
@@ -65,3 +67,93 @@ class TestDirectoryCertificationFilter(TransactionCase):
             self.cert_type,
         )
         self.assertFalse(self.plain_company._get_valid_certifications())
+
+    def test_toggling_the_certification_keeps_the_category_filter(self):
+        """Clicking "Sostenibilidad" must not throw away the category.
+
+        Reported 2026-08-21: the chip's address used to be built in the
+        template as ``{{ base_url }}?certification=...``, which drops every
+        other active filter. The address is now built on the server, the
+        same way ``website_directory_company_facilities`` already does it.
+        """
+        controller = WebsiteDirectoryCertification()
+        url = controller._certification_url(
+            "/comercio", {"search": "pan", "category": "12"}, "silver"
+        )
+        self.assertIn("search=pan", url)
+        self.assertIn("category=12", url)
+        self.assertIn("certification=silver", url)
+
+    def test_clicking_the_active_chip_clears_only_the_certification(self):
+        controller = WebsiteDirectoryCertification()
+        url = controller._certification_url(
+            "/comercio", {"category": "12", "certification": "silver"}, ""
+        )
+        self.assertIn("category=12", url)
+        self.assertNotIn("certification", url)
+
+    def test_two_seals_narrow_rather_than_widen(self):
+        """"Silver y Sostenibilidad", not "o": one leaf per seal (2026-09-15)."""
+        controller = WebsiteDirectoryCertification()
+        domain = controller._get_certification_filter_domain(["silver", "sustainability"])
+        self.assertEqual(len(domain), 2)
+        self.assertEqual({leaf[2][0][2] for leaf in domain}, {"silver", "sustainability"})
+        # A company holding only Silver does not match both.
+        entries = self.env["website.directory.entry"].sudo().search(domain)
+        self.assertNotIn(self.certified_company, entries.mapped("company_id"))
+
+    def test_the_second_tick_keeps_the_first(self):
+        controller = WebsiteDirectoryCertification()
+        url = controller._certification_url(
+            "/comercio", {"certification": "silver"}, ["silver", "sustainability"]
+        )
+        self.assertIn("certification=silver%2Csustainability", url)
+
+
+@tagged("post_install", "-at_install")
+class TestDirectoryCertificationRendering(HttpCase):
+    """The sidebar card as the visitor meets it."""
+
+    def test_filter_card_carries_the_chip_styling_hook(self):
+        """The card class is what the stylesheet hangs the legible chip
+        treatment on; without it the chips fall back to the theme's amber
+        outline with near-white text."""
+        response = self.url_open("/comercio")
+        self.assertEqual(response.status_code, 200)
+        # The seed certification types ship with company_certification, so
+        # the card renders on a bare database.
+        self.assertIn("o_wdcc_filter", response.text)
+
+    def test_the_selected_seal_wears_the_shared_remove_chip(self):
+        """This card's cross became the whole directory's cross.
+
+        Reported 2026-09-05: every section had its own deselect affordance
+        and only this one was ever noticed, so the control moved into
+        ``website_directory.directory_filter_chip`` and the card now calls
+        it instead of drawing a bare ``fa-times``.
+        """
+        response = self.url_open("/comercio?certification=silver")
+        self.assertEqual(response.status_code, 200)
+        chips = re.findall(
+            r'<a[^>]*class="wd-filter-selected[^"]*"[^>]*>.*?</a>',
+            response.text,
+            re.DOTALL,
+        )
+        # The sidebar card and the top active-filters bar.
+        self.assertEqual(len(chips), 2, chips)
+        for chip in chips:
+            self.assertIn("wd-filter-link", chip)
+            self.assertIn('class="wd-filter-remove"', chip)
+        # The unticked seals offer no cross of their own.
+        self.assertNotIn("fa-times ms-2", response.text)
+
+    def test_both_seals_ticked_wear_two_chips_each(self):
+        response = self.url_open("/comercio?certification=silver,sustainability")
+        self.assertEqual(response.status_code, 200)
+        chips = re.findall(
+            r'<a[^>]*class="wd-filter-selected[^"]*"[^>]*>.*?</a>',
+            response.text,
+            re.DOTALL,
+        )
+        # Two seals x (sidebar + summary bar).
+        self.assertEqual(len(chips), 4, chips)

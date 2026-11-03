@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_website_category_tile_public,website.category.tile public,model_website_category_tile,base.group_public,1,0,0,0
+access_website_category_tile_portal,website.category.tile portal,model_website_category_tile,base.group_portal,1,0,0,0
+access_website_category_tile_user,website.category.tile user,model_website_category_tile,base.group_user,1,0,0,0
+access_website_category_tile_merchant,website.category.tile merchant,model_website_category_tile,merchant_group.group_merchant,1,1,1,1
+access_website_category_tile_designer,website.category.tile designer,model_website_category_tile,website.group_website_designer,1,1,1,1
+access_website_category_tile_system,website.category.tile system,model_website_category_tile,base.group_system,1,1,1,1
+access_product_public_category_merchant,product.public.category merchant,website_sale.model_product_public_category,merchant_group.group_merchant,1,1,1,1

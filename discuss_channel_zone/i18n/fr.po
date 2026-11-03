@@ -1,0 +1,145 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* discuss_channel_zone
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#. module: discuss_channel_zone
+#. odoo-python
+#: code:addons/discuss_channel_zone/models/discuss_channel.py:0
+#: model:ir.model.fields.selection,name:discuss_channel_zone.selection__res_users__chat_zone__canarias
+msgid "Canarias Conectada"
+msgstr "Canarias Conectada"
+
+#. module: discuss_channel_zone
+#: model:ir.model.fields,field_description:discuss_channel_zone.field_res_users__chat_zone
+msgid "Chat Zone"
+msgstr "Zone du chat"
+
+#. module: discuss_channel_zone
+#: model:res.groups,name:discuss_channel_zone.group_zone_channel_member
+msgid "Community Chat: Registered Member"
+msgstr "Chat de la communauté : membre inscrit"
+
+#. module: discuss_channel_zone
+#. odoo-python
+#: code:addons/discuss_channel_zone/models/discuss_channel.py:0
+msgid ""
+"Community channel of the whole platform. Open to everyone, visitors "
+"included."
+msgstr ""
+"Canal communautaire de toute la plateforme. Ouvert à tous, visiteurs "
+"compris."
+
+#. module: discuss_channel_zone
+#: model:ir.model,name:discuss_channel_zone.model_res_company
+msgid "Companies"
+msgstr "Sociétés"
+
+#. module: discuss_channel_zone
+#: model:ir.actions.server,name:discuss_channel_zone.cron_sync_zone_channels_ir_actions_server
+msgid "Discuss Channel Zone: reconcile channel membership"
+msgstr "Zone des canaux de Discussion : rapprocher l'appartenance aux canaux"
+
+#. module: discuss_channel_zone
+#: model:ir.model,name:discuss_channel_zone.model_discuss_channel
+msgid "Discussion Channel"
+msgstr "Canal de discussion"
+
+#. module: discuss_channel_zone
+#: model:ir.model.fields,field_description:discuss_channel_zone.field_discuss_channel__display_name
+#: model:ir.model.fields,field_description:discuss_channel_zone.field_res_company__display_name
+#: model:ir.model.fields,field_description:discuss_channel_zone.field_res_users__display_name
+msgid "Display Name"
+msgstr "Nom d'affichage"
+
+#. module: discuss_channel_zone
+#. odoo-python
+#: code:addons/discuss_channel_zone/models/discuss_channel.py:0
+#: model:ir.model.fields.selection,name:discuss_channel_zone.selection__res_users__chat_zone__guanarteme
+msgid "Guanarteme"
+msgstr "Guanarteme"
+
+#. module: discuss_channel_zone
+#: model:res.groups,comment:discuss_channel_zone.group_zone_channel_member
+msgid ""
+"Holders may read and post in the neighbourhood\n"
+"            channels. Granted automatically to every portal and internal user;\n"
+"            never granted to anonymous visitors."
+msgstr ""
+"Les membres peuvent lire et publier dans les canaux de quartier. Accordé "
+"automatiquement à tout utilisateur portail et interne ; jamais aux visiteurs"
+" anonymes."
+
+#. module: discuss_channel_zone
+#: model:ir.model.fields,field_description:discuss_channel_zone.field_discuss_channel__id
+#: model:ir.model.fields,field_description:discuss_channel_zone.field_res_company__id
+#: model:ir.model.fields,field_description:discuss_channel_zone.field_res_users__id
+msgid "ID"
+msgstr "ID"
+
+#. module: discuss_channel_zone
+#. odoo-python
+#: code:addons/discuss_channel_zone/models/discuss_channel.py:0
+#: model:ir.model.fields.selection,name:discuss_channel_zone.selection__res_users__chat_zone__lomolosfrailes
+msgid "Lomo los Frailes"
+msgstr "Lomo los Frailes"
+
+#. module: discuss_channel_zone
+#. odoo-python
+#: code:addons/discuss_channel_zone/models/discuss_channel.py:0
+msgid ""
+"Neighbourhood channel of Guanarteme. An account is required to take part."
+msgstr ""
+"Canal du quartier de Guanarteme. Un compte est nécessaire pour participer."
+
+#. module: discuss_channel_zone
+#. odoo-python
+#: code:addons/discuss_channel_zone/models/discuss_channel.py:0
+msgid ""
+"Neighbourhood channel of Lomo los Frailes. An account is required to take "
+"part."
+msgstr ""
+"Canal du quartier de Lomo los Frailes. Un compte est nécessaire pour "
+"participer."
+
+#. module: discuss_channel_zone
+#. odoo-python
+#: code:addons/discuss_channel_zone/models/discuss_channel.py:0
+msgid ""
+"Neighbourhood channel of Tamaraceite. An account is required to take part."
+msgstr ""
+"Canal du quartier de Tamaraceite. Un compte est nécessaire pour participer."
+
+#. module: discuss_channel_zone
+#: model:ir.model.fields,help:discuss_channel_zone.field_res_users__chat_zone
+msgid ""
+"Neighbourhood channel this resident takes part in. Only used when the "
+"account is not linked to a business: a merchant's zone always comes from "
+"their company."
+msgstr ""
+"Canal de quartier auquel participe ce résident. Utilisé uniquement si le "
+"compte n'est lié à aucun commerce : la zone d'un commerçant vient toujours "
+"de sa société."
+
+#. module: discuss_channel_zone
+#. odoo-python
+#: code:addons/discuss_channel_zone/models/discuss_channel.py:0
+#: model:ir.model.fields.selection,name:discuss_channel_zone.selection__res_users__chat_zone__tamaraceite
+msgid "Tamaraceite"
+msgstr "Tamaraceite"
+
+#. module: discuss_channel_zone
+#: model:ir.model,name:discuss_channel_zone.model_res_users
+msgid "User"
+msgstr "Utilisateur"

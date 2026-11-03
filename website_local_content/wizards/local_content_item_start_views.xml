@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="local_content_item_start_view_form" model="ir.ui.view">
+        <field name="name">website.local.content.item.start.form</field>
+        <field name="model">website.local.content.item.start</field>
+        <field name="arch" type="xml">
+            <form string="New Item">
+                <!-- Radio rather than a dropdown: there are two content types
+                     and the whole point of this screen is that both are
+                     visible without a click. -->
+                <group>
+                    <field name="type_id" widget="radio"
+                           options="{'no_create': True, 'no_open': True}"/>
+                    <field name="name" placeholder="Optional"/>
+                </group>
+                <footer>
+                    <button name="action_create" type="object" string="Continue"
+                            class="btn-primary" invisible="not type_id"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="local_content_item_start_action" model="ir.actions.act_window">
+        <field name="name">New Item</field>
+        <field name="res_model">website.local.content.item.start</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- The picker replaces "New" on the Items list rather than sitting next
+         to it: two create buttons a click apart, one of which asks what you
+         are making and one of which does not, is a worse screen than either
+         on its own. `create: False` on the action below is what removes the
+         other one. -->
+    <record id="local_content_item_view_list_picker" model="ir.ui.view">
+        <field name="name">website.local.content.item.view.list.picker</field>
+        <field name="model">website.local.content.item</field>
+        <field name="inherit_id" ref="website_local_content.local_content_item_view_list"/>
+        <field name="arch" type="xml">
+            <!-- `display="always"` puts the button in the control panel, beside
+                 where "New" would be. Without it the list renderer files a
+                 header button under the bar that only appears once rows are
+                 ticked, so the menu entry was the only way in. -->
+            <xpath expr="//list" position="inside">
+                <header>
+                    <button name="%(website_local_content.local_content_item_start_action)d"
+                            type="action"
+                            string="New Item"
+                            class="btn-primary"
+                            display="always"/>
+                </header>
+            </xpath>
+        </field>
+    </record>
+
+    <menuitem id="menu_local_content_item_start"
+              name="New Item"
+              parent="menu_local_content_root"
+              action="local_content_item_start_action"
+              sequence="15"/>
+
+</odoo>

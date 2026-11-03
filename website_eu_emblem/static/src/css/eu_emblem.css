@@ -1,0 +1,53 @@
+/* Copyright 2026 Canarias Conectada
+ * License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+ *
+ * The emblem sits beside the site logo, so it must read as an institutional
+ * mark and never compete with the brand: small, quiet, and out of the way on
+ * narrow screens where the navbar is already tight. */
+
+.o_cc_eu_emblem {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: 0.75rem;
+    text-decoration: none;
+    color: inherit;
+    /* Never the tallest thing in the bar: the navbar sets its own height from
+     * the site logo, and an emblem that exceeded it would change every
+     * header on the platform. Same value the theme gives the logo, so the
+     * cap follows it rather than pinning the emblem to a number of its own. */
+    max-height: var(--logo-height, 2.5rem);
+}
+
+.o_cc_eu_emblem_flag {
+    /* Matching the site logo's raw CSS height (as done until 2026-08-21) does
+     * NOT read as the same size: the logo is a square mark, the flag is a
+     * 3:2 rectangle, so equal height made the flag ~48% wider and visually
+     * dominant -- reported 2026-08-21 ("se ve muy grande el logo de la ue").
+     * Matching the logo's WIDTH instead (its height, since it is square) is
+     * what actually reads as "the same size". At the flag's fixed 3:2 aspect
+     * ratio, width = height * 1.5, so height must be logo-height / 1.5 for
+     * the two widths to come out equal. Still derived from --logo-height
+     * (not a flat rem value) so the emblem keeps shrinking with the logo
+     * when the header condenses on scroll, per the 2026-08-17 request this
+     * preserves. */
+    height: calc(var(--logo-height, 2.5rem) / 1.5);
+    width: auto;
+    display: block;
+    /* A hairline keeps the flag's own blue from bleeding into a dark navbar. */
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 2px;
+}
+
+.o_cc_eu_emblem_text {
+    font-size: 0.75rem;
+    line-height: 1.15;
+    max-width: 16rem;
+    opacity: 0.85;
+}
+
+.o_cc_eu_emblem:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+    border-radius: 2px;
+}

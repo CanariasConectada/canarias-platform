@@ -68,10 +68,38 @@ class DiscussChannel(models.Model):
         Order matters only for readability; the two passes touch disjoint sets
         of devices, since a device has exactly one persona.
         """
-        super()._notify_thread_by_web_push(
-            message, recipients_data, msg_vals=msg_vals, **kwargs
-        )
+        for lang, lang_recipients in self._web_push_group_by_lang(
+            recipients_data
+        ).items():
+            super(
+                DiscussChannel, self.with_context(lang=lang)
+            )._notify_thread_by_web_push(
+                message, lang_recipients, msg_vals=msg_vals, **kwargs
+            )
         self._web_push_notify_guest_members(message, msg_vals=msg_vals, **kwargs)
+
+    def _web_push_group_by_lang(self, recipients_data):
+        """Split `recipients_data` by the language each recipient reads.
+
+        Core builds ONE payload, in the poster's environment, and sends it to
+        every device (mail/models/mail_thread.py:3895-3918). The translatable
+        bits of that payload -- "Voice Message", "%(file1)s and %(file2)s",
+        this module's "%(author)s in %(channel)s" -- therefore reached a
+        Spanish reader in whatever language the poster (often the public user
+        of an English-default website) happened to have. Running core's step
+        once per language, in that language, is what renders each payload for
+        its readers without copying core's builder.
+
+        A recipient without a language gets the environment's, which is what
+        core gave everybody before.
+
+        :returns: ``{lang: [recipient, ...]}``, in first-seen order
+        """
+        groups = {}
+        for recipient in recipients_data:
+            lang = recipient.get("lang") or self.env.lang
+            groups.setdefault(lang, []).append(recipient)
+        return groups
 
     # ------------------------------------------------------------------
     # Guest pass
@@ -98,6 +126,23 @@ class DiscussChannel(models.Model):
         )
         if not devices:
             return
+        # One payload per language the guests read, rendered in it: the
+        # connector of the title and core's attachment wording are
+        # translatable, and the poster's language is not the reader's.
+        by_lang = {}
+        for device in devices:
+            lang = device.guest_id.lang or self.env.lang
+            by_lang.setdefault(lang, devices.browse())
+            by_lang[lang] |= device
+        for lang, lang_devices in by_lang.items():
+            self.with_context(lang=lang)._web_push_send_guest_payload(
+                message, lang_devices, private_key, public_key, msg_vals, kwargs
+            )
+
+    def _web_push_send_guest_payload(
+        self, message, devices, private_key, public_key, msg_vals, kwargs
+    ):
+        """Build the guest payload in the environment's language and send it."""
         payload = self._web_push_truncate_payload(
             self._web_push_guest_prepare_payload(
                 message,
@@ -221,9 +266,8 @@ class DiscussChannel(models.Model):
         channel_name = force_record_name or message.record_name or self.sudo().name
         if not author_name:
             return channel_name or ""
-        # The connector is translatable, but a single payload is sent to every
-        # guest device, so it is rendered once in the environment's language --
-        # the poster's. See ROADMAP.
+        # The connector is translatable; the caller renders one payload per
+        # reader language (`_web_push_notify_guest_members`).
         return self.env._(
             "%(author)s in %(channel)s", author=author_name, channel=channel_name
         )

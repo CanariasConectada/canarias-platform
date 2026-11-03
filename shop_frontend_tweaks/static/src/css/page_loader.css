@@ -1,0 +1,30 @@
+/* Top progress bar for full page navigations (see page_loader.js). */
+
+#cc_page_loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 0;
+    z-index: 10000;
+    pointer-events: none;
+    opacity: 0;
+    background: var(--o-color-1, #714b67);
+    transition:
+        width 1.2s cubic-bezier(0.2, 0.6, 0.3, 1),
+        opacity 0.3s ease;
+}
+
+#cc_page_loader.cc-loading {
+    opacity: 1;
+    box-shadow: 0 0 8px var(--o-color-1, #714b67);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #cc_page_loader {
+        transition: opacity 0.3s ease;
+        width: 100% !important;
+        background: color-mix(in srgb, var(--o-color-1, #714b67) 55%, transparent);
+        box-shadow: none;
+    }
+}

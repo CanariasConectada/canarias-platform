@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!--
+        The group that MARKS an account as a community member.
+
+        Deliberately standalone: it is neither implied by `base.group_user`
+        (that would turn every merchant and every member of the platform staff
+        into a menu-stripped community member) nor does it imply
+        `base.group_user` (implication is one-way sugar and granting the
+        internal group from here would hide the real decision: see
+        `_community_group_ids` on res.users, the single place that says what a
+        community member holds).
+
+        What it DOES imply is `discuss_channel_zone.group_zone_channel_member`.
+        Strictly redundant today (that group is already implied by
+        `base.group_user`, and a community member is internal) but the zone
+        channels being readable by community members is a RULE of this module,
+        and the line that enforces it must not depend on another module's
+        implication graph staying the way it is.
+    -->
+    <record id="group_community_member" model="res.groups">
+        <field name="name">Community Member</field>
+        <field name="comment">Residents and walk-in guests of the community
+            chat. Holders are internal users whose backend is stripped down to
+            Discuss; the group is set automatically by website signup and by
+            the guest entry button, never by hand.</field>
+        <field
+            name="implied_ids"
+            eval="[Command.link(ref('discuss_channel_zone.group_zone_channel_member'))]"
+        />
+    </record>
+
+</odoo>

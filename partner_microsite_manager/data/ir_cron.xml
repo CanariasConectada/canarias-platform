@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo noupdate="1">
+
+    <!-- A short Google Maps link whose resolution failed on save stays
+         stored as it was (the page shows the address map meanwhile). This
+         retries a small batch a day so the map heals without anyone
+         saving the form again. -->
+    <record id="ir_cron_retry_map_short_links" model="ir.cron">
+        <field name="name">Microsites: retry unresolved Google Maps short links</field>
+        <field name="model_id" ref="base.model_res_company"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_retry_map_short_links()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="active" eval="True"/>
+    </record>
+
+</odoo>

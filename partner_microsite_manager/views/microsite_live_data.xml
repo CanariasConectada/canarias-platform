@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- Live values of the legacy (imported) microsite homepages.
+
+         Each template renders ONE value of the shop, read from the company
+         of the current website at render time, and nothing else: the label,
+         the icon and the layout stay in the page's own arch, where their
+         seven translations live. ``res.company._relink_legacy_homepage_live_data``
+         puts a t-call of these where the importer had typed the value.
+
+         The rendered element carries ``data-cc-live``: when the website
+         builder saves the page it writes this rendered html into the arch,
+         and the marker is how the relinker finds the value again and puts
+         the t-call back. ``o_not_editable`` keeps merchants from typing a
+         value into it in the builder; the value is edited in "Page
+         content". Nothing is rendered when the shop has no such value. -->
+
+    <template id="microsite_live_address" name="Microsite Live Address">
+        <t t-set="company" t-value="website.company_id.sudo()"/>
+        <t t-set="live_address" t-value="company._get_microsite_live_address()"/>
+        <span
+            t-if="live_address"
+            data-cc-live="address"
+            class="o_not_editable"
+            contenteditable="false"
+            t-out="live_address"
+        />
+    </template>
+
+    <!-- Same rule as the dynamic homepage: the public number wins over the
+         partner's own. -->
+    <template id="microsite_live_phone" name="Microsite Live Phone">
+        <t t-set="company" t-value="website.company_id.sudo()"/>
+        <t t-set="live_phone" t-value="company.microsite_phone or company.partner_id.phone"/>
+        <a
+            t-if="live_phone"
+            data-cc-live="phone"
+            class="o_not_editable"
+            contenteditable="false"
+            t-att-href="company._get_microsite_tel_href(live_phone)"
+            t-out="live_phone"
+        />
+    </template>
+
+    <template id="microsite_live_phone2" name="Microsite Live Second Phone">
+        <t t-set="company" t-value="website.company_id.sudo()"/>
+        <t t-set="live_phone" t-value="company.microsite_phone2"/>
+        <a
+            t-if="live_phone"
+            data-cc-live="phone2"
+            class="o_not_editable"
+            contenteditable="false"
+            t-att-href="company._get_microsite_tel_href(live_phone)"
+            t-out="live_phone"
+        />
+    </template>
+
+    <template id="microsite_live_email" name="Microsite Live Email">
+        <t t-set="company" t-value="website.company_id.sudo()"/>
+        <t t-set="live_email" t-value="company.partner_id.email"/>
+        <a
+            t-if="live_email"
+            data-cc-live="email"
+            class="o_not_editable"
+            contenteditable="false"
+            t-attf-href="mailto:#{live_email}"
+            t-out="live_email"
+        />
+    </template>
+
+    <template id="microsite_live_website" name="Microsite Live Website">
+        <t t-set="company" t-value="website.company_id.sudo()"/>
+        <t t-set="live_url" t-value="company._get_microsite_website_url()"/>
+        <a
+            t-if="live_url"
+            data-cc-live="website"
+            class="o_not_editable"
+            contenteditable="false"
+            t-att-href="live_url"
+            target="_blank"
+            rel="noopener"
+            t-out="company._get_microsite_website_host() or company.partner_id.website"
+        />
+    </template>
+
+    <template id="microsite_live_parking" name="Microsite Live Parking">
+        <t t-set="company" t-value="website.company_id.sudo()"/>
+        <span
+            t-if="company.microsite_parking_info"
+            data-cc-live="parking"
+            class="o_not_editable"
+            contenteditable="false"
+            t-out="company.microsite_parking_info"
+        />
+    </template>
+
+    <template id="microsite_live_delivery" name="Microsite Live Delivery">
+        <t t-set="company" t-value="website.company_id.sudo()"/>
+        <span
+            t-if="company.microsite_delivery_info"
+            data-cc-live="delivery"
+            class="o_not_editable"
+            contenteditable="false"
+            t-out="company.microsite_delivery_info"
+        />
+    </template>
+
+    <!-- Heading of an hours card the relinker had to ADD to a page that had
+         none. Rendered from here rather than written into the page: a term
+         new to the page's arch would show its English source in the other
+         six languages until somebody translated it per page. -->
+    <template id="microsite_live_hours_label" name="Microsite Live Hours Label">
+        <span data-cc-live="hours_label">Opening Hours</span>
+    </template>
+
+</odoo>

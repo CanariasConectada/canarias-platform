@@ -1,7 +1,7 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import fields, models
+from odoo import api, fields, models
 
 from odoo.addons.website_directory.models.website_directory_entry import (
     ZONE_ALIASES,
@@ -11,6 +11,20 @@ from odoo.addons.website_directory.models.website_directory_entry import (
 
 class ResCompany(models.Model):
     _inherit = "res.company"
+    # ``name`` alone is what every company dropdown and the Settings list
+    # answered to; 125 of 282 shops carry a trade name that differs from the
+    # legal one (a person's name, or the "S.L."), which is the name nobody
+    # types first.
+    _rec_names_search = ["name", "comercial"]
+
+    # Not stored on purpose: the trade name belongs to the partner
+    # (``l10n_es_partner``) and the directory card already reads it there.
+    # A stored copy would be a second value to keep in sync.
+    comercial = fields.Char(
+        related="partner_id.comercial",
+        string="Trade name",
+        readonly=False,
+    )
 
     # Same selection as the directory entry, on purpose: the entry field is
     # what the public filter reads, and two lists that can drift apart would
@@ -24,6 +38,21 @@ class ResCompany(models.Model):
         help="Neighbourhood this business belongs to. Drives the zone filter "
         "of the public directory and the catalogue of the zone shops.",
     )
+
+    @api.depends("name", "comercial")
+    def _compute_display_name(self):
+        """Trade name first, legal name in brackets: "24 HORAS SAVAGE (MARIO
+        ALVAREZ BORGES)". The trade name is the one the operators recognise;
+        the legal name stays because it is what tells two shops of the same
+        brand apart. Deliberately not ``l10n_es_partner``'s partner pattern
+        ("(TRADE) Legal", only under ``formatted_display_name``): a company
+        list is scanned by shop, and a shop is known by its sign.
+        """
+        super()._compute_display_name()
+        for company in self:
+            trade_name = (company.comercial or "").strip()
+            if trade_name and trade_name.casefold() != (company.name or "").casefold():
+                company.display_name = f"{trade_name} ({company.name})"
 
     def _get_directory_zone(self):
         """Zone written onto this company's directory entry.

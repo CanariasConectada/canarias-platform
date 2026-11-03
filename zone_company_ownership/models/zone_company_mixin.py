@@ -18,6 +18,18 @@ class ZoneCompanyOwnershipMixin(models.AbstractModel):
     _name = "zone.company.ownership.mixin"
     _description = "Ownership follows the owner's commercial zone"
 
+    def _compute_zone_company_ids(self):
+        """Shared compute behind each model's ``zone_company_ids`` field.
+
+        The field itself is declared on every concrete model rather than
+        here, because the default relation table name of a second
+        ``res.company`` many2many would collide with the one ``company_ids``
+        already occupies.
+        """
+        zones = self.env["res.company"]._zone_companies()
+        for record in self:
+            record.zone_company_ids = record.company_ids & zones
+
     @api.model
     def _sync_zone_companies_for_owners(self, companies):
         """Fix every record owned by ``companies``."""

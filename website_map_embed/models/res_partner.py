@@ -1,0 +1,64 @@
+# Copyright 2026 Canarias Conectada
+# License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+import html
+import re
+from urllib.parse import quote_plus
+
+from odoo import models
+
+# Google Maps "embed" output needs no API key and is the same endpoint the
+# merchant microsites have used since day one; every public page that shows
+# a map goes through this helper so they all look and behave the same.
+MAP_EMBED_URL = "https://maps.google.com/maps?q={query}&z={zoom}&ie=UTF8&output=embed"
+
+
+def clean_address_part(value):
+    """One address field as plain text: HTML entities decoded (the 2026
+    importer left literal ``&nbsp;`` in some streets), non-breaking spaces
+    as spaces, whitespace collapsed and trimmed."""
+    value = html.unescape(value or "").replace("\xa0", " ")
+    return re.sub(r"\s+", " ", value).strip()
+
+
+def street_without_zip(street, zip_code):
+    """``street`` without a trailing copy of ``zip_code`` (``Calle X 23
+    35010`` with zip 35010 -> ``Calle X 23``): the importer appended the
+    zip to the street, and the address would carry it twice. Only a real
+    postal code (4 or 5 digits) is stripped: with a zip of ``10``, ``Calle
+    Mayor 10`` keeps its number."""
+    if re.fullmatch(r"\d{4,5}", zip_code or "") and street.endswith(" " + zip_code):
+        return street[: -len(zip_code)].rstrip(" ,")
+    return street
+
+
+class ResPartner(models.Model):
+    _inherit = "res.partner"
+
+    def _canarias_map_embed_address(self):
+        """Address text used as the map query, or ``""`` when empty.
+
+        Field order and selection (street, city, zip; no street2) are the
+        ones the microsites always used. An already-clean address gives the
+        same URL as before this helper cleaned anything; each field is
+        cleaned (``clean_address_part``) and a zip the street repeats is
+        dropped (``street_without_zip``): a literal ``&nbsp;35010`` in the
+        street used to reach Google as ``%26nbsp%3B35010`` and give a
+        city-wide map.
+        """
+        self.ensure_one()
+        zip_code = clean_address_part(self.zip)
+        street = street_without_zip(clean_address_part(self.street), zip_code)
+        city = clean_address_part(self.city)
+        return " ".join(part for part in (street, city, zip_code) if part)
+
+    def _canarias_map_embed_url(self, zoom=13):
+        """Embeddable Google Maps URL for this partner's address.
+
+        Returns ``False`` when there is no address text at all so QWeb
+        callers can simply ``t-if`` on the result.
+        """
+        self.ensure_one()
+        address = self._canarias_map_embed_address()
+        if not address:
+            return False
+        return MAP_EMBED_URL.format(query=quote_plus(address), zoom=int(zoom))

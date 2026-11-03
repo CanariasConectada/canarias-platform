@@ -42,3 +42,11 @@ Known limits of version one, written down so nobody has to rediscover them.
   administrator cannot rename or reorder it from the editor. Turning it into a
   real menu record is a fair future ask, and would need a hook that creates one
   row per website that has the flag.
+
+- **The floating window's lazy iframe has no browser-level test.** The server
+  side of the invariant is asserted (the markup ships `data-src` and no
+  `src`), but the click-time promotion to `src` lives in
+  `support_window.js` and only a tour test could exercise it. Until one
+  exists, any refactor of that file must keep the promotion inside the click
+  handler — moving it to `setup()`/`start()` would open one empty support
+  conversation per page view, platform-wide, and no test would say so.

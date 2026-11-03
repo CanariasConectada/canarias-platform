@@ -1,0 +1,88 @@
+// Copyright 2026 Canarias Conectada
+// License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+// The hero of the 204 imported homepages (`website.homepage_*`, `home-*`).
+//
+// Measured on production on 2026-11-03 (224 `/` pages): 200 heroes are
+// `section.s_cover[data-name="Hero"]` and 4 are
+// `section.s_adventure[data-name="Portada"]`; none holds an `<img>`, all
+// paint the picture as a background. Their geometry is typed in the arch:
+// `min-height: 60vh`, `background-attachment: fixed` and the `pt96 pb96`
+// utilities. The dynamic hero (`.o_pmm_hero`, microsite_hero.scss) is NOT
+// in this set and keeps its own rules; the main site and the zone sites
+// have no section named "Hero"/"Portada".
+//
+// What goes wrong (client report, 2026-11-03: ganaderialacancela, nunchi,
+// peluqueriabilly, suval): `background-attachment: fixed` sizes the picture
+// to the VIEWPORT, and the section is only a window onto it. On a phone
+// (390x844) a landscape photo is scaled to 844px tall and 390px of its width
+// survive; the shop's picture becomes a smear. On a desktop the 60vh box
+// floor makes the hero the whole first screen on short laptops.
+//
+// `!important` is needed here and nowhere else: the inline `style` and
+// Odoo's `.pt96/.pb96` (`!important` themselves) would win otherwise. The
+// selectors are the hero sections only -- the "Separador" and "SEC1" strips
+// are `s_kickoff` and keep their look.
+
+$o-pmm-legacy-hero: 'section.s_cover[data-name="Hero"]:not(.o_pmm_hero), section.s_adventure[data-name="Portada"]';
+$o-pmm-legacy-hero-desktop-ratio: 42.86vw; // 9 / 21 of the width
+$o-pmm-legacy-hero-desktop-padding: 48px;
+$o-pmm-legacy-hero-mobile-ratio: 56.25vw; // 9 / 16 of the width
+
+// `!important` only where the arch fights back: the attachment, the height
+// and the paddings. Size, position and repeat are left to the inline style
+// (already cover / center) so a builder edit of the picture keeps working.
+#{$o-pmm-legacy-hero} {
+    // The picture fills the BOX, not the viewport.
+    background-attachment: scroll !important;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    // The dynamic hero's 60vh, or a 21:9 strip when that is shorter (a
+    // landscape phone at 844x390 keeps today's 234px). A floor, not a cap:
+    // the content can always grow past it. Not `aspect-ratio` +
+    // `max-height`: a max-height transfers through the ratio into a
+    // max-WIDTH and the section shrinks to 1075px on a 1366px screen
+    // (measured).
+    // Written as a string: libsass takes `min()` for its own function and
+    // refuses to compare vh with vw; the browser's `min()` has no such issue.
+    min-height: #{"min(#{$o-pmm-hero-desktop-height}, #{$o-pmm-legacy-hero-desktop-ratio})"} !important;
+    padding-top: $o-pmm-legacy-hero-desktop-padding !important;
+    padding-bottom: $o-pmm-legacy-hero-desktop-padding !important;
+
+    // No imported hero carries one today; if a merchant drops a picture
+    // into the section it fills the box like the background does.
+    > img,
+    .container > img {
+        width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+    }
+}
+
+@media (max-width: $o-pmm-hero-mobile-breakpoint) {
+    #{$o-pmm-legacy-hero} {
+        // The picture's own 16:9 as a floor that grows with the content: a
+        // two-line title, a paragraph and a button never lose the button.
+        min-height: $o-pmm-legacy-hero-mobile-ratio !important;
+        aspect-ratio: auto;
+        padding-top: $o-pmm-hero-mobile-padding !important;
+        padding-bottom: $o-pmm-hero-mobile-padding !important;
+
+        @include o-pmm-hero-mobile-text;
+
+        // The imported H1 is `display-1` with the size on an inner span.
+        h1 .display-4-fs {
+            font-size: $o-pmm-hero-mobile-title-size;
+        }
+    }
+}
+
+// "About" section of 3 imported homepages (diazlejaservicios, segundamano3b,
+// thecaptain13): the single column is `col-lg-8 offset-lg-2` inside a
+// `row.justify-content-center`. The offset is a left margin, so the row
+// centres the column PLUS its margin and the text lands right of centre.
+// The row already centres; the offset has nothing to add.
+section[data-name="Acerca"] .row.justify-content-center > .offset-lg-2 {
+    margin-left: 0;
+}

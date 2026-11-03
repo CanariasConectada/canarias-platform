@@ -2,12 +2,15 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 """The icon list shown under a seal on a certified company's microsite.
 
-Two sources feed it, and which one wins is the whole point: what the company
-itself scored well on when there is an evaluation, and the vertical's curated
-highlights when there is not. Seals imported from the previous platform have
-no evaluation at all, so without the fallback their microsites show a seal
-with nothing explaining it.
+One catalogue per certification type (``certification.highlight``). An item
+without a trigger is always shown; an item with a trigger question or trigger
+answers only when the company's awarding evaluation meets it. A seal with no
+evaluation (imported) shows the whole catalogue, or only the untriggered
+items when the type says so.
 """
+from lxml import html
+
+from odoo.exceptions import ValidationError
 from odoo.tests import tagged
 
 from .common import CertificationCase
@@ -18,20 +21,51 @@ class TestCertificationAmenities(CertificationCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.highlight = cls.env["certification.highlight"].create(
+        Highlight = cls.env["certification.highlight"]
+        cls.baseline = Highlight.create(
             {
                 "type_id": cls.cert_type.id,
                 "label": "Acceso sin barreras",
                 "description": "Entrada cómoda.",
                 "icon": "fa-wheelchair",
+                "sequence": 10,
             }
         )
+        cls.by_score = Highlight.create(
+            {
+                "type_id": cls.cert_type.id,
+                "label": "Question 0 well answered",
+                "icon": "fa-star",
+                "sequence": 20,
+                "question_id": cls.questions[0].id,
+                "min_score": 2,
+            }
+        )
+        cls.yes_on_last = cls.questions[2].suggested_answer_ids.filtered(
+            lambda a: a.answer_score == 2
+        )
+        cls.by_answer = Highlight.create(
+            {
+                "type_id": cls.cert_type.id,
+                "label": "Yes on question 2",
+                "icon": "fa-heart",
+                "sequence": 30,
+                "answer_ids": [(6, 0, cls.yes_on_last.ids)],
+            }
+        )
+
+    def _labels(self, company=None):
+        company = company or self.company
+        return [
+            item["label"]
+            for item in company._get_certification_amenities(self.cert_type)
+        ]
 
     def _award_imported_seal(self):
         """A seal with no user_input_id, the shape the import produced."""
         return self.env["res.company.certification"].create(
             {
-                "company_id": self.user.company_id.id,
+                "company_id": self.company.id,
                 "type_id": self.cert_type.id,
                 "level": "gold",
                 "score": 100,
@@ -39,84 +73,125 @@ class TestCertificationAmenities(CertificationCase):
             }
         )
 
-    def test_imported_seal_falls_back_to_the_vertical_highlights(self):
-        self._award_imported_seal()
+    # Rendering rules ------------------------------------------------------
 
-        amenities = self.user.company_id._get_certification_amenities(self.cert_type)
-
-        self.assertEqual(
-            amenities,
-            [
-                {
-                    "label": "Acceso sin barreras",
-                    "description": "Entrada cómoda.",
-                    "icon": "fa-wheelchair",
-                }
-            ],
-        )
-
-    def test_highlights_follow_their_sequence(self):
-        self.highlight.sequence = 20
-        self.env["certification.highlight"].create(
-            {
-                "type_id": self.cert_type.id,
-                "label": "Atención sin prisas",
-                "icon": "fa-clock-o",
-                "sequence": 10,
-            }
-        )
-        self._award_imported_seal()
-
-        amenities = self.user.company_id._get_certification_amenities(self.cert_type)
+    def test_a_full_evaluation_shows_baseline_and_every_triggered_item(self):
+        self._run_evaluation(3)
 
         self.assertEqual(
-            [item["label"] for item in amenities],
-            ["Atención sin prisas", "Acceso sin barreras"],
+            self._labels(),
+            ["Acceso sin barreras", "Question 0 well answered", "Yes on question 2"],
         )
 
-    def test_an_earned_highlight_wins_over_the_curated_one(self):
+    def test_a_score_below_the_minimum_hides_the_item(self):
+        # Silver level (2 of 3): question 0 and 1 "Yes", question 2 "No".
+        self._run_evaluation(2)
+
+        self.assertEqual(
+            self._labels(), ["Acceso sin barreras", "Question 0 well answered"]
+        )
+
+    def test_an_answer_trigger_follows_the_selected_answer(self):
         answer = self._run_evaluation(3)
-        self.env["certification.positive.item"].create(
-            {
-                "survey_id": self.survey.id,
-                "question_id": self.questions[0].id,
-                "min_score": 1,
-                "label": "Lo que este comercio hace bien",
-                "icon": "fa-star",
-            }
+        self.assertIn("Yes on question 2", self._labels())
+
+        line = answer.user_input_line_ids.filtered(
+            lambda ln: ln.question_id == self.questions[2]
+        )
+        line.suggested_answer_id = self.questions[2].suggested_answer_ids.filtered(
+            lambda a: a.answer_score == 0
         )
 
-        amenities = answer.company_id._get_certification_amenities(self.cert_type)
+        self.assertNotIn("Yes on question 2", self._labels())
+
+    def test_either_trigger_is_enough(self):
+        self.by_answer.write({"question_id": self.questions[1].id, "min_score": 2})
+        # Question 1 "Yes", question 2 "No": the question trigger alone holds.
+        self._run_evaluation(2)
+
+        self.assertIn("Yes on question 2", self._labels())
+
+    def test_baseline_items_show_whatever_was_answered(self):
+        self._run_evaluation(2)
+        self.company.certification_ids.user_input_id.user_input_line_ids.unlink()
+
+        self.assertEqual(self._labels(), ["Acceso sin barreras"])
+
+    def test_archived_items_are_not_shown(self):
+        self._run_evaluation(3)
+        self.by_score.active = False
+
+        self.assertNotIn("Question 0 well answered", self._labels())
+
+    def test_items_follow_their_sequence(self):
+        self.by_answer.sequence = 1
+        self._run_evaluation(3)
+
+        self.assertEqual(self._labels()[0], "Yes on question 2")
+
+    # Seals without an evaluation -----------------------------------------
+
+    def test_an_imported_seal_shows_the_whole_catalogue_by_default(self):
+        self.assertTrue(self.cert_type.show_all_without_evaluation)
+        self._award_imported_seal()
 
         self.assertEqual(
-            [item["label"] for item in amenities],
-            ["Lo que este comercio hace bien"],
-            "the company's own result replaces the generic list, never both",
+            self._labels(),
+            ["Acceso sin barreras", "Question 0 well answered", "Yes on question 2"],
         )
+
+    def test_an_imported_seal_can_show_only_the_baseline(self):
+        self.cert_type.show_all_without_evaluation = False
+        self._award_imported_seal()
+
+        self.assertEqual(self._labels(), ["Acceso sin barreras"])
+
+    def test_a_company_without_the_seal_gets_no_items(self):
+        # The list is made of public claims: an uncertified shop shows none.
+        self.assertEqual(self._labels(), [])
 
     def test_every_amenity_carries_the_keys_the_template_reads(self):
-        """Both sources must hand the template one shape.
+        """The template reads ``icon`` and ``label`` unconditionally."""
+        self._run_evaluation(3)
 
-        The template reads ``icon`` and ``label`` unconditionally; a missing
-        key is a render-time KeyError on a public page, not a blank line.
-        """
-        answer = self._run_evaluation(3)
-        self.env["certification.positive.item"].create(
-            {
-                "survey_id": self.survey.id,
-                "question_id": self.questions[0].id,
-                "min_score": 1,
-                "label": "Earned",
-            }
-        )
-        earned = answer.company_id._get_certification_amenities(self.cert_type)
-
-        for item in earned:
+        for item in self.company._get_certification_amenities(self.cert_type):
             self.assertEqual(set(item), {"label", "description", "icon"})
 
-    def test_a_company_without_the_seal_gets_no_highlights(self):
-        # The fallback is keyed to holding the seal; an uncertified shop must
-        # not display the vertical's promises.
-        amenities = self.user.company_id._get_certification_amenities(self.cert_type)
+    # Catalogue integrity --------------------------------------------------
 
-        self.assertEqual(amenities, [])
+    def test_icon_must_be_a_font_awesome_class(self):
+        for bad in ("wheelchair", "fa fa-wheelchair", 'fa-x" onclick="y', "FA-X"):
+            with self.subTest(icon=bad), self.assertRaises(ValidationError):
+                self.baseline.icon = bad
+        self.baseline.icon = "fa-hand-paper-o"
+        self.assertIn('class="fa fa-lg fa-hand-paper-o"', self.baseline.icon_preview)
+
+    def test_triggers_must_come_from_the_type_questionnaire(self):
+        other = self.env["survey.survey"].create({"title": "Other"})
+        question = self.env["survey.question"].create(
+            {"survey_id": other.id, "title": "Elsewhere", "question_type": "text_box"}
+        )
+        with self.assertRaises(ValidationError):
+            self.baseline.question_id = question
+
+    def test_is_baseline_reflects_the_triggers(self):
+        self.assertTrue(self.baseline.is_baseline)
+        self.assertFalse(self.by_score.is_baseline)
+        self.assertFalse(self.by_answer.is_baseline)
+
+    # Template -------------------------------------------------------------
+
+    def test_the_seal_block_renders_one_icon_per_shown_item(self):
+        self._run_evaluation(2)
+
+        body = self.env["ir.qweb"]._render(
+            "company_certification.certification_block",
+            {"cc_company": self.company},
+        )
+        tree = html.fromstring(str(body))
+
+        icons = tree.xpath("//i[contains(@class, 'o_cc_amenity__icon')]")
+        self.assertEqual(
+            [icon.get("class").split()[1] for icon in icons],
+            ["fa-wheelchair", "fa-star"],
+        )
