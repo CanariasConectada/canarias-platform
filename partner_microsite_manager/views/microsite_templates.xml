@@ -24,7 +24,7 @@
             />
             <div class="container" style="position: relative;">
                 <h1 class="display-4 text-white" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
-                    <t t-esc="company.microsite_name or company.name"/>
+                    <t t-esc="company.microsite_title"/>
                 </h1>
                 <p>
                     <a class="btn btn-lg btn-primary" href="/shop">
@@ -165,7 +165,7 @@
                                                 type="hidden"
                                                 class="form-control s_website_form_input"
                                                 name="name"
-                                                t-att-value="company.microsite_name or company.name"
+                                                t-att-value="company.microsite_title"
                                             />
                                         </div>
                                     </div>

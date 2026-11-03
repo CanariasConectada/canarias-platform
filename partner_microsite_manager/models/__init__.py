@@ -2,6 +2,7 @@ from . import (
     ir_ui_view,
     microsite_opening_slot,
     res_company,
+    res_company_title,
     res_config_settings,
     res_partner,
     website,

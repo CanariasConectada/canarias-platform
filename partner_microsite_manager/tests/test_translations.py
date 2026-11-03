@@ -33,3 +33,29 @@ class TestTranslations(TransactionCase):
             "Pegue cualquier enlace de Google Maps",
             field._description_help(self.env(context={"lang": "es_ES"})),
         )
+
+    def test_cover_title_label_is_translated_to_spanish(self):
+        """One label and one help text on the company form and on the page
+        content editor (19.0.2.16.0)."""
+        self.env["res.lang"]._activate_lang("es_ES")
+        self.env["ir.module.module"].search(
+            [("name", "=", "partner_microsite_manager")]
+        )._update_translations("es_ES")
+        es = self.env(context={"lang": "es_ES"})
+        for model in ("res.company", "microsite.content.editor"):
+            field = self.env[model]._fields["microsite_name"]
+            self.assertEqual(
+                field._description_string(es), "Título de portada del micrositio"
+            )
+            self.assertEqual(
+                field._description_help(es),
+                "Título que se muestra en la portada del micrositio. "
+                "Si se deja vacío, se usa el Nombre comercial.",
+            )
+        view = self.env.ref(
+            "partner_microsite_manager.view_microsite_content_editor_form"
+        )
+        arch = view.with_context(lang="es_ES").arch_db
+        self.assertIn("Título de portada del micrositio", arch)
+        self.assertIn("Dejar vacío para mostrar el Nombre comercial", arch)
+        self.assertNotIn("Trade name", arch)

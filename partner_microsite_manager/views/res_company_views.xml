@@ -22,8 +22,8 @@
                 <page string="Microsite" name="microsite" invisible="not has_microsite">
                     <field name="has_microsite" invisible="1"/>
                     <group>
-                        <field name="microsite_name" string="Name on the microsite"
-                               placeholder="How your shop is called on its page"/>
+                        <field name="microsite_name"
+                               placeholder="Leave empty to show the trade name"/>
                     </group>
                     <notebook name="microsite_sections">
                         <page string="Cover" name="cover">

@@ -1,3 +1,25 @@
+## 19.0.2.16.0 (2026-11-03)
+
+- `microsite_name` is relabelled **Microsite cover title** (was "Microsite
+  Heading" on the company form, "Trade name" on the page content editor:
+  the same value under two names, neither of them what it is). Supersedes
+  the 19.0.2.6.1 label note. Both places share one help text: "Title shown
+  on the microsite cover. If left empty, the trade name is used." The help
+  describes the chain as deployed, with
+  `website_directory_partner_microsite` installed (cover title, trade name
+  `comercial`, legal name); this module standing alone has no trade name
+  and falls back straight to the legal name.
+- New computed field `res.company.microsite_title` (not stored): the
+  single place that decides what the cover shows, with the fallback hook
+  `_get_microsite_title_fallback()` the bridge overrides to slot the
+  trade name in.
+- The hero H1, the hidden lead name of the contact form and the footer
+  heading read `microsite_title` instead of repeating `microsite_name or
+  name` each.
+- Legacy homepages with a hardcoded H1 are not affected by the field:
+  their H1 is rewritten with the tools/jev-microsites `<Hero|Portada>.h1`
+  rows (data, outside this module).
+
 ## 19.0.2.15.0 (2026-11-03)
 
 - The page content editor lets the merchant type the postal address

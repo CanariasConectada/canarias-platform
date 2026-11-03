@@ -14,6 +14,7 @@ from . import (
     test_microsite_hero,
     test_microsite_render,
     test_microsite_settings,
+    test_microsite_title,
     test_opening_hours,
     test_opening_slots,
     test_partner_microsite_button,

@@ -1124,16 +1124,6 @@ msgid "Heading"
 msgstr "Título"
 
 #. module: partner_microsite_manager
-#: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_name
-msgid ""
-"Heading printed on the microsite homepage. Falls back to the company name. "
-"The shop's trade name lives on the company itself."
-msgstr ""
-"Titular que se muestra en la portada del microsite. Si se deja vacío, se usa"
-" el nombre de la compañía. El nombre comercial del comercio está en la "
-"propia compañía."
-
-#. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_button_text
 msgid "Hero Button Label"
 msgstr "Texto del botón de cabecera"
@@ -1147,12 +1137,6 @@ msgstr "Imagen de cabecera"
 #: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_homepage_page_id
 msgid "Homepage published by the 'Publish Homepage' action."
 msgstr "Página de inicio publicada por la acción «Publicar página de inicio»."
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
-msgid "How your shop is called on its page"
-msgstr "Cómo se llama tu comercio en su página"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_company_picker__id
@@ -1363,6 +1347,12 @@ msgid "Last Updated on"
 msgstr "Última actualización el"
 
 #. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "Leave empty to show the trade name"
+msgstr "Dejar vacío para mostrar el Nombre comercial"
+
+#. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
 msgid ""
 "Ley 34/2002, de servicios de la sociedad de\n"
@@ -1438,11 +1428,6 @@ msgid "Microsite Facebook"
 msgstr "Facebook del microsite"
 
 #. module: partner_microsite_manager
-#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_name
-msgid "Microsite Heading"
-msgstr "Titular del microsite"
-
-#. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_homepage_page_id
 msgid "Microsite Homepage"
 msgstr "Portada del microsite"
@@ -1473,6 +1458,18 @@ msgid "Microsite YouTube"
 msgstr "YouTube del microsite"
 
 #. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_name
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_name
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "Microsite cover title"
+msgstr "Título de portada del micrositio"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_title
+msgid "Microsite cover title (resolved)"
+msgstr "Título de portada del micrositio (resuelto)"
+
+#. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
 msgid "Microsoft Edge"
 msgstr "Microsoft Edge"
@@ -1498,11 +1495,6 @@ msgstr "Mozilla Firefox"
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.website_view_list_merchant
 msgid "My shops"
 msgstr "Mis sitios"
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
-msgid "Name on the microsite"
-msgstr "Nombre en el microsite"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_terms_conditions_content
@@ -2104,6 +2096,14 @@ msgid "Tipo"
 msgstr "Tipo"
 
 #. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_microsite_content_editor__microsite_name
+#: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_name
+msgid "Title shown on the microsite cover. If left empty, the trade name is used."
+msgstr ""
+"Título que se muestra en la portada del micrositio. Si se deja vacío, se usa"
+" el Nombre comercial."
+
+#. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice_content
 msgid "Titular del sitio web"
 msgstr "Titular del sitio web"
@@ -2139,12 +2139,6 @@ msgid ""
 msgstr ""
 "Demasiadas franjas horarias para %(day)s: máximo %(limit)s por día (mañana y"
 " tarde)."
-
-#. module: partner_microsite_manager
-#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_name
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
-msgid "Trade name"
-msgstr "Nombre comercial"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,help:partner_microsite_manager.field_res_company__has_microsite
