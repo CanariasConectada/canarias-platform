@@ -973,13 +973,6 @@ msgid "Heading"
 msgstr ""
 
 #. module: partner_microsite_manager
-#: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_name
-msgid ""
-"Heading printed on the microsite homepage. Falls back to the company name. "
-"The shop's trade name lives on the company itself."
-msgstr ""
-
-#. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_button_text
 msgid "Hero Button Label"
 msgstr ""
@@ -992,12 +985,6 @@ msgstr ""
 #. module: partner_microsite_manager
 #: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_homepage_page_id
 msgid "Homepage published by the 'Publish Homepage' action."
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
-msgid "How your shop is called on its page"
 msgstr ""
 
 #. module: partner_microsite_manager
@@ -1169,6 +1156,12 @@ msgid "Last Updated on"
 msgstr ""
 
 #. module: partner_microsite_manager
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "Leave empty to show the trade name"
+msgstr "Deixar vazio para mostrar o nome comercial"
+
+#. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
 msgid ""
 "Ley 34/2002, de servicios de la sociedad de\n"
@@ -1234,11 +1227,6 @@ msgid "Microsite Facebook"
 msgstr ""
 
 #. module: partner_microsite_manager
-#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_name
-msgid "Microsite Heading"
-msgstr ""
-
-#. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_homepage_page_id
 msgid "Microsite Homepage"
 msgstr ""
@@ -1269,6 +1257,18 @@ msgid "Microsite YouTube"
 msgstr ""
 
 #. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_name
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_name
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
+msgid "Microsite cover title"
+msgstr "Título da capa do microsite"
+
+#. module: partner_microsite_manager
+#: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_title
+msgid "Microsite cover title (resolved)"
+msgstr "Título da capa do microsite (resolvido)"
+
+#. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_cookies_policy_content
 msgid "Microsoft Edge"
 msgstr ""
@@ -1293,11 +1293,6 @@ msgstr ""
 #: model:ir.ui.menu,name:partner_microsite_manager.menu_own_websites
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.website_view_list_merchant
 msgid "My shops"
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_company_form_microsite
-msgid "Name on the microsite"
 msgstr ""
 
 #. module: partner_microsite_manager
@@ -1810,6 +1805,14 @@ msgid "Tipo"
 msgstr ""
 
 #. module: partner_microsite_manager
+#: model:ir.model.fields,help:partner_microsite_manager.field_microsite_content_editor__microsite_name
+#: model:ir.model.fields,help:partner_microsite_manager.field_res_company__microsite_name
+msgid "Title shown on the microsite cover. If left empty, the trade name is used."
+msgstr ""
+"Título mostrado na capa do microsite. Se ficar vazio, é usado o nome "
+"comercial."
+
+#. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_legal_notice_content
 msgid "Titular del sitio web"
 msgstr ""
@@ -1836,12 +1839,6 @@ msgstr "Todos os direitos reservados"
 msgid ""
 "Too many time ranges for %(day)s: at most %(limit)s per day (morning and "
 "afternoon)."
-msgstr ""
-
-#. module: partner_microsite_manager
-#: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__microsite_name
-#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
-msgid "Trade name"
 msgstr ""
 
 #. module: partner_microsite_manager

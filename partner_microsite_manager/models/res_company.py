@@ -30,6 +30,7 @@ from ..tools.opening_hours import (
     slots_from_parsed,
 )
 from ..tools.safe_url import safe_http_url
+from .res_company_title import MICROSITE_COVER_TITLE_HELP
 
 _lt = LazyTranslate(__name__)
 _logger = logging.getLogger(__name__)
@@ -207,14 +208,13 @@ class ResCompany(models.Model):
         compute="_compute_has_microsite",
         help="True when the company has its own website, i.e. a microsite.",
     )
-    # Not the company's trade name: that one is `comercial`, on the company
-    # itself (`res_company_zone`), and two fields labelled "Trade name" on
-    # one form is a question, not a form. This is the heading the microsite
-    # prints, which a merchant may well want to word differently.
+    # Deliberately not `comercial` (the trade name, on the partner): this is
+    # a per-cover override, for the merchant who wants the cover worded
+    # differently from the sign. Most leave it empty; what the cover then
+    # shows is resolved by `microsite_title` (models/res_company_title.py).
     microsite_name = fields.Char(
-        string="Microsite Heading",
-        help="Heading printed on the microsite homepage. Falls back to the "
-        "company name. The shop's trade name lives on the company itself.",
+        string="Microsite cover title",
+        help=MICROSITE_COVER_TITLE_HELP,
     )
     microsite_button_text = fields.Char(
         string="Hero Button Label",

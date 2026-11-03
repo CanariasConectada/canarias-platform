@@ -13,6 +13,7 @@ from odoo.tools.mimetypes import guess_mimetype
 from odoo.addons.website_map_embed.models.res_partner import clean_address_part
 
 from ..models.microsite_opening_slot import WEEKDAY_SELECTION, slot_problem_message
+from ..models.res_company_title import MICROSITE_COVER_TITLE_HELP
 from ..tools.opening_hours import (
     find_slot_problem,
     format_opening_hours,
@@ -175,7 +176,10 @@ class MicrositeContentEditor(models.TransientModel):
         compute="_compute_editable_company_ids",
     )
     can_pick_company = fields.Boolean(compute="_compute_editable_company_ids")
-    microsite_name = fields.Char(string="Trade name")
+    microsite_name = fields.Char(
+        string="Microsite cover title",
+        help=MICROSITE_COVER_TITLE_HELP,
+    )
     microsite_button_text = fields.Char(string="Cover button")
     microsite_hero_image = fields.Image(string="Cover image")
     microsite_intro_title = fields.Char(string="Intro banner")
