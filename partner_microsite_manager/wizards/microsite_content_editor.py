@@ -10,6 +10,8 @@ from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tools.mimetypes import guess_mimetype
 
+from odoo.addons.website_map_embed.models.res_partner import clean_address_part
+
 from ..models.microsite_opening_slot import WEEKDAY_SELECTION, slot_problem_message
 from ..tools.opening_hours import (
     find_slot_problem,
@@ -18,13 +20,19 @@ from ..tools.opening_hours import (
     slots_from_parsed,
 )
 
-# The fields a merchant is allowed to change about their own page, and the
-# only ones this screen ever writes. Everything else on ``res.company`` --
-# the VAT number, the currency, the accounts, the name the invoices carry --
-# is somebody else's job and stays out of reach.
+# The fields a merchant is allowed to change about their own page: the
+# company fields this screen reads and writes as one whitelist. Everything
+# else on ``res.company`` -- the VAT number, the currency, the accounts, the
+# name the invoices carry -- is somebody else's job and stays out of reach.
 #
 # One tuple, read by both ``default_get`` and ``action_save``, so the screen
 # and the write can never come to disagree about what is editable.
+#
+# A few things the page shows are deliberately NOT in it, because they do
+# not live (only) on the company and each needs its own load and save: the
+# social links (``SOCIAL_FIELDS``), the shop's own website
+# (``company_website``), the logo, and the postal address
+# (``ADDRESS_FIELDS``). Each is explained where it is declared below.
 #
 # ``microsite_opening_hours`` is NOT in it any more: the merchant edits the
 # opening periods as rows (``opening_slot_ids``) and the text is generated
@@ -63,6 +71,15 @@ SOCIAL_FIELDS = (
     "social_youtube",
     "social_linkedin",
 )
+
+# The postal address lives on the PARTNER of the company, not on the
+# company: ``res.company.street`` and friends are computed fields whose
+# inverses write the partner one field at a time, and every partner
+# write runs ``res.partner.write`` (cache flush + relink of the legacy
+# homepage, see models/res_partner.py). So the address is not in
+# ``CONTENT_FIELDS`` either: it is read from the partner and written back
+# to the partner in ONE write, and only when something actually changed.
+ADDRESS_FIELDS = ("street", "street2", "zip", "city")
 
 # The shop's OWN site (client request 2026-09-16: "falta un espacio en donde
 # podamos colocar el website de las personas"). It is core
@@ -105,7 +122,9 @@ class MicrositeContentEditor(models.TransientModel):
     owners their own VAT number, currency and chart of accounts to edit.
 
     So the screen is a transient of its own. It reads the shop's values in,
-    and writes back exactly ``CONTENT_FIELDS`` with sudo. The company being
+    and writes back ``CONTENT_FIELDS`` with sudo -- plus the few page items
+    declared next to that tuple (social links, own website, logo, postal
+    address), each through its own load and save. The company being
     written is resolved by :meth:`_resolve_target_company`, the single
     chokepoint every read and write on this screen (and its bridges in
     ``company_facilities`` and ``website_directory_partner_microsite``) goes
@@ -182,6 +201,20 @@ class MicrositeContentEditor(models.TransientModel):
     microsite_parking_info = fields.Char(string="Parking and directions")
     microsite_phone = fields.Char(string="Phone")
     microsite_phone2 = fields.Char(string="Second phone")
+    # The postal address (``ADDRESS_FIELDS``): read from and written to the
+    # company's partner, which is where the "Find us" line
+    # (``res.company._get_microsite_live_address``) and the map query
+    # (``website_map_embed``) take it from. Owner report 2026-11-03: a page
+    # showed only the city under "Find us" because the partner had no
+    # street, and this screen had nowhere to type one.
+    street = fields.Char(
+        string="Street and number",
+        help='Shown under "Find us" on your page, and used to place the map '
+        "when you have not pasted a map link.",
+    )
+    street2 = fields.Char(string="Floor, door, premises")
+    zip = fields.Char(string="Postal code")
+    city = fields.Char(string="City")
     microsite_map_url = fields.Char(
         string="Map",
         help="Paste any Google Maps link (share or embed); it will be "
@@ -358,6 +391,7 @@ class MicrositeContentEditor(models.TransientModel):
         website = source.website_id
         for name in SOCIAL_FIELDS:
             values[name] = (website and website[name]) or source[name] or False
+        values.update(self._current_address(source))
         values["company_website"] = source.website or False
         values["logo"] = self._current_logo(source)
         values["opening_slot_ids"] = [
@@ -390,6 +424,28 @@ class MicrositeContentEditor(models.TransientModel):
             if value and not _is_svg(value):
                 return value
         return False
+
+    @api.model
+    def _current_address(self, company):
+        """The address this screen opens with: the company's partner, cleaned.
+
+        ``clean_address_part`` is the same cleaning the "Find us" line and
+        the map query apply (``website_map_embed``): HTML entities decoded,
+        non-breaking spaces as spaces, whitespace collapsed and trimmed. The
+        2026 importer left a literal ``&nbsp;`` in some streets ("Calle
+        Castillejos 37-39&nbsp;35010" on 31 companies) and the merchant must
+        see -- and save back -- plain text, not the entity. An empty part is
+        ``False``, as the Char field stores it, so :meth:`_save_address` can
+        compare what the screen holds with what it opened on.
+
+        ``company`` comes from ``_resolve_target_company`` (already sudo),
+        so the partner is read with sudo too: ``res.partner`` is read-only
+        for an internal user without ``base.group_partner_manager``.
+        """
+        partner = company.partner_id
+        return {
+            name: clean_address_part(partner[name]) or False for name in ADDRESS_FIELDS
+        }
 
     def _compute_editable_company_ids(self):
         companies = self.env["res.company"]._get_editable_microsite_companies()
@@ -548,6 +604,7 @@ class MicrositeContentEditor(models.TransientModel):
         company.write(
             dict(payload, **social_payload, **self._save_opening_slots(company))
         )
+        self._save_address(company)
         self._save_logo(company)
         # The website side wins in the footer, so it has to receive the same
         # value -- including an emptied one, or the old link keeps rendering.
@@ -585,6 +642,38 @@ class MicrositeContentEditor(models.TransientModel):
         if _as_bytes(new_logo) == _as_bytes(field._image_process(current, self.env)):
             return False
         company.write({"logo": new_logo})
+        return True
+
+    def _save_address(self, company):
+        """Write the fields of the address that changed to the partner, once.
+
+        Each field the merchant holds is compared, cleaned, with the
+        partner's value as it is NOW, cleaned the same way; only the fields
+        that differ are written, in one ``write``. So opening and saving
+        the screen untouched writes nothing (a partner write makes the
+        address line of a legacy homepage live, see ``res.partner.write``,
+        and only a human edit may do that), a street the importer left with
+        a literal ``&nbsp;`` is not rewritten as a side effect of changing
+        the postal code, and two people editing different fields of the
+        same address do not undo each other: it is last writer wins per
+        field, not per address. Clearing a field writes ``False``: the
+        address is the shop's own, and the page simply shows no line.
+
+        One write for whatever changed: ``company`` arrives sudo'd from
+        ``_resolve_target_company``, so ``company.partner_id`` is sudo too,
+        which is what lets a merchant -- read-only on ``res.partner`` --
+        change the address of their own shop through this screen.
+        """
+        self.ensure_one()
+        current = self._current_address(company)
+        changed = {
+            name: value
+            for name in ADDRESS_FIELDS
+            if (value := clean_address_part(self[name]) or False) != current[name]
+        }
+        if not changed:
+            return False
+        company.partner_id.write(changed)
         return True
 
     def action_save_logo(self):
