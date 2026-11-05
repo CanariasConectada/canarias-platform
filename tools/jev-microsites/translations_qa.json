@@ -1,0 +1,3756 @@
+{
+ "Administración de lotería y apuestas del Estado en Guanarteme, con el trato cercano de toda la vida. Prueba suerte con nosotros: tu décimo te está esperando.": {
+  "en_US": {
+   "p": 0.88,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.89,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.88,
+   "ok": true
+  }
+ },
+ "Alimentación, accesorios y consejos para cuidar de tu mascota. Ven a la tienda y te asesoramos.": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Alimentación, accesorios y consejos para el cuidado de tu mascota. Ven a vernos y te asesoramos.": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "Alma Verde es un herbolario en Guanarteme. Apostamos por lo natural para cuidar tu bienestar.": {
+  "en_US": {
+   "p": 0.88,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "Arreglos, ajustes y confección a medida. Tráenos tu prenda y te damos presupuesto.": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.78,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 1
+   }
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "Atelier La Ventana es un taller de costura y arreglos en Guanarteme. Trabajo artesanal para que tus prendas queden perfectas.": {
+  "en_US": {
+   "p": 0.91,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.8,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.99
+   }
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.88,
+   "ok": true
+  }
+ },
+ "Atelier de costura y arreglos de ropa en Guanarteme: ajustes, transformaciones y confección a medida. Trabajo artesanal y cuidado para que tus prendas queden perfectas.": {
+  "en_US": {
+   "p": 0.9,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.85,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.88,
+   "ok": true
+  }
+ },
+ "Café, bebidas y algo dulce para acompañar. Pásate y date un capricho.": {
+  "en_US": {
+   "p": 0.92,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Café, desayunos y algo para picar. Pásate y tómate un respiro.": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Calzado que combina comodidad, estilo y confianza, especializado en la mujer actual y con una cuidada selección para hombre. Descubre en Lonrodi el zapato que hará que cada paso cuente.": {
+  "en_US": {
+   "p": 0.9,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.87,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.76,
+   "ok": false,
+   "vs_machine": {
+    "choice": "B",
+    "conf": 0.17
+   }
+  },
+  "pl_PL": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "Churros, chocolate, café y desayunos. Ven a disfrutar de un buen rato con nosotros.": {
+  "en_US": {
+   "p": 0.9,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Clases de entrenamiento funcional, Hybrid, GAP y halterofilia para todos los niveles. Escríbenos y prueba una clase gratis.": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Cortes, color y peinados adaptados a lo que buscas. Pide tu cita y te atendemos.": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Cortes, color y peinados para mujer y hombre. Pide tu cita y te atendemos.": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "DVD Consolas es un taller de reparación de equipos. Damos una segunda vida a tus consolas y aparatos.": {
+  "en_US": {
+   "p": 0.92,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.88,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Desayunos, comidas y cafetería con trato familiar. Ven a vernos cuando quieras.": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.89,
+   "ok": true
+  }
+ },
+ "Docky Pet Shop es una tienda para mascotas en Guanarteme. Queremos que tus animales tengan todo lo que necesitan.": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "El Tucán 24H es una tienda abierta las 24 horas en Lomo Los Frailes. Productos de calidad a precios competitivos, a cualquier hora del día.": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.97,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "Entrenamientos para todos los niveles con seguimiento cercano. Escríbenos y empieza a moverte.": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "Entrenamientos para todos los niveles. Ven a conocernos y empieza hoy.": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "Equipos, accesorios y servicio técnico. Consúltanos y te ayudamos a elegir.": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.89,
+   "ok": true
+  }
+ },
+ "Fashionbrand es una tienda de moda en Guanarteme. Prendas actuales para que encuentres tu estilo.": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "Fisioterapia Guanarteme es un centro de fisioterapia al servicio de tu salud. Trabajamos para que te recuperes y te muevas mejor.": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.88,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.9,
+   "ok": true
+  }
+ },
+ "Gafas graduadas, de sol y asesoramiento visual. Ven a vernos y te ayudamos a elegir.": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "Haz tu pedido y recógelo listo para llevar. Consulta con nosotros la oferta del día.": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.82,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.99
+   }
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.9,
+   "ok": true
+  }
+ },
+ "Herbolario La Corteza es un herbolario dedicado a lo natural. Te ayudamos a cuidarte con productos naturales.": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.9,
+   "ok": true
+  }
+ },
+ "Herbolario en Guanarteme con productos naturales para tu bienestar. Te atendemos con cercanía y te asesoramos en lo que necesites.": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.88,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "Juan Hernández es un estudio de dibujo y pintura en Guanarteme. Un espacio dedicado al arte y a aprender a crear.": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "La Bulé es una cafetería con ambiente acogedor. Un rincón para hacer una pausa a cualquier hora.": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "La Cage aux Folles es una boutique de moda en Guanarteme. Prendas con personalidad para quien busca algo diferente.": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.88,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.82,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 1
+   }
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Let's Go Fit es un gimnasio para entrenar con energía. Te acompañamos para que alcances tus objetivos.": {
+  "en_US": {
+   "p": 0.9,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "Loreto Avilés es un centro de estética. Cuidamos de ti con tratamientos pensados para que te sientas bien.": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.9,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "Lotería y juegos del Estado. Ven a probar suerte con nosotros.": {
+  "en_US": {
+   "p": 0.92,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "M&amp;G Moda es una tienda de moda y complementos. Seleccionamos prendas actuales para que encuentres tu estilo.": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Manhattan Computer es una tienda de informática. Ofrecemos tecnología con asesoramiento honesto.": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "Mardome es un negocio de comida para llevar. Preparamos platos para que disfrutes de buena comida donde quieras.": {
+  "en_US": {
+   "p": 0.89,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.89,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.9,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "Marestilo es una tienda de moda vintage en Guanarteme. Piezas únicas con historia, seleccionadas una a una.": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.9,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.96,
+   "ok": true
+  }
+ },
+ "Martín Dorado es un servicio de neumáticos en Guanarteme. Cuidamos tus ruedas para que conduzcas con seguridad.": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Microdisk es una tienda de informática. Te ayudamos a encontrar la tecnología que necesitas.": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "Moda actual y complementos con las últimas tendencias en Guanarteme. Descubre en Fashionbrand tu estilo a un precio que te va a gustar.": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "Moda vintage y piezas únicas con historia, seleccionadas con mimo en Guanarteme. En Mar Estilo cada prenda cuenta algo y espera a su nueva dueña.": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.89,
+   "ok": true
+  }
+ },
+ "Moda y complementos con las últimas tendencias. Ven a descubrir la tienda.": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Moda y complementos con personalidad en Guanarteme, para quienes buscan algo diferente. Ven a La Cage aux Folles y encuentra prendas con carácter.": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.86,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.88,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.82,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 1
+   }
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "Moda y complementos para cada ocasión, con las últimas tendencias a precios cercanos. Ven a M&amp;G Moda y renueva tu armario con nosotros.": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.85,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "Moda y complementos seleccionados con mimo. Ven a la boutique y descubre las novedades.": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Moonkies es una cafetería pensada para disfrutar con calma. Un sitio acogedor para tomar algo a cualquier hora.": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "Muévete Training Club es un centro de entrenamiento en Tamaraceite. Te acompañamos para que te pongas en forma a tu ritmo.": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "PC Store es una tienda de informática. Ofrecemos equipos y componentes con atención cercana.": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Pan, bollería y productos de panadería. Pásate y llévate algo recién hecho.": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "Panadería La Baguette es una panadería en Guanarteme. Pan y bollería para acompañarte cada día.": {
+  "en_US": {
+   "p": 0.76,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.98
+   }
+  },
+  "de_DE": {
+   "p": 0.82,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 1
+   }
+  },
+  "fr_FR": {
+   "p": 0.9,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.69,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.96
+   }
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.86,
+   "ok": true
+  }
+ },
+ "Peluquería Soraya Godoy es una peluquería de trato cercano. Cuidamos tu pelo para que salgas sintiéndote bien.": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "Peluquería unisex en Las Palmas de Gran Canaria para toda la familia. Ven a Tatys y sal con el look que buscabas.": {
+  "en_US": {
+   "p": 0.9,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "Productos naturales y asesoramiento cercano sobre lo que necesitas. Pásate y te orientamos.": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.89,
+   "ok": true
+  }
+ },
+ "Productos naturales y asesoramiento para tu bienestar. Pásate y cuéntanos qué buscas.": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Profesional Beauty by Estefanía es un centro de estética en Guanarteme. Cuidamos tu imagen con dedicación y trato cercano.": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.89,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.86,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Reparación de consolas y equipos electrónicos. Tráenos tu aparato y te damos presupuesto.": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Restaurante Cafetería San Fernando es un lugar de cocina de siempre en Guanarteme. Un sitio cercano para desayunar, comer o tomar algo.": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.89,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.89,
+   "ok": true
+  }
+ },
+ "Restaurante y cafetería en Guanarteme, con cocina de siempre y trato cercano. Ven a desayunar, comer o tomar algo con nosotros.": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.89,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "Ropa y complementos vintage. Ven a buscar esa prenda que no encontrarás en otro sitio.": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Rubí Lotería es una administración de lotería en Guanarteme. El trato cercano de toda la vida.": {
+  "en_US": {
+   "p": 0.91,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.9,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "Tablas, accesorios y ropa de surf, skate y bodyboard. Ven a la tienda y te aconsejamos.": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Tatys Peluqueros Unisex es tu peluquería de confianza en Las Palmas de Gran Canaria. Cuidamos el pelo de toda la familia.": {
+  "en_US": {
+   "p": 0.97,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.89,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Te asesoramos para elegir los productos que mejor se adaptan a ti. Pásate por la tienda y cuéntanos qué necesitas.": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "Te ayudamos a combinar y elegir lo que mejor te sienta. Ven a descubrir las novedades de la tienda.": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "The Organic Beauty Lab es un espacio de belleza y cuidado personal en Guanarteme. Apostamos por productos de estética y perfumería para cuidarte cada día.": {
+  "en_US": {
+   "p": 0.87,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.89,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.89,
+   "ok": true
+  }
+ },
+ "Tienda de surf, skate y bodyboard en Guanarteme. Material y asesoramiento de quienes viven el mar y la calle.": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.74,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.99
+   }
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Tratamientos de estética adaptados a cada persona. Pide tu cita y te asesoramos.": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.88,
+   "ok": true
+  }
+ },
+ "Tratamientos de estética y belleza adaptados a ti. Pide tu cita y te atendemos.": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.85,
+   "ok": true
+  }
+ },
+ "Tratamientos de fisioterapia adaptados a cada paciente. Pide tu cita y te atendemos de forma personalizada.": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "Ven a conocernos y descubre lo que ofrecemos. Estaremos encantados de ayudarte.": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "Venta de equipos, componentes y servicio técnico. Cuéntanos qué necesitas y te asesoramos.": {
+  "en_US": {
+   "p": 0.83,
+   "ok": false,
+   "vs_machine": {
+    "choice": "B",
+    "conf": 0.33
+   }
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "Venta y montaje de neumáticos con atención profesional. Pásate y te asesoramos.": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.82,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.97
+   }
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.85,
+   "ok": true
+  }
+ },
+ "Zarpas Pet Shop es una tienda para tus mascotas. Aquí encontrarás lo que necesitan para estar sanas y felices.": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.89,
+   "ok": true
+  }
+ },
+ "Área Surf Skate y Bodyboard es una tienda en Guanarteme para los que viven el mar y la calle. Asesoramiento de gente que practica lo que vende.": {
+  "en_US": {
+   "p": 0.91,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.79,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.92
+   }
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.8,
+   "ok": false,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.48
+   }
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "Óptica 1500 es una óptica en La Aldea de San Nicolás. Cuidamos de tu vista con atención cercana.": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "【0】Alimentación, accesorios y consejos para cuidar de tu mascota. Ven a la tienda y te asesoramos.【1】": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "【0】Alimentación, accesorios y consejos para el cuidado de tu mascota. Ven a vernos y te asesoramos.【1】": {
+  "en_US": {
+   "p": 0.92,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "【0】Alma Verde es un herbolario en Guanarteme. Apostamos por lo natural para cuidar tu bienestar.【1】": {
+  "en_US": {
+   "p": 0.89,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "【0】Arreglos, ajustes y confección a medida. Tráenos tu prenda y te damos presupuesto.【1】": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "【0】Atelier La Ventana es un taller de costura y arreglos en Guanarteme. Trabajo artesanal para que tus prendas queden perfe...【1】": {
+  "en_US": {
+   "p": 0.84,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.99
+   }
+  },
+  "de_DE": {
+   "p": 0.86,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.88,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.74,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.99
+   }
+  },
+  "pl_PL": {
+   "p": 0.82,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.93
+   }
+  },
+  "pt_PT": {
+   "p": 0.87,
+   "ok": true
+  }
+ },
+ "【0】Café, bebidas y algo dulce para acompañar. Pásate y date un capricho.【1】": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "【0】Café, desayunos y algo para picar. Pásate y tómate un respiro.【1】": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "【0】Churros, chocolate, café y desayunos. Ven a disfrutar de un buen rato con nosotros.【1】": {
+  "en_US": {
+   "p": 0.9,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "【0】Clases de entrenamiento funcional, Hybrid, GAP y halterofilia para todos los niveles. Escríbenos y prueba una clase grat...【1】": {
+  "en_US": {
+   "p": 0.89,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.86,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.89,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "【0】Cortes, color y peinados adaptados a lo que buscas. Pide tu cita y te atendemos.【1】": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "【0】Cortes, color y peinados para mujer y hombre. Pide tu cita y te atendemos.【1】": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.9,
+   "ok": true
+  }
+ },
+ "【0】DVD Consolas es un taller de reparación de equipos. Damos una segunda vida a tus consolas y aparatos.【1】": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.89,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "【0】Desayunos, comidas y cafetería con trato familiar. Ven a vernos cuando quieras.【1】": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "【0】Docky Pet Shop es una tienda para mascotas en Guanarteme. Queremos que tus animales tengan todo lo que necesitan.【1】": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "【0】El Tucán 24H es una tienda abierta las 24 horas en Lomo Los Frailes. Productos de calidad a precios competitivos, a cual...【1】": {
+  "en_US": {
+   "p": 0.87,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.83,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.98
+   }
+  },
+  "fr_FR": {
+   "p": 0.88,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.89,
+   "ok": true
+  }
+ },
+ "【0】Entrenamientos para todos los niveles con seguimiento cercano. Escríbenos y empieza a moverte.【1】": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "【0】Entrenamientos para todos los niveles. Ven a conocernos y empieza hoy.【1】": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "【0】Equipos, accesorios y servicio técnico. Consúltanos y te ayudamos a elegir.【1】": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.9,
+   "ok": true
+  }
+ },
+ "【0】Fashionbrand es una tienda de moda en Guanarteme. Prendas actuales para que encuentres tu estilo.【1】": {
+  "en_US": {
+   "p": 0.92,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.9,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "【0】Fisioterapia Guanarteme es un centro de fisioterapia al servicio de tu salud. Trabajamos para que te recuperes y te muev...【1】": {
+  "en_US": {
+   "p": 0.91,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.81,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.99
+   }
+  },
+  "fr_FR": {
+   "p": 0.84,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.86
+   }
+  },
+  "it_IT": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.81,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.96
+   }
+  }
+ },
+ "【0】Gafas graduadas, de sol y asesoramiento visual. Ven a vernos y te ayudamos a elegir.【1】": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "【0】Haz tu pedido y recógelo listo para llevar. Consulta con nosotros la oferta del día.【1】": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.86,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.89,
+   "ok": true
+  }
+ },
+ "【0】Herbolario La Corteza es un herbolario dedicado a lo natural. Te ayudamos a cuidarte con productos naturales.【1】": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.96,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.9,
+   "ok": true
+  }
+ },
+ "【0】Juan Hernández es un estudio de dibujo y pintura en Guanarteme. Un espacio dedicado al arte y a aprender a crear.【1】": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.89,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "【0】La Bulé es una cafetería con ambiente acogedor. Un rincón para hacer una pausa a cualquier hora.【1】": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.84,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.97
+   }
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "【0】La Cage aux Folles es una boutique de moda en Guanarteme. Prendas con personalidad para quien busca algo diferente.【1】": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.85,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.83,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 1
+   }
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "【0】Let's Go Fit es un gimnasio para entrenar con energía. Te acompañamos para que alcances tus objetivos.【1】": {
+  "en_US": {
+   "p": 0.91,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.9,
+   "ok": true
+  }
+ },
+ "【0】Loreto Avilés es un centro de estética. Cuidamos de ti con tratamientos pensados para que te sientas bien.【1】": {
+  "en_US": {
+   "p": 0.92,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "【0】Lotería y juegos del Estado. Ven a probar suerte con nosotros.【1】": {
+  "en_US": {
+   "p": 0.9,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "【0】M&amp;G Moda es una tienda de moda y complementos. Seleccionamos prendas actuales para que encuentres tu estilo.【1】": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "【0】Manhattan Computer es una tienda de informática. Ofrecemos tecnología con asesoramiento honesto.【1】": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.89,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.89,
+   "ok": true
+  }
+ },
+ "【0】Mardome es un negocio de comida para llevar. Preparamos platos para que disfrutes de buena comida donde quieras.【1】": {
+  "en_US": {
+   "p": 0.87,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.88,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.87,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.89,
+   "ok": true
+  }
+ },
+ "【0】Marestilo es una tienda de moda vintage en Guanarteme. Piezas únicas con historia, seleccionadas una a una.【1】": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.95,
+   "ok": true
+  }
+ },
+ "【0】Martín Dorado es un servicio de neumáticos en Guanarteme. Cuidamos tus ruedas para que conduzcas con seguridad.【1】": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.96,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "【0】Microdisk es una tienda de informática. Te ayudamos a encontrar la tecnología que necesitas.【1】": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "【0】Moda y complementos con las últimas tendencias. Ven a descubrir la tienda.【1】": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "【0】Moda y complementos seleccionados con mimo. Ven a la boutique y descubre las novedades.【1】": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "【0】Moonkies es una cafetería pensada para disfrutar con calma. Un sitio acogedor para tomar algo a cualquier hora.【1】": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.9,
+   "ok": true
+  }
+ },
+ "【0】Muévete Training Club es un centro de entrenamiento en Tamaraceite. Te acompañamos para que te pongas en forma a tu ritm...【1】": {
+  "en_US": {
+   "p": 0.87,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.89,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.89,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.88,
+   "ok": true
+  }
+ },
+ "【0】PC Store es una tienda de informática. Ofrecemos equipos y componentes con atención cercana.【1】": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.88,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "【0】Pan, bollería y productos de panadería. Pásate y llévate algo recién hecho.【1】": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "【0】Panadería La Baguette es una panadería en Guanarteme. Pan y bollería para acompañarte cada día.【1】": {
+  "en_US": {
+   "p": 0.78,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.98
+   }
+  },
+  "de_DE": {
+   "p": 0.82,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 1
+   }
+  },
+  "fr_FR": {
+   "p": 0.89,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.67,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.99
+   }
+  },
+  "pl_PL": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.88,
+   "ok": true
+  }
+ },
+ "【0】Peluquería Soraya Godoy es una peluquería de trato cercano. Cuidamos tu pelo para que salgas sintiéndote bien.【1】": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "【0】Productos naturales y asesoramiento cercano sobre lo que necesitas. Pásate y te orientamos.【1】": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.91,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.89,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.9,
+   "ok": true
+  }
+ },
+ "【0】Productos naturales y asesoramiento para tu bienestar. Pásate y cuéntanos qué buscas.【1】": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.96,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "【0】Profesional Beauty by Estefanía es un centro de estética en Guanarteme. Cuidamos tu imagen con dedicación y trato cercan...【1】": {
+  "en_US": {
+   "p": 0.87,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.85,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.85,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.9,
+   "ok": true
+  }
+ },
+ "【0】Reparación de consolas y equipos electrónicos. Tráenos tu aparato y te damos presupuesto.【1】": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "【0】Restaurante Cafetería San Fernando es un lugar de cocina de siempre en Guanarteme. Un sitio cercano para desayunar, come...【1】": {
+  "en_US": {
+   "p": 0.88,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.85,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.89,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.88,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.86,
+   "ok": true
+  }
+ },
+ "【0】Ropa y complementos vintage. Ven a buscar esa prenda que no encontrarás en otro sitio.【1】": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "【0】Rubí Lotería es una administración de lotería en Guanarteme. El trato cercano de toda la vida.【1】": {
+  "en_US": {
+   "p": 0.92,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.91,
+   "ok": true
+  }
+ },
+ "【0】Tablas, accesorios y ropa de surf, skate y bodyboard. Ven a la tienda y te aconsejamos.【1】": {
+  "en_US": {
+   "p": 0.9,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "【0】Tatys Peluqueros Unisex es tu peluquería de confianza en Las Palmas de Gran Canaria. Cuidamos el pelo de toda la familia...【1】": {
+  "en_US": {
+   "p": 0.89,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.88,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.9,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.89,
+   "ok": true
+  }
+ },
+ "【0】Te asesoramos para elegir los productos que mejor se adaptan a ti. Pásate por la tienda y cuéntanos qué necesitas.【1】": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.95,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "【0】Te ayudamos a combinar y elegir lo que mejor te sienta. Ven a descubrir las novedades de la tienda.【1】": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.9,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "【0】The Organic Beauty Lab es un espacio de belleza y cuidado personal en Guanarteme. Apostamos por productos de estética y ...【1】": {
+  "en_US": {
+   "p": 0.74,
+   "ok": false,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.75
+   }
+  },
+  "de_DE": {
+   "p": 0.79,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.98
+   }
+  },
+  "fr_FR": {
+   "p": 0.87,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.86,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.8,
+   "ok": false,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.84
+   }
+  },
+  "pt_PT": {
+   "p": 0.79,
+   "ok": false,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.07
+   }
+  }
+ },
+ "【0】Tratamientos de estética adaptados a cada persona. Pide tu cita y te asesoramos.【1】": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.94,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.85,
+   "ok": true
+  }
+ },
+ "【0】Tratamientos de estética y belleza adaptados a ti. Pide tu cita y te atendemos.【1】": {
+  "en_US": {
+   "p": 0.95,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.86,
+   "ok": true
+  }
+ },
+ "【0】Tratamientos de fisioterapia adaptados a cada paciente. Pide tu cita y te atendemos de forma personalizada.【1】": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.94,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.92,
+   "ok": true
+  }
+ },
+ "【0】Ven a conocernos y descubre lo que ofrecemos. Estaremos encantados de ayudarte.【1】": {
+  "en_US": {
+   "p": 0.96,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.94,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.95,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.95,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.94,
+   "ok": true
+  }
+ },
+ "【0】Venta de equipos, componentes y servicio técnico. Cuéntanos qué necesitas y te asesoramos.【1】": {
+  "en_US": {
+   "p": 0.87,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.92,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.91,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ },
+ "【0】Venta y montaje de neumáticos con atención profesional. Pásate y te asesoramos.【1】": {
+  "en_US": {
+   "p": 0.93,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.93,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.87,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.9,
+   "ok": true
+  }
+ },
+ "【0】Zarpas Pet Shop es una tienda para tus mascotas. Aquí encontrarás lo que necesitan para estar sanas y felices.【1】": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.92,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.93,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.93,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.88,
+   "ok": true
+  }
+ },
+ "【0】Área Surf Skate y Bodyboard es una tienda en Guanarteme para los que viven el mar y la calle. Asesoramiento de gente que...【1】": {
+  "en_US": {
+   "p": 0.82,
+   "ok": false,
+   "vs_machine": {
+    "choice": "B",
+    "conf": 0.68
+   }
+  },
+  "de_DE": {
+   "p": 0.68,
+   "ok": false,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.77
+   }
+  },
+  "fr_FR": {
+   "p": 0.82,
+   "ok": true,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.99
+   }
+  },
+  "it_IT": {
+   "p": 0.9,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.82,
+   "ok": false,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.11
+   }
+  },
+  "pt_PT": {
+   "p": 0.82,
+   "ok": false,
+   "vs_machine": {
+    "choice": "A",
+    "conf": 0.32
+   }
+  }
+ },
+ "【0】Óptica 1500 es una óptica en La Aldea de San Nicolás. Cuidamos de tu vista con atención cercana.【1】": {
+  "en_US": {
+   "p": 0.94,
+   "ok": true
+  },
+  "de_DE": {
+   "p": 0.91,
+   "ok": true
+  },
+  "fr_FR": {
+   "p": 0.89,
+   "ok": true
+  },
+  "it_IT": {
+   "p": 0.85,
+   "ok": true
+  },
+  "pl_PL": {
+   "p": 0.92,
+   "ok": true
+  },
+  "pt_PT": {
+   "p": 0.93,
+   "ok": true
+  }
+ }
+}
