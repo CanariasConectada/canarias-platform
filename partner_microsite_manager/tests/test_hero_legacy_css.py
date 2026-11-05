@@ -41,6 +41,21 @@ class TestHeroLegacyCss(TransactionCase):
             ],
         )
 
+    def test_the_strip_selector_is_scoped_to_sec1_and_separador(self):
+        selector = re.search(r"\$o-pmm-legacy-strip:\s*'([^']*)'", self.scss)
+        self.assertTrue(selector, "the strip selector variable is the rule's contract")
+        parts = [part.strip() for part in selector.group(1).split(",")]
+        self.assertEqual(
+            parts,
+            [
+                'section.s_kickoff[data-name="SEC1"]',
+                'section.s_kickoff[data-name="Separador"]',
+            ],
+        )
+        for part in parts:
+            self.assertNotIn("Hero", part, "the hero rule owns the heroes")
+            self.assertNotIn("Portada", part, "the hero rule owns the heroes")
+
     def test_the_dynamic_hero_is_what_the_rule_excludes(self):
         company = self.env["res.company"].create({"name": "Excluded Shop"})
         html = render_homepage_for(self.env, company)
