@@ -56,6 +56,19 @@ class TestHeroLegacyCss(TransactionCase):
             self.assertNotIn("Hero", part, "the hero rule owns the heroes")
             self.assertNotIn("Portada", part, "the hero rule owns the heroes")
 
+    def test_the_strip_rule_is_written_through_the_variable(self):
+        # The first top-level block opened on the variable, up to its own
+        # closing brace: the strip rule has no nested block.
+        block = re.search(
+            r"^#\{\$o-pmm-legacy-strip\} \{\n(.*?)^\}", self.scss, re.S | re.M
+        )
+        self.assertTrue(block, "the strip rule is written through the variable")
+        self.assertRegex(
+            block.group(1),
+            r"background-attachment:\s*scroll\s*!important;",
+            "the attachment is forced inside the strip block",
+        )
+
     def test_the_dynamic_hero_is_what_the_rule_excludes(self):
         company = self.env["res.company"].create({"name": "Excluded Shop"})
         html = render_homepage_for(self.env, company)

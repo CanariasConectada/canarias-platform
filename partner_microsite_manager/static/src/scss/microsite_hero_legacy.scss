@@ -30,8 +30,9 @@ $o-pmm-legacy-hero-desktop-padding: 48px;
 $o-pmm-legacy-hero-mobile-ratio: 56.25vw; // 9 / 16 of the width
 
 // `!important` only where the arch fights back: the attachment, the height
-// and the paddings. Size, position and repeat are left to the inline style
-// (already cover / center) so a builder edit of the picture keeps working.
+// and the paddings. Size, position and repeat are only defaults (no
+// `!important`): the inline style, already cover / center, overrides them,
+// so a builder edit of the picture keeps working.
 #{$o-pmm-legacy-hero} {
     // The picture fills the BOX, not the viewport.
     background-attachment: scroll !important;
@@ -88,18 +89,22 @@ $o-pmm-legacy-hero-mobile-ratio: 56.25vw; // 9 / 16 of the width
 // 1366x768 and 390x844): the "Separador" picture loads with status 200,
 // the computed style is `background-attachment: fixed`, and the strip
 // renders as a black band on both sizes while the hero on the same page
-// (covered above) renders correctly. The fix is the attachment only; the
-// desktop heights and paddings stay as typed.
+// (covered above) renders correctly. The fix is the attachment on all
+// sizes plus a smaller padding under 768px; the desktop heights and
+// paddings stay as typed.
 //
 // Scoping contract (test_hero_legacy_css.py): the variable names exactly
-// these two sections and no hero -- the hero rule above owns those.
+// these two sections and no hero -- the hero rule above owns those -- and
+// the rule below is written through that variable, with the attachment
+// forced inside it.
 
 $o-pmm-legacy-strip: 'section.s_kickoff[data-name="SEC1"], section.s_kickoff[data-name="Separador"]';
 $o-pmm-legacy-strip-mobile-padding: $o-pmm-hero-mobile-padding * 2;
 
 #{$o-pmm-legacy-strip} {
-    // The picture fills the BOX, not the viewport; the inline style keeps
-    // size / position / repeat so a builder edit of the picture still wins.
+    // The picture fills the BOX, not the viewport. Size / position / repeat
+    // are only defaults (no `!important`): the inline style overrides them,
+    // so a builder edit of the picture still wins.
     background-attachment: scroll !important;
     background-size: cover;
     background-position: center;

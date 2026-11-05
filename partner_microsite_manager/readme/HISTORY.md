@@ -3,16 +3,19 @@
 - Legacy "SEC1" and "Separador" strips: the picture anchored in the box
   (production measurement, maquifercoop: the "Separador" strip renders as
   a black band on 1366x768 and on a 390x844 phone while its image loads
-  with status 200; the computed style is `background-attachment: fixed`,
-  the same geometry the 19.0.2.17.0 hero fix removed from the hero on that
-  very page, which renders correctly). `microsite_hero_legacy.scss` gains a
-  second scoped rule, `section.s_kickoff[data-name="SEC1"]` and
+  with status 200; observed together with a computed
+  `background-attachment: fixed`, the same geometry the 19.0.2.17.0 hero
+  fix removed from the hero on that very page, which renders correctly).
+  `microsite_hero_legacy.scss` gains a second scoped rule,
+  `section.s_kickoff[data-name="SEC1"]` and
   `section.s_kickoff[data-name="Separador"]`, that forces
-  `background-attachment: scroll` and leaves the desktop heights and the
-  `pt104 pb120` paddings as typed. On a phone (<768px) the paddings drop
-  to 2.5rem top and bottom so an empty picture strip is not two screens
-  tall. The hero rule and its selectors are unchanged; a new test pins the
-  strip selector to exactly those two sections and to no hero.
+  `background-attachment: scroll` on all sizes; on a phone (<768px) the
+  `pt104 pb120` paddings drop to 2.5rem top and bottom so an empty picture
+  strip is not two screens tall. Evidence: injecting the compiled rule on
+  the live page turned the band into the picture on 1366x768 and 390x844.
+  The hero rule and its selectors are unchanged; tests pin the strip
+  selector to exactly those two sections and to no hero, and the forced
+  attachment inside the block written through that variable.
 
 ## 19.0.2.17.0 (2026-11-03)
 
