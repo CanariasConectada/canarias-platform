@@ -160,14 +160,18 @@ def reference_archs() -> dict[str, str]:
     return {lang: standard_arch(lang, REF["cid"], REF["slug"], *REF_TEXTS[lang]) for lang in LANGS}
 
 
-def deviating_archs(drop: tuple[str, ...] = ("Horario", "Separador")) -> dict[str, str]:
+def deviating_archs(drop: tuple[str, ...] = ("Horario", "Separador"), br_hero: bool = False) -> dict[str, str]:
     """The site rendered on the standard skeleton minus ``drop`` sections
-    (areasurf: no Horario, no Separador)."""
+    (areasurf: no Horario, no Separador). ``br_hero`` reproduces view 3188:
+    a stray ``<br/>`` inside the headline span in every language, which
+    the rebuild drops (same text content, different term markup)."""
     archs = {}
     for lang in LANGS:
         arch = standard_arch(lang, SITE["cid"], SITE["slug"], *SITE_TEXTS[lang])
         for name in drop:
             arch = rb._remove_section(arch, name)
+        if br_hero:
+            arch = arch.replace('<span class="display-4-fs">', '<span class="display-4-fs"><br/>', 1)
         archs[lang] = arch
     return archs
 
@@ -246,3 +250,8 @@ def translate_arch(arch: str, func) -> str:
         cursor = index + len(term)
     out.append(arch[cursor:])
     return "".join(out)
+
+
+def xml_translate_like(callback, value: str) -> str:
+    """:func:`translate_arch` with Odoo's ``xml_translate(callback, value)`` argument order."""
+    return translate_arch(value, callback)

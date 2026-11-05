@@ -39,10 +39,11 @@ class ExtractTermsTests(unittest.TestCase):
         with self.assertRaises(terms.TermError):
             terms.extract_terms("<div><p>unclosed</div>")
 
-    def test_mapping_pairs_by_position_and_skips_equal_terms(self):
+    def test_mapping_pairs_by_position_including_identity(self):
         archs = {"es_ES": "<div><h2>Hola</h2><p>Email</p><img alt='Sub'/></div>",
                  "de_DE": "<div><h2>Hallo</h2><p>Email</p><img alt='Zus'/></div>"}
-        self.assertEqual(terms.translation_mapping(archs, "es_ES"), {"de_DE": {"Hola": "Hallo", "Sub": "Zus"}})
+        self.assertEqual(terms.translation_mapping(archs, "es_ES"),
+                         {"de_DE": {"Hola": "Hallo", "Email": "Email", "Sub": "Zus"}})
 
     def test_mapping_refuses_misaligned_or_conflicting(self):
         with self.assertRaises(terms.TermError):

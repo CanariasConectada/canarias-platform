@@ -180,9 +180,14 @@ def oracle_terms(arch: str, odoo_src: Path = DEFAULT_ODOO_SRC) -> list[str] | No
 
 def translation_mapping(archs: dict[str, str], primary: str) -> dict[str, dict[str, str]]:
     """``{lang: {primary_term: lang_term}}`` for every language but
-    ``primary``, pairing terms by position. Only terms that differ are
-    listed. Raises :class:`TermError` when a language has a different number
-    of terms (the archs were not rendered from one skeleton) or when one
+    ``primary``, pairing terms by position. EVERY term is listed, identity
+    pairs included: after the primary write Odoo may keep (or fuzzy-remap,
+    ``get_close_matches`` at 0.9) an old translation on a term whose new
+    primary text equals the wanted translation, e.g. a company name or
+    "Parking", and only an explicit pair overwrites it; a language with an
+    empty dict would even be dropped by ``update_field_translations``.
+    Raises :class:`TermError` when a language has a different number of
+    terms (the archs were not rendered from one skeleton) or when one
     primary term would need two different translations in a language."""
     if primary not in archs:
         raise TermError(f"primary language {primary!r} missing from the archs")
@@ -196,8 +201,6 @@ def translation_mapping(archs: dict[str, str], primary: str) -> dict[str, dict[s
             raise TermError(f"{lang} has {len(terms)} terms, {primary} has {len(source_terms)}")
         pairs: dict[str, str] = {}
         for source, target in zip(source_terms, terms):
-            if source == target:
-                continue
             if pairs.get(source, target) != target:
                 raise TermError(f"{lang}: term {source!r} maps to both {pairs[source]!r} and {target!r}")
             pairs[source] = target

@@ -129,6 +129,7 @@ class WriteUnit:
     write_lang: str | None = None             # context lang of the write (views: primary)
     archs: dict = field(default_factory=dict)  # views: {lang: arch} of every language, for the backup
     translations: dict | None = None          # rebuilds: {lang: {primary_term: term}} sent after the write
+    verify_archs: dict = field(default_factory=dict)  # rebuilds: {lang: arch} the server must hold afterwards
     context_extra: dict = field(default_factory=dict)  # extra context keys of the write
     done: bool = False
     error: str = ""
@@ -628,7 +629,7 @@ def prepare_view_rebuild(ctx: SiteContext, change: lib.Change) -> Outcome:
         return Outcome(change, STATUS_FAIL, f"another row already stages a write of view {view_id}", plan.current)
     unit = ctx.units[key] = WriteUnit(
         lib.MODEL_VIEW, view_id, lib.FIELD_ARCH, None, value=plan.archs[ctx.primary_lang],
-        write_lang=ctx.primary_lang, archs=plan.before, translations=plan.mapping,
+        write_lang=ctx.primary_lang, archs=plan.before, translations=plan.mapping, verify_archs=plan.archs,
         context_extra=dict(rebuild.WRITE_CONTEXT))
     unit.changes.append(change)
     ctx._arch_work[view_id] = plan.archs[ctx.primary_lang]
@@ -763,7 +764,7 @@ def execute_site(ctx: SiteContext, backup: lib.BackupWriter, stop_on_error: bool
         try:
             ctx.client.write(unit.model, [unit.res_id], {unit.field: value}, context)
             if unit.translations:
-                _write_translations(ctx, unit, context)
+                _finish_rebuild(ctx, unit, context)
             unit.done = True
         except lib.OdooError as exc:
             unit.error = str(exc)
@@ -779,17 +780,24 @@ def execute_site(ctx: SiteContext, backup: lib.BackupWriter, stop_on_error: bool
     return True
 
 
-def _write_translations(ctx: SiteContext, unit: WriteUnit, context: dict | None) -> None:
-    """Second RPC of a homepage rebuild: set the other languages term by
-    term from the primary arch just written. A failure here leaves the
-    primary language applied and the others as Odoo rebuilt them (Spanish
-    for the new terms); the error message says so."""
+def _finish_rebuild(ctx: SiteContext, unit: WriteUnit, context: dict | None) -> None:
+    """Second RPC of a homepage rebuild, then the read-back: set the other
+    languages term by term from the primary arch just written and read every
+    language again; each one must equal the proposal byte for byte (Odoo
+    silently ignores a mapping key that misses a stored term). Any failure
+    raises, so the row is FAILED and the ``pending`` backup line stays
+    without ``applied``: ``revertir.py`` restores the view from it."""
     try:
         ctx.client.update_field_translations(unit.model, unit.res_id, unit.field, unit.translations,
                                              source_lang=unit.write_lang, context=context)
     except lib.OdooError as exc:
         raise lib.OdooError(f"{unit.write_lang} arch written but the translations failed ({exc}); "
-                            f"re-run this site with --force --only-site to retry them") from exc
+                            f"revert with revertir.py or re-run this site with --force --only-site") from exc
+    differing = sorted(lang for lang, arch in unit.verify_archs.items()
+                       if ctx.client.read_arch(unit.res_id, lang) != arch)
+    if differing:
+        raise lib.OdooError(f"read-back after the write differs from the proposal in {', '.join(differing)}; "
+                            f"the view is left as written (pending in the backup): restore it with revertir.py")
 
 
 def _strip_pairs(ctx: SiteContext) -> list[tuple[lib.Change, lib.Change]]:
