@@ -12,6 +12,7 @@ from pathlib import Path
 from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parent))   # test_jev_apply_lib under pytest too
 import aplicar  # noqa: E402
 import jev_apply_lib as lib  # noqa: E402
 import test_jev_apply_lib as shared  # noqa: E402  (FakeClient and the legacy arch fixtures)

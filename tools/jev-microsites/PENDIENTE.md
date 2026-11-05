@@ -176,3 +176,20 @@ Pendiente tras la aplicación:
   ```
 - Las filas `Separador.h2` y `res_company.microsite_banner_title` van en pareja: se escribe primero la portada y el campo depende de ella; si falla el campo tras escribir la portada, ambas filas salen como «strip pair split» y basta con relanzar el site. Una fila de compañía sola solo se acepta si la portada no tiene sección Separador (plantilla dinámica).
 - `revertir.py` no borra las traducciones a mano (`auto.translate.term` bloqueados) ni los trabajos pendientes de la cola: solo los lista.
+
+## 12. Homepage normalization onto the standard skeleton (2026-11-05, dry run only, nothing applied)
+
+- 16 homepages deviate from `Hero > Horario > SEC1 > Acerca > Separador > Formulario > Subvenciones` (reference view 3218, flashprint). `normalizar_portada.py` rebuilds each one, language by language, from the reference arch of the SAME language: template texts (Horario labels, form labels, "Leer más"...) come from the reference's translation, the site's own texts (hero H1, SEC1 h2, Acerca columns, Separador h2) from the site's arch of that language. Nothing is invented: a page without SEC1 text or without Acerca text gets that section omitted and a flag (digitalover, kioscochurruca, crunchiberico, aromacafe: Acerca; aromacafe, segundamano3b: SEC1).
+- Evidence and proposals live outside git in `/home/odoo/Pending/jev-work/estructura/`: `arch_before_<view>.json` (raw jsonb dumped read-only with `q.sh`), `arch_after_<view>.json` (proposal, same shape), `normalizacion_informe.txt` (report). The proposals CSV is `cambios_portadas.csv` (`ir_ui_view.<view>.Homepage.rebuild` rows; `valor_anterior` = section list, `valor_nuevo` = arch file name under `--arch-root`).
+- Apply path (`aplicar.py`): one backup line with the arch of every language, then TWO RPC calls per view: `write(arch_db)` in es_ES and `update_field_translations(arch_db, {lang: {es_term: term}}, source_lang='es_ES')` for the other 6 languages, so every language holds exactly the proposed arch. Both carry `auto_translate_skip` so the queue does not machine-translate over the reference texts. The term extraction (`jev_rebuild_terms.py`) is a port of Odoo's `xml_translate` walk and is cross-checked against `/home/odoo/odoo` in the dry run. Rebuild rows are exclusive on their view and use their own backup file (`backup_portadas.jsonl`); `revertir.py` restores them like any whole-view line.
+  ```
+  cd tools/jev-microsites
+  python3 -m unittest discover -s tests                        # 176 tests
+  python3 normalizar_portada.py                                 # offline: arch_after_*.json + cambios_portadas.csv + report
+  python3 aplicar.py --csv cambios_portadas.csv --offline       # file, XML and term-alignment checks
+  export ODOO_PASSWORD=...                                      # never on the command line
+  python3 aplicar.py --csv cambios_portadas.csv --login miguelangel1074.gc@gmail.com                       # connected dry-run (drift checks)
+  python3 aplicar.py --csv cambios_portadas.csv --login miguelangel1074.gc@gmail.com --apply --yes --stop-on-error --only-site 217   # pilot (areasurf)
+  python3 aplicar.py --csv cambios_portadas.csv --login miguelangel1074.gc@gmail.com --apply --yes --stop-on-error                  # the rest
+  python3 revertir.py --backup /home/odoo/Pending/jev-work/backup_portadas.jsonl --only-site 217           # dry-run of the rollback
+  ```

@@ -56,6 +56,11 @@ DEFAULT_BACKUP = Path("/home/odoo/Pending/jev-work/backup.jsonl")
 S2_BACKUP = Path("/home/odoo/Pending/jev-work/backup_s2.jsonl")
 DEFAULT_ZIP_ROOT = Path("/home/odoo/Pending/jev-work/zip/HTML_LIMPIO_WORK_FINAL/COMPLETOS")
 DEFAULT_PRIMARY_LANG = "es_ES"
+# Homepage rebuilds (``Homepage.rebuild`` rows): the proposed archs live next
+# to the ``arch_before_<view>.json`` evidence, outside the git tree, and get
+# their own backup file (revertir.py restores the EARLIEST line per record).
+DEFAULT_ARCH_ROOT = Path("/home/odoo/Pending/jev-work/estructura")
+REBUILD_BACKUP = Path("/home/odoo/Pending/jev-work/backup_portadas.jsonl")
 # Odoo keeps en_US in every translated jsonb value as the fallback, active
 # or not; view backups always include it.
 FALLBACK_LANG = "en_US"
@@ -115,10 +120,12 @@ KIND_VIEW_H2 = "view_h2"
 KIND_VIEW_H1 = "view_h1"
 KIND_VIEW_H6 = "view_h6"
 KIND_VIEW_BG = "view_bg"
+KIND_VIEW_REBUILD = "view_rebuild"
 KIND_ORDER = {
     KIND_COMPANY_FIELD: 0,
     KIND_COMPANY_IMAGE: 1,
     KIND_VIEW_INSERT: 2,
+    KIND_VIEW_REBUILD: 2,
     KIND_VIEW_COLUMN: 3,
     KIND_VIEW_H2: 4,
     KIND_VIEW_H1: 4,
@@ -136,6 +143,10 @@ INSERT_ORDER = {"SEC1": 0, "Acerca": 1, "Separador": 2}
 # legacy pages (``s_adventure``) kept the Spanish "Portada". Inserts anchored
 # on the cover accept either name (:func:`_hero_section`).
 HERO_NAMES = ("Hero", "Portada")
+
+# ``ir_ui_view.<id>.Homepage.rebuild``: replace the whole homepage arch, every
+# language, by the files of ``normalizar_portada.py`` (see aplicar_rebuild.py).
+REBUILD_SECTION = "Homepage"
 
 # The legacy "Acerca" block (About us / Our services).
 ACERCA_SECTION = "Acerca"
@@ -195,7 +206,7 @@ class Target:
 
 
 _CAMPO_COMPANY_RE = re.compile(r"^res_company\.([A-Za-z_][A-Za-z0-9_]*)$")
-_CAMPO_VIEW_RE = re.compile(r"^ir_ui_view\.(\d+)\.([^.]+)\.(h1|h2|bg|insert|col\d+|h6_\d+)$")
+_CAMPO_VIEW_RE = re.compile(r"^ir_ui_view\.(\d+)\.([^.]+)\.(h1|h2|bg|insert|rebuild|col\d+|h6_\d+)$")
 
 
 def parse_campo(campo: str) -> Target:
@@ -214,6 +225,7 @@ def parse_campo(campo: str) -> Target:
         ir_ui_view.<view_id>.Acerca.col2
         ir_ui_view.<view_id>.Acerca.h6_1     (valor_nuevo: heading text of column 1)
         ir_ui_view.<view_id>.Acerca.h6_2
+        ir_ui_view.<view_id>.Homepage.rebuild (valor_nuevo: arch_after_<view_id>.json under --arch-root)
 
     ``colN``, ``h6_N`` and ``insert`` on ``Acerca`` only accept the ops of
     :data:`ACERCA_OPS`.
@@ -246,6 +258,10 @@ def parse_campo(campo: str) -> Target:
             kind = KIND_VIEW_H1
         elif op == "bg":
             kind = KIND_VIEW_BG
+        elif op == "rebuild":
+            if section != REBUILD_SECTION:
+                raise CampoError(f"'rebuild' is only supported as ir_ui_view.<id>.{REBUILD_SECTION}.rebuild, got {campo!r}")
+            kind = KIND_VIEW_REBUILD
         else:
             if section not in INSERT_ORDER:
                 raise CampoError(f"'insert' is only supported for {'/'.join(INSERT_ORDER)}, got {campo!r}")
@@ -1211,7 +1227,19 @@ class OdooClient:
 
     # There is intentionally no per-language arch writer: ``arch_db`` is an
     # xml_translate field and a write in language L rebuilds every other
-    # language from L. ``aplicar.py`` writes the primary language only.
+    # language from L. ``aplicar.py`` writes the primary language only; the
+    # other languages of a homepage rebuild are set term by term afterwards:
+
+    def update_field_translations(self, model: str, res_id: int, field: str, translations: dict,
+                                  source_lang: str, context: dict | None = None) -> bool:
+        """``record.update_field_translations(field, {lang: {source_term:
+        term}}, source_lang)``: rebuild each given language of a terms field
+        from the ``source_lang`` value, replacing the listed terms. Terms not
+        listed keep their current translation."""
+        kwargs = {"source_lang": source_lang}
+        if context:
+            kwargs["context"] = context
+        return self.execute_kw(model, "update_field_translations", [[res_id], field, translations], kwargs)
 
 
 def backup_languages(langs: Iterable[str]) -> list[str]:

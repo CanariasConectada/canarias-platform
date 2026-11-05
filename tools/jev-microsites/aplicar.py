@@ -86,6 +86,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
 
+import aplicar_rebuild as rebuild
 import jev_apply_lib as lib
 
 STATUS_PLAN = "WOULD APPLY"
@@ -127,6 +128,8 @@ class WriteUnit:
     changes: list = field(default_factory=list)
     write_lang: str | None = None             # context lang of the write (views: primary)
     archs: dict = field(default_factory=dict)  # views: {lang: arch} of every language, for the backup
+    translations: dict | None = None          # rebuilds: {lang: {primary_term: term}} sent after the write
+    context_extra: dict = field(default_factory=dict)  # extra context keys of the write
     done: bool = False
     error: str = ""
 
@@ -607,7 +610,33 @@ def prepare_view_insert(ctx: SiteContext, change: lib.Change) -> Outcome:
     return Outcome(change, STATUS_PLAN, "", lib.truncate(current))
 
 
+def prepare_view_rebuild(ctx: SiteContext, change: lib.Change) -> Outcome:
+    """Whole-homepage rebuild (``Homepage.rebuild``): one write unit holding
+    the primary arch of the proposal file plus the term translations of the
+    other languages (see ``aplicar_rebuild``). Exclusive on its view."""
+    view_id = change.target.view_id
+    key = (lib.MODEL_VIEW, view_id, lib.FIELD_ARCH, None)
+    plan = rebuild.plan_rebuild(change, ctx.rows, ctx.args.arch_root, lambda: ctx.all_archs(view_id),
+                                ctx.primary_lang, ctx.backup_langs)
+    if plan.error:
+        return Outcome(change, STATUS_FAIL, plan.error, plan.current)
+    if plan.done:
+        return Outcome(change, STATUS_SKIP, REASON_ALREADY, plan.current)
+    if plan.drift and not ctx.forced:
+        return Outcome(change, STATUS_SKIP, plan.drift, plan.current)
+    if key in ctx.units:
+        return Outcome(change, STATUS_FAIL, f"another row already stages a write of view {view_id}", plan.current)
+    unit = ctx.units[key] = WriteUnit(
+        lib.MODEL_VIEW, view_id, lib.FIELD_ARCH, None, value=plan.archs[ctx.primary_lang],
+        write_lang=ctx.primary_lang, archs=plan.before, translations=plan.mapping,
+        context_extra=dict(rebuild.WRITE_CONTEXT))
+    unit.changes.append(change)
+    ctx._arch_work[view_id] = plan.archs[ctx.primary_lang]
+    return Outcome(change, STATUS_PLAN, plan.note, plan.current)
+
+
 PREPARERS = {
+    lib.KIND_VIEW_REBUILD: prepare_view_rebuild,
     lib.KIND_COMPANY_FIELD: prepare_company_field,
     lib.KIND_COMPANY_IMAGE: prepare_company_image,
     lib.KIND_VIEW_H2: prepare_view_h2,
@@ -727,10 +756,14 @@ def execute_site(ctx: SiteContext, backup: lib.BackupWriter, stop_on_error: bool
                 return False
             continue
         context = {"lang": unit.write_lang} if unit.write_lang else None
+        if unit.context_extra:
+            context = {**(context or {}), **unit.context_extra}
         for change in active:
             backup.append_pending(**_event_fields(ctx, unit, change))
         try:
             ctx.client.write(unit.model, [unit.res_id], {unit.field: value}, context)
+            if unit.translations:
+                _write_translations(ctx, unit, context)
             unit.done = True
         except lib.OdooError as exc:
             unit.error = str(exc)
@@ -744,6 +777,19 @@ def execute_site(ctx: SiteContext, backup: lib.BackupWriter, stop_on_error: bool
             backup.append_applied(**_event_fields(ctx, unit, change))
     _finalize_outcomes(ctx)
     return True
+
+
+def _write_translations(ctx: SiteContext, unit: WriteUnit, context: dict | None) -> None:
+    """Second RPC of a homepage rebuild: set the other languages term by
+    term from the primary arch just written. A failure here leaves the
+    primary language applied and the others as Odoo rebuilt them (Spanish
+    for the new terms); the error message says so."""
+    try:
+        ctx.client.update_field_translations(unit.model, unit.res_id, unit.field, unit.translations,
+                                             source_lang=unit.write_lang, context=context)
+    except lib.OdooError as exc:
+        raise lib.OdooError(f"{unit.write_lang} arch written but the translations failed ({exc}); "
+                            f"re-run this site with --force --only-site to retry them") from exc
 
 
 def _strip_pairs(ctx: SiteContext) -> list[tuple[lib.Change, lib.Change]]:
@@ -852,6 +898,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--csv", type=Path, default=lib.DEFAULT_CSV, help="proposals file")
     parser.add_argument("--zip-root", type=Path, default=lib.DEFAULT_ZIP_ROOT,
                         help="root directory that image paths are relative to")
+    parser.add_argument("--arch-root", type=Path, default=lib.DEFAULT_ARCH_ROOT,
+                        help="directory that Homepage.rebuild arch files are relative to")
     parser.add_argument("--backup", type=Path, default=None,
                         help="backup JSON lines file (kept outside the git tree); default "
                              f"{lib.DEFAULT_BACKUP}, or {lib.S2_BACKUP} when the CSV has strip-2 title rows "
@@ -916,6 +964,9 @@ def resolve_backup(args, changes: list[lib.Change], invalid: list[lib.InvalidRow
     per record, which there is the pre-September value). Returns an error
     message or ``""``."""
     strip = _has_strip_rows(changes, invalid)
+    rebuild_error = rebuild.resolve_rebuild_backup(args, changes, invalid, strip)
+    if rebuild_error is not None:
+        return rebuild_error
     if args.backup is None:
         args.backup = lib.S2_BACKUP if strip else lib.DEFAULT_BACKUP
     if strip and lib.same_path(args.backup, lib.DEFAULT_BACKUP):
@@ -966,12 +1017,15 @@ def select_changes(changes: list[lib.Change], args) -> tuple[list[lib.Change], l
     return kept, outcomes
 
 
-def validate_offline(change: lib.Change, rows: list[lib.Change], zip_root: Path, dropped: dict | None = None) -> str:
+def validate_offline(change: lib.Change, rows: list[lib.Change], zip_root: Path, dropped: dict | None = None,
+                     args_holder=None) -> str:
     """Checks that do not need the server. Returns an error message or ``""``."""
     target = change.target
     strip_error = strip_title_error(change, rows, dropped)
     if strip_error:
         return strip_error
+    if target.kind == lib.KIND_VIEW_REBUILD:
+        return rebuild.validate_offline_rebuild(change, rows, getattr(args_holder, "arch_root", lib.DEFAULT_ARCH_ROOT))
     if target.kind == lib.KIND_COMPANY_IMAGE:
         try:
             path = lib.zip_image_path(zip_root, change.valor_nuevo)
@@ -1029,7 +1083,8 @@ def run_offline(grouped: dict[int, list[lib.Change]], args) -> list[Outcome]:
         for site in sites:
             print(f" site {site}")
             for change in grouped[site]:
-                error = validate_offline(change, grouped[site], args.zip_root, getattr(args, "dropped_strip_sites", None))
+                error = validate_offline(change, grouped[site], args.zip_root, getattr(args, "dropped_strip_sites", None),
+                                         args)
                 outcome = Outcome(change, STATUS_FAIL if error else STATUS_PLAN, error)
                 outcomes.append(outcome)
                 status = "FAIL" if error else "PLAN"
