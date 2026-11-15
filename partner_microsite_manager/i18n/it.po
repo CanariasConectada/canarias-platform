@@ -1687,6 +1687,7 @@ msgstr ""
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_content_editor__company_id
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
+#: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_live_button
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_logo_form
 msgid "Shop"
 msgstr ""

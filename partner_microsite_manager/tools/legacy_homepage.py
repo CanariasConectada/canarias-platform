@@ -49,6 +49,11 @@ LIVE_TEMPLATES = {
     "delivery": f"{MODULE}.microsite_live_delivery",
     "hours": OPENING_HOURS_CARD_TEMPLATE,
     "hours_label": f"{MODULE}.microsite_live_hours_label",
+    # Cover and picture strips (``tools/legacy_cover``).
+    "title": f"{MODULE}.microsite_live_title",
+    "button": f"{MODULE}.microsite_live_button",
+    "intro_title": f"{MODULE}.microsite_live_intro_title",
+    "strip_title": f"{MODULE}.microsite_live_strip_title",
 }
 
 # Contact lines in page order, with the icon that identifies each one

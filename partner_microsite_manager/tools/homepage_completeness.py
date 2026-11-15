@@ -19,7 +19,7 @@ import re
 
 from lxml import etree
 
-from .legacy_homepage import safe_parser
+from .legacy_homepage import LIVE_TEMPLATES, safe_parser
 
 SLOT_SECTIONS = {
     "hero": ("Hero", "Portada", "Cover"),
@@ -89,12 +89,25 @@ def classify_url(url):
     return "other", None
 
 
-def first_h2(section):
-    """Text of the first ``<h2>`` of the section, not of a nested one."""
+def _first_h2_element(section):
     for h2 in section.iter("h2"):
         if next(h2.iterancestors("section"), None) is section:
-            return _text(h2)
-    return ""
+            return h2
+    return None
+
+
+def first_h2(section):
+    """Text of the first ``<h2>`` of the section, not of a nested one."""
+    h2 = _first_h2_element(section)
+    return _text(h2) if h2 is not None else ""
+
+
+def _h2_is_live(section, slot):
+    """Whether the first ``<h2>`` renders the company's ``slot`` title."""
+    h2 = _first_h2_element(section)
+    return h2 is not None and bool(
+        h2.xpath(".//t[@t-call=$name]", name=LIVE_TEMPLATES[slot])
+    )
 
 
 def about_columns(section):
@@ -123,8 +136,10 @@ def read_static_homepage(arch):
     """What a static homepage shows.
 
     :return: ``{"images": {slot: (kind, ref)}, "intro_title", "about",
-        "services", "strip_title"}``; a slot whose section is missing is
-        ``("none", None)``. An unreadable arch shows nothing.
+        "services", "strip_title", "live"}``; a slot whose section is
+        missing is ``("none", None)``; ``live`` holds the title slots that
+        render the company's field (``tools/legacy_cover``). An unreadable
+        arch shows nothing.
     """
     result = {
         "images": dict.fromkeys(SLOT_SECTIONS, ("none", None)),
@@ -132,6 +147,7 @@ def read_static_homepage(arch):
         "about": "",
         "services": "",
         "strip_title": "",
+        "live": set(),
     }
     try:
         tree = etree.fromstring((arch or "").encode(), safe_parser())
@@ -141,10 +157,12 @@ def read_static_homepage(arch):
     for slot, section in sections.items():
         if section is not None:
             result["images"][slot] = classify_url(background_url(section))
-    if sections["intro"] is not None:
-        result["intro_title"] = first_h2(sections["intro"])
-    if sections["strip"] is not None:
-        result["strip_title"] = first_h2(sections["strip"])
+    for slot, section_slot in (("intro_title", "intro"), ("strip_title", "strip")):
+        section = sections[section_slot]
+        if section is not None:
+            result[slot] = first_h2(section)
+            if _h2_is_live(section, slot):
+                result["live"].add(slot)
     about = _section(tree, (ABOUT_SECTION,))
     if about is not None:
         columns = about_columns(about)

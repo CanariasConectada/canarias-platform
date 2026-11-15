@@ -3,6 +3,7 @@ from . import (
     test_core_menu_gating,
     test_hero_legacy_css,
     test_homepage_completeness,
+    test_legacy_homepage_cover,
     test_legacy_homepage_live,
     test_legacy_homepage_transform,
     test_legal_pages,
