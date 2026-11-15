@@ -1,6 +1,7 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import base64
 import importlib.util
 import re
 from pathlib import Path
@@ -24,6 +25,14 @@ MIGRATION_2_2_0 = (
     / "migrations"
     / "19.0.2.2.0"
     / "post-migration.py"
+)
+
+# A 1x1 PNG: a real raster logo, unlike Odoo's default company logo.
+SHOP_LOGO = base64.b64encode(
+    bytes.fromhex(
+        "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c489"
+        "0000000d49444154789c6360f8cfc00000030101007f6a6b8d0000000049454e44ae426082"
+    )
 )
 
 
@@ -76,6 +85,26 @@ class TestAutoMicrosite(TransactionCase):
         self.assertTrue(
             website.is_microsite_themed,
             "A new microsite must be born with the corporate look.",
+        )
+
+    def test_new_website_is_born_with_the_company_logo(self):
+        company = self.env["res.company"].create(
+            {"name": "Logo Shop", "logo": SHOP_LOGO}
+        )
+        self.assertFalse(company.uses_default_logo)
+        self.assertEqual(
+            company.website_id.logo,
+            company.logo,
+            "The header must show the shop's logo, not Odoo's placeholder.",
+        )
+
+    def test_new_website_without_a_real_logo_keeps_the_placeholder(self):
+        company = self.env["res.company"].create({"name": "No Logo Shop"})
+        self.assertTrue(company.uses_default_logo)
+        self.assertEqual(
+            company.website_id.logo,
+            self.env["website"]._default_logo(),
+            "Odoo's default company logo must never be copied to the header.",
         )
 
     def test_domain_is_built_from_the_suffix_parameter(self):

@@ -1,3 +1,15 @@
+## 19.0.2.4.0 (2026-11-15)
+
+* **A new microsite is born with the shop's logo in its header.** The
+  website was created without a `logo`, so the field default stored Odoo's
+  grey "Your Logo" SVG and the header showed it even though the company had
+  a real logo (10 sites created on 2026-10-16, MAPFRE among them). The
+  generator now passes `company.logo` to the new website when the company
+  has a real one (`not uses_default_logo`), the same rule core's website
+  configurator applies. A company on Odoo's default logo keeps the
+  placeholder. Existing websites are not touched (a one-off data script
+  repaired the 10).
+
 ## 19.0.2.3.0 (2026-09-21)
 
 * **A merchant microsite no longer links the directory from its top menu.**
