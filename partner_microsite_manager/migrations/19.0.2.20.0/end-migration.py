@@ -66,6 +66,14 @@ def migrate(cr, version):
        (administrators only); every visible text change is logged.
 
     Idempotent: a second run relinks nothing and keeps the first backups.
+
+    An ``end`` script on purpose: the cover title is decided against
+    ``microsite_title``, whose trade-name fallback (``comercial``) is added
+    by ``website_directory_partner_microsite``, a module loaded after this
+    one. In the ``post`` stage that override is not in the registry yet and
+    the title resolves to the legal name (prod copy, 2026-11-16: three H1s
+    switched from the legal name to the trade name, five matching H1s were
+    left static).
     """
     if not version:
         return

@@ -19,7 +19,9 @@
   `legacy-homepage-backup-<view>-19.0.2.20.0.json`, writes
   `legacy-homepage-cover-review-19.0.2.20.0.csv` and is idempotent. The
   live value is the single Spanish field in all seven languages, as in
-  19.0.2.13.0.
+  19.0.2.13.0. The script runs in the `end` stage so that
+  `microsite_title` already has the trade-name fallback of
+  `website_directory_partner_microsite` (loaded after this module).
 
 ## 19.0.2.18.0 (2026-11-05)
 

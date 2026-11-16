@@ -124,11 +124,16 @@ class TestLegacyHomepageCover(TransactionCase):
         return str(self.env["ir.qweb"].with_context(lang=lang)._render(view.id, values))
 
     def _module(self, version):
-        path = os.path.join(
+        folder = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
             "migrations",
             version,
-            "post-migration.py",
+        )
+        # 19.0.2.13.0 is a post- script, 19.0.2.20.0 an end- script.
+        path = next(
+            os.path.join(folder, name)
+            for name in ("end-migration.py", "post-migration.py")
+            if os.path.exists(os.path.join(folder, name))
         )
         spec = importlib.util.spec_from_file_location(f"pmm_{version}", path)
         module = importlib.util.module_from_spec(spec)
