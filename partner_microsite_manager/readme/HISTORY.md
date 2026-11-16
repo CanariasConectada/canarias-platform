@@ -12,8 +12,9 @@
   `href` is untouched; the migration leaves a text the page already shows
   (same value, ignoring case and whitespace) as typed, with its seven
   translations, and relinks the button and the two strip titles only
-  where the company value differs (prod: 2 buttons, 3 intro titles); it
-  never relinks the H1, a different one is listed for the owner; a background is relinked by the migration only when the
+  where the company value differs (prod copy 2026-11-16: 2 buttons, 1
+  intro title); it never relinks the H1, a different one is listed for
+  the owner; a background is relinked by the migration only when the
   company image is the same file (checksum), and by an upload whatever it
   showed; only `ir.attachment` backgrounds are rewritten. A human edit of
   a cover field relinks that kind (`res.company.write`), a builder save
