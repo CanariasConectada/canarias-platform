@@ -59,3 +59,28 @@ class TestTranslations(TransactionCase):
         self.assertIn("Título de portada del micrositio", arch)
         self.assertIn("Dejar vacío para mostrar el Nombre comercial", arch)
         self.assertNotIn("Trade name", arch)
+
+    def test_homepage_info_strip_is_translated(self):
+        """The practical-information labels and the hero button fallback of
+        the dynamic homepage stayed in English on every non-Spanish page
+        because their msgstr was empty in fr/de/it/pl/pt."""
+        expected = {
+            "fr_FR": ("Horaires", "Livraison / Expédition", "Boutique"),
+            "de_DE": ("Öffnungszeiten", "Lieferung / Versand", "Shop"),
+            "it_IT": ("Orari", "Consegna / Spedizione", "Negozio"),
+            "pl_PL": ("Godziny otwarcia", "Dostawa / Wysyłka", "Sklep"),
+            "pt_PT": ("Horário", "Entrega / Envio", "Loja"),
+        }
+        module = self.env["ir.module.module"].search(
+            [("name", "=", "partner_microsite_manager")]
+        )
+        view = self.env.ref("partner_microsite_manager.microsite_homepage_content")
+        for lang, labels in expected.items():
+            with self.subTest(lang=lang):
+                self.env["res.lang"]._activate_lang(lang)
+                module._update_translations(lang)
+                arch = view.with_context(lang=lang).arch_db
+                for label in labels:
+                    self.assertIn(label, arch)
+                self.assertNotIn("Opening Hours", arch)
+                self.assertNotIn("Delivery / Shipping", arch)

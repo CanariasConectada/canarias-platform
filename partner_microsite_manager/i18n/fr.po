@@ -250,7 +250,7 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.footer_platform_legal_links
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_corporate_footer
 msgid "<span class=\"mx-2\">·</span>"
-msgstr ""
+msgstr "<span class=\"mx-2\">·</span>"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_partner_form_microsite
@@ -292,7 +292,7 @@ msgstr "<span class=\"s_website_form_label_content\">Téléphone</span>"
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_opening_hours_card
 msgid "<span>: </span>"
-msgstr ""
+msgstr "<span>: </span>"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_privacy_policy_content
@@ -764,7 +764,7 @@ msgstr "Livraison"
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_delivery_info
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
 msgid "Delivery / Shipping"
-msgstr ""
+msgstr "Livraison / Expédition"
 
 #. module: partner_microsite_manager
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_content_editor_form
@@ -1343,7 +1343,7 @@ msgstr "Ouvert maintenant"
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_live_hours_label
 msgid "Opening Hours"
-msgstr ""
+msgstr "Horaires"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_res_company__microsite_opening_slot_ids
@@ -1516,6 +1516,13 @@ msgid ""
 " en el marco del Plan de Recuperación, Transformación y Resiliencia — "
 "Ministerio de Industria, Comercio y Turismo y Gobierno de Canarias."
 msgstr ""
+"Plateforme développée dans le cadre du projet Canarias Conectada, cofinancé "
+"par l'Union européenne au titre du programme FEDER Canaries 2021-2027 — "
+"Consejería de Economía, Industria, Comercio y Autónomos du Gouvernement des "
+"Canaries. Plateforme qui intègre les résultats du projet « Guanarteme en tu "
+"mano », financé par l'Union européenne – NextGenerationEU, dans le cadre du "
+"Plan de relance, de transformation et de résilience — Ministerio de "
+"Industria, Comercio y Turismo et Gouvernement des Canaries."
 
 #. module: partner_microsite_manager
 #. odoo-python
@@ -1689,7 +1696,7 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.microsite_homepage_content
 #: model_terms:ir.ui.view,arch_db:partner_microsite_manager.view_microsite_logo_form
 msgid "Shop"
-msgstr ""
+msgstr "Boutique"
 
 #. module: partner_microsite_manager
 #: model:ir.model.fields,field_description:partner_microsite_manager.field_microsite_company_picker__selected_company_id
