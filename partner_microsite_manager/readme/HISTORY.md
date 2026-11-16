@@ -1,3 +1,18 @@
+## 19.0.2.19.0 (2026-11-15)
+
+- Content editor: Save repairs a header still on Odoo's "Your Logo"
+  placeholder (client report: MAPFRE shows "Your Logo" while the screen
+  shows its logo). The screen opens on the company logo when the website
+  holds the default SVG, and `_save_logo` compared the field with that
+  fallback, saw no change and wrote nothing. Now, when the screen holds
+  the untouched company logo and the website is empty or on Odoo's default `website_logo.svg`, the
+  company's original logo is copied onto those websites (the company is not
+  rewritten with the 512 px copy). Any other SVG on a website was put there
+  by an administrator and is left alone, and a company on Odoo's own
+  default logo copies nothing. A new upload still goes through
+  `res.company.write` and its mirror. The header template is unchanged: it
+  still renders `website.logo` only.
+
 ## 19.0.2.18.0 (2026-11-05)
 
 - Legacy "SEC1" and "Separador" strips: the picture anchored in the box

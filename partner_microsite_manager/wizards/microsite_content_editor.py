@@ -634,6 +634,14 @@ class MicrositeContentEditor(models.TransientModel):
         placeholder, which nobody asked for; and a screen that opened empty
         (the shop only had an SVG, see ``_current_logo``) must not clear it.
 
+        An untouched screen used to write nothing at all, so a website still
+        on Odoo's placeholder, which opens on the company logo
+        (``_current_logo``), never got it (MAPFRE, 2026-11-15). Now, when
+        the screen holds the untouched company logo, the company's ORIGINAL
+        logo is copied onto the shop's websites that are empty or on Odoo's
+        default SVG: the company is not rewritten with the 512 px copy, and
+        a company on Odoo's own default logo copies nothing.
+
         ``company`` comes from ``_resolve_target_company`` (already sudo);
         the company write mirrors the logo onto every website of the shop.
         """
@@ -641,12 +649,47 @@ class MicrositeContentEditor(models.TransientModel):
         new_logo = self.logo
         if not new_logo:
             return False
-        current = self._current_logo(company)
-        field = self._fields["logo"]
-        if _as_bytes(new_logo) == _as_bytes(field._image_process(current, self.env)):
-            return False
+        if self._same_logo(new_logo, self._current_logo(company)):
+            # Untouched: nothing to write, except the company's own logo onto
+            # a header still on the placeholder (never Odoo's default one).
+            if company.uses_default_logo or not self._same_logo(new_logo, company.logo):
+                return False
+            placeholders = self._placeholder_logo_websites(company)
+            if not placeholders:
+                return False
+            placeholders.write({"logo": company.logo})
+            return True
         company.write({"logo": new_logo})
         return True
+
+    def _same_logo(self, new_logo, stored):
+        """Whether ``new_logo`` is ``stored`` as this field would hold it.
+
+        Compared after the same 512 px processing, so an untouched logo is
+        never mistaken for a new one. An SVG is never "the same": the screen
+        cannot hold one (see ``_current_logo``).
+        """
+        if not stored or _is_svg(stored):
+            return False
+        field = self._fields["logo"]
+        return _as_bytes(new_logo) == _as_bytes(field._image_process(stored, self.env))
+
+    @api.model
+    def _placeholder_logo_websites(self, company):
+        """The shop's websites whose header shows no logo of their own.
+
+        Empty, or Odoo's default ``website_logo.svg`` byte for byte. Any
+        other SVG was put there on purpose (only an administrator can) and
+        is left alone.
+        """
+        Website = self.env["website"].sudo()
+        websites = company.website_id.sudo() | Website.search(
+            [("company_id", "=", company.id)]
+        )
+        default = _as_bytes(Website._default_logo())
+        return websites.filtered(
+            lambda site: not site.logo or _as_bytes(site.logo) == default
+        )
 
     def _save_address(self, company):
         """Write the fields of the address that changed to the partner, once.
