@@ -1,4 +1,5 @@
 from . import (
+    test_company_text_translation,
     test_content_editor,
     test_core_menu_gating,
     test_hero_legacy_css,
