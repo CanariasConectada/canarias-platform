@@ -172,6 +172,10 @@ class TestLegacyHomepageCover(TransactionCase):
         translated "Shop", an emptied strip title shows nothing."""
         view = self._page()
         self._migrate()
+        # An edit makes them live first (the migration left them as typed).
+        self.company.write(
+            {"microsite_button_text": "Ofertas", "microsite_banner_title": "Telas"}
+        )
         self.company.write(
             {"microsite_button_text": False, "microsite_banner_title": False}
         )
@@ -272,6 +276,78 @@ class TestLegacyHomepageCover(TransactionCase):
             1,
         )
 
+    def test_matching_values_keep_every_language_byte_identical(self):
+        """Page text == company value: nothing to relink, the seven
+        translations stay exactly as they are."""
+        self.company.write(
+            {
+                "microsite_hero_image": False,
+                "microsite_intro_image": False,
+                "microsite_banner_image": False,
+            }
+        )
+        view = self._page()
+        before = self._raw(view)
+        stat = self._cover_stat(view)
+        self.assertFalse(stat["written"])
+        self.assertEqual(self._raw(view), before)
+        self.assertNotIn("button", {k["kind"] for k in stat["kept_static"]})
+
+    def test_matching_texts_stay_typed_when_the_pictures_go_live(self):
+        view = self._page()
+        self._migrate()
+        raw = self._raw(view)
+        for code, word in BUTTON.items():
+            self.assertIn(f'href="/shop">{word}</a>', raw[code], code)
+            self.assertIn("<h2>Ideas and materials</h2>", raw[code], code)
+            self.assertIn("<h2>Fabrics and threads</h2>", raw[code], code)
+            for kind in legacy_cover.TEXT_KINDS:
+                self.assertNotIn(legacy_homepage.LIVE_TEMPLATES[kind], raw[code])
+            self.assertNotIn("ir.attachment", raw[code], code)
+        self.assertIn(">Ladengeschäft<", self._render(view, lang="de_DE"))
+
+    def test_a_differing_value_is_relinked(self):
+        self.company.microsite_button_text = "Productos"
+        view = self._page()
+        stat = self._cover_stat(view)
+        self.assertIn("button", stat["relinked"])
+        self.assertIn("button: 'Tienda' -> 'Productos'", stat["notes"])
+        raw = self._raw(view)
+        for code in BUTTON:
+            self.assertIn(legacy_homepage.LIVE_TEMPLATES["button"], raw[code], code)
+            self.assertNotIn(
+                legacy_homepage.LIVE_TEMPLATES["intro_title"], raw[code], code
+            )
+            self.assertIn("Productos", self._render(view, lang=code), code)
+        self.assertIn("<h2>Fabrics and threads</h2>", raw["de_DE"])
+
+    def test_case_and_whitespace_only_differences_count_as_matching(self):
+        self.company.write(
+            {
+                "microsite_intro_title": "  IDEAS   and  MATERIALS ",
+                "microsite_banner_title": "fabrics and threads",
+                "microsite_name": "ZIG ZAG merceria",
+            }
+        )
+        view = self._page()
+        stat = self._cover_stat(view)
+        self.assertFalse(
+            {"intro_title", "strip_title", "title"} & set(stat["relinked"])
+        )
+        self.assertFalse(stat["kept_static"])
+        raw = self._raw(view)
+        self.assertIn("<h2>Ideas and materials</h2>", raw["es_ES"])
+        self.assertIn("Zig Zag Merceria</span>", raw["es_ES"])
+
+    def test_the_migration_is_idempotent_with_a_relinked_value(self):
+        self.company.microsite_intro_title = "Otra entrada"
+        view = self._page()
+        self._migrate()
+        after = self._raw(view)
+        self.assertIn(legacy_homepage.LIVE_TEMPLATES["intro_title"], after["es_ES"])
+        self._migrate()
+        self.assertEqual(self._raw(view), after)
+
     def test_dynamic_homepages_are_not_touched(self):
         view = self._page(
             slug="dynamic",
@@ -291,6 +367,14 @@ class TestLegacyHomepageCover(TransactionCase):
     def test_a_builder_save_keeps_the_cover_live(self):
         view = self._page()
         self._migrate()
+        self.company.write(
+            {
+                "microsite_name": "Zig Zag",
+                "microsite_button_text": "Productos",
+                "microsite_intro_title": "New intro",
+                "microsite_banner_title": "New strip",
+            }
+        )
         rendered = html.fromstring(self._render(view, editable=True))
         wrap = rendered.xpath("//div[@id='wrap']")[0]
         view.with_context(website_id=self.website.id).save(

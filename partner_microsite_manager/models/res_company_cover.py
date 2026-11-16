@@ -104,13 +104,18 @@ class ResCompany(models.Model):
         values, ``_relink_from_authoring_copy``) and applied to the base
         arch:
 
-        - the button and the two strip titles go live when the company has
-          a value; an empty field keeps the page's text (``live_empty``);
-        - the cover title goes live only where the page already shows the
-          resolved ``microsite_title``; a different H1 is kept and listed
-          (``differs``): forcing those is the owner's decision;
+        - a text the page already shows (same value, ignoring case and
+          whitespace) is left as typed, with its seven translations: the
+          live template prints the single Spanish field in every language,
+          so relinking it would only replace the translations. A later
+          edit of that field relinks it (``res.company.write``);
+        - the button and the two strip titles go live where the company
+          value differs from the page; an empty field keeps the page's text
+          (``live_empty``);
+        - a cover title that differs is kept and listed (``differs``):
+          forcing those is the owner's decision;
         - a background picture goes live when the company image is the same
-          file (checksum).
+          file (checksum); it carries no translation.
         """
         raw = self._get_arch_db_raw(view)
         base = raw.get("en_US") or view.arch_db or ""
@@ -131,7 +136,10 @@ class ResCompany(models.Model):
                 reason = "markup"
             elif not value:
                 reason = "live_empty"
-            elif kind == "title" and not legacy_cover.same_text(text, value):
+            elif legacy_cover.same_value(text, value):
+                # Already what the company says: keep the translations.
+                continue
+            elif kind == "title":
                 reason = "differs"
             if reason:
                 report["kept_static"].append(
@@ -139,8 +147,7 @@ class ResCompany(models.Model):
                 )
                 continue
             relink.append(kind)
-            if not legacy_cover.same_text(text, value):
-                report["notes"].append(f"{kind}: {text!r} -> {value!r}")
+            report["notes"].append(f"{kind}: {text!r} -> {value!r}")
         backgrounds = company._microsite_cover_backgrounds(
             base, legacy_cover.IMAGE_KINDS, report
         )

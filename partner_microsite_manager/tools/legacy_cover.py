@@ -180,10 +180,13 @@ def relink_cover(arch, relink=(), backgrounds=None):
     return after, report
 
 
-def same_text(shown, value):
-    """Whether a page text and a company value read the same."""
+def same_value(shown, value):
+    """Whether a page text and a company value are the same value, ignoring
+    case and whitespace: "CONSUME PRODUCTOS CANARIOS" is the field
+    "Consume Productos Canarios". The migration leaves such a text as typed,
+    with its seven translations."""
 
     def norm(text):
-        return re.sub(r"\s+", " ", text or "").strip()
+        return re.sub(r"\s+", " ", text or "").strip().casefold()
 
     return bool(norm(value)) and norm(shown) == norm(value)
