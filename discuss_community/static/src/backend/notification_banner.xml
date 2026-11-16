@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<templates xml:space="preserve">
+
+    <t t-name="discuss_community.DiscussNotificationBanner">
+        <div t-if="isVisible" class="o_dc_notification_banner alert d-flex align-items-center gap-2 m-0 rounded-0 border-0 border-bottom py-2 px-3" t-att-class="alertClass" t-att-data-phase="state.phase" t-att-data-reason="state.reason" role="status">
+            <i t-if="state.phase === 'success'" class="fa fa-check-circle flex-shrink-0" aria-hidden="true"/>
+            <i t-elif="state.phase === 'working'" class="fa fa-circle-o-notch fa-spin flex-shrink-0" aria-hidden="true"/>
+            <i t-else="" class="fa fa-bell flex-shrink-0" aria-hidden="true"/>
+            <div class="o_dc_notification_banner_text flex-grow-1 small">
+                <t t-if="state.phase === 'success'">
+                    <strong>✓ Notifications active on this device.</strong>
+                    <t t-if="state.reason === 'tested'"> We sent you a test notification.</t>
+                </t>
+                <t t-elif="state.phase === 'working'">
+                    <strong>Activating and verifying notifications…</strong>
+                </t>
+                <t t-elif="state.phase === 'error' and state.reason === 'denied'">
+                    <strong>Notifications are blocked on this device.</strong>
+                    On iPhone or iPad: Settings › Notifications › this app › Allow Notifications. On Android: long-press the app icon › App info › Notifications, or in Chrome tap the icon next to the address › Permissions › Notifications. Then reload this page.
+                </t>
+                <t t-elif="state.reason === 'owned_by_other'">
+                    <strong>Notifications are not active on this device.</strong>
+                    <t t-if="state.phase === 'error'">
+                        This device is linked to another account. Log in with that account and turn notifications off there, or remove the app and install it again.
+                    </t>
+                    <t t-else="">
+                        This device is linked to another account. Tap “Activate and verify” to link it to yours.
+                    </t>
+                </t>
+                <t t-elif="state.reason === 'unsupported_ios'">
+                    <strong>Notifications are not active on this device.</strong>
+                    On iPhone and iPad, notifications only work in the app installed on the home screen (Share › Add to Home Screen) and need iOS 16.4 or later. Open the app from its icon and come back here.
+                </t>
+                <t t-elif="state.reason === 'unsupported'">
+                    <strong>Notifications are not active on this device.</strong>
+                    This browser cannot receive notifications. Use an up-to-date Chrome, Edge, Firefox or Safari, or install the app on your phone.
+                </t>
+                <t t-elif="state.reason === 'no_key'">
+                    <strong>Notifications are not active on this device.</strong>
+                    Notifications are not configured on the server yet. Please tell an administrator.
+                </t>
+                <t t-elif="state.reason === 'not_stored'">
+                    <strong>Notifications are not active on this device.</strong>
+                    The server did not save this device. Try again; if it keeps failing, tell an administrator.
+                </t>
+                <t t-elif="state.reason === 'server'">
+                    <strong>Notifications are not active on this device.</strong>
+                    The server answered with an error: <span class="o_dc_notification_banner_error" t-esc="state.message"/>
+                </t>
+                <t t-else="">
+                    <strong>Notifications are not active on this device.</strong>
+                    Activate them to know when someone answers you, even with the app closed.
+                </t>
+            </div>
+            <button t-if="canActivate" type="button" class="o_dc_notification_banner_enable btn btn-sm btn-primary flex-shrink-0" t-on-click="onClickActivate">Activate and verify</button>
+            <button t-if="state.phase !== 'working'" type="button" class="o_dc_notification_banner_dismiss btn btn-sm btn-link text-reset flex-shrink-0 p-1" title="Hide for now" aria-label="Hide for now" t-on-click="onClickDismiss">
+                <i class="oi oi-close" aria-hidden="true"/>
+            </button>
+        </div>
+    </t>
+
+    <!-- A column wrapper, so the banner sits above Discuss, full width, and
+         Discuss keeps the whole remaining height AND width (see the scss). -->
+    <t t-inherit="mail.DiscussClientAction" t-inherit-mode="extension">
+        <xpath expr="//Discuss" position="replace">
+            <div class="o_dc_discuss_wrapper d-flex flex-column h-100 w-100">
+                <DiscussNotificationBanner/>
+                <div class="o_dc_discuss_body d-flex flex-grow-1">
+                    <Discuss/>
+                </div>
+            </div>
+        </xpath>
+    </t>
+
+</templates>

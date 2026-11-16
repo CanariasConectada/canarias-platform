@@ -1,1 +1,1 @@
-from . import test_marketplace
+from . import test_marketplace, test_pickup_carrier, test_website_cart_company

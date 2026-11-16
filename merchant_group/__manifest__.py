@@ -1,0 +1,51 @@
+# Copyright 2026 Canarias Conectada
+# License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+{
+    "name": "Merchant Group",
+    "version": "19.0.3.0.0",
+    "category": "Tools",
+    "summary": "One group that makes a user a merchant, given to every new user",
+    "author": "Canarias Conectada",
+    "website": "https://github.com/CanariasConectada/canarias-platform",
+    "license": "AGPL-3",
+    "development_status": "Production/Stable",
+    "depends": [
+        # Every module below owns a group the merchant group implies, a
+        # menu this module re-gates, or a model it grants access to; naming
+        # a record whose module is absent aborts the install, so each one
+        # is a real dependency rather than a hope.
+        "sale",
+        # The Sales app itself: core ships sale.sale_menu_root archived and
+        # sale_management is what switches it on. The profile promises Ventas.
+        "sale_management",
+        "product",
+        "website",
+        "mass_mailing",
+        "company_certification",
+        "partner_reviews",
+        "crm",
+        # Purchase, Inventory and Invoicing are no longer implied (19.0.3.0.0)
+        # but stay installed: they are the opt-in an administrator ticks per
+        # user, and the tests check that opt-in.
+        "purchase",
+        "stock",
+        "account",
+        "sale_loyalty",
+        "website_sale_loyalty",
+        "board",
+        "spreadsheet_dashboard",
+        "project_todo",
+        # The link tracker menus gated in views/menu_gating.xml.
+        "utm",
+        "link_tracker",
+        "website_links",
+    ],
+    "data": [
+        "security/merchant_group.xml",
+        "security/ir.model.access.csv",
+        "views/menu_gating.xml",
+    ],
+    "installable": True,
+    "application": False,
+    "auto_install": False,
+}

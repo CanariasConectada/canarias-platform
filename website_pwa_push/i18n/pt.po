@@ -1,0 +1,160 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* website_pwa_push
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-25 01:24+0000\n"
+"PO-Revision-Date: 2026-09-25 01:24+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: pt\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.pwa_notify_card
+msgid ""
+"<i class=\"fa fa-bell me-1\" role=\"img\" aria-hidden=\"true\"/>\n"
+"                Turn on notifications"
+msgstr ""
+"<i class=\"fa fa-bell me-1\" role=\"img\" aria-hidden=\"true\"/> Ativar "
+"notificações"
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.s_pwa_push
+msgid ""
+"Activa los avisos y te llegará una notificación al\n"
+"                        móvil cuando te escriban, aunque no tengas la web\n"
+"                        abierta."
+msgstr ""
+"Ative os avisos e receberá uma notificação no telemóvel quando lhe "
+"escreverem, mesmo sem o site aberto."
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.s_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.snippet_pwa_push
+msgid "Activar avisos"
+msgstr "Ativar avisos"
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.s_pwa_push
+msgid "Avisos activados en este dispositivo."
+msgstr "Avisos ativados neste dispositivo."
+
+#. module: website_pwa_push
+#: model:ir.model.fields,field_description:website_pwa_push.field_website__pwa_push_enabled
+msgid "Avisos push"
+msgstr "Avisos push"
+
+#. module: website_pwa_push
+#: model:ir.model.fields,field_description:website_pwa_push.field_website__display_name
+msgid "Display Name"
+msgstr "Nome exibido"
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.s_pwa_push
+msgid ""
+"En iPhone o iPad, los avisos solo funcionan con la web\n"
+"                        instalada: pulsa\n"
+"                        <strong>Compartir</strong>\n"
+"                        , luego\n"
+"                        <strong>Añadir a pantalla de inicio</strong>\n"
+"                        y abre la app desde ahí para activarlos."
+msgstr ""
+"No iPhone ou iPad, os avisos só funcionam com o site instalado: toque em "
+"<strong>Partilhar</strong> , depois em <strong>Adicionar ao ecrã "
+"principal</strong> e abra a app a partir daí para os ativar."
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.pwa_notify_card
+msgid ""
+"Get a notification on this device when someone writes to you,\n"
+"                even when the app is closed."
+msgstr ""
+"Receba uma notificação neste dispositivo quando alguém lhe escrever, mesmo "
+"com a app fechada."
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.s_pwa_push
+msgid ""
+"Has bloqueado los avisos para esta web. Puedes\n"
+"                        volver a permitirlos desde los ajustes del navegador,\n"
+"                        en el candado de la barra de direcciones."
+msgstr ""
+"Bloqueou os avisos para este site. Pode voltar a permiti-los nas definições "
+"do navegador, no cadeado da barra de endereços."
+
+#. module: website_pwa_push
+#: model:ir.model.fields,field_description:website_pwa_push.field_website__id
+msgid "ID"
+msgstr "ID"
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.s_pwa_push
+msgid "No te pierdas ningún mensaje"
+msgstr "Não perca nenhuma mensagem"
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.pwa_notify_card
+msgid "Not now"
+msgstr "Agora não"
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.pwa_notify_card
+msgid ""
+"Notifications allowed. Sign in and they will start arriving on\n"
+"                this device."
+msgstr ""
+"Notificações permitidas. Inicie sessão e começarão a chegar a este "
+"dispositivo."
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.pwa_notify_card
+msgid ""
+"Notifications are blocked for this app. You can allow them\n"
+"                again from the notification settings of your phone or browser."
+msgstr ""
+"As notificações estão bloqueadas para esta app. Pode voltar a permiti-las "
+"nas definições de notificações do telemóvel ou do navegador."
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.pwa_notify_card
+msgid "Notifications are on for this device."
+msgstr "Notificações ativadas neste dispositivo."
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.pwa_notify_card
+msgid ""
+"On iPhone and iPad, notifications only work in the installed\n"
+"                app: add it to the Home Screen and open it from there."
+msgstr ""
+"No iPhone e iPad, as notificações só funcionam na app instalada: adicione-a "
+"ao ecrã principal e abra-a a partir daí."
+
+#. module: website_pwa_push
+#: model_terms:ir.ui.view,arch_db:website_pwa_push.pwa_notify_card
+msgid "Turn on notifications"
+msgstr "Ativar notificações"
+
+#. module: website_pwa_push
+#: model:ir.model,name:website_pwa_push.model_website
+msgid "Website"
+msgstr "Site"
+
+#. module: website_pwa_push
+#: model:ir.model.fields,help:website_pwa_push.field_website__pwa_push_enabled
+msgid ""
+"When enabled, visitors of this website can allow notifications and receive "
+"chat messages while the site is closed. Independent from the app switch on "
+"purpose: the app can be installable everywhere while push is piloted on a "
+"single website."
+msgstr ""
+"Quando ativo, os visitantes deste site podem permitir avisos e receber as "
+"mensagens do chat com o site fechado. Independente do interruptor da app de "
+"propósito: a app pode ser instalável em todo o lado enquanto os avisos são "
+"testados num só site."

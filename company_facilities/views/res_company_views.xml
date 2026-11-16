@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="view_company_form_facilities" model="ir.ui.view">
+        <field name="name">res.company.form.facilities</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id"
+               ref="partner_microsite_manager.view_company_form_microsite"/>
+        <field name="arch" type="xml">
+            <!-- Last section of the Microsite page, as on the merchant's
+                 content editor below, which it mirrors. -->
+            <xpath expr="//notebook[@name='microsite_sections']" position="inside">
+                <page string="Facilities and services" name="facilities">
+                    <group>
+                        <field name="facility_block_title" string="Section title"
+                               placeholder="Facilities and services"/>
+                    </group>
+                    <group string="What this shop offers">
+                        <field name="facility_ids" widget="facility_checkboxes"
+                               nolabel="1" colspan="2"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ...and on the merchant's own screen, which is a different model.
+         Without this the merchant could read "Instalaciones y servicios" on
+         their own page and have nowhere to say what they offer, and the
+         directory filter would have 218 shops with nothing ticked.
+
+         Three things and nothing else (client feedback, 2026-09-15): the
+         heading, and the catalogue as checkboxes under their subdivision
+         headings, in the catalogue's own order. The visibility switch is
+         gone: ticking something is what shows the section. -->
+    <record id="view_microsite_content_editor_form_facilities" model="ir.ui.view">
+        <field name="name">microsite.content.editor.form.facilities</field>
+        <field name="model">microsite.content.editor</field>
+        <field name="inherit_id"
+               ref="partner_microsite_manager.view_microsite_content_editor_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Facilities and services" name="facilities">
+                    <group>
+                        <field name="facility_block_title"
+                               placeholder="Facilities and services"/>
+                    </group>
+                    <group string="What this shop offers">
+                        <field name="facility_ids" widget="facility_checkboxes"
+                               nolabel="1" colspan="2"/>
+                    </group>
+                    <p class="text-muted">The section appears on your page as soon as you tick something and stays hidden while nothing is ticked. What you tick is also what visitors can filter the directory by.</p>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.form.auto.translate</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="website.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='website_info_settings']" position="inside">
+                <setting id="auto_translate_setting"
+                         string="Automatic translation"
+                         help="Content is queued when it is saved and translated by a scheduled job, so saving never waits for the translation service.">
+                    <field name="auto_translate_enabled"/>
+                    <div class="content-group mt-2" invisible="not auto_translate_enabled">
+                        <div class="row">
+                            <label for="auto_translate_source_lang" class="col-lg-4 o_light_label"/>
+                            <field name="auto_translate_source_lang"/>
+                        </div>
+                        <div class="row">
+                            <label for="auto_translate_mode" class="col-lg-4 o_light_label"/>
+                            <field name="auto_translate_mode"/>
+                        </div>
+                        <div class="row" invisible="auto_translate_mode != 'single'">
+                            <label for="auto_translate_engine_id" class="col-lg-4 o_light_label"/>
+                            <field name="auto_translate_engine_id"/>
+                        </div>
+                        <div class="row">
+                            <label for="auto_translate_batch_size" class="col-lg-4 o_light_label"/>
+                            <field name="auto_translate_batch_size"/>
+                        </div>
+                        <div class="mt-2">
+                            <button name="action_open_auto_translate_engines"
+                                    type="object"
+                                    string="Engines"
+                                    icon="fa-arrow-right"
+                                    class="btn-link"/>
+                            <button name="action_open_auto_translate_jobs"
+                                    type="object"
+                                    string="Translation queue"
+                                    icon="fa-arrow-right"
+                                    class="btn-link"/>
+                        </div>
+                        <div class="text-muted mt-2">
+                            Every active language other than the source one is a
+                            target. A shop is only included once its company has
+                            "Translate this shop automatically" ticked, and a
+                            translation somebody wrote by hand is never
+                            overwritten.
+                        </div>
+                    </div>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+</odoo>

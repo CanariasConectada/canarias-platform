@@ -7,6 +7,7 @@ from odoo import http
 from odoo.http import request
 
 from odoo.addons.mail.tools.discuss import add_guest_to_context
+from odoo.addons.mail_push_guest.models.mail_push_device import WORKER_WEBSITE, WORKERS
 
 
 class MailPushGuestController(http.Controller):
@@ -93,6 +94,7 @@ class MailPushGuestController(http.Controller):
         keys=None,
         vapid_public_key=None,
         expiration_time=None,
+        worker=None,
         **kwargs,
     ):
         """Bind a browser subscription to the caller's persona.
@@ -131,6 +133,11 @@ class MailPushGuestController(http.Controller):
             keys=keys,
             expiration_time=expiration_time,
             vapid_public_key=vapid_public_key,
+            # Which service worker the browser subscribed on. Unknown or
+            # absent reads as the website one: that is what this route served
+            # before the value existed, and what the website worker's own
+            # `pushsubscriptionchange` handler still sends.
+            worker=worker if worker in WORKERS else WORKER_WEBSITE,
         )
         return True
 

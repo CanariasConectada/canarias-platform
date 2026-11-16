@@ -1,0 +1,309 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* discuss_community
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "Activate and verify"
+msgstr "Activar y comprobar"
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid ""
+"Activate them to know when someone answers you, even with the app closed."
+msgstr ""
+"Actívalas para saber cuándo alguien te responde, incluso con la app cerrada."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "Activating and verifying notifications…"
+msgstr "Activando y comprobando las notificaciones…"
+
+#. module: discuss_community
+#: model:ir.model.fields,help:discuss_community.field_res_users__is_community_guest
+msgid ""
+"Anonymous throwaway account created from the community page's 'Enter as "
+"guest' button. Internal (Discuss-only), reused via a signed cookie and "
+"garbage-collected once idle. Never set this by hand."
+msgstr ""
+"Cuenta anónima desechable creada desde el botón «Entrar como invitado» de la"
+" página de la comunidad. Interna (solo Conversaciones), reutilizada mediante"
+" una cookie firmada y eliminada cuando queda inactiva. No la marques nunca a"
+" mano."
+
+#. module: discuss_community
+#: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
+msgid "Chat with your neighbourhood: no forms, no waiting."
+msgstr "Chatea con tu barrio: sin formularios, sin esperas."
+
+#. module: discuss_community
+#: model:ir.model.fields,field_description:discuss_community.field_res_users__is_community_guest
+msgid "Community Guest"
+msgstr "Invitado de la comunidad"
+
+#. module: discuss_community
+#: model:res.groups,name:discuss_community.group_community_member
+msgid "Community Member"
+msgstr "Miembro de la comunidad"
+
+#. module: discuss_community
+#: model:ir.model,name:discuss_community.model_res_partner
+msgid "Contact"
+msgstr "Contacto"
+
+#. module: discuss_community
+#: model:ir.model,website_form_label:discuss_community.model_res_partner
+msgid "Create a Customer"
+msgstr "Crear un cliente"
+
+#. module: discuss_community
+#: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
+msgid "Create my account"
+msgstr "Crear mi cuenta"
+
+#. module: discuss_community
+#: model:ir.actions.server,name:discuss_community.cron_gc_community_guests_ir_actions_server
+msgid "Discuss Community: purge idle guest accounts"
+msgstr "Comunidad de Conversaciones: purgar cuentas de invitado inactivas"
+
+#. module: discuss_community
+#: model:ir.model,name:discuss_community.model_discuss_channel
+msgid "Discussion Channel"
+msgstr "Canal de conversación"
+
+#. module: discuss_community
+#: model:ir.model.fields,field_description:discuss_community.field_discuss_channel__display_name
+#: model:ir.model.fields,field_description:discuss_community.field_ir_http__display_name
+#: model:ir.model.fields,field_description:discuss_community.field_ir_ui_menu__display_name
+#: model:ir.model.fields,field_description:discuss_community.field_res_partner__display_name
+#: model:ir.model.fields,field_description:discuss_community.field_res_users__display_name
+msgid "Display Name"
+msgstr "Nombre mostrado"
+
+#. module: discuss_community
+#: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
+msgid "Enter as guest"
+msgstr "Entrar como invitado"
+
+#. module: discuss_community
+#: model:ir.model,name:discuss_community.model_ir_http
+msgid "HTTP Routing"
+msgstr "Enrutamiento HTTP"
+
+#. module: discuss_community
+#: model:ir.model.fields,field_description:discuss_community.field_res_users__community_channel_ids
+msgid "Joinable Community Channels"
+msgstr "Canales de la comunidad disponibles"
+
+#. module: discuss_community
+#: model:ir.model.fields,help:discuss_community.field_res_users__community_channel_ids
+msgid ""
+"Community channels a community guest may see and join or leave at will: the "
+"platform-wide channel and the neighbourhood channels. Read by the guest "
+"channel record rules; empty for everybody who is not a community guest."
+msgstr ""
+"Canales de la comunidad que un invitado puede ver y a los que puede unirse o"
+" abandonar cuando quiera: el canal de toda la plataforma y los canales de "
+"barrio. Lo leen las reglas de registro de canales para invitados; vacío para"
+" quien no es invitado de la comunidad."
+
+#. module: discuss_community
+#: model:ir.model.fields,field_description:discuss_community.field_res_users__community_hidden_channel_ids
+msgid "Hidden Staff Channels"
+msgstr "Canales del equipo ocultos"
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "Hide for now"
+msgstr "Ocultar por ahora"
+
+#. module: discuss_community
+#: model:ir.model.fields,field_description:discuss_community.field_discuss_channel__id
+#: model:ir.model.fields,field_description:discuss_community.field_ir_http__id
+#: model:ir.model.fields,field_description:discuss_community.field_ir_ui_menu__id
+#: model:ir.model.fields,field_description:discuss_community.field_res_partner__id
+#: model:ir.model.fields,field_description:discuss_community.field_res_users__id
+msgid "ID"
+msgstr "ID"
+
+#. module: discuss_community
+#: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
+msgid "Join the community"
+msgstr "Únete a la comunidad"
+
+#. module: discuss_community
+#: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
+msgid "Log out and continue"
+msgstr "Cerrar sesión y continuar"
+
+#. module: discuss_community
+#: model:ir.model,name:discuss_community.model_ir_ui_menu
+msgid "Menu"
+msgstr "Menú"
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "Notifications are blocked on this device."
+msgstr "Las notificaciones están bloqueadas en este dispositivo."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "Notifications are not active on this device."
+msgstr "Las notificaciones no están activas en este dispositivo."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid ""
+"Notifications are not configured on the server yet. Please tell an "
+"administrator."
+msgstr ""
+"Las notificaciones aún no están configuradas en el servidor. Avisa a un "
+"administrador."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid ""
+"On iPhone and iPad, notifications only work in the app installed on the home"
+" screen (Share › Add to Home Screen) and need iOS 16.4 or later. Open the "
+"app from its icon and come back here."
+msgstr ""
+"En iPhone y iPad, las notificaciones solo funcionan en la app instalada en "
+"la pantalla de inicio (Compartir › Añadir a pantalla de inicio) y necesitan "
+"iOS 16.4 o posterior. Abre la app desde su icono y vuelve aquí."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid ""
+"On iPhone or iPad: Settings › Notifications › this app › Allow "
+"Notifications. On Android: long-press the app icon › App info › "
+"Notifications, or in Chrome tap the icon next to the address › Permissions ›"
+" Notifications. Then reload this page."
+msgstr ""
+"En iPhone o iPad: Ajustes › Notificaciones › esta app › Permitir "
+"notificaciones. En Android: mantén pulsado el icono de la app › Información "
+"de la app › Notificaciones, o en Chrome toca el icono junto a la dirección ›"
+" Permisos › Notificaciones. Después vuelve a cargar esta página."
+
+#. module: discuss_community
+#: model:res.groups,comment:discuss_community.group_community_member
+msgid ""
+"Residents and walk-in guests of the community\n"
+"            chat. Holders are internal users whose backend is stripped down to\n"
+"            Discuss; the group is set automatically by website signup and by\n"
+"            the guest entry button, never by hand."
+msgstr ""
+"Vecinos e invitados ocasionales del chat de la comunidad. Son usuarios "
+"internos cuyo backend se reduce a Conversaciones; el grupo lo asignan "
+"automáticamente el registro en la web y el botón de entrada como invitado, "
+"nunca a mano."
+
+#. module: discuss_community
+#: model:ir.model.fields,help:discuss_community.field_res_users__community_hidden_channel_ids
+msgid ""
+"Staff channels a community guest may never read or join, even when seated "
+"there by mistake. Read by the guest channel record rules; empty for "
+"everybody who is not a community guest."
+msgstr ""
+"Canales del equipo que un invitado de la comunidad nunca puede leer ni "
+"unirse, aunque esté dentro por error. Lo leen las reglas de registro de "
+"canales para invitados; vacío para quien no es invitado de la comunidad."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "The server answered with an error:"
+msgstr "El servidor ha respondido con un error:"
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid ""
+"The server did not save this device. Try again; if it keeps failing, tell an"
+" administrator."
+msgstr ""
+"El servidor no ha guardado este dispositivo. Vuelve a intentarlo; si sigue "
+"fallando, avisa a un administrador."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid ""
+"This browser cannot receive notifications. Use an up-to-date Chrome, Edge, "
+"Firefox or Safari, or install the app on your phone."
+msgstr ""
+"Este navegador no puede recibir notificaciones. Usa Chrome, Edge, Firefox o "
+"Safari actualizados, o instala la app en tu móvil."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid ""
+"This device is linked to another account. Log in with that account and turn "
+"notifications off there, or remove the app and install it again."
+msgstr ""
+"Este dispositivo está vinculado a otra cuenta. Entra con esa cuenta y "
+"desactiva allí las notificaciones, o elimina la app y vuelve a instalarla."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid ""
+"This device is linked to another account. Tap “Activate and verify” to link "
+"it to yours."
+msgstr ""
+"Este dispositivo está vinculado a otra cuenta. Toca «Activar y comprobar» "
+"para vincularlo a la tuya."
+
+#. module: discuss_community
+#: model:ir.model,name:discuss_community.model_res_users
+msgid "User"
+msgstr "Usuario"
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "We sent you a test notification."
+msgstr "Te hemos enviado una notificación de prueba."
+
+#. module: discuss_community
+#: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
+msgid ""
+"With an account you keep your name and your conversations on every visit."
+msgstr ""
+"Con una cuenta conservas tu nombre y tus conversaciones en cada visita."
+
+#. module: discuss_community
+#: model_terms:ir.ui.view,arch_db:discuss_community.community_landing
+msgid ""
+"Your current account is not a community account. Log out first, then come "
+"back in as a guest or create a community account."
+msgstr ""
+"Tu cuenta actual no es una cuenta de la comunidad. Cierra sesión primero y "
+"vuelve a entrar como invitado o crea una cuenta de la comunidad."
+
+#. module: discuss_community
+#. odoo-javascript
+#: code:addons/discuss_community/static/src/backend/notification_banner.xml:0
+msgid "✓ Notifications active on this device."
+msgstr "✓ Notificaciones activas en este dispositivo."

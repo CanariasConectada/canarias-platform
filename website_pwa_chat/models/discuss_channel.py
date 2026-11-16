@@ -1,8 +1,16 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import logging
+from datetime import timedelta
+
 from odoo import _, api, fields, models
+from odoo.exceptions import AccessError, UserError
 from odoo.tools import format_datetime
+
+from odoo.addons.mail.tools.discuss import Store
+
+_logger = logging.getLogger(__name__)
 
 # How many messages the page renders, and how many a single live catch-up
 # fetch may return. Deliberately small: this is a phone screen, and the
@@ -19,6 +27,47 @@ SUPPORT_KEY_GUEST = "guest-%s"
 # renamed or moved; `_support_agents` treats a missing group as "no agents
 # from there" rather than as an error on a page a visitor is waiting for.
 SUPPORT_GROUP_XMLID = "website_pwa_chat.group_support_agent"
+
+# How long a support conversation lives, as system parameters so an
+# administrator can widen or narrow them without a deploy. A conversation is
+# CLOSED once it has been quiet for a while -- that is what keeps the queue
+# readable -- and DELETED a while after that.
+#
+# The identified window is the whole point of asking a visitor who they are:
+# somebody who left a name gets a month, an anonymous cookie gets a week. It
+# is also the honest thing to do with a stranger's messages -- keeping them
+# longer than the conversation lasted buys nothing and stores more than we
+# were given.
+PARAM_CLOSE_DAYS = "website_pwa_chat.support_close_after_days"
+PARAM_PURGE_DAYS = "website_pwa_chat.support_purge_after_days"
+PARAM_PURGE_IDENTIFIED_DAYS = "website_pwa_chat.support_purge_identified_days"
+DEFAULT_CLOSE_DAYS = 3
+DEFAULT_PURGE_DAYS = 7
+DEFAULT_PURGE_IDENTIFIED_DAYS = 30
+
+# A conversation nobody ever wrote in is not a conversation. It used to be
+# opened by the page itself, so every crawler and every curious click left
+# one behind -- about ninety a day in production, all empty -- and the
+# retention windows above, keyed on the last message, kept each of them for
+# ten days. The channel is now opened by the FIRST message instead, and this
+# window is the safety net for whatever still ends up empty (a post that
+# failed after the open, an identify form never followed by a message).
+PARAM_EMPTY_PURGE_HOURS = "website_pwa_chat.support_empty_purge_hours"
+DEFAULT_EMPTY_PURGE_HOURS = 1
+
+# How long a support conversation's name may get. The name is what an agent
+# scans down the Soporte drawer of the Discuss sidebar, so a visitor who types
+# a paragraph into the "your name" field must not push everything else off the
+# row. Long enough for "Soporte · " plus a full first and last name.
+SUPPORT_NAME_MAX = 64
+
+# How long a typed name or email may be, whichever form it was typed in: the
+# website identify card and the Discuss dialog both declare maxlength=120.
+SUPPORT_IDENTITY_MAX = 120
+
+SUPPORT_WAITING = "waiting"
+SUPPORT_ANSWERED = "answered"
+SUPPORT_CLOSED = "closed"
 
 
 class DiscussChannel(models.Model):
@@ -233,6 +282,20 @@ class DiscussChannel(models.Model):
         "platform, never by hand.",
     )
 
+    def _to_store_defaults(self, target):
+        """Tell the Discuss client which channels are support conversations.
+
+        A boolean rather than the key itself: the sidebar only needs to know
+        WHERE to file the conversation, and the key encodes partner and guest
+        ids that no client needs. The frontend patch reads this to move the
+        conversation from "Direct messages" into its own collapsible Soporte
+        category -- with 218 shops feeding the queue, the DM list was
+        drowning.
+        """
+        return super()._to_store_defaults(target) + [
+            Store.Attr("is_support_channel", lambda channel: bool(channel.support_key)),
+        ]
+
     @api.model
     def _support_key(self):
         """Who is asking, as a stable string, or False when nobody is.
@@ -283,8 +346,29 @@ class DiscussChannel(models.Model):
         return agents.filtered(lambda user: user.active and not user._is_public())
 
     @api.model
+    def _support_channel_existing(self):
+        """The caller's own support conversation if one exists, else empty.
+
+        This is what the page reads. It never creates anything: a page view
+        is not participation, and opening a conversation for every visit
+        left about ninety empty rows a day behind in production. The
+        conversation is opened by ``_support_channel`` on the first message.
+        """
+        key = self._support_key()
+        if not key:
+            return self.browse()
+        existing = self.sudo().search([("support_key", "=", key)], limit=1)
+        if existing:
+            # Agents appointed since the conversation opened still belong in it.
+            existing._support_seat_agents()
+        return existing
+
+    @api.model
     def _support_channel(self):
         """The caller's own support conversation, opening it if this is the first time.
+
+        Called when the visitor actually participates -- their first message,
+        or the identify form -- never on a page view.
 
         ``channel_type`` is ``group`` and that single value is the privacy of
         this feature. ``ir_rule_discuss_channel_all`` has two branches: for
@@ -305,10 +389,8 @@ class DiscussChannel(models.Model):
         if not key:
             return self.browse()
 
-        existing = self.sudo().search([("support_key", "=", key)], limit=1)
+        existing = self._support_channel_existing()
         if existing:
-            # Agents appointed since the conversation opened still belong in it.
-            existing._support_seat_agents()
             return existing
 
         partner, guest = self.env["res.partner"]._get_current_persona()
@@ -323,9 +405,7 @@ class DiscussChannel(models.Model):
             )
             .create(
                 {
-                    "name": _(
-                        "Soporte · %s", (partner.name or guest.name or _("Visitante"))
-                    ),
+                    "name": self._support_channel_name(partner.name or guest.name),
                     "channel_type": "group",
                     "support_key": key,
                     # Never on the public list: that flag is what `/chat` reads.
@@ -338,19 +418,498 @@ class DiscussChannel(models.Model):
             guests=guest or None,
             post_joined_message=False,
         )
+        # Once more through the one method that knows how to write a name in
+        # every language, for when `name` is translatable.
+        channel._support_refresh_name()
         channel._support_seat_agents()
         return channel
 
     def _support_seat_agents(self):
-        """Put every current agent in the conversation, without disturbing the rest."""
+        """Put every current agent in the conversation, out of their way.
+
+        Seated, because only a member can answer and be notified. Unpinned,
+        because a seat is not an invitation to look: with 218 shops and a
+        button on every page, an administrator opening Discuss was met by a
+        wall of "Soporte · Visitante" down the whole Mensajes directos list,
+        one row per conversation ever opened, most of them empty. Reported
+        2026-08-17 with a screenshot of exactly that.
+
+        Odoo re-pins a member the moment the channel has fresh interest
+        (`_compute_is_pinned`: `channel.last_interest_dt >= member.unpin_dt`),
+        so a conversation somebody actually writes in comes back on its own.
+        What stays out of the sidebar is the noise -- an opened page nobody
+        typed in -- and the queue under Discusión > Soporte is where the rest
+        is read, which is what it was built for.
+
+        The visitor's own seat is never touched: it is their conversation.
+        """
         agents = self._support_agents()
         if not agents:
             return
+        now = fields.Datetime.now()
         for channel in self.sudo():
             seated = channel.channel_member_ids.partner_id
             missing = agents.partner_id - seated
             if missing:
                 channel._add_members(partners=missing, post_joined_message=False)
+            channel.channel_member_ids.filtered(
+                lambda member, partners=agents.partner_id: member.partner_id in partners
+            ).unpin_dt = now
+
+    # ------------------------------------------------------------------
+    # Support: what the administrators see, and for how long
+    # ------------------------------------------------------------------
+
+    support_state = fields.Selection(
+        selection=[
+            (SUPPORT_WAITING, "Sin responder"),
+            (SUPPORT_ANSWERED, "Respondida"),
+            (SUPPORT_CLOSED, "Cerrada"),
+        ],
+        string="Estado",
+        compute="_compute_support_state",
+        store=True,
+        index=True,
+        help="Whether somebody is still waiting for an answer. Computed from "
+        "who wrote last, so it cannot fall out of step with the conversation.",
+    )
+    support_closed = fields.Boolean(
+        string="Cerrada a mano o por inactividad",
+        copy=False,
+        help="Set by an agent or by the nightly sweep. A closed conversation "
+        "reopens by itself the moment the visitor writes again.",
+    )
+    support_last_message_date = fields.Datetime(
+        string="Último mensaje",
+        compute="_compute_support_state",
+        store=True,
+        index=True,
+    )
+    support_identified = fields.Boolean(
+        string="Se identificó",
+        copy=False,
+        help="The visitor told us their name. That is what buys their "
+        "conversation the longer retention window.",
+    )
+    support_visitor_name = fields.Char(string="Quién pregunta", copy=False)
+    support_visitor_email = fields.Char(string="Correo de contacto", copy=False)
+
+    @api.depends("message_ids", "message_ids.author_id", "support_closed")
+    def _compute_support_state(self):
+        """Waiting, answered or closed — read off the conversation itself.
+
+        A separate "state" field an agent has to remember to move is a field
+        that is wrong by lunchtime. The only honest signal is who spoke last:
+        if it was one of the people who answer, the visitor has an answer; if
+        it was the visitor, somebody is waiting.
+
+        The agents are resolved ONCE per call rather than per record: this
+        recomputes on every message posted to every support conversation.
+        """
+        support = self.filtered("support_key")
+        (self - support).update(
+            {"support_state": False, "support_last_message_date": False}
+        )
+        if not support:
+            return
+        agent_partners = self._support_agents().partner_id
+        for channel in support:
+            # sudo: an agent reading their own queue may not be able to read
+            # a guest's message rows, and the state is about the conversation,
+            # not about who is looking at it.
+            last = (
+                self.env["mail.message"]
+                .sudo()
+                .search(
+                    [
+                        ("model", "=", "discuss.channel"),
+                        ("res_id", "=", channel.id),
+                        ("message_type", "!=", "notification"),
+                    ],
+                    order="id desc",
+                    limit=1,
+                )
+            )
+            channel.support_last_message_date = last.date or channel.create_date
+            if channel.support_closed:
+                channel.support_state = SUPPORT_CLOSED
+            elif last and last.author_id and last.author_id in agent_partners:
+                channel.support_state = SUPPORT_ANSWERED
+            else:
+                channel.support_state = SUPPORT_WAITING
+
+    def action_support_close(self):
+        """Close by hand. Writing again reopens it, so nothing is lost."""
+        self.sudo().write({"support_closed": True})
+        return True
+
+    def action_support_reopen(self):
+        self.sudo().write({"support_closed": False})
+        return True
+
+    @api.model
+    def _support_read_param(self, key, default):
+        """A positive integer parameter, or its default.
+
+        A zero or negative window would delete conversations as fast as
+        they are opened; nonsense is treated as "leave the default alone".
+        """
+        params = self.env["ir.config_parameter"].sudo()
+        try:
+            value = int(params.get_param(key) or default)
+        except (TypeError, ValueError):
+            return default
+        return value if value > 0 else default
+
+    @api.model
+    def _support_retention_days(self):
+        """The three windows, as an administrator has them configured."""
+        return (
+            self._support_read_param(PARAM_CLOSE_DAYS, DEFAULT_CLOSE_DAYS),
+            self._support_read_param(PARAM_PURGE_DAYS, DEFAULT_PURGE_DAYS),
+            self._support_read_param(
+                PARAM_PURGE_IDENTIFIED_DAYS, DEFAULT_PURGE_IDENTIFIED_DAYS
+            ),
+        )
+
+    @api.model
+    def _support_empty_purge_hours(self):
+        """How long an empty conversation is allowed to stay empty."""
+        return self._support_read_param(
+            PARAM_EMPTY_PURGE_HOURS, DEFAULT_EMPTY_PURGE_HOURS
+        )
+
+    def _support_has_messages(self):
+        """Whether anybody -- visitor or agent -- ever wrote in here.
+
+        Notifications do not count: "X joined" rows are the platform talking
+        to itself, and a conversation made only of those is still empty.
+        """
+        self.ensure_one()
+        return bool(
+            self.env["mail.message"]
+            .sudo()
+            .search_count(
+                [
+                    ("model", "=", "discuss.channel"),
+                    ("res_id", "=", self.id),
+                    ("message_type", "!=", "notification"),
+                ],
+                limit=1,
+            )
+        )
+
+    def _support_delete(self):
+        """Delete these conversations one by one, and report how many went.
+
+        One savepoint each: a single undeletable conversation must not roll
+        back the whole sweep.
+        """
+        deleted = 0
+        for channel in self.sudo():
+            try:
+                with self.env.cr.savepoint():
+                    guest = channel._support_guest()
+                    channel.unlink()
+                    # The visitor's throwaway persona goes with the last
+                    # thing it was used for -- but ONLY if that was the
+                    # last thing. The same guest may have posted in a
+                    # community channel, and deleting them there would
+                    # orphan messages other people are reading.
+                    if guest and not guest.channel_ids:
+                        guest.unlink()
+                    deleted += 1
+            except Exception:  # noqa: BLE001 - skip it, keep sweeping
+                _logger.exception(
+                    "website_pwa_chat: could not delete support channel %s",
+                    channel.id,
+                )
+        return deleted
+
+    @api.model
+    def _support_gc(self):
+        """Cron: close what has gone quiet, delete what has been closed a while,
+        and drop what was never written in.
+
+        Support conversations are meant to be temporary. Left alone they would
+        become a permanent archive of strangers' messages, and an unreadable
+        queue for the people who answer.
+
+        Runs hourly: the two day-sized windows are idempotent, and the empty
+        sweep is what wants the shorter cadence.
+
+        Returns ``(closed, deleted, emptied)`` so the log says what it did.
+        """
+        now = fields.Datetime.now()
+        close_days, purge_days, identified_days = self._support_retention_days()
+
+        quiet = self.sudo().search(
+            [
+                ("support_key", "!=", False),
+                ("support_closed", "=", False),
+                ("support_last_message_date", "<", now - timedelta(days=close_days)),
+            ]
+        )
+        quiet.write({"support_closed": True})
+
+        # Two windows, one query each, rather than one query and a filter:
+        # the identified set is small and the anonymous one is not.
+        deleted = 0
+        for identified, days in ((False, purge_days), (True, identified_days)):
+            stale = self.sudo().search(
+                [
+                    ("support_key", "!=", False),
+                    ("support_closed", "=", True),
+                    ("support_identified", "=", identified),
+                    (
+                        "support_last_message_date",
+                        "<",
+                        now - timedelta(days=days),
+                    ),
+                ]
+            )
+            deleted += stale._support_delete()
+
+        # The empty sweep. Keyed on `create_date` rather than on the last
+        # message date, which for a conversation with no messages IS the
+        # create date, and it does not wait for the conversation to be closed:
+        # there is nothing in it to keep.
+        empty_hours = self._support_empty_purge_hours()
+        candidates = self.sudo().search(
+            [
+                ("support_key", "!=", False),
+                ("create_date", "<", now - timedelta(hours=empty_hours)),
+            ]
+        )
+        empty = candidates.filtered(lambda channel: not channel._support_has_messages())
+        emptied = empty._support_delete()
+
+        _logger.info(
+            "website_pwa_chat: support GC closed %s, deleted %s and dropped %s "
+            "empty conversations",
+            len(quiet),
+            deleted,
+            emptied,
+        )
+        return len(quiet), deleted, emptied
+
+    def _support_guest(self):
+        """The anonymous persona this conversation belongs to, if it is one.
+
+        Read back out of ``support_key`` rather than off the membership: the
+        key is what OPENED the conversation and it never changes, while the
+        members list also holds every agent seated since.
+        """
+        self.ensure_one()
+        prefix = SUPPORT_KEY_GUEST % ""
+        key = self.support_key or ""
+        if not key.startswith(prefix):
+            return self.env["mail.guest"]
+        raw = key[len(prefix) :]
+        if not raw.isdigit():
+            return self.env["mail.guest"]
+        return self.env["mail.guest"].sudo().browse(int(raw)).exists()
+
+    def _support_identify(self, name, email=None):
+        """Record who is asking, and buy them the longer retention window.
+
+        Called from the visitor's own page, so it writes only the three fields
+        the form offers and only on the caller's own conversation -- resolved
+        by ``_support_channel()`` from the session, never from the form.
+        """
+        self.ensure_one()
+        name = self._support_clean_identity(name)
+        if not name:
+            return False
+        values = {
+            "support_identified": True,
+            "support_visitor_name": name,
+            "support_visitor_email": self._support_clean_identity(email) or False,
+        }
+        self.sudo().write(values)
+        # The guest persona carries the name too, so the agent sees it on the
+        # message and not only on the row.
+        _partner, guest = self.env["res.partner"]._get_current_persona()
+        if guest:
+            guest.sudo().write({"name": name})
+        # And the conversation itself: the name is what the agent reads in
+        # the Soporte drawer and in the thread header, long before they open
+        # the backend queue where "Quién pregunta" used to be the only place
+        # it showed up.
+        self._support_refresh_name()
+        return True
+
+    # ------------------------------------------------------------------
+    # Support: whose conversation it is, by name
+    # ------------------------------------------------------------------
+
+    @api.model
+    def _support_channel_name(self, requester):
+        """``Soporte · <requester>``, cut to a length the sidebar can show.
+
+        Cut on the whole name and not on the requester alone, so the limit
+        is one number whatever language the prefix was translated into.
+        """
+        name = _("Soporte · %s", (requester or "").strip() or _("Visitante"))
+        if len(name) > SUPPORT_NAME_MAX:
+            name = name[: SUPPORT_NAME_MAX - 1].rstrip() + "…"
+        return name
+
+    def _support_partner(self):
+        """The account this conversation belongs to, if it is one.
+
+        Read back out of ``support_key`` for the same reason as
+        ``_support_guest``: the members list also holds every agent.
+        """
+        self.ensure_one()
+        prefix = SUPPORT_KEY_PARTNER % ""
+        key = self.support_key or ""
+        if not key.startswith(prefix):
+            return self.env["res.partner"]
+        raw = key[len(prefix) :]
+        if not raw.isdigit():
+            return self.env["res.partner"]
+        return self.env["res.partner"].sudo().browse(int(raw)).exists()
+
+    def _support_requester_name(self):
+        """The best name we have for whoever asked, or False.
+
+        What they typed wins: a walk-in community guest is an account named
+        "Invitado 3f9a2c", and the name they gave is the one the agent can
+        actually greet them by. Then the account, then the guest cookie.
+        """
+        self.ensure_one()
+        if self.support_visitor_name:
+            return self.support_visitor_name
+        partner = self._support_partner()
+        if partner:
+            return partner.name
+        guest = self._support_guest()
+        if guest:
+            return guest.name
+        return False
+
+    @api.model
+    def _support_clean_identity(self, value):
+        """A typed name or email, stripped and capped; "" when there is none."""
+        return (value or "").strip()[:SUPPORT_IDENTITY_MAX].strip()
+
+    def _support_refresh_name(self):
+        """Rename these conversations after whoever asked.
+
+        Written only when the name actually changes: every write on a
+        channel's name is broadcast to all its members' Discuss clients.
+
+        Works whether or not ``name`` is translatable. When it is, a plain
+        write would only set the caller's language, and an agent reading
+        Discuss in another one would keep seeing the old name; the same value
+        goes to every installed language instead. The name is a person's
+        name, there is nothing in it to translate.
+        """
+        translatable = bool(self._fields["name"].translate)
+        for channel in self.sudo().filtered("support_key"):
+            name = channel._support_channel_name(channel._support_requester_name())
+            if translatable:
+                langs = [code for code, _label in self.env["res.lang"].get_installed()]
+                channel.update_field_translations(
+                    "name", {lang: name for lang in langs}
+                )
+            elif channel.name != name:
+                channel.name = name
+
+    # ------------------------------------------------------------------
+    # Support: asked for from inside Discuss
+    # ------------------------------------------------------------------
+
+    @api.model
+    def _support_is_agent(self, user=None):
+        """Whether this user is one of the people who answer.
+
+        Group membership rather than ``_support_agents()``: this runs on every
+        backend page load through ``session_info`` and only needs a yes or no
+        about one user, not the whole staff.
+        """
+        user = user or self.env.user
+        groups = user.sudo().all_group_ids
+        for xmlid in (SUPPORT_GROUP_XMLID, "base.group_system"):
+            group = self.env.ref(xmlid, raise_if_not_found=False)
+            if group and group in groups:
+                return True
+        return False
+
+    @api.model
+    def _support_is_community_guest(self, user=None):
+        """Whether this account is one of ``discuss_community``'s walk-ins.
+
+        Read by field name so this module keeps working where that module is
+        not installed. sudo: the flag sits on ``res.users``, which a guest
+        account cannot necessarily read about itself.
+        """
+        user = user or self.env.user
+        return "is_community_guest" in user._fields and bool(
+            user.sudo().is_community_guest
+        )
+
+    @api.model
+    def _support_can_request_from_discuss(self):
+        """Whether the "Request support" entry belongs in this user's Discuss.
+
+        Every internal account that does not answer support itself:
+        merchants, walk-in community guests, staff. An agent asking support
+        for help would open a conversation with themselves in it.
+        """
+        user = self.env.user
+        return user._is_internal() and not self._support_is_agent(user)
+
+    @api.model
+    def _support_request_from_discuss(self, name=None, email=None):
+        """Open (or reopen) the caller's support conversation from Discuss.
+
+        The SAME conversation the website button opens for this account --
+        ``_support_channel`` keys it on the partner either way -- so a
+        merchant who asked from their shop's website and then from the
+        backend is talking in one place, to the same seated agents.
+
+        A walk-in community guest is an account called "Invitado 3f9a2c", so
+        the Discuss dialog asks them who they are and the answer goes through
+        ``_support_identify``, exactly as the website identify card does. A
+        guest who has not identified yet must give a name; one who already
+        has may skip it. Everybody else is named after their account and any
+        name sent along is ignored.
+        """
+        if not self._support_can_request_from_discuss():
+            raise AccessError(
+                _(
+                    "Support agents answer support conversations; they do not "
+                    "open one for themselves."
+                )
+            )
+        typed_name = ""
+        if self._support_is_community_guest():
+            typed_name = self._support_clean_identity(name)
+            if (
+                not typed_name
+                and not self._support_channel_existing().support_identified
+            ):
+                # Checked BEFORE the conversation is opened, so a refused
+                # request leaves nothing behind.
+                raise UserError(
+                    _(
+                        "Please tell us your name so the support team knows "
+                        "who is asking."
+                    )
+                )
+        channel = self._support_channel()
+        if typed_name:
+            channel._support_identify(typed_name, email)
+        if channel.support_closed:
+            # Asking again is the clearest possible sign it is not over.
+            channel.sudo().support_closed = False
+        channel._support_refresh_name()
+        # A conversation unpinned in the past must come back to the caller's
+        # sidebar, or the click would open a thread they cannot find again.
+        channel.channel_pin(pinned=True)
+        return channel
 
     @api.model
     def _support_sync_agents(self):

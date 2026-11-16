@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <data noupdate="1">
+        <!-- The same shape as partner_microsite_manager's rule on ir.ui.view:
+             a restricted editor reaches the pages of the sites of their own
+             company. Designers imply the restricted editor group, so they
+             need a rule of their own or this one would cage them too. -->
+        <record id="rule_restricted_editor_own_website_pages" model="ir.rule">
+            <field name="name">Restricted editors write only their own site's pages</field>
+            <field name="model_id" ref="website.model_website_page"/>
+            <field name="domain_force">[('website_id.company_id', '=', user.company_id.id)]</field>
+            <field name="groups" eval="[(4, ref('website.group_website_restricted_editor'))]"/>
+            <field name="perm_read" eval="0"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+        <record id="rule_designer_all_website_pages" model="ir.rule">
+            <field name="name">Designers keep writing every site's pages</field>
+            <field name="model_id" ref="website.model_website_page"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('website.group_website_designer'))]"/>
+            <field name="perm_read" eval="0"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="0"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+    </data>
+</odoo>

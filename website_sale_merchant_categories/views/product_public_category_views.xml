@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- A category that belongs to ONE shop's site. The site is shown and
+         not chosen: `website_id` is pinned on the server for a merchant
+         whatever the form sends (models/product_public_category.py), and
+         `force_save` only makes the visible value travel with the record.
+         The parent may only be another category of the same site. -->
+    <record id="product_public_category_view_form_merchant" model="ir.ui.view">
+        <field name="name">product.public.category.form.merchant</field>
+        <field name="model">product.public.category</field>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <form string="Own category">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Category name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Fountains and volcanoes"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="website_id" string="Shop" readonly="1" force_save="1"/>
+                            <field name="parent_id"
+                                   domain="[('website_id', '=', website_id)]"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="sequence"/>
+                        </group>
+                        <group>
+                            <field name="cover_image" widget="image" string="Image for my shop"/>
+                        </group>
+                    </group>
+                    <p class="text-muted">Only your shop lists this category. File your products under it from the product form, in eCommerce categories.</p>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

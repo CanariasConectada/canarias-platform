@@ -51,10 +51,18 @@
                 t-set="chat_menu_url"
                 t-value="website and website._chat_menu_url()"
             />
-            <li t-if="chat_menu_url" class="nav-item o_cc_chat_menu_item">
+            <!-- In the mobile offcanvas the <ul> carries mx-n3 and every core
+                 item pushes back with p-3 on its link (`is_vertical_nav`,
+                 website_templates.xml:424-431); without the same classes this
+                 entry hangs out of the panel's left edge, which is exactly
+                 how it shipped the first time. -->
+            <li
+                t-if="chat_menu_url"
+                t-attf-class="nav-item o_cc_chat_menu_item #{is_vertical_nav and 'border-top' or ''}"
+            >
                 <a
                     t-att-href="chat_menu_url"
-                    class="nav-link o_cc_chat_menu_link"
+                    t-attf-class="nav-link o_cc_chat_menu_link #{is_vertical_nav and 'p-3 text-wrap' or ''}"
                 >Comunidad</a>
             </li>
         </xpath>
@@ -166,14 +174,42 @@
                     in the DOM subscribes to nothing.
                 -->
                 <div
-                    class="container py-4 o_cc_chat"
+                    t-attf-class="container py-4 o_cc_chat #{'o_cc_chat_is_support' if is_support else ''} #{'o_cc_chat_framed' if chat_in_frame else ''}"
                     t-att-data-channel-id="channel.id"
+                    t-att-data-support="'1' if is_support else None"
                 >
-                    <a href="/chat" class="small text-muted d-inline-block mb-2">
+                    <!-- Support is not a channel, so it has no way back to
+                         the channel list; inside the floating window there
+                         would be nowhere sensible for the link to go anyway. -->
+                    <a
+                        t-if="not is_support"
+                        href="/chat"
+                        class="small text-muted d-inline-block mb-2"
+                    >
                         ← Todos los canales
                     </a>
-                    <h1 class="h4 mb-1" t-out="channel.name" />
-                    <p class="text-muted small" t-out="channel.description" />
+                    <!-- A community channel: its name, the message-sound
+                         switch and its description. The switch has no text of
+                         its own: the script labels it and reveals it, because
+                         without the script there is no sound to switch. -->
+                    <t t-if="not is_support">
+                        <div class="d-flex align-items-start gap-2">
+                            <div class="flex-grow-1">
+                                <h1 class="h4 mb-1" t-out="channel.name" />
+                            </div>
+                            <button
+                                type="button"
+                                class="o_cc_chat_sound btn btn-link btn-sm text-muted p-1 d-none"
+                            />
+                        </div>
+                        <p class="text-muted small" t-out="channel.description" />
+                    </t>
+                    <!-- Support on the full page: one plain title. Never the
+                         conversation's own name ("Soporte · <requester>"),
+                         which is written for the agents' sidebar. Inside the
+                         floating window there is no title at all: the
+                         window's own header already says "Soporte". -->
+                    <h1 t-elif="not chat_in_frame" class="h4 mb-1">Soporte</h1>
 
                     <div class="o_cc_chat_messages mt-3">
                         <t t-foreach="messages" t-as="message">
@@ -198,17 +234,91 @@
                             </div>
                         </t>
                         <t t-if="not messages">
-                            <p class="text-muted o_cc_chat_empty">
+                            <p t-if="is_support" class="text-muted o_cc_chat_empty">
+                                How can we help? Write to us and we will answer right here.
+                            </p>
+                            <p t-else="" class="text-muted o_cc_chat_empty">
                                 Todavía no hay mensajes. Escribe el primero.
                             </p>
                         </t>
                     </div>
 
-                    <!-- Refreshed in place by the interaction after a post and
-                         after every moderation decision. -->
-                    <div class="o_cc_chat_pending_zone">
+                    <!-- Community channels only. Support publishes nothing:
+                         nothing on it is held for review, so the "en
+                         revisión" card and its invitation to register have no
+                         business there. Refreshed in place by the interaction
+                         after a post and after every moderation decision. -->
+                    <div t-if="not is_support" class="o_cc_chat_pending_zone">
                         <t t-call="website_pwa_chat.chat_pending" />
                     </div>
+
+                    <!-- Who are you? Asked only on the support line, only of
+                         an ANONYMOUS visitor who has not answered yet, and as
+                         one optional line, never a card: the conversation and
+                         the composer come first. Hidden until the visitor has
+                         written (the script reveals it after the first
+                         message), so an empty window opens on nothing but
+                         "how can we help". A logged-in user (community
+                         guests included, who give their name in the Discuss
+                         dialog) is never asked.
+
+                         A real form posting to a real route, so it still
+                         works without the script; with it, the script sends
+                         it in place and the page does not reload. -->
+                    <form
+                        t-if="is_support and show_identify"
+                        t-attf-class="o_cc_chat_identify mt-2 #{'' if messages else 'd-none'}"
+                        action="/chat/soporte/identificarme"
+                        method="post"
+                    >
+                        <input
+                            type="hidden"
+                            name="csrf_token"
+                            t-att-value="request.csrf_token()"
+                        />
+                        <!-- So the redirect after saving lands back inside
+                             the floating window, not on the full page nested
+                             in it. -->
+                        <input
+                            t-if="chat_in_frame"
+                            type="hidden"
+                            name="frame"
+                            value="1"
+                        />
+                        <div class="d-flex gap-1 align-items-center">
+                            <label
+                                class="visually-hidden"
+                                for="o_cc_identify_name"
+                            >Tu nombre</label>
+                            <input
+                                id="o_cc_identify_name"
+                                class="form-control form-control-sm"
+                                type="text"
+                                name="name"
+                                maxlength="120"
+                                required="required"
+                                autocomplete="name"
+                                placeholder="What should we call you?"
+                            />
+                            <label
+                                class="visually-hidden"
+                                for="o_cc_identify_email"
+                            >Correo (opcional)</label>
+                            <input
+                                id="o_cc_identify_email"
+                                class="form-control form-control-sm"
+                                type="email"
+                                name="email"
+                                maxlength="120"
+                                autocomplete="email"
+                                placeholder="Correo (opcional)"
+                            />
+                            <button
+                                type="submit"
+                                class="btn btn-outline-primary btn-sm flex-shrink-0"
+                            >Guardar</button>
+                        </div>
+                    </form>
 
                     <!-- No `action` and no `method`: the interaction cancels
                          the submit, and if the bundle ever fails to load the
@@ -219,31 +329,52 @@
                             class="visually-hidden"
                             for="o_cc_chat_input"
                         >Tu mensaje</label>
-                        <!-- Explicitly closed. A self-closed <textarea/> is
-                             legal XML and illegal HTML: the browser would
-                             swallow the rest of the document into it. -->
-                        <textarea
-                            id="o_cc_chat_input"
-                            class="form-control o_cc_chat_input"
-                            rows="2"
-                            maxlength="2000"
-                            placeholder="Escribe tu mensaje…"
-                        ></textarea>
-                        <div
-                            class="d-flex align-items-center justify-content-between mt-2"
-                        >
-                            <small
-                                class="text-muted o_cc_chat_hint"
-                                t-if="is_visitor"
-                            >
-                                Escribes como visitante: alguien del equipo lee
-                                tu mensaje antes de publicarlo.
-                            </small>
+                        <!-- Support: ONE row, text box and send button side by
+                             side, pinned under the conversation. -->
+                        <div t-if="is_support" class="d-flex align-items-center gap-2">
+                            <!-- Explicitly closed. A self-closed <textarea/> is
+                                 legal XML and illegal HTML: the browser would
+                                 swallow the rest of the document into it. -->
+                            <textarea
+                                id="o_cc_chat_input"
+                                class="form-control o_cc_chat_input"
+                                rows="2"
+                                maxlength="2000"
+                                placeholder="Write your question…"
+                            ></textarea>
+                            <button
+                                type="button"
+                                class="o_cc_chat_sound btn btn-link btn-sm text-muted p-1 d-none"
+                            />
                             <button
                                 type="submit"
-                                class="btn btn-primary ms-auto o_cc_chat_send"
+                                class="btn btn-primary o_cc_chat_send"
                             >Enviar</button>
                         </div>
+                        <t t-else="">
+                            <textarea
+                                id="o_cc_chat_input"
+                                class="form-control o_cc_chat_input"
+                                rows="2"
+                                maxlength="2000"
+                                placeholder="Escribe tu mensaje…"
+                            ></textarea>
+                            <div
+                                class="d-flex align-items-center justify-content-between mt-2"
+                            >
+                                <small
+                                    class="text-muted o_cc_chat_hint"
+                                    t-if="is_visitor"
+                                >
+                                    Escribes como visitante: alguien del equipo lee
+                                tu mensaje antes de publicarlo.
+                                </small>
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary ms-auto o_cc_chat_send"
+                                >Enviar</button>
+                            </div>
+                        </t>
                         <div
                             class="alert alert-warning mt-2 d-none o_cc_chat_error"
                             role="alert"
@@ -293,18 +424,148 @@
                             el canal de tu barrio. Es gratis y se hace en un
                             minuto.
                         </p>
+                        <!-- target="_top": this fragment also renders inside
+                             the floating window's iframe, and signing up is a
+                             whole-tab affair. On the full page _top is the
+                             page itself, so nothing changes there. -->
                         <a
                             class="btn btn-primary btn-sm"
                             t-att-href="register_url"
+                            target="_top"
                         >Crear mi cuenta</a>
                         <a
                             class="btn btn-link btn-sm"
                             t-att-href="login_url"
+                            target="_top"
                         >Ya tengo cuenta</a>
                     </t>
                 </div>
             </div>
         </t>
+    </template>
+
+    <!-- ================================================================
+         The floating button, and the window it opens
+         ================================================================
+
+         The one control a visitor looks for when they want to ask something.
+         What used to be there was Odoo's live chat, and with nobody connected
+         it answered "no operator is available, try again later": a bubble
+         whose only job was to say no. Its six agents are real, but a platform
+         of 218 shops has nobody sitting in a console, so "no operator" is the
+         normal state, not the exception.
+
+         This one needs nobody connected, and since 19.0.5.0.0 it does not
+         navigate away either: it opens the support conversation in a floating
+         window over the page the visitor was reading. The window is an
+         <iframe> onto /chat/soporte?frame=1 — the SAME page, chrome
+         stripped — so the composer, the identify line and the live catch-up
+         exist exactly once.
+
+         THE IFRAME LOADS NOTHING UNTIL THE BUTTON IS PRESSED. Its URL sits
+         in data-src and the interaction promotes it to src on first open.
+         This is not an optimisation: /chat/soporte creates a guest and a
+         conversation for whoever knocks, so an eager iframe would open one
+         empty support conversation PER PAGE VIEW across all 218 sites —
+         the smoke-test flood of 2026-08-17, industrialised.
+
+         The button carries the URL in data-href, not href: the interaction
+         arrives in the lazy frontend bundle, and a real href on an unbound
+         fab means a tap navigates away (and opens a guest conversation
+         server-side). A <noscript> twin keeps the real link for the
+         no-JavaScript visitor.
+
+         `_chat_support_url()` gates it on the same opt-in as the menu entry
+         and builds an absolute URL on the sites that only link to the chat,
+         so the three neighbourhood portals reach it on its own subdomain.
+         The iframe inherits that: loading the portal's page cross-subdomain
+         is fine because both live under the same registrable domain, and the
+         chat page sends no frame-blocking header (verified: no
+         X-Frame-Options, no frame-ancestors on /chat/soporte).
+
+         `not chat_in_frame`: the page inside the window inherits this very
+         layout, and a support button inside the support window would recurse.
+    -->
+    <template
+        id="chat_support_bubble"
+        inherit_id="website.layout"
+        name="Soporte: botón flotante"
+    >
+        <xpath expr="//div[@id='wrapwrap']" position="inside">
+            <t
+                t-set="chat_support_url"
+                t-value="website and website._chat_support_url()"
+            />
+            <div
+                t-if="chat_support_url and not chat_in_frame"
+                class="o_cc_chat_fab_zone d-print-none"
+            >
+                <section
+                    class="o_cc_chat_window d-none"
+                    aria-label="Chat de soporte"
+                >
+                    <header class="o_cc_chat_window_head">
+                        <span class="fw-bold">
+                            <i class="fa fa-comments me-2" aria-hidden="true"/>Soporte
+                        </span>
+                        <button
+                            type="button"
+                            class="btn-close btn-close-white o_cc_chat_window_close"
+                            aria-label="Cerrar el chat"
+                        ></button>
+                    </header>
+                    <!-- Explicitly closed for the same reason as the
+                         composer's <textarea>: self-closed is legal XML and
+                         illegal HTML, and the browser would swallow the rest
+                         of the document into the frame. -->
+                    <iframe
+                        class="o_cc_chat_window_frame"
+                        title="Chat de soporte"
+                        t-att-data-src="chat_support_url + '?frame=1'"
+                    >&#160;</iframe>
+                </section>
+                <!-- data-href, not href: the interaction lives in the LAZY
+                     frontend bundle, and until it binds a real href makes the
+                     fab a plain link: a tap navigates away and /chat/soporte
+                     creates a guest server-side for every such tap. With the
+                     URL parked in data-href an unbound fab does nothing, and
+                     the <noscript> twin below keeps the no-JavaScript path.
+                     role="button" + tabindex="0" keep it focusable and honest
+                     now that it is no longer a link. -->
+                <a
+                    t-att-data-href="chat_support_url"
+                    class="o_cc_chat_fab"
+                    role="button"
+                    tabindex="0"
+                    aria-label="Hablar con soporte"
+                    aria-haspopup="dialog"
+                    title="Hablar con soporte"
+                >
+                    <i class="fa fa-comments" aria-hidden="true"/>
+                    <span class="o_cc_chat_fab_text">Soporte</span>
+                </a>
+                <!-- With JavaScript off the interaction never hides the dead
+                     fab above, so this <style> does, and the real link takes
+                     its place. <noscript> in <body> may carry <style> and
+                     <a> alike. -->
+                <noscript>
+                    <style>
+                        .o_cc_chat_fab[data-href] {
+                            display: none;
+                        }
+                    </style>
+                    <a
+                        t-att-href="chat_support_url"
+                        class="o_cc_chat_fab"
+                        aria-label="Hablar con soporte"
+                        title="Hablar con soporte"
+                    >
+                        <i class="fa fa-comments" aria-hidden="true"/>
+                        <span class="o_cc_chat_fab_text">Soporte</span>
+                    </a>
+                </noscript>
+            </div>
+        </xpath>
     </template>
 
 </odoo>

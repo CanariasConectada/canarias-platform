@@ -1,0 +1,86 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* discuss_community_moderation
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: discuss_community_moderation
+#. odoo-javascript
+#: code:addons/discuss_community_moderation/static/src/backend/community_pending_messages.xml:0
+msgid "Pending review"
+msgstr "Pendiente de revisión"
+
+#. module: discuss_community_moderation
+#. odoo-javascript
+#: code:addons/discuss_community_moderation/static/src/backend/community_pending_messages.xml:0
+msgid "Rejected"
+msgstr "Rechazado"
+
+#. module: discuss_community_moderation
+#. odoo-javascript
+#: code:addons/discuss_community_moderation/static/src/backend/community_pending_messages.xml:0
+msgid "Reason:"
+msgstr "Motivo:"
+
+#. module: discuss_community_moderation
+#: model:ir.model.fields,field_description:discuss_community_moderation.field_discuss_channel_moderation__moderate_community_guests
+msgid "Moderate Community Guests"
+msgstr "Moderar invitados de la comunidad"
+
+#. module: discuss_community_moderation
+#: model:ir.model.fields,field_description:discuss_community_moderation.field_discuss_channel_moderation__moderate_new_users
+msgid "Moderate New Community Members"
+msgstr "Moderar miembros nuevos de la comunidad"
+
+#. module: discuss_community_moderation
+#: model:ir.model.fields,field_description:discuss_community_moderation.field_discuss_channel_moderation__trust_threshold
+msgid "Trust Threshold"
+msgstr "Umbral de confianza"
+
+#. module: discuss_community_moderation
+#: model:ir.model.fields,help:discuss_community_moderation.field_discuss_channel_moderation__moderate_community_guests
+msgid ""
+"Hold every comment posted by a walk-in community guest (the 'Enter as "
+"guest' button) until a moderator approves it. Community guests are "
+"anonymous throwaway accounts: they never build up trust and stay moderated "
+"for as long as this switch is on."
+msgstr ""
+"Retiene cada comentario publicado por un invitado de la comunidad (el "
+"botón «Entrar como invitado») hasta que un moderador lo apruebe. Los "
+"invitados son cuentas anónimas desechables: nunca acumulan confianza y "
+"siguen moderados mientras este interruptor esté activo."
+
+#. module: discuss_community_moderation
+#: model:ir.model.fields,help:discuss_community_moderation.field_discuss_channel_moderation__moderate_new_users
+msgid ""
+"Hold the comments of registered community members until they have had "
+"'Trust Threshold' messages approved on this channel. Once past the "
+"threshold they post freely here; the counter is per channel, so a newcomer "
+"to another moderated channel starts over there."
+msgstr ""
+"Retiene los comentarios de los miembros registrados de la comunidad hasta "
+"que hayan tenido «Umbral de confianza» mensajes aprobados en este canal. "
+"Superado el umbral publican libremente aquí; el contador es por canal, así "
+"que quien llega a otro canal moderado empieza de cero allí."
+
+#. module: discuss_community_moderation
+#: model:ir.model.fields,help:discuss_community_moderation.field_discuss_channel_moderation__trust_threshold
+msgid ""
+"Approved messages a community member needs on this channel before their "
+"posts stop being held. Zero (or a negative value) means members are never "
+"held even with 'Moderate New Community Members' on."
+msgstr ""
+"Mensajes aprobados que un miembro de la comunidad necesita en este canal "
+"para que sus publicaciones dejen de retenerse. Cero (o un valor negativo) "
+"significa que los miembros nunca se retienen aunque «Moderar miembros "
+"nuevos de la comunidad» esté activo."

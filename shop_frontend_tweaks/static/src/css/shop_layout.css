@@ -1,0 +1,65 @@
+/* Shop layout tweaks.
+ * Formerly two inline <style> templates on website_sale.products' root,
+ * which rendered after </html>. The first rule gains the
+ * .o_wsale_products_page scope it used to get implicitly from only being
+ * injected on the shop page.
+ */
+
+/* Hide the original "All Products" title */
+#wrap.o_wsale_products_page > section:first-child h1 {
+    display: none !important;
+}
+/* Hide the original searchbox if present */
+#products_grid_before .o_wsale_products_searchbar_form,
+#products_grid_before form[action="/shop"] {
+    display: none !important;
+}
+
+/* Wider directory-like sidebar */
+#products_grid_before {
+    flex: 0 0 26% !important;
+    max-width: 300px !important;
+}
+@media (max-width: 991px) {
+    #products_grid_before {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+}
+
+/* Responsive container */
+#o_wsale_container {
+    max-width: 1320px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+}
+@media (min-width: 576px) { #o_wsale_container { max-width: 540px !important; } }
+@media (min-width: 768px) { #o_wsale_container { max-width: 720px !important; } }
+@media (min-width: 992px) { #o_wsale_container { max-width: 960px !important; } }
+@media (min-width: 1200px) { #o_wsale_container { max-width: 1140px !important; } }
+@media (min-width: 1400px) { #o_wsale_container { max-width: 1320px !important; } }
+
+/* Shop header ("Tienda <website>") */
+.shop-directory-header {
+    padding: 3rem 0 !important;
+    background-color: #f8f9fa !important;
+    border-bottom: 1px solid #dee2e6 !important;
+    margin-bottom: 2rem !important;
+}
+.shop-directory-header h1 {
+    font-size: 2.5rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 1rem !important;
+    color: #212529 !important;
+}
+.shop-directory-header .lead {
+    font-size: 1.15rem !important;
+    color: #6c757d !important;
+    margin-bottom: 2rem !important;
+}
+.shop-directory-header .btn-primary {
+    background-color: #714B67 !important;
+    border-color: #714B67 !important;
+}

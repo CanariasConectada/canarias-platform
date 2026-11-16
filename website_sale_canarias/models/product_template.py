@@ -7,6 +7,41 @@ from odoo import models
 class ProductTemplate(models.Model):
     _inherit = "product.template"
 
+    def _search_get_detail(self, website, order, options):
+        """Widen the ``/shop`` grid's category leaf to the whole merged group.
+
+        The rendered grid does NOT come from ``_get_shop_domain`` (that one
+        only bounds the price slider) — it comes from this search-engine
+        detail, through ``website._search_with_fuzzy``. Core builds the
+        category leaf from ``options['category']`` (a plain numeric string,
+        see ``WebsiteSale._get_search_options``), unslugged straight into the
+        ONE record id the sidebar sent. Since the sidebar now merges
+        same-named categories into one option (see
+        ``website._wsc_shop_category_tree``), that one id has to be widened
+        to every category the option stands for, exactly like the AJAX
+        endpoint already does — otherwise reloading the page would silently
+        narrow the grid back to a single merchant's records.
+        """
+        result = super()._search_get_detail(website, order, options)
+        category = options.get("category")
+        if not category:
+            return result
+        category_id = self.env["ir.http"]._unslug(str(category))[1]
+        if not category_id:
+            return result
+        merged_ids = website._wsc_merged_category_ids(category_id)
+        if len(merged_ids) <= 1:
+            return result
+        target = ("public_categ_ids", "child_of", category_id)
+        result["base_domain"] = [
+            [
+                ("public_categ_ids", "child_of", merged_ids) if leaf == target else leaf
+                for leaf in domain
+            ]
+            for domain in result["base_domain"]
+        ]
+        return result
+
     def _wsc_owner_company(self):
         """The merchant that owns this product, as one company or empty.
 

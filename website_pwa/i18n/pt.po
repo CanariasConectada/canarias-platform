@@ -1,0 +1,208 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* website_pwa
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-25 01:07+0000\n"
+"PO-Revision-Date: 2026-09-25 01:07+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: pt\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: website_pwa
+#: model_terms:ir.ui.view,arch_db:website_pwa.pwa_install_quick_access
+msgid ""
+"<i class=\"fa fa-download me-1\" role=\"img\" aria-hidden=\"true\"/>\n"
+"                Install the app"
+msgstr ""
+"<i class=\"fa fa-download me-1\" role=\"img\" aria-hidden=\"true\"/> "
+"Instalar a app"
+
+#. module: website_pwa
+#: model_terms:ir.ui.view,arch_db:website_pwa.pwa_install_quick_access
+msgid ""
+"<i class=\"fa fa-mobile me-1\" role=\"img\" aria-hidden=\"true\"/>\n"
+"                Download Canarias Conectada"
+msgstr ""
+"<i class=\"fa fa-mobile me-1\" role=\"img\" aria-hidden=\"true\"/> "
+"Descarregue a Canarias Conectada"
+
+#. module: website_pwa
+#: model_terms:ir.ui.view,arch_db:website_pwa.pwa_install_quick_access
+msgid ""
+"<strong>Share</strong>\n"
+"                    in the Safari toolbar."
+msgstr "<strong>Partilhar</strong> na barra do Safari."
+
+#. module: website_pwa
+#: model_terms:ir.ui.view,arch_db:website_pwa.view_website_form_pwa
+msgid "App instalable (PWA)"
+msgstr "App instalável (PWA)"
+
+#. module: website_pwa
+#: model:ir.model.fields,help:website_pwa.field_website__pwa_background_color
+msgid "Background of the splash screen shown while the app loads."
+msgstr "Fundo do ecrã de abertura mostrado enquanto a app carrega."
+
+#. module: website_pwa
+#. odoo-javascript
+#: code:addons/website_pwa/static/src/backend/home_systray.xml:0
+msgid "Canarias Conectada"
+msgstr "Canarias Conectada"
+
+#. module: website_pwa
+#. odoo-javascript
+#: code:addons/website_pwa/static/src/backend/home_systray.js:0
+msgid "Canarias Conectada website"
+msgstr "Site da Canarias Conectada"
+
+#. module: website_pwa
+#: model_terms:ir.ui.view,arch_db:website_pwa.pwa_install_quick_access
+msgid ""
+"Choose\n"
+"                    <i class=\"fa fa-plus-square-o o_pwa_ios_icon\" role=\"img\" aria-hidden=\"true\"/>\n"
+"                    <strong>Add to Home Screen</strong>\n"
+"                    and open the app from there."
+msgstr ""
+"Escolha <i class=\"fa fa-plus-square-o o_pwa_ios_icon\" role=\"img\" aria-"
+"hidden=\"true\"/> <strong>Adicionar ao ecrã principal</strong> e abra a app "
+"a partir daí."
+
+#. module: website_pwa
+#: model:ir.model.fields,field_description:website_pwa.field_website__pwa_background_color
+msgid "Color de fondo"
+msgstr "Cor de fundo"
+
+#. module: website_pwa
+#: model:ir.model.fields,field_description:website_pwa.field_website__pwa_theme_color
+msgid "Color del tema"
+msgstr "Cor do tema"
+
+#. module: website_pwa
+#: model:ir.model.fields,help:website_pwa.field_website__pwa_theme_color
+msgid "Colour of the phone's status bar while the app is open."
+msgstr "Cor da barra de estado do telemóvel enquanto a app está aberta."
+
+#. module: website_pwa
+#: model:ir.model.fields,field_description:website_pwa.field_website__display_name
+msgid "Display Name"
+msgstr "Nome exibido"
+
+#. module: website_pwa
+#: model_terms:ir.ui.view,arch_db:website_pwa.s_pwa_install
+msgid ""
+"En iPhone o iPad: pulsa\n"
+"                        <strong>Compartir</strong>\n"
+"                        y luego\n"
+"                        <strong>Añadir a pantalla de inicio</strong>."
+msgstr ""
+"No iPhone ou iPad: toque em <strong>Partilhar</strong> e depois em "
+"<strong>Adicionar ao ecrã principal</strong>."
+
+#. module: website_pwa
+#. odoo-javascript
+#: code:addons/website_pwa/static/src/backend/home_systray.js:0
+msgid "Go to the Canarias Conectada website"
+msgstr "Ir para o site da Canarias Conectada"
+
+#. module: website_pwa
+#: model:ir.model.fields,field_description:website_pwa.field_website__id
+msgid "ID"
+msgstr "ID"
+
+#. module: website_pwa
+#: model:ir.model.fields,field_description:website_pwa.field_website__pwa_icon
+msgid "Icono de la app"
+msgstr "Ícone da app"
+
+#. module: website_pwa
+#: model_terms:ir.ui.view,arch_db:website_pwa.s_pwa_install
+msgid ""
+"Instala esta web como una app y entra de un toque,\n"
+"                        sin buscarla en el navegador."
+msgstr ""
+"Instale este site como uma app e entre com um toque, sem o procurar no "
+"navegador."
+
+#. module: website_pwa
+#: model:ir.model.fields,field_description:website_pwa.field_website__pwa_enabled
+msgid "Instalable como app"
+msgstr "Instalável como app"
+
+#. module: website_pwa
+#: model_terms:ir.ui.view,arch_db:website_pwa.s_pwa_install
+#: model_terms:ir.ui.view,arch_db:website_pwa.snippet_pwa_install
+msgid "Instalar la app"
+msgstr "Instalar a app"
+
+#. module: website_pwa
+#: model_terms:ir.ui.view,arch_db:website_pwa.pwa_install_quick_access
+msgid ""
+"Install the app on your phone: one tap to open it, and chat\n"
+"                notifications even when it is closed."
+msgstr ""
+"Instale a app no telemóvel: abra-a com um toque e receba as notificações do "
+"chat mesmo com ela fechada."
+
+#. module: website_pwa
+#: model_terms:ir.ui.view,arch_db:website_pwa.s_pwa_install
+msgid "Llévate la tienda en el móvil"
+msgstr "Leve a loja no telemóvel"
+
+#. module: website_pwa
+#: model:ir.model.fields,field_description:website_pwa.field_website__pwa_short_name
+msgid "Nombre corto"
+msgstr "Nome curto"
+
+#. module: website_pwa
+#: model:ir.model.fields,field_description:website_pwa.field_website__pwa_name
+msgid "Nombre de la app"
+msgstr "Nome da app"
+
+#. module: website_pwa
+#: model:ir.model.fields,help:website_pwa.field_website__pwa_short_name
+msgid ""
+"Shown under the icon on the home screen. Keep it short: phones truncate "
+"anything longer than about 12 characters."
+msgstr ""
+"Mostrado por baixo do ícone no ecrã principal. Mantenha-o curto: os "
+"telemóveis cortam o que passar de cerca de 12 caracteres."
+
+#. module: website_pwa
+#: model:ir.model.fields,help:website_pwa.field_website__pwa_name
+msgid "Shown while installing. Defaults to the website name."
+msgstr "Mostrado durante a instalação. Por omissão, o nome do site."
+
+#. module: website_pwa
+#: model:ir.model.fields,help:website_pwa.field_website__pwa_icon
+msgid "Square image, at least 512x512. Falls back to the website logo."
+msgstr ""
+"Imagem quadrada de pelo menos 512x512. Se faltar, usa-se o logótipo do site."
+
+#. module: website_pwa
+#: model_terms:ir.ui.view,arch_db:website_pwa.pwa_install_quick_access
+msgid "Tap"
+msgstr "Toque em"
+
+#. module: website_pwa
+#: model:ir.model,name:website_pwa.model_website
+msgid "Website"
+msgstr "Site"
+
+#. module: website_pwa
+#: model:ir.model.fields,help:website_pwa.field_website__pwa_enabled
+msgid ""
+"When enabled, visitors can install this website on their phone as an app. "
+"Each website is independent: turning it on for one merchant does not affect "
+"any other."
+msgstr ""
+"Quando ativo, os visitantes podem instalar este site no telemóvel como uma "
+"app. Cada site é independente: ativá-lo para um comércio não afeta nenhum "
+"outro."

@@ -1,3 +1,12 @@
+## 19.0.1.5.0 (2026-09-07)
+
+* **The cross is now the directory's, not this card's**: the selected seal
+  calls `website_directory.directory_filter_chip` instead of drawing its
+  own `fa-times`, so it shares the accessible "Remove filter: …" label,
+  the focus ring and the 24px cross with every other filter section. The
+  visible affordance is unchanged — this card is the one the visitor
+  already understood, and the rest were made to match it.
+
 ## 19.0.1.0.0 (2026-07-06)
 
 First release. Bridge between `website_directory` and

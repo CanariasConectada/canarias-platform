@@ -15,6 +15,22 @@
               action="local_content_item_action"
               sequence="10"/>
 
+    <!-- Rating comments held by the forbidden-word list. Managers reach
+         them from their own app; administrators also find the same list
+         under Settings > Moderation, next to the words. -->
+    <menuitem id="menu_local_content_comments"
+              name="Comments pending review"
+              parent="menu_local_content_root"
+              action="action_local_content_comment"
+              sequence="20"/>
+
+    <menuitem id="menu_moderation_local_content_comments"
+              name="Local Content Comments"
+              parent="website_moderation_forbidden_word.menu_moderation_root"
+              action="action_local_content_comment"
+              sequence="20"
+              groups="base.group_system"/>
+
     <menuitem id="menu_local_content_configuration"
               name="Configuration"
               parent="menu_local_content_root"

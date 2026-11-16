@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <!-- Soporte: una cola, no 300 conversaciones sueltas.
+
+         Discuss groups its sidebar by channel type, and every support
+         conversation is a `group`, so they landed among the private group
+         chats of the whole platform, in the order they were last written to,
+         with nothing to say which ones nobody has answered.
+
+         This is the same shape used for the certification evaluations and for
+         local content: ONE list of everything, with the thing that matters as
+         the default grouping. Here that is the state, because the only
+         question an administrator opens this screen with is "who is still
+         waiting". -->
+    <record id="discuss_channel_support_view_list" model="ir.ui.view">
+        <field name="name">discuss.channel.support.list</field>
+        <field name="model">discuss.channel</field>
+        <field name="arch" type="xml">
+            <list string="Soporte"
+                  decoration-danger="support_state == 'waiting'"
+                  decoration-muted="support_state == 'closed'"
+                  create="false">
+                <field name="support_visitor_name" string="Quién pregunta"/>
+                <field name="name" string="Conversación"/>
+                <field name="support_identified" widget="boolean_toggle" readonly="1"/>
+                <field name="support_last_message_date"/>
+                <field name="support_state" widget="badge"
+                       decoration-danger="support_state == 'waiting'"
+                       decoration-success="support_state == 'answered'"
+                       decoration-muted="support_state == 'closed'"/>
+                <button name="action_support_close" type="object"
+                        icon="fa-check" title="Cerrar"
+                        invisible="support_state == 'closed'"/>
+                <button name="action_support_reopen" type="object"
+                        icon="fa-undo" title="Reabrir"
+                        invisible="support_state != 'closed'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="discuss_channel_support_view_search" model="ir.ui.view">
+        <field name="name">discuss.channel.support.search</field>
+        <field name="model">discuss.channel</field>
+        <field name="arch" type="xml">
+            <search string="Soporte">
+                <field name="support_visitor_name"/>
+                <field name="name"/>
+                <filter name="waiting" string="Sin responder"
+                        domain="[('support_state', '=', 'waiting')]"/>
+                <filter name="answered" string="Respondidas"
+                        domain="[('support_state', '=', 'answered')]"/>
+                <filter name="open" string="Abiertas"
+                        domain="[('support_closed', '=', False)]"/>
+                <separator/>
+                <filter name="identified" string="Se identificaron"
+                        domain="[('support_identified', '=', True)]"/>
+                <separator/>
+                <!-- Declared flat, not wrapped in a <group expand="1">: Odoo
+                     19's search schema rejects that attribute, and a view that
+                     fails validation takes the whole registry down with it. -->
+                <filter name="group_state" string="Estado"
+                        context="{'group_by': 'support_state'}"/>
+                <filter name="group_identified" string="Identificación"
+                        context="{'group_by': 'support_identified'}"/>
+                <filter name="group_day" string="Último mensaje"
+                        context="{'group_by': 'support_last_message_date:day'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_discuss_channel_support" model="ir.actions.act_window">
+        <field name="name">Soporte</field>
+        <field name="res_model">discuss.channel</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('support_key', '!=', False)]</field>
+        <field name="search_view_id" ref="discuss_channel_support_view_search"/>
+        <!-- Opens on "who is waiting", grouped by state. A support queue that
+             opens on everything ever said is a queue nobody reads. -->
+        <field name="context">{'search_default_open': 1, 'search_default_group_state': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nadie está esperando</p>
+            <p>
+                Aquí aparecen las conversaciones que abren los visitantes desde
+                el botón de mensajes de la web. Las que llevan días calladas se
+                cierran solas, y se borran al cabo de un tiempo.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_discuss_channel_support_list_view" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="discuss_channel_support_view_list"/>
+        <field name="act_window_id" ref="action_discuss_channel_support"/>
+    </record>
+
+    <!-- Under Discuss, where the people who answer already are. Its own group
+         plus the administrators, which is exactly who `_support_agents`
+         seats in the conversations. -->
+    <menuitem id="menu_discuss_channel_support"
+              name="Soporte"
+              parent="mail.menu_root_discuss"
+              action="action_discuss_channel_support"
+              groups="website_pwa_chat.group_support_agent,base.group_system"
+              sequence="15"/>
+
+</odoo>

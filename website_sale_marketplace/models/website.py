@@ -58,14 +58,18 @@ class Website(models.Model):
         set, not ``_marketplace_companies``, or a product ends up linked to
         the zone companies and surfaces in every neighbourhood's shop.
         """
-        return self.sudo().search(
-            [
-                ("is_marketplace", "=", True),
-                "|",
-                ("marketplace_zone", "=", False),
-                ("marketplace_zone", "=", ""),
-            ]
-        ).company_id
+        return (
+            self.sudo()
+            .search(
+                [
+                    ("is_marketplace", "=", True),
+                    "|",
+                    ("marketplace_zone", "=", False),
+                    ("marketplace_zone", "=", ""),
+                ]
+            )
+            .company_id
+        )
 
     def sale_product_domain(self):
         """Drop the per-website pin from the shop domain on a marketplace.
@@ -177,11 +181,24 @@ class Website(models.Model):
                 .search([("id", "not in", self._marketplace_companies().ids)])
                 .ids
             )
+            # The service products behind delivery carriers belong to one
+            # shop only: a carrier's company follows its product's, and
+            # linking the portal would move it away from the shop's warehouse
+            # ("The delivery method and a warehouse must share the same
+            # company", CI 2026-09-16, once every shop got its pickup carrier).
+            carrier_product_tmpl_ids = (
+                self.env["delivery.carrier"]
+                .sudo()
+                .with_context(active_test=False)
+                .search([])
+                .product_id.product_tmpl_id.ids
+            )
             missing_ids = Product.search(
                 [
                     ("company_ids", "!=", False),
                     ("company_ids", "not in", company.ids),
                     ("company_ids", "in", active_owner_ids),
+                    ("id", "not in", carrier_product_tmpl_ids),
                 ]
             ).ids
             vals = {"company_ids": [fields.Command.link(company.id)]}
@@ -222,10 +239,34 @@ class Website(models.Model):
     def create(self, vals_list):
         websites = super().create(vals_list)
         websites._sync_marketplace_products()
+        websites._ensure_shop_pickup_carriers()
         return websites
 
     def write(self, vals):
         res = super().write(vals)
         if {"is_marketplace", "company_id"} & set(vals):
             self._sync_marketplace_products()
+            self._ensure_shop_pickup_carriers()
         return res
+
+    def _ensure_shop_pickup_carriers(self):
+        """Give the merchant behind each shop website its pickup carrier.
+
+        Hooked on the website rather than on the microsite generator: every
+        path that gives a company its website (the generator on company
+        create, its creation wizard, a website created or reassigned by hand)
+        goes through here. A failure is logged and rolled back to its
+        savepoint, never allowed to abort the website itself.
+        """
+        for website in self.filtered(lambda w: w.company_id and not w.is_marketplace):
+            company = website.company_id
+            try:
+                with self.env.cr.savepoint():
+                    company._ensure_shop_pickup_carrier(website=website)
+            except Exception:  # noqa: BLE001 - defensive: log and keep going
+                _logger.exception(
+                    "Pickup carrier failed for company %s (id %s), website %s",
+                    company.name,
+                    company.id,
+                    website.id,
+                )

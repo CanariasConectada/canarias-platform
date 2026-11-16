@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo noupdate="1">
+    <!-- Reminder of the next visit, kept on the planned date of the task
+         for each assigned consultant (project.task._field_visit_sync_reminders). -->
+    <record id="mail_activity_type_field_visit" model="mail.activity.type">
+        <field name="name">Field visit</field>
+        <field name="summary">Visit the business</field>
+        <field name="icon">fa-map-marker</field>
+        <field name="res_model">project.task</field>
+        <field name="delay_count">0</field>
+        <field name="sequence">40</field>
+    </record>
+</odoo>

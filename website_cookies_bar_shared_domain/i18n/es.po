@@ -1,0 +1,28 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* website_cookies_bar_shared_domain
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: Canarias Conectada\n"
+"Language-Team: \n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: website_cookies_bar_shared_domain
+#. odoo-python
+#: code:addons/website_cookies_bar_shared_domain/models/ir_config_parameter.py:0
+msgid ""
+"The shared cookie consent domain must be a bare registrable domain such as "
+"'example.com': no scheme, no path, no port, not an IP address, and never a "
+"top-level or public suffix such as 'es' or 'co.uk'."
+msgstr ""
+"El dominio compartido del consentimiento de cookies debe ser un dominio "
+"registrable sin más, como «example.com»: sin esquema, sin ruta, sin puerto, "
+"que no sea una dirección IP y nunca un dominio de primer nivel o un sufijo "
+"público como «es» o «co.uk»."

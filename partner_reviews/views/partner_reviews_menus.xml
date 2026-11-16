@@ -16,10 +16,14 @@
               action="action_partner_reviews"
               sequence="10"/>
 
+    <!-- The list itself lives in website_moderation_forbidden_word (shared
+         with local content comments). Review administrators reach it from
+         here because the Settings > Moderation entry of that module is
+         only visible to system administrators. -->
     <menuitem id="menu_partner_reviews_forbidden_words"
               name="Forbidden Words"
               parent="menu_partner_reviews_root"
-              action="action_review_forbidden_word"
+              action="website_moderation_forbidden_word.action_moderation_forbidden_word"
               sequence="20"
               groups="group_partner_reviews_manager"/>
 

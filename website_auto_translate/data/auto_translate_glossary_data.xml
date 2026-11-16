@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+     Starting glossary. Deliberately short and justifiable rather than long:
+     every entry here is either a name of ours or a brand measured coming back
+     wrong on 2026-08-15. A frequency sweep of the catalogue was tried first and
+     rejected, because it ranks "Sandalia", "Pizza" and "Queso" alongside
+     "Acer", and freezing an ordinary noun untranslated is the same class of
+     mistake as translating a brand.
+
+     These records are noupdate so that a term somebody edits or archives is
+     not silently reinstated on the next module update. -->
+<odoo noupdate="1">
+
+    <!-- Ours. A zone is a place, and places keep their names. -->
+    <record id="glossary_canarias_conectada" model="auto.translate.glossary">
+        <field name="name">Canarias Conectada</field>
+        <field name="note">Nombre de la plataforma</field>
+    </record>
+    <record id="glossary_zona_comercial_guanarteme" model="auto.translate.glossary">
+        <field name="name">Zona Comercial Guanarteme</field>
+        <field name="note">Nombre propio de la zona</field>
+    </record>
+    <record id="glossary_guanarteme" model="auto.translate.glossary">
+        <field name="name">Guanarteme</field>
+        <field name="note">Topónimo</field>
+    </record>
+    <record id="glossary_lomo_los_frailes" model="auto.translate.glossary">
+        <field name="name">Lomo Los Frailes</field>
+        <field name="note">Topónimo. "Frailes" se traduciría solo</field>
+    </record>
+    <record id="glossary_tamaraceite" model="auto.translate.glossary">
+        <field name="name">Tamaraceite</field>
+        <field name="note">Topónimo</field>
+    </record>
+    <record id="glossary_gran_canaria" model="auto.translate.glossary">
+        <field name="name">Gran Canaria</field>
+        <field name="note">Topónimo</field>
+    </record>
+    <record id="glossary_memoria_viva" model="auto.translate.glossary">
+        <field name="name">Memoria Viva</field>
+        <field name="note">Nombre de la sección</field>
+    </record>
+
+    <!-- Marcas con daño medido el 15-ago-2026. -->
+    <record id="glossary_cheetos" model="auto.translate.glossary">
+        <field name="name">Cheetos</field>
+        <field name="note">Salía "Käse" en alemán y "Salute" en italiano</field>
+    </record>
+    <record id="glossary_estrella_galicia" model="auto.translate.glossary">
+        <field name="name">Estrella Galicia</field>
+        <field name="note">Salía "Ministern Galicia" en alemán</field>
+    </record>
+    <record id="glossary_milka" model="auto.translate.glossary">
+        <field name="name">Milka</field>
+    </record>
+    <record id="glossary_oreo" model="auto.translate.glossary">
+        <field name="name">Oreo</field>
+    </record>
+    <record id="glossary_acer" model="auto.translate.glossary">
+        <field name="name">Acer</field>
+    </record>
+    <record id="glossary_asus" model="auto.translate.glossary">
+        <field name="name">Asus</field>
+    </record>
+    <record id="glossary_lenovo" model="auto.translate.glossary">
+        <field name="name">Lenovo</field>
+    </record>
+    <record id="glossary_vivobook" model="auto.translate.glossary">
+        <field name="name">VivoBook</field>
+        <field name="note">Gama de Asus</field>
+    </record>
+    <record id="glossary_extensa" model="auto.translate.glossary">
+        <field name="name">Extensa</field>
+        <field name="note">Gama de Acer. "Extensa" es además una palabra española</field>
+    </record>
+    <record id="glossary_aspire" model="auto.translate.glossary">
+        <field name="name">Aspire</field>
+        <field name="note">Gama de Acer</field>
+    </record>
+    <record id="glossary_coolsound" model="auto.translate.glossary">
+        <field name="name">COOLSOUND</field>
+    </record>
+
+</odoo>

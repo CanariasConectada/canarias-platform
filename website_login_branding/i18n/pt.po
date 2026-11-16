@@ -1,0 +1,96 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* website_login_branding
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-25 01:24+0000\n"
+"PO-Revision-Date: 2026-09-25 01:24+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: pt\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: website_login_branding
+#: model_terms:ir.ui.view,arch_db:website_login_branding.login_layout_branding
+msgid ""
+"<i class=\"fa fa-user-o me-2\" role=\"img\" aria-label=\"Invitado\"/>Entrar "
+"como invitado"
+msgstr ""
+"<i class=\"fa fa-user-o me-2\" role=\"img\" aria-label=\"Convidado\"/>Entrar"
+" como convidado"
+
+#. module: website_login_branding
+#: model_terms:ir.ui.view,arch_db:website_login_branding.login_layout_branding
+msgid "<span class=\"o_cc_divider_label\">o continúa como invitado</span>"
+msgstr "<span class=\"o_cc_divider_label\">ou continue como convidado</span>"
+
+#. module: website_login_branding
+#: model:ir.model.fields,help:website_login_branding.field_res_users__is_platform_guest
+msgid ""
+"Anonymous throwaway account created from the website's 'Entrar como "
+"invitado' button. Reused via a signed cookie and garbage-collected once "
+"idle. Never set this by hand."
+msgstr ""
+"Conta anónima descartável criada a partir do botão «Entrar como convidado» "
+"do site. É reutilizada através de um cookie assinado e eliminada quando fica"
+" inativa. Nunca a marque à mão."
+
+#. module: website_login_branding
+#: model_terms:ir.ui.view,arch_db:website_login_branding.login_layout_branding
+msgid "Canarias Conectada"
+msgstr "Canarias Conectada"
+
+#. module: website_login_branding
+#: model:ir.model.fields,field_description:website_login_branding.field_res_users__display_name
+msgid "Display Name"
+msgstr "Nome exibido"
+
+#. module: website_login_branding
+#: model_terms:ir.ui.view,arch_db:website_login_branding.login_layout_branding
+msgid "Entra sin registrarte para explorar y participar en la comunidad."
+msgstr "Entre sem se registar para explorar e participar na comunidade."
+
+#. module: website_login_branding
+#: model:ir.model.fields,field_description:website_login_branding.field_res_users__id
+msgid "ID"
+msgstr "ID"
+
+#. module: website_login_branding
+#: model_terms:ir.ui.view,arch_db:website_login_branding.login_layout_branding
+msgid ""
+"Plataforma desarrollada en el marco del proyecto Canarias Conectada, "
+"cofinanciado por la Unión Europea a través del Programa FEDER Canarias "
+"2021-2027 — Consejería de Economía, Industria, Comercio y Autónomos del "
+"Gobierno de Canarias. Plataforma que integra los resultados del proyecto "
+"«Guanarteme en tu mano», financiado por la Unión Europea – NextGenerationEU,"
+" en el marco del Plan de Recuperación, Transformación y Resiliencia — "
+"Ministerio de Industria, Comercio y Turismo y Gobierno de Canarias."
+msgstr ""
+"Plataforma desenvolvida no âmbito do projeto Canarias Conectada, "
+"cofinanciado pela União Europeia através do Programa FEDER Canárias "
+"2021-2027 — Consejería de Economía, Industria, Comercio y Autónomos do "
+"Governo das Canárias. Plataforma que integra os resultados do projeto "
+"«Guanarteme en tu mano», financiado pela União Europeia – NextGenerationEU, "
+"no âmbito do Plano de Recuperação, Transformação e Resiliência — Ministerio "
+"de Industria, Comercio y Turismo e Governo das Canárias."
+
+#. module: website_login_branding
+#: model:ir.model.fields,field_description:website_login_branding.field_res_users__is_platform_guest
+msgid "Platform Guest"
+msgstr "Convidado da plataforma"
+
+#. module: website_login_branding
+#: model:ir.model,name:website_login_branding.model_res_users
+msgid "User"
+msgstr "Utilizador"
+
+#. module: website_login_branding
+#: model:ir.actions.server,name:website_login_branding.cron_gc_platform_guests_ir_actions_server
+msgid "Website Login Branding: purge idle guest accounts"
+msgstr "Website Login Branding: eliminar contas de convidado inativas"

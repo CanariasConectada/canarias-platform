@@ -48,20 +48,49 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.wd-card .card-footer .btn {
+/* The card's one action ("Visitar web") and the list row's "Visitar": same
+ * pill, same height, whichever view the visitor is in. inline-flex centering
+ * keeps the globe icon and the label on one optical line instead of trusting
+ * the button's line-height. */
+.wd-card .card-footer .btn,
+.wd-directory-page .list-group-item .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.375rem;
+    padding: 0.375rem 1rem;
     border-radius: 25px;
     font-weight: 500;
     letter-spacing: 0.3px;
-    transition: all 0.3s ease;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease,
+        border-color 0.2s ease;
 }
 
-.wd-card .card-footer .btn:hover:not(.disabled) {
-    transform: translateY(-2px);
+.wd-card .card-footer .btn .fa,
+.wd-directory-page .list-group-item .btn .fa {
+    /* me-1 is a touch cramped next to a 500-weight label. Utilities are
+     * generated with !important, so matching it is the only way to win. */
+    margin-right: 0.375rem !important;
+}
+
+.wd-card .card-footer .btn:hover:not(.disabled),
+.wd-directory-page .list-group-item .btn:hover:not(.disabled) {
+    transform: translateY(-1px);
     /* Brand plum (#714B67), not Bootstrap's default blue: the glow was
      * rgba(13, 110, 253, .3), which is the one colour on this page that
      * belongs to no part of the platform's palette. Same rgb triplet the
      * zone stylesheet already uses for its rings. */
-    box-shadow: 0 4px 12px rgba(113, 75, 103, 0.3);
+    box-shadow: 0 4px 12px rgba(113, 75, 103, 0.25);
+}
+
+/* On hover the filled button darkens within the brand instead of lifting
+ * alone; same darkened plum the sidebar's selected chips use. */
+.wd-card .card-footer .btn-primary:hover:not(.disabled) {
+    background-color: #5d3d54;
+    border-color: #5d3d54;
 }
 
 /* List view */
@@ -127,7 +156,10 @@
     background-color: #f1f3f5;
 }
 .wd-select-option.active {
-    background-color: #0d6efd;
+    /* Brand plum, not Bootstrap's stock blue: the highlighted option is the
+     * one place inside the dropdown that carries color, and it has to be the
+     * platform's. */
+    background-color: var(--scc-brand-primary, #714b67);
     color: #fff;
 }
 .wd-select-empty {
@@ -141,4 +173,102 @@
 .wd-filter-card,
 .wd-filter-card .card-body {
     overflow: visible !important;
+}
+
+/* ------------------------------------------------------------------
+ * Active-filter chips — the top summary bar AND the matching chips each
+ * sidebar card keeps for its own filter. One shared look so a visitor
+ * reads "an active filter" as one consistent shape everywhere on the page,
+ * whether it is search, zone, category, a certification or a facility.
+ * ------------------------------------------------------------------ */
+.wd-filter-chip {
+    padding: 0.35rem 0.6rem;
+    font-weight: 500;
+}
+
+/* A selected filter is one anchor (see directory_filter_chip): the badge
+ * chips of the zone and the category are anchors now too, and an anchor
+ * inherits the theme's link colour and underline unless told otherwise. */
+a.wd-filter-chip,
+a.wd-filter-chip:hover,
+a.wd-filter-chip:focus {
+    color: #fff;
+    text-decoration: none;
+}
+
+.wd-filter-selected {
+    text-decoration: none;
+}
+
+/* The cross that removes a filter: the same bold glyph, at the right edge of
+ * every selected chip and pill on the page, whichever section drew it.
+ * Reported 2026-09-05: the small "x", the "Clear" button and the trash icon
+ * the sections had each grown read as three different things, and only the
+ * boldest one was ever noticed. A real inline-flex box, not a floated icon
+ * riding whatever line-height the surrounding pill happens to have: the
+ * glyph's own font metrics used to decide where it sat, usually low and off
+ * the visual middle (reported 2026-08-21, "centra las x").
+ *
+ * 1.5rem: the chip as a whole is the click target, but the cross alone has
+ * to clear 24px for a finger that aims at it. */
+.wd-filter-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-left: 0.5rem;
+    border-radius: 50%;
+    color: inherit;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1em;
+    line-height: 1;
+}
+
+/* The whole chip is the control, so hovering or focusing ANY part of it
+ * lights the cross: that is the invitation the small "x" never made. */
+.wd-filter-selected:hover .wd-filter-remove,
+.wd-filter-selected:focus-visible .wd-filter-remove {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Clear-all: the chips' cross, at the chips' weight. It stays a red
+ * outlined button with its own tooltip, because it removes every filter,
+ * not the one it sits next to. */
+.wd-clear-filters {
+    font-weight: 700;
+}
+
+/* Keyboard users get a ring on the chip; the lit cross alone is not a
+ * focus indicator. Same ring the bridge modules' pills already use. */
+.wd-filter-selected:focus-visible {
+    outline: 2px solid var(--scc-brand-primary, #714b67);
+    outline-offset: 2px;
+    box-shadow: none;
+}
+
+/* The pre-2026-09 name, kept for the shop's own category chip
+ * (website_sale_canarias, which depends on this bundle); the directory
+ * itself no longer draws it. */
+.wd-filter-chip-x {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-left: 0.4rem;
+    border-radius: 50%;
+    color: inherit;
+    text-decoration: none;
+    font-weight: 700;
+    line-height: 1;
+    opacity: 0.85;
+}
+
+.wd-filter-chip-x:hover,
+.wd-filter-chip-x:focus-visible {
+    background-color: rgba(255, 255, 255, 0.25);
+    opacity: 1;
 }

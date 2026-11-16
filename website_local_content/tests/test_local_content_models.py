@@ -6,14 +6,20 @@ from datetime import date
 from psycopg2.errors import UniqueViolation
 
 from odoo.exceptions import AccessError, ValidationError
-from odoo.tests import TransactionCase
+from odoo.tests import TransactionCase, tagged
 from odoo.tests.common import new_test_user
 from odoo.tools import mute_logger
 
 from .common import create_taxonomy, make_test_image
 
 
+@tagged("post_install", "-at_install")
 class TestLocalContentModels(TransactionCase):
+    """post_install: test_website_visibility creates website records, and at
+    install time the registry is partial -- website_sale is not loaded yet
+    while its NOT NULL columns already sit on the table, so the insert
+    explodes on a field the ORM cannot know about."""
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -117,6 +123,34 @@ class TestLocalContentModels(TransactionCase):
         item = self._create_item()
         self.assertEqual(item.website_url, f"/explora/test-type-a/{item.slug}")
 
+    def test_image_url_sizes(self):
+        item = self._create_item()
+        self.assertEqual(item.get_image_url(), f"/explora/test-type-a/img/{item.id}")
+        self.assertEqual(
+            item.get_image_url(size=512),
+            f"/explora/test-type-a/img/{item.id}?size=512",
+        )
+
+    def test_type_hero_and_sponsor_urls(self):
+        self.assertEqual(self.type_a.get_hero_image_url(), "")
+        self.assertEqual(self.type_a.get_sponsor_logo_url(), "")
+        self.type_a.write(
+            {
+                "hero_image": make_test_image(),
+                "hero_subtitle": "A subtitle",
+                "sponsor_logo": make_test_image(),
+                "sponsor_name": "A sponsor",
+            }
+        )
+        self.assertEqual(
+            self.type_a.get_hero_image_url(),
+            "/explora/test-type-a/type-img/hero_image",
+        )
+        self.assertEqual(
+            self.type_a.get_sponsor_logo_url(),
+            "/explora/test-type-a/type-img/sponsor_logo",
+        )
+
     def test_like_count_and_session_check(self):
         item = self._create_item()
         like_model = self.env["website.local.content.like"]
@@ -166,6 +200,7 @@ class TestLocalContentModels(TransactionCase):
         self.assertNotIn(only_a, visible_on_b)
 
 
+@tagged("post_install", "-at_install")
 class TestLocalContentAccess(TransactionCase):
     """Anonymous and portal visitors must never read visitor PII (like:
     ip_address/session_key) nor gallery images through the ORM/RPC. The public
@@ -177,18 +212,32 @@ class TestLocalContentAccess(TransactionCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.type_a, cls.category_a, cls.subcategory_a = create_taxonomy(cls.env, "A")
-        item = cls.env["website.local.content.item"].sudo().create(
-            {
-                "name": "Casa del Niño",
-                "type_id": cls.type_a.id,
-                "category_id": cls.category_a.id,
-            }
+        item = (
+            cls.env["website.local.content.item"]
+            .sudo()
+            .create(
+                {
+                    "name": "Casa del Niño",
+                    "type_id": cls.type_a.id,
+                    "category_id": cls.category_a.id,
+                }
+            )
         )
-        cls.like = cls.env["website.local.content.like"].sudo().create(
-            {"item_id": item.id, "session_key": "sess-1", "ip_address": "203.0.113.9"}
+        cls.like = (
+            cls.env["website.local.content.like"]
+            .sudo()
+            .create(
+                {
+                    "item_id": item.id,
+                    "session_key": "sess-1",
+                    "ip_address": "203.0.113.9",
+                }
+            )
         )
-        cls.image = cls.env["website.local.content.image"].sudo().create(
-            {"item_id": item.id, "name": "gallery"}
+        cls.image = (
+            cls.env["website.local.content.image"]
+            .sudo()
+            .create({"item_id": item.id, "name": "gallery"})
         )
         cls.portal_user = new_test_user(
             cls.env, login="wlc_portal", groups="base.group_portal"

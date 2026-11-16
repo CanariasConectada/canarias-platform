@@ -13,17 +13,15 @@
                     <group>
                         <field name="certification_type_id"/>
                     </group>
-                    <separator string="Microsite Positive Items"/>
-                    <field name="positive_item_ids" nolabel="1" context="{'default_survey_id': id}">
-                        <list editable="bottom">
-                            <field name="sequence" widget="handle"/>
-                            <field name="survey_id" column_invisible="1"/>
-                            <field name="question_id" options="{'no_create': True}"/>
-                            <field name="min_score"/>
-                            <field name="label"/>
-                            <field name="icon"/>
-                        </list>
-                    </field>
+                    <!-- The per-question "positive items" that used to be
+                         edited here are deprecated: the items shown on the
+                         microsite and the answers that trigger them are
+                         edited on the certification type now. -->
+                    <p class="text-muted">
+                        The items shown on the microsite, and the answers that
+                        make them appear, are edited on the certification type
+                        (Items shown on microsite tab).
+                    </p>
                 </page>
             </xpath>
         </field>

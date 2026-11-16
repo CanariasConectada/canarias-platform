@@ -9,7 +9,8 @@ a blank website:
 * creates the `website` record linked to the company (unless it already has
   one);
 * installs a default homepage at `/` with a lightweight welcome template;
-* ensures the standard top-menu entries (Home, Shop, Directory) exist.
+* ensures the standard top-menu entries (Home, Shop) and the "Zonas
+  Comerciales" dropdown exist.
 
 The generation is **non-destructive and migration-aware**. Website content
 brought in "as is" by the data migration (COW pages, views and menus anchored

@@ -2,14 +2,23 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 import uuid
-from urllib.parse import urlsplit
+from urllib.parse import urlencode, urlsplit
+
+import psycopg2
 
 from odoo import http
 from odoo.fields import Domain
 from odoo.http import request
 
 PPG = 12
+# Page sizes the visitor may pick in the sidebar (legacy 12/24/48 selector).
+# Anything else in ?limit= silently falls back to the default.
+PPG_OPTIONS = (12, 24, 48)
+# SQL order of each public sort option. "rating" has no SQL order because
+# the rating average is a non-stored compute: it is sorted in Python (see
+# content_index), which is fine at the catalog sizes of these verticals.
 SORT_OPTIONS = {
+    "rating": None,
     "newest": "create_date desc, id desc",
     "oldest": "create_date asc, id asc",
     "likes": "like_count desc, id desc",
@@ -17,8 +26,18 @@ SORT_OPTIONS = {
     "year_desc": "photo_year desc, id desc",
 }
 DEFAULT_SORT = "newest"
+# Public image variants (image.mixin pre-computed fields): the grid cards
+# request 512, the detail page 1024, everything else gets the full 1920.
+IMAGE_SIZE_FIELDS = {
+    "512": "image_512",
+    "1024": "image_1024",
+}
 LIKE_COOKIE = "wlc_session"
 LIKE_COOKIE_MAX_AGE = 365 * 24 * 60 * 60  # One year, as the legacy default.
+# Anchor of the rating card on the detail page (redirect target of the
+# rating routes) and the cap of the optional rating comment.
+RATING_ANCHOR = "wlc_rating"
+RATING_FEEDBACK_MAX_LENGTH = 1000
 
 
 class WebsiteLocalContent(http.Controller):
@@ -62,13 +81,16 @@ class WebsiteLocalContent(http.Controller):
         ) & Domain(item_model._get_website_visibility_domain(request.website))
 
     def _get_search_domain(
-        self, content_type, category_id, subcategory_id, search, decade
+        self, content_type, category_id, subcategory_id, search, decade,
+        activity_id=None,
     ):
         domain = self._get_base_domain(content_type)
         if category_id:
             domain &= Domain("category_id", "=", category_id)
         if subcategory_id:
             domain &= Domain("subcategory_id", "=", subcategory_id)
+        if activity_id:
+            domain &= Domain("activity_category_ids", "in", [activity_id])
         if search:
             domain &= Domain("name", "ilike", search) | Domain(
                 "description", "ilike", search
@@ -78,7 +100,12 @@ class WebsiteLocalContent(http.Controller):
         return domain
 
     def _get_category_data(self, content_type):
-        """Sidebar categories of the type with their published item counts."""
+        """Sidebar place-type categories with their published item counts.
+
+        Place axis only: this list feeds the selector the /categoria/<id>
+        route filters on. The activity axis has its own selector, fed by
+        :meth:`_get_activity_data`.
+        """
         item_model = request.env["website.local.content.item"].sudo()
         counts = dict(
             item_model._read_group(
@@ -90,7 +117,7 @@ class WebsiteLocalContent(http.Controller):
         categories = (
             request.env["website.local.content.category"]
             .sudo()
-            .search([("type_id", "=", content_type.id)])
+            .search([("type_id", "=", content_type.id), ("axis", "=", "place")])
         )
         return [
             {
@@ -102,6 +129,35 @@ class WebsiteLocalContent(http.Controller):
                 ],
             }
             for category in categories
+        ]
+
+    def _get_activity_data(self, content_type):
+        """Activity-axis categories with counts, or [] when the type has none.
+
+        The empty list is the whole gating mechanism: a type without
+        activity categories (Memoria Viva) never renders the second
+        selector, with no per-type flag to configure.
+        """
+        item_model = request.env["website.local.content.item"].sudo()
+        counts = dict(
+            item_model._read_group(
+                self._get_base_domain(content_type),
+                ["activity_category_ids"],
+                ["__count"],
+            )
+        )
+        activities = (
+            request.env["website.local.content.category"]
+            .sudo()
+            .search([("type_id", "=", content_type.id), ("axis", "=", "activity")])
+        )
+        return [
+            {
+                "id": activity.id,
+                "name": activity.name,
+                "count": counts.get(activity, 0),
+            }
+            for activity in activities
         ]
 
     def _get_decades(self, content_type):
@@ -122,8 +178,81 @@ class WebsiteLocalContent(http.Controller):
         except (TypeError, ValueError):
             return None
 
+    def _sanitize_ppg(self, value):
+        """Page size from ?limit=, whitelisted to the legacy 12/24/48."""
+        ppg = self._sanitize_int(value)
+        return ppg if ppg in PPG_OPTIONS else PPG
+
     def _get_visitor_session_key(self):
         return request.httprequest.cookies.get(LIKE_COOKIE)
+
+    def _get_public_item(self, content_type, item_id):
+        """Item by id when publicly visible on the current website, or None.
+
+        Same checks as the public pages: approved, published, of the URL's
+        content type and visible on the current website.
+        """
+        item = request.env["website.local.content.item"].sudo().browse(item_id)
+        item = item.exists()
+        if (
+            not item
+            or item.type_id != content_type
+            or item.state != "approved"
+            or not item.is_published
+            or not item._is_visible_on_website(request.website)
+        ):
+            return None
+        return item
+
+    def _get_own_rating(self, item):
+        """The current user's rating of ``item`` (empty when anonymous).
+
+        Always filtered on the caller's own partner, so the rating routes
+        can never reach another partner's row.
+        """
+        rating_model = request.env["rating.rating"].sudo()
+        if request.env.user._is_public():
+            return rating_model.browse()
+        return rating_model.search(
+            [
+                ("res_model", "=", item._name),
+                ("res_id", "=", item.id),
+                ("partner_id", "=", request.env.user.partner_id.id),
+            ],
+            order="id desc",
+            limit=1,
+        )
+
+    def _save_own_rating(self, item, vals):
+        """Create or update the current user's rating of ``item``.
+
+        The partial unique index on (res_id, partner_id) makes a concurrent
+        duplicate create fail; the savepoint keeps the transaction usable
+        and the losing request updates the row the winner created.
+        """
+        own_rating = self._get_own_rating(item)
+        if own_rating:
+            own_rating.write(vals)
+            return own_rating
+        try:
+            with request.env.cr.savepoint():
+                return (
+                    request.env["rating.rating"]
+                    .sudo()
+                    .create(
+                        dict(
+                            vals,
+                            res_model_id=request.env["ir.model"]._get_id(item._name),
+                            res_id=item.id,
+                            partner_id=request.env.user.partner_id.id,
+                            rated_partner_id=False,
+                        )
+                    )
+                )
+        except psycopg2.IntegrityError:
+            own_rating = self._get_own_rating(item)
+            own_rating.write(vals)
+            return own_rating
 
     def _is_safe_local_path(self, url):
         """Whether ``url`` is a same-site absolute path, safe to redirect to.
@@ -163,33 +292,56 @@ class WebsiteLocalContent(http.Controller):
         content_type = self._get_content_type(type_slug)
         category_id = category_id or self._sanitize_int(kw.get("category"))
         subcategory_id = self._sanitize_int(kw.get("subcategory"))
+        activity_id = self._sanitize_int(kw.get("activity"))
         decade = self._sanitize_int(kw.get("decade"))
         search = (kw.get("search") or "").strip()
         sort = kw.get("sort") if kw.get("sort") in SORT_OPTIONS else DEFAULT_SORT
+        ppg = self._sanitize_ppg(kw.get("limit"))
 
         item_model = request.env["website.local.content.item"].sudo()
         domain = self._get_search_domain(
-            content_type, category_id, subcategory_id, search, decade
+            content_type, category_id, subcategory_id, search, decade,
+            activity_id=activity_id,
         )
         items_count = item_model.search_count(domain)
         base_url = f"/explora/{content_type.url_slug}"
         if category_id:
             base_url += f"/categoria/{category_id}"
+        # Query args every pagination link must carry over (the category
+        # travels in the path, the page number in the pager itself).
+        query_args = {
+            "search": search or None,
+            "subcategory": subcategory_id,
+            "activity": activity_id,
+            "decade": decade,
+            "sort": sort if sort != DEFAULT_SORT else None,
+            "limit": ppg if ppg != PPG else None,
+        }
         pager = request.website.pager(
             url=base_url,
             total=items_count,
             page=page,
-            step=PPG,
-            url_args={
-                "search": search or None,
-                "subcategory": subcategory_id,
-                "decade": decade,
-                "sort": sort if sort != DEFAULT_SORT else None,
-            },
+            step=ppg,
+            url_args=query_args,
         )
-        items = item_model.search(
-            domain, order=SORT_OPTIONS[sort], limit=PPG, offset=pager["offset"]
-        )
+        order = SORT_OPTIONS[sort]
+        if order:
+            items = item_model.search(
+                domain, order=order, limit=ppg, offset=pager["offset"]
+            )
+        else:
+            # Best rated: the rating average is a non-stored compute, so it
+            # cannot feed a SQL ORDER BY. Sorting the full match in Python
+            # is fine at the catalog sizes of these verticals (hundreds).
+            items = item_model.search(domain).sorted(
+                key=lambda item: (
+                    item.rating_avg,
+                    item.rating_count,
+                    item.like_count,
+                    -item.id,
+                ),
+                reverse=True,
+            )[pager["offset"] : pager["offset"] + ppg]
         session_key = self._get_visitor_session_key()
         liked_item_ids = []
         if session_key:
@@ -214,12 +366,32 @@ class WebsiteLocalContent(http.Controller):
                 "sort": sort,
                 "category_id": category_id,
                 "subcategory_id": subcategory_id,
+                "activity_id": activity_id,
                 "decade": decade,
                 "categories": self._get_category_data(content_type),
+                "activity_categories": self._get_activity_data(content_type),
                 "decades": self._get_decades(content_type),
                 "liked_item_ids": liked_item_ids,
                 "base_url": base_url,
                 "index_url": f"/explora/{content_type.url_slug}",
+                "ppg": ppg,
+                "ppg_options": PPG_OPTIONS,
+                # The pager clamps out-of-range page numbers from the URL.
+                "page": pager["page"]["num"],
+                "total_pages": pager["page_count"],
+                # Query string (no leading "?") every page link preserves.
+                "page_qs": urlencode(
+                    {key: value for key, value in query_args.items() if value}
+                ),
+                "has_active_filters": bool(
+                    search
+                    or category_id
+                    or subcategory_id
+                    or activity_id
+                    or decade
+                    or sort != DEFAULT_SORT
+                    or ppg != PPG
+                ),
             },
         )
 
@@ -255,6 +427,11 @@ class WebsiteLocalContent(http.Controller):
                 "item": item,
                 "reviews": item.get_public_ratings(),
                 "already_liked": item.has_session_liked(session_key),
+                "my_rating": self._get_own_rating(item),
+                "rating_error": bool(kw.get("rating_error")),
+                "login_url": "/web/login?"
+                + urlencode({"redirect": f"{item.website_url}#{RATING_ANCHOR}"}),
+                "rating_feedback_max_length": RATING_FEEDBACK_MAX_LENGTH,
                 "index_url": f"/explora/{content_type.url_slug}",
             },
         )
@@ -291,7 +468,32 @@ class WebsiteLocalContent(http.Controller):
             if not gallery_image:
                 return request.not_found()
             record = gallery_image
-        stream = request.env["ir.binary"]._get_image_stream_from(record, "image_1920")
+        field_name = IMAGE_SIZE_FIELDS.get(kw.get("size"), "image_1920")
+        stream = request.env["ir.binary"]._get_image_stream_from(record, field_name)
+        return stream.get_response()
+
+    @http.route(
+        "/explora/<string:type_slug>/type-img/<string:field_name>",
+        type="http",
+        auth="public",
+        website=True,
+        sitemap=False,
+    )
+    def content_type_image(self, type_slug, field_name, **kw):
+        """Hero image or sponsor logo of a content type.
+
+        Streamed here (like the item images) instead of ``/web/image`` so
+        public visitors never depend on model-level binary access rules.
+        Only the two public image fields are reachable.
+        """
+        if field_name not in ("hero_image", "sponsor_logo"):
+            return request.not_found()
+        content_type = self._get_content_type(type_slug)
+        if not content_type[field_name]:
+            return request.not_found()
+        stream = request.env["ir.binary"]._get_image_stream_from(
+            content_type, field_name
+        )
         return stream.get_response()
 
     # ------------------------------------------------------------------
@@ -307,15 +509,8 @@ class WebsiteLocalContent(http.Controller):
     )
     def content_like(self, type_slug, item_id, **kw):
         """Register one anonymous like per visitor session and redirect back."""
-        self._get_content_type(type_slug)
-        item = request.env["website.local.content.item"].sudo().browse(item_id)
-        item = item.exists()
-        if (
-            not item
-            or item.state != "approved"
-            or not item.is_published
-            or not item._is_visible_on_website(request.website)
-        ):
+        item = self._get_public_item(self._get_content_type(type_slug), item_id)
+        if not item:
             return request.not_found()
         session_key = self._get_visitor_session_key()
         is_new_session = not session_key
@@ -343,6 +538,50 @@ class WebsiteLocalContent(http.Controller):
             samesite="Lax",
         )
         return response
+
+    # ------------------------------------------------------------------
+    # Ratings (logged-in users only: one rating per partner per item,
+    # stored as a consumed core ``rating.rating`` row)
+    # ------------------------------------------------------------------
+    @http.route(
+        "/explora/<string:type_slug>/rate/<int:item_id>",
+        type="http",
+        auth="user",
+        website=True,
+        methods=["POST"],
+        sitemap=False,
+    )
+    def content_rate(self, type_slug, item_id, rating=None, feedback=None, **kw):
+        """Create or update the caller's own rating and go back to the card."""
+        item = self._get_public_item(self._get_content_type(type_slug), item_id)
+        if not item:
+            return request.not_found()
+        value = self._sanitize_int(rating)
+        if not value or not 1 <= value <= 5:
+            return request.redirect(
+                f"{item.website_url}?rating_error=1#{RATING_ANCHOR}"
+            )
+        feedback = (feedback or "").strip()[:RATING_FEEDBACK_MAX_LENGTH]
+        self._save_own_rating(
+            item, {"rating": value, "feedback": feedback, "consumed": True}
+        )
+        return request.redirect(f"{item.website_url}#{RATING_ANCHOR}")
+
+    @http.route(
+        "/explora/<string:type_slug>/rate/<int:item_id>/delete",
+        type="http",
+        auth="user",
+        website=True,
+        methods=["POST"],
+        sitemap=False,
+    )
+    def content_rate_delete(self, type_slug, item_id, **kw):
+        """Remove the caller's own rating (never anyone else's)."""
+        item = self._get_public_item(self._get_content_type(type_slug), item_id)
+        if not item:
+            return request.not_found()
+        self._get_own_rating(item).unlink()
+        return request.redirect(f"{item.website_url}#{RATING_ANCHOR}")
 
     # ------------------------------------------------------------------
     # Legacy URLs: the verticals lived under /memoria-viva and

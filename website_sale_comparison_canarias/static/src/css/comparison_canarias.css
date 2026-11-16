@@ -13,8 +13,9 @@
 
 /* -- the compare button on a product card -------------------------------- */
 /* Core keeps ``.o_add_compare`` hidden until the tile is hovered (it lives in
- * a visibility wrapper on the standard shop). Our button sits on the card
- * itself and must always show, so override that default. */
+ * a visibility wrapper on the standard shop). Our button no longer carries
+ * that class -- it only opens the picker -- but it sits inside the same card
+ * chrome, so it still insists on always showing. */
 .o_wscc_compare_btn {
     display: inline-flex !important;
     align-items: center;
@@ -77,4 +78,175 @@
     top: 0;
     background: #fff;
     z-index: 2;
+}
+
+/* ── The picker ───────────────────────────────────────────────────────────
+ * Dense on purpose: the visitor is scanning names and prices, so the rows are
+ * a compact list rather than a second grid of cards. Rebuilding the grid here
+ * would compete with the shop behind the modal for attention. */
+
+/* More breathing room around the modal's own sections: the header, body and
+ * footer inherited Bootstrap's default 1rem all round, tight for a dialog
+ * this dense (intro line, search, scopes, zone select, category chips,
+ * list). Reported 2026-08-21 ("corrige los paddings"). */
+.o_wscc_compare_modal .modal-body {
+    padding: 1.25rem 1.5rem;
+}
+
+.o_wscc_compare_modal .modal-header,
+.o_wscc_compare_modal .modal-footer {
+    padding: 1rem 1.5rem;
+}
+
+/* ... but not on a phone, where 1.5rem a side is a tenth of the screen. */
+@media (max-width: 575.98px) {
+    .o_wscc_compare_modal .modal-body,
+    .o_wscc_compare_modal .modal-header,
+    .o_wscc_compare_modal .modal-footer {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+/* Independent chips now (see templates.xml), so each one needs its own
+ * padding back -- a `btn-group` member relies on the group for width, a
+ * standalone `.btn-sm` alone is a little tight for a label as long as "Mi
+ * zona comercial: Zona Comercial Guanarteme". */
+.o_wscc_modal_scopes .o_wscc_modal_scope {
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    /* Same as the category chips: wrap rather than overflow a phone. */
+    max-width: 100%;
+    white-space: normal;
+}
+
+/* -- the four steps -------------------------------------------------------
+ * The titles are numbered by a counter rather than by hand: a product with
+ * no category has no "same category" step (the client hides that section,
+ * `display: none`, which a counter skips), and the numbers close the gap by
+ * themselves -- exactly like the <ol> of the help above them, so the two can
+ * never disagree about which step is which. */
+.o_wscc_compare_modal .modal-body {
+    counter-reset: wscc-step;
+}
+
+.o_wscc_modal_step_title {
+    counter-increment: wscc-step;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.o_wscc_modal_step_title::before {
+    content: counter(wscc-step) ". ";
+    color: var(--scc-brand-primary, #714b67);
+}
+
+/* The help: tight, small and quiet. It is read once; the list below it is
+ * what the visitor came for. */
+.o_wscc_modal_help {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.o_wscc_modal_help > summary,
+.o_wscc_modal_other > summary {
+    cursor: pointer;
+}
+
+.o_wscc_modal_help_title {
+    display: inline;
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.o_wscc_modal_help_steps {
+    padding-left: 1.25rem;
+    line-height: 1.35;
+}
+
+.o_wscc_modal_help_steps > li + li {
+    margin-top: 0.15rem;
+}
+
+/* Seventy-odd chips: past a few rows they scroll inside their own box, so
+ * the product list never ends up a screen and a half below the fold. */
+.o_wscc_modal_other .o_wscc_modal_chips {
+    max-height: 9.5rem;
+    overflow-y: auto;
+}
+
+.o_wscc_modal_chip {
+    /* A long category name wraps inside its chip instead of widening the
+     * modal past a phone's screen. */
+    max-width: 100%;
+    white-space: normal;
+    text-align: left;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 999px;
+    margin: 0 0.25rem 0.25rem 0;
+    background: transparent;
+}
+
+.o_wscc_modal_chip.active {
+    background: var(--scc-brand-primary, #714b67);
+    border-color: var(--scc-brand-primary, #714b67);
+    color: #fff;
+}
+
+.o_wscc_modal_item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.25rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    margin: 0;
+}
+
+.o_wscc_modal_item:hover {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.o_wscc_modal_img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    flex: 0 0 40px;
+}
+
+.o_wscc_modal_name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* The name is a link to the product page (new tab), but the row should keep
+ * reading as one quiet list; the underline only appears on hover. */
+a.o_wscc_modal_name {
+    color: inherit;
+    text-decoration: none;
+}
+
+a.o_wscc_modal_name:hover,
+a.o_wscc_modal_name:focus-visible {
+    text-decoration: underline;
+}
+
+.o_wscc_modal_price {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* A disabled row means the four-product cap is reached; say so quietly
+ * instead of letting the click do nothing. */
+.o_wscc_modal_item:has(input:disabled) {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.o_wscc_compare_modal.o_wscc_loading .o_wscc_modal_list {
+    opacity: 0.4;
 }

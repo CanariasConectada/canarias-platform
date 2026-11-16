@@ -9,19 +9,27 @@
          Economy scores accessibility, attention and product; Sostenibilidad
          scores resources, social impact and governance.
 
+         Triggers (which answer makes each item appear) are NOT set here:
+         the single source is certification.highlight._CC_SEED_TRIGGERS,
+         applied by the <function> call at the end of this file on install
+         and by the 19.0.2.10.0 migration on update. Seals without an
+         evaluation (imported) show the whole list, see
+         certification.type.show_all_without_evaluation.
+
          noupdate: created on install, never overwritten afterwards. These are
          editable content, and an administrator's rewording must survive the
-         next module update. -->
+         next module update. Linking only fills items that have no
+         trigger yet, so it never overwrites an administrator's choice. -->
     <data noupdate="1">
 
         <!-- Heading above the icons, per vertical: "what this shop offers"
              fits an accessibility seal, but a sustainability seal is about
              how the shop operates, not what the visitor gets. -->
         <record id="certification_type_silver" model="certification.type">
-            <field name="amenities_title">Lo que ofrece este comercio</field>
+            <field name="amenities_title">What this shop offers</field>
         </record>
         <record id="certification_type_sustainability" model="certification.type">
-            <field name="amenities_title">Sus prácticas sostenibles</field>
+            <field name="amenities_title">Sustainable commitments of this shop</field>
         </record>
 
         <!-- ============ Silver Economy ============ -->
@@ -80,6 +88,28 @@
             <field name="icon">fa-low-vision</field>
             <field name="label">Web fácil de leer</field>
             <field name="description">Texto grande y buen contraste.</field>
+        </record>
+
+        <record id="highlight_silver_personal" model="certification.highlight">
+            <field name="type_id" ref="certification_type_silver"/>
+            <field name="sequence">90</field>
+            <field name="icon">fa-user</field>
+            <field name="label">Atención personalizada</field>
+            <field name="description">Cada cliente recibe un trato a su medida.</field>
+        </record>
+        <record id="highlight_silver_adapted" model="certification.highlight">
+            <field name="type_id" ref="certification_type_silver"/>
+            <field name="sequence">100</field>
+            <field name="icon">fa-shopping-basket</field>
+            <field name="label">Productos o servicios adaptados</field>
+            <field name="description">Pensados para las necesidades reales de las personas mayores.</field>
+        </record>
+        <record id="highlight_silver_help" model="certification.highlight">
+            <field name="type_id" ref="certification_type_silver"/>
+            <field name="sequence">110</field>
+            <field name="icon">fa-handshake-o</field>
+            <field name="label">Ayuda siempre a mano</field>
+            <field name="description">Pedir ayuda es fácil, en la tienda y en la web.</field>
         </record>
 
         <!-- ============ Sostenibilidad ============ -->
@@ -153,6 +183,18 @@
             <field name="label">Gobernanza y ética</field>
             <field name="description">Política ambiental integrada en sus decisiones.</field>
         </record>
+
+        <record id="highlight_sustainability_local" model="certification.highlight">
+            <field name="type_id" ref="certification_type_sustainability"/>
+            <field name="sequence">110</field>
+            <field name="icon">fa-map-marker</field>
+            <field name="label">Productos ecológicos y locales</field>
+            <field name="description">Apuesta por lo ecológico y lo de proximidad.</field>
+        </record>
+
+        <!-- Install only (noupdate): an update gets the same links from the
+             migration. -->
+        <function model="certification.highlight" name="_cc_link_seed_triggers"/>
 
     </data>
 </odoo>

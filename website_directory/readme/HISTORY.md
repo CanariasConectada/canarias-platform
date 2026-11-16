@@ -1,3 +1,21 @@
+## 19.0.7.13.0 (2026-09-07)
+
+* **One deselect control for every filter section**: a selected zone,
+  category, certification or facility is now one chip
+  (`website_directory.directory_filter_chip`) that removes the filter on
+  click and carries the same bold cross at its right edge, plus a visible
+  focus ring. A screen reader reads out "Remove filter" and then the
+  filter's own name: the words are a visually-hidden text node, not an
+  aria-label, because QWeb only offers an expression attribute to the
+  translator as `Remove filter: {{0}}` and it would never come back
+  translated. The small "×", the category "Clear" button and the
+  facilities trash icon are gone. Bridge modules call the shared template
+  instead of drawing their own control.
+* **One "remove" glyph per page**: the red trash of the active-filters bar
+  now wears the chips' cross. It stays a red outlined button with its own
+  "Clear all filters" name, because it clears every filter rather than the
+  one it sits next to.
+
 ## 19.0.7.1.0 (2026-07-09)
 
 * **Card website URL fixed**: the entry `website_url` used to stay at the

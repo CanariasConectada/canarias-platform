@@ -1,0 +1,61 @@
+/* The certification filter in the directory sidebar.
+ *
+ * Same chip treatment as the facilities panel next to it (see
+ * website_directory_company_facilities), for the same reason: as bare
+ * `btn-outline-secondary` the chips inherited the theme's amber outline with
+ * near-white text — unreadable until hovered. The two panels sit in the same
+ * column and must read as one filter language.
+ *
+ * The same two traps apply and are avoided the same way: `--o-color-4` is the
+ * palette's WHITE, so text colors are explicit; and the compiled bundle names
+ * Bootstrap's button variables `--btn-*`, not `--bs-btn-*`, so only plain
+ * longhand properties are used.
+ */
+
+.o_wdcc_filter {
+    box-shadow: none !important;
+    border: 1px solid var(--o-border-color, #dee2e6) !important;
+}
+
+.o_wdcc_filter .card-body {
+    padding: 0.875rem 1rem;
+}
+
+.o_wdcc_filter .btn {
+    padding: 0.25rem 0.625rem;
+    font-size: 0.8125rem;
+    border: 0;
+    border-radius: 1rem;
+    line-height: 1.25;
+}
+
+/* Off state: dark text on a light neutral pill. */
+.o_wdcc_filter .btn-outline-secondary {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #495057;
+}
+
+.o_wdcc_filter .btn-outline-secondary:hover,
+.o_wdcc_filter .btn-outline-secondary:focus-visible {
+    background-color: rgba(113, 75, 103, 0.12);
+    color: var(--scc-brand-primary, #714b67);
+}
+
+/* The selected certification carries the brand. */
+.o_wdcc_filter .btn-primary {
+    background-color: var(--scc-brand-primary, #714b67);
+    border-color: var(--scc-brand-primary, #714b67);
+    color: #fff;
+}
+
+.o_wdcc_filter .btn-primary:hover,
+.o_wdcc_filter .btn-primary:focus-visible {
+    background-color: #5d3d54;
+    color: #fff;
+}
+
+.o_wdcc_filter .btn:focus-visible {
+    outline: 2px solid var(--scc-brand-primary, #714b67);
+    outline-offset: 2px;
+    box-shadow: none;
+}

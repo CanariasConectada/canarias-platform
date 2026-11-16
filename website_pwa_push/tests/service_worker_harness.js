@@ -49,6 +49,7 @@ function freshRecord() {
         matchAll: [],
         openWindow: [],
         focus: [],
+        posted: [],
         fetch: [],
         subscribeCalls: 0,
         getSubscriptionCalls: 0,
@@ -136,6 +137,9 @@ function buildScope(rec, testCase, keyBytes) {
         focus() {
             rec.focus.push(url);
             return Promise.resolve();
+        },
+        postMessage(message) {
+            rec.posted.push({url, message: JSON.parse(JSON.stringify(message))});
         },
     }));
 

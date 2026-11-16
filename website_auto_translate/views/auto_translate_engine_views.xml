@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record id="view_auto_translate_engine_list" model="ir.ui.view">
+        <field name="name">auto.translate.engine.list</field>
+        <field name="model">auto.translate.engine</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="engine_type"/>
+                <field name="in_jury"/>
+                <field name="is_arbiter"/>
+                <field name="last_error" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_auto_translate_engine_form" model="ir.ui.view">
+        <field name="name">auto.translate.engine.form</field>
+        <field name="model">auto.translate.engine</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_test_connection"
+                            type="object"
+                            string="Test connection"
+                            class="btn-primary"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon"
+                            title="Archived"
+                            bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <group>
+                        <group string="Service">
+                            <field name="name"/>
+                            <field name="engine_type"/>
+                            <field name="endpoint_url"
+                                   placeholder="Leave empty to use the provider default"/>
+                            <field name="api_key" password="True"/>
+                            <field name="model_name"
+                                   invisible="engine_type != 'anthropic'"/>
+                            <field name="timeout"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group string="Jury">
+                            <field name="in_jury"/>
+                            <field name="is_arbiter"
+                                   invisible="engine_type != 'anthropic'"/>
+                            <field name="sequence"/>
+                            <field name="last_error"/>
+                        </group>
+                    </group>
+                    <div class="text-muted">
+                        In jury mode every engine ticked as a juror translates the
+                        same text and the arbiter picks the best answer. A juror
+                        that fails is skipped, not fatal.
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_auto_translate_engine" model="ir.actions.act_window">
+        <field name="name">Translation Engines</field>
+        <field name="res_model">auto.translate.engine</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+
+</odoo>

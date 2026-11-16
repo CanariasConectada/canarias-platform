@@ -5,6 +5,8 @@ import {registry} from "@web/core/registry";
 import {Interaction} from "@web/public/interaction";
 import {rpc} from "@web/core/network/rpc";
 import {_t} from "@web/core/l10n/translation";
+import {isAndroid} from "@web/core/browser/feature_detection";
+import {chime, pageInView} from "@mail_push_guest/js/chime";
 
 // The two bus notifications this page listens to.
 //
@@ -38,24 +40,47 @@ export class CommunityChat extends Interaction {
     static selector = ".o_cc_chat";
 
     setup() {
-        this.channelId = parseInt(this.el.dataset.channelId, 10);
+        // NaN or 0 when the page has no conversation yet, which is the normal
+        // state of the support page before the visitor's first message.
+        this.channelId = parseInt(this.el.dataset.channelId, 10) || 0;
+        this.isSupport = this.el.dataset.support === "1";
         this.messagesEl = this.el.querySelector(".o_cc_chat_messages");
         this.pendingZoneEl = this.el.querySelector(".o_cc_chat_pending_zone");
         this.inputEl = this.el.querySelector(".o_cc_chat_input");
         this.errorEl = this.el.querySelector(".o_cc_chat_error");
+        this.soundEl = this.el.querySelector(".o_cc_chat_sound");
+        this.composerEl = this.el.querySelector(".o_cc_chat_composer");
+        // The support line's "who are you" form: only there for an anonymous
+        // visitor who has not answered yet.
+        this.identifyEl = this.el.querySelector(".o_cc_chat_identify");
         this.lastMessageId = this.readLastMessageId();
         this.isSending = false;
+        this.listening = false;
     }
 
     start() {
-        if (!this.channelId) {
+        // A community page always has its channel; the support page may not
+        // have one yet, and its composer is exactly what opens it.
+        if (!this.channelId && !this.isSupport) {
             return;
         }
-        this.listen();
-        this.addListener(this.el, "submit", (event) => {
+        if (this.channelId) {
+            this.listen();
+        }
+        // On the composer, not on the whole page: the identify form lives
+        // on the same page, and a listener on the root caught ITS submit too,
+        // cancelled it and sent the composer instead -- the name was never
+        // saved.
+        this.addListener(this.composerEl, "submit", (event) => {
             event.preventDefault();
             this.send();
         });
+        if (this.identifyEl) {
+            this.addListener(this.identifyEl, "submit", (event) => {
+                event.preventDefault();
+                this.identify();
+            });
+        }
         // Enter sends, Shift+Enter breaks the line. On a phone the send
         // button is right there, so this is for the people on a keyboard.
         this.addListener(this.inputEl, "keydown", (event) => {
@@ -64,7 +89,66 @@ export class CommunityChat extends Interaction {
                 this.send();
             }
         });
+        // The floating window's idle-close (support_window.js) needs to know
+        // the visitor typed something, and this page is what the window
+        // frames -- often cross-subdomain, where the parent cannot read a
+        // single keystroke of a document it does not own. `postMessage`
+        // is the one channel that crosses that boundary by design, so it
+        // is the only reliable way to say "someone is here" regardless of
+        // which of the platform's 218 hosts is doing the framing.
+        this.addListener(this.inputEl, "input", () => this.notifyParentActivity());
+        if (this.soundEl) {
+            this.addListener(this.soundEl, "click", () => {
+                chime.muted = !chime.muted;
+                this.renderSoundToggle();
+            });
+            this.renderSoundToggle();
+        }
         this.scrollToBottom();
+    }
+
+    /**
+     * The mute switch. Same stored preference as the "message sound" of the
+     * backend's Discuss settings (see `@mail_push_guest/js/chime`), so one
+     * choice holds for both. Only shown once this script runs: without it
+     * there is nothing to mute.
+     */
+    renderSoundToggle() {
+        const muted = chime.muted;
+        const label = muted ? _t("Turn on message sound") : _t("Mute message sound");
+        this.soundEl.classList.remove("d-none");
+        this.soundEl.setAttribute("aria-pressed", muted ? "true" : "false");
+        this.soundEl.setAttribute("title", label);
+        this.soundEl.setAttribute("aria-label", label);
+        const iconEl = document.createElement("i");
+        iconEl.className = `fa ${muted ? "fa-bell-slash" : "fa-bell"}`;
+        iconEl.setAttribute("aria-hidden", "true");
+        this.soundEl.replaceChildren(iconEl);
+    }
+
+    /**
+     * A short chime for a message somebody else wrote.
+     *
+     * Not while the visitor is looking at this very conversation (page
+     * visible AND focused; inside the floating window the focus is usually
+     * on the shop around it, which counts as not looking). Not on Android
+     * with notifications granted: the push notification sounds there, and
+     * follows the phone's silent mode -- core's own rule.
+     */
+    chimeFor(messages) {
+        if (!messages.some((message) => !message.mine)) {
+            return;
+        }
+        if (isAndroid() && window.Notification?.permission === "granted") {
+            return;
+        }
+        chime.ring({inView: pageInView()});
+    }
+
+    notifyParentActivity() {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({type: "o_cc_chat_activity"}, "*");
+        }
     }
 
     /**
@@ -82,10 +166,14 @@ export class CommunityChat extends Interaction {
      * so a forged id in the DOM subscribes to nothing.
      */
     listen() {
+        if (this.listening) {
+            return;
+        }
+        this.listening = true;
         const bus = this.services.bus_service;
         this.onNewMessage = (payload) => {
             if (payload.id === this.channelId) {
-                this.refreshMessages();
+                this.refreshMessages({ring: true});
             }
         };
         this.onAuthorStatus = (payload) => {
@@ -130,9 +218,26 @@ export class CommunityChat extends Interaction {
             return;
         }
         this.isSending = true;
+        this.notifyParentActivity();
         this.hideError();
         let result = null;
         try {
+            if (!this.channelId) {
+                // The support conversation is opened by the first message,
+                // not by the page: this is that moment. Subscribing right
+                // after, so the answer arrives live like anywhere else.
+                const opened = await this.waitFor(
+                    rpc("/website_pwa_chat/support/open", {})
+                );
+                if (!opened || !opened.channel_id) {
+                    throw new Error(
+                        _t("No hemos podido abrir la conversación. Inténtalo otra vez.")
+                    );
+                }
+                this.channelId = opened.channel_id;
+                this.el.dataset.channelId = String(this.channelId);
+                this.listen();
+            }
             result = await this.waitFor(
                 rpc("/mail/message/post", {
                     thread_model: "discuss.channel",
@@ -159,16 +264,68 @@ export class CommunityChat extends Interaction {
             // Published straight away: NEW_MESSAGE will bring it, but the
             // author should not have to wait for a round trip on the bus.
             this.refreshMessages();
+            // Now that the visitor has said what they need, and not before,
+            // ask who they are -- one optional line under the conversation.
+            this.revealIdentify();
         } else {
             this.refreshPending();
         }
     }
 
     // ------------------------------------------------------------------
+    // Identifying (support line, anonymous visitors only)
+    // ------------------------------------------------------------------
+
+    revealIdentify() {
+        if (this.identifyEl && this.identifyEl.classList.contains("d-none")) {
+            this.protectSyncAfterAsync(() => {
+                this.identifyEl.classList.remove("d-none");
+                this.scrollToBottom();
+            })();
+        }
+    }
+
+    /**
+     * Save the name in place. Posting the form reloaded the whole window,
+     * which blinked, lost the scroll position and re-ran the frame's layout;
+     * the route behind it stays as the no-script fallback.
+     */
+    async identify() {
+        const form = this.identifyEl;
+        const name = (form.elements.name.value || "").trim();
+        if (!name) {
+            form.elements.name.focus();
+            return;
+        }
+        let result = null;
+        try {
+            result = await this.waitFor(
+                rpc("/website_pwa_chat/support/identify", {
+                    name: name,
+                    email: (form.elements.email.value || "").trim(),
+                })
+            );
+        } catch (error) {
+            this.showError(error.data?.message || error.message);
+            return;
+        }
+        if (!result || !result.identified) {
+            return;
+        }
+        this.protectSyncAfterAsync(() => {
+            const thanksEl = document.createElement("p");
+            thanksEl.className = "small text-muted mt-2 mb-0 o_cc_chat_identified";
+            thanksEl.textContent = _t("Thanks, %s.", name);
+            form.replaceWith(thanksEl);
+            this.identifyEl = null;
+        })();
+    }
+
+    // ------------------------------------------------------------------
     // Reading
     // ------------------------------------------------------------------
 
-    async refreshMessages() {
+    async refreshMessages({ring = false} = {}) {
         const result = await this.waitFor(
             rpc("/website_pwa_chat/messages", {
                 channel_id: this.channelId,
@@ -176,16 +333,21 @@ export class CommunityChat extends Interaction {
             })
         );
         this.protectSyncAfterAsync(() => {
-            for (const message of result.messages) {
-                this.appendMessage(message);
-            }
-            if (result.messages.length) {
+            const added = result.messages.filter((message) => this.appendMessage(message));
+            if (added.length) {
                 this.scrollToBottom();
+            }
+            if (ring) {
+                this.chimeFor(added);
             }
         })();
     }
 
     async refreshPending() {
+        // The support line has no held messages and no zone to show them in.
+        if (!this.pendingZoneEl) {
+            return;
+        }
         const result = await this.waitFor(
             rpc("/website_pwa_chat/pending", {channel_id: this.channelId})
         );
@@ -210,7 +372,7 @@ export class CommunityChat extends Interaction {
         if (this.el.querySelector(`[data-message-id="${message.id}"]`)) {
             // The doorbell can ring twice for the same message (two tabs, a
             // reconnect replaying notifications). Ids make that harmless.
-            return;
+            return false;
         }
         const emptyEl = this.messagesEl.querySelector(".o_cc_chat_empty");
         if (emptyEl) {
@@ -242,9 +404,13 @@ export class CommunityChat extends Interaction {
         messageEl.append(metaEl, bodyEl);
         this.messagesEl.append(messageEl);
         this.lastMessageId = Math.max(this.lastMessageId, message.id);
+        return true;
     }
 
     showRejection(reason) {
+        if (!this.pendingZoneEl) {
+            return;
+        }
         const noticeEl = document.createElement("div");
         noticeEl.className = "alert alert-secondary mt-3 o_cc_chat_rejected";
         noticeEl.setAttribute("role", "status");

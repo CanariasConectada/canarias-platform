@@ -11,6 +11,7 @@
                 <field name="name"/>
                 <field name="type_id"/>
                 <field name="category_id"/>
+                <field name="activity_category_ids" widget="many2many_tags" optional="hide"/>
                 <field name="photo_year" optional="hide"/>
                 <field name="website_ids" widget="many2many_tags" optional="hide"/>
                 <field name="like_count"/>
@@ -43,6 +44,7 @@
                             <field name="type_id"/>
                             <field name="category_id"/>
                             <field name="subcategory_id"/>
+                            <field name="activity_category_ids" widget="many2many_tags"/>
                             <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
                             <field name="slug"/>
                             <field name="website_ids" widget="many2many_tags"/>
@@ -123,6 +125,7 @@
                 <separator/>
                     <filter name="group_by_type" string="Content Type" context="{'group_by': 'type_id'}"/>
                     <filter name="group_by_category" string="Category" context="{'group_by': 'category_id'}"/>
+                    <filter name="group_by_activity" string="Activity" context="{'group_by': 'activity_category_ids'}"/>
                     <filter name="group_by_state" string="State" context="{'group_by': 'state'}"/>
             </search>
         </field>
@@ -132,7 +135,10 @@
         <field name="name">Items</field>
         <field name="res_model">website.local.content.item</field>
         <field name="view_mode">list,form</field>
-        <field name="context">{'search_default_group_by_type': 1}</field>
+        <!-- `create: False` hands the job to the picker in wizards/: the list
+             mixes memoria viva with lugares de interés, so a plain New here
+             opens a record that has not been told which one it is. -->
+        <field name="context">{'search_default_group_by_type': 1, 'create': False}</field>
     </record>
 
 </odoo>
