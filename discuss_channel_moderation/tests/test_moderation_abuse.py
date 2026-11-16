@@ -2,9 +2,11 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 from odoo.tests import HttpCase, tagged
+from odoo.tests.common import JsonRpcException
 from odoo.tools import mute_logger
 
 from .common import (
+    JSONRPC_NOT_FOUND,
     JSONRPC_SESSION_EXPIRED,
     DiscussModerationHttpMixin,
     DiscussModerationMixin,
@@ -112,27 +114,80 @@ class TestModerationAbuse(DiscussModerationMixin, DiscussModerationHttpMixin, Ht
             "todo el barrido acabó en la cola de moderación",
         )
 
-    def test_no_message_type_survives_the_route_without_any_cookie(self):
-        """El mismo barrido SIN cookie: la persona más anónima posible.
+    def _core_refuses_a_post_without_persona(self):
+        """Whether Odoo core refuses a channel post that has no persona.
 
-        Es el caso que observó la validación: ni sesión ni visitante, y aun así
-        seis tipos publicaban. Sin cookie no hay ``mail.guest``, así que la
-        retención se queda con el partner público como autor.
+        OCA/OCB 19.0 commit 54b8c1b4 ("[FIX] mail: refuse a channel post or
+        upload without a persona", 2026-11-05) makes ``/mail/message/post``
+        raise ``NotFound`` on a ``discuss.channel`` when the request has
+        neither a partner nor a guest, BEFORE ``message_post`` runs. Older
+        cores let that post through to ``message_post``. Probed on the
+        UNMODERATED channel, so the answer comes from core and never from
+        this module.
         """
+        try:
+            self._post_over_http(self.channel_free, body="persona probe")
+        except JsonRpcException as refusal:
+            self.assertEqual(
+                str(refusal),
+                JSONRPC_NOT_FOUND,
+                "core refuses a post without persona with NotFound, nothing else",
+            )
+            return True
+        return False
+
+    def _post_or_core_refusal(self, core_refuses, **kwargs):
+        """Post over HTTP; ``None`` when core refused it as it should.
+
+        When core refuses, the refusal MUST be core's ``NotFound``: any other
+        error would let this test pass for the wrong reason.
+        """
+        if not core_refuses:
+            return self._post_over_http(self.channel_a, **kwargs)
+        with self._assert_refused_with(
+            JSONRPC_NOT_FOUND, "only core's persona check may refuse this post"
+        ):
+            self._post_over_http(self.channel_a, **kwargs)
+        return None
+
+    def test_no_message_type_survives_the_route_without_any_cookie(self):
+        """The same sweep WITHOUT a cookie: the most anonymous persona possible.
+
+        This is the case the adversarial validation observed: no session and
+        no guest, and still six message types were published. The invariant
+        is that nothing is published and nothing is served to a third party.
+        How the post is stopped depends on the Odoo core:
+
+        * a core with OCB 54b8c1b4 refuses the post itself (``NotFound``)
+          before the moderation hook runs, so nothing is published AND
+          nothing is queued;
+        * an older core lets it reach ``message_post`` and the moderation
+          hook holds it, with the public partner as author and no guest.
+
+        Both are asserted strictly for the core that is actually running;
+        never "either outcome" per post.
+        """
+        core_refuses = self._core_refuses_a_post_without_persona()
         message_types = self._message_type_values()
         for message_type in message_types:
             with self.subTest(message_type=message_type):
-                result = self._post_over_http(
-                    self.channel_a,
+                result = self._post_or_core_refusal(
+                    core_refuses,
                     body="<b>anon %s</b>" % message_type,
                     message_type=message_type,
                 )
-                self.assertFalse(result["message_id"])
+                if result is not None:
+                    self.assertFalse(result["message_id"])
                 self.assertFalse(self._channel_all_messages(self.channel_a))
                 self.assertFalse(self._fetch_over_http(self.channel_a)["messages"])
         pending = self.Pending.search([("channel_id", "=", self.channel_a.id)])
-        self.assertEqual(len(pending), len(message_types))
-        self.assertFalse(pending.guest_id, "sin cookie no hay visitante que anotar")
+        if core_refuses:
+            self.assertFalse(
+                pending, "a post core refused never reaches the moderation queue"
+            )
+        else:
+            self.assertEqual(len(pending), len(message_types))
+            self.assertFalse(pending.guest_id, "no cookie means no guest to record")
 
     def test_held_bodies_are_never_served_to_a_third_party(self):
         """La fuga sólo es fuga cuando alguien la lee: se mira lo que se sirve."""
