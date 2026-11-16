@@ -30,6 +30,13 @@ class AutoTranslateMixin(models.AbstractModel):
         """
         return [name for name in self._auto_translate_fields() if name in vals]
 
+    def _auto_translate_done(self, field_name):
+        """Hook: a job has just stored a translation of ``field_name``.
+
+        Does nothing by default. A model that renders the text through a
+        cache overrides it to drop that cache.
+        """
+
     def _auto_translate_scoped(self):
         """The subset of ``self`` covered by the rollout.
 

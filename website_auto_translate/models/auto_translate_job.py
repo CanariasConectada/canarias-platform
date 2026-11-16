@@ -50,6 +50,7 @@ CONTENT_KINDS = {
     "website.menu": "menu",
     "event.event": "event",
     "res.partner": "shop",
+    "res.company": "shop",
 }
 
 
@@ -569,6 +570,8 @@ class AutoTranslateJob(models.Model):
             # refresh cannot mistake our own fresh output for a correction.
             self._sync_terms(record, source_value, written=payload)
         stored_now = self._stored_translation(record)
+        if hasattr(record, "_auto_translate_done"):
+            record._auto_translate_done(self.field_name)
         self.write(
             {
                 "state": "done",

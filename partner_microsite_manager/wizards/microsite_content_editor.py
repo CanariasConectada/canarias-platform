@@ -57,6 +57,13 @@ CONTENT_FIELDS = (
     "microsite_services_text",
 )
 
+# What a merchant writes here is the Spanish original. The company fields are
+# translatable since 19.0.2.21.0, so reading or writing them under the
+# merchant's interface language would show (or overwrite) a translation instead
+# of the text itself. ``website_auto_translate`` owns the other languages.
+SOURCE_LANG_PARAM = "website_auto_translate.source_lang"
+DEFAULT_SOURCE_LANG = "es_ES"
+
 # Social links are NOT part of ``CONTENT_FIELDS`` because they do not live
 # (only) on the company. The footer resolves each network as "website value
 # first, company value as fallback" (see ``models/website.py``), and the
@@ -360,6 +367,24 @@ class MicrositeContentEditor(models.TransientModel):
             )
         )
 
+    def _in_source_lang(self, company):
+        """``company`` read and written in the language the merchant writes in.
+
+        Falls back to the caller's own language when the source language is not
+        installed (a bare database): switching to an unknown code would raise.
+        """
+        source = (
+            self.env["ir.config_parameter"]
+            .sudo()
+            .get_param(SOURCE_LANG_PARAM, DEFAULT_SOURCE_LANG)
+        )
+        installed = (
+            self.env["res.lang"]
+            .sudo()
+            .search_count([("code", "=", source), ("active", "=", True)])
+        )
+        return company.with_context(lang=source) if installed else company
+
     @api.model
     def default_get(self, fields_list):
         """Open on the resolved shop, already filled in.
@@ -377,11 +402,12 @@ class MicrositeContentEditor(models.TransientModel):
         source = company  # already sudo'd by _resolve_target_company
         values["company_id"] = company.id
         values["website_url"] = source.website_id.domain or ""
+        in_source_lang = self._in_source_lang(source)
         for name in self._editable_field_names():
             field = self._fields.get(name)
             if not field:
                 continue
-            value = source[name]
+            value = in_source_lang[name]
             # Relational values have to cross as ids: a recordset read in the
             # company's environment would carry that environment with it.
             if field.type in ("many2many", "one2many"):
@@ -605,7 +631,7 @@ class MicrositeContentEditor(models.TransientModel):
         # the validation.
         social_payload = {name: self[name] or False for name in SOCIAL_FIELDS}
         payload["website"] = self._normalize_company_website(self.company_website)
-        company.write(
+        self._in_source_lang(company).write(
             dict(payload, **social_payload, **self._save_opening_slots(company))
         )
         self._save_address(company)

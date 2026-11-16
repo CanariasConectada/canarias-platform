@@ -229,13 +229,14 @@ class ResCompany(models.Model):
     )
     microsite_button_text = fields.Char(
         string="Hero Button Label",
+        translate=True,
         help="Label of the call-to-action button of the hero section. "
         "Falls back to 'Shop'.",
     )
     microsite_hero_image = fields.Image(string="Hero Image")
-    microsite_intro_title = fields.Char(string="Intro Banner Title")
+    microsite_intro_title = fields.Char(string="Intro Banner Title", translate=True)
     microsite_intro_image = fields.Image(string="Intro Banner Image")
-    microsite_banner_title = fields.Char(string="Closing Banner Title")
+    microsite_banner_title = fields.Char(string="Closing Banner Title", translate=True)
     microsite_banner_image = fields.Image(string="Closing Banner Image")
     # The schedule as rows, which is how a merchant edits it since
     # 19.0.2.8.0 ("El campo horario no lo entiendo", 2026-09-15). The text
@@ -262,12 +263,12 @@ class ResCompany(models.Model):
         "(L M X J V S D = Monday..Sunday). Generated from the opening "
         "periods when the company has any.",
     )
-    microsite_delivery_info = fields.Char(string="Delivery / Shipping")
-    microsite_parking_info = fields.Char(string="Parking / Directions")
-    microsite_about_title = fields.Char(string="About Title")
-    microsite_about_text = fields.Text(string="About Text")
-    microsite_services_title = fields.Char(string="Services Title")
-    microsite_services_text = fields.Text(string="Services Text")
+    microsite_delivery_info = fields.Char(string="Delivery / Shipping", translate=True)
+    microsite_parking_info = fields.Char(string="Parking / Directions", translate=True)
+    microsite_about_title = fields.Char(string="About Title", translate=True)
+    microsite_about_text = fields.Text(string="About Text", translate=True)
+    microsite_services_title = fields.Char(string="Services Title", translate=True)
+    microsite_services_text = fields.Text(string="Services Text", translate=True)
     microsite_map_url = fields.Char(
         string="Custom Map URL",
         help="Paste any Google Maps link (share or embed); it will be "
@@ -1616,6 +1617,17 @@ class ResCompany(models.Model):
         if main and company == main:
             return self.browse()
         return company
+
+    def _auto_translate_done(self, field_name):
+        """A finished translation job changed what a language renders.
+
+        Called by ``website_auto_translate`` (when installed) after it stores
+        a translation on this company. The public homepage is served from a
+        one-hour cache keyed by page, so without this a visitor would keep
+        reading the Spanish text for up to an hour after the French one
+        exists. Never called, and harmless, when that module is absent.
+        """
+        clear_templates_cache_on_commit(self.env)
 
     @api.model
     def write(self, vals):
