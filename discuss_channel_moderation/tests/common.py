@@ -26,6 +26,9 @@ JSONRPC_USER_ERROR = "odoo.exceptions.UserError"
 # (``_auth_method_user``, odoo/addons/base/models/ir_http.py:257-259, y
 # ``_authenticate_explicit`` la re-lanza tal cual, línea 285-286).
 JSONRPC_SESSION_EXPIRED = "odoo.http.SessionExpiredException"
+# Core refusing a channel post or upload without persona (OCA/OCB 19.0
+# 54b8c1b4, ``mail/controllers/thread.py`` and ``attachment.py``).
+JSONRPC_NOT_FOUND = "werkzeug.exceptions.NotFound"
 
 
 class DiscussModerationMixin:
