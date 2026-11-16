@@ -440,10 +440,23 @@ class TestMicrositeContentEditor(TransactionCase):
         return found
 
     def _watching_partner_writes(self):
-        """Patch ``res.partner.write`` so its calls are recorded AND still run."""
+        """Patch ``res.partner.write`` so its calls are recorded AND still run.
+
+        The real ``write`` runs on a COPY of ``vals``: the mock keeps a
+        reference to the dict the caller passed, and ``base_geolocalize``
+        (``res.partner.write``) adds ``partner_latitude``/``partner_longitude``
+        to that same dict in place when an address field changes. Without the
+        copy, the recorded call would show keys another module's override
+        added, not the payload the editor actually sent.
+        """
         partner_cls = type(self.shop.partner_id)
+        original_write = partner_cls.write
+
+        def write_a_copy(records, vals, *args, **kwargs):
+            return original_write(records, dict(vals), *args, **kwargs)
+
         return patch.object(
-            partner_cls, "write", autospec=True, side_effect=partner_cls.write
+            partner_cls, "write", autospec=True, side_effect=write_a_copy
         )
 
     def test_the_address_opens_cleaned_from_the_partner(self):

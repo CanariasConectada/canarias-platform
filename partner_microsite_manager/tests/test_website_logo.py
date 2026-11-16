@@ -1,7 +1,11 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import base64
+import io
+
 from lxml import etree
+from PIL import Image
 
 from odoo.exceptions import AccessError
 from odoo.tests import Form, tagged
@@ -119,6 +123,103 @@ class TestWebsiteLogo(TransactionCase):
         self.assertFalse(editor.logo)
         editor.action_save_logo()
         self.assertTrue(self.site.logo, "an empty screen must not clear the header")
+
+    def _open_untouched(self):
+        return self._editor().create(self._editor().default_get(["company_id", "logo"]))
+
+    def test_saving_the_screen_repairs_a_placeholder_header(self):
+        """MAPFRE, 2026-11-15: the header showed Odoo's "Your Logo" SVG, the
+        screen showed the company logo, and Save wrote nothing."""
+        placeholder = self.env["website"]._default_logo()
+        (self.site | self.second_site).logo = placeholder
+        editor = self._open_untouched()
+        self.assertEqual(editor.logo, PNG_A)
+        editor.action_save_logo()
+        self.assertEqual(self.site.logo, PNG_A)
+        self.assertEqual(self.second_site.logo, PNG_A)
+        self.assertEqual(self.shop.logo, PNG_A)
+        self.assertEqual(self.other_site.logo, PNG_A)
+
+    def test_the_full_editor_repairs_a_placeholder_header_too(self):
+        self.site.logo = self.env["website"]._default_logo()
+        editor = self._editor().create(
+            self._editor().default_get(
+                list(self.env["microsite.content.editor"]._fields)
+            )
+        )
+        editor.action_save()
+        self.assertEqual(self.site.logo, PNG_A)
+
+    def test_a_new_logo_over_the_placeholder_reaches_the_header(self):
+        self.site.logo = self.env["website"]._default_logo()
+        editor = self._editor().create({"company_id": self.shop.id, "logo": PNG_B})
+        editor.action_save_logo()
+        self.assertEqual(self.shop.logo, PNG_B)
+        self.assertEqual(self.site.logo, PNG_B)
+        self.assertEqual(self.second_site.logo, PNG_B)
+
+    def test_an_untouched_real_logo_writes_nothing(self):
+        written = []
+        for model in ("website", "res.company"):
+            cls = type(self.env[model])
+            original = cls.write
+
+            def spy(records, vals, original=original):
+                if "logo" in vals:
+                    written.append(records._name)
+                return original(records, vals)
+
+            self.patch(cls, "write", spy)
+        editor = self._open_untouched()
+        self.assertEqual(editor.logo, PNG_A)
+        editor.action_save_logo()
+        self.assertEqual(written, [], "an untouched real logo must not be rewritten")
+        self.assertEqual(self.site.logo, PNG_A)
+
+    def test_an_administrators_own_svg_is_not_replaced(self):
+        custom_svg = base64.b64encode(
+            b'<svg xmlns="http://www.w3.org/2000/svg" width="4" height="2"/>'
+        )
+        self.site.logo = custom_svg
+        editor = self._open_untouched()
+        self.assertEqual(editor.logo, PNG_A)
+        editor.action_save_logo()
+        self.assertEqual(self.site.logo, custom_svg)
+
+    def test_a_large_company_logo_reaches_the_header_full_size(self):
+        buffer = io.BytesIO()
+        Image.new("RGB", (1280, 400), (200, 30, 30)).save(buffer, "PNG")
+        large = base64.b64encode(buffer.getvalue())
+        self.shop.sudo().partner_id.image_1920 = large
+        stored = self.shop.logo
+        self.site.logo = False
+        self.second_site.logo = self.env["website"]._default_logo()
+        self._open_untouched().action_save_logo()
+        self.assertEqual(self.shop.logo, stored, "the company is never downsized")
+        self.assertEqual(self.site.logo, stored)
+        self.assertEqual(self.second_site.logo, stored)
+
+    def test_odoos_default_company_logo_is_never_copied(self):
+        default_logo = self.env["res.company"]._get_logo()
+        self.shop.sudo().partner_id.image_1920 = default_logo
+        self.assertTrue(self.shop.uses_default_logo)
+        placeholder = self.env["website"]._default_logo()
+        self.site.logo = placeholder
+        self._open_untouched().action_save_logo()
+        self.assertEqual(self.site.logo, placeholder)
+
+    def test_uploading_the_company_logo_over_another_header_logo(self):
+        self.site.logo = PNG_B
+        editor = self._editor().create({"company_id": self.shop.id, "logo": PNG_A})
+        editor.action_save_logo()
+        self.assertEqual(self.site.logo, PNG_A)
+
+    def test_a_sibling_site_on_the_placeholder_is_repaired(self):
+        placeholder = self.env["website"]._default_logo()
+        self.second_site.logo = placeholder
+        self._open_untouched().action_save_logo()
+        self.assertEqual(self.site.logo, PNG_A)
+        self.assertEqual(self.second_site.logo, PNG_A)
 
     def test_a_merchant_cannot_touch_another_shops_logo(self):
         with self.assertRaises(AccessError):

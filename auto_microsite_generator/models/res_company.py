@@ -541,6 +541,13 @@ class ResCompany(models.Model):
         if self.website_id:
             return self.website_id
         values = {"name": self.name, "company_id": self.id}
+        # The header renders ``website.logo`` and nothing else. Without a
+        # value the field default stores Odoo's grey "Your Logo" SVG, and the
+        # shop's own logo never reaches its header (10 sites on 2026-11-15).
+        # Same rule as core's website configurator: only a real logo is
+        # copied, never the company's default one.
+        if self.logo and not self.uses_default_logo:
+            values["logo"] = self.logo
         # Born with the corporate microsite look when partner_microsite_manager
         # is installed. Probed on the field registry so this module keeps
         # depending only on ``website``.
