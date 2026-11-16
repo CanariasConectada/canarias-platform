@@ -116,4 +116,48 @@
         <span data-cc-live="hours_label">Opening Hours</span>
     </template>
 
+    <!-- Cover and picture strips (``tools/legacy_cover``). The relinker
+         only puts these where the company has a value, so the importer's
+         text is never replaced by nothing. The value is the company's
+         single (Spanish) string in every language, as for the contact
+         values: these fields are not translatable. -->
+    <template id="microsite_live_title" name="Microsite Live Cover Title">
+        <t t-set="company" t-value="website.company_id.sudo()"/>
+        <span
+            data-cc-live="title"
+            class="o_not_editable"
+            contenteditable="false"
+            t-out="company.microsite_title"
+        />
+    </template>
+
+    <!-- An emptied button text falls back to the translated "Shop", as on
+         the dynamic homepage: a cover button is never blank. -->
+    <template id="microsite_live_button" name="Microsite Live Cover Button">
+        <t t-set="company" t-value="website.company_id.sudo()"/>
+        <span data-cc-live="button" class="o_not_editable" contenteditable="false"><t t-if="company.microsite_button_text" t-out="company.microsite_button_text"/><t t-else="">Shop</t></span>
+    </template>
+
+    <template id="microsite_live_intro_title" name="Microsite Live Intro Title">
+        <t t-set="company" t-value="website.company_id.sudo()"/>
+        <span
+            t-if="company.microsite_intro_title"
+            data-cc-live="intro_title"
+            class="o_not_editable"
+            contenteditable="false"
+            t-out="company.microsite_intro_title"
+        />
+    </template>
+
+    <template id="microsite_live_strip_title" name="Microsite Live Closing Title">
+        <t t-set="company" t-value="website.company_id.sudo()"/>
+        <span
+            t-if="company.microsite_banner_title"
+            data-cc-live="strip_title"
+            class="o_not_editable"
+            contenteditable="false"
+            t-out="company.microsite_banner_title"
+        />
+    </template>
+
 </odoo>

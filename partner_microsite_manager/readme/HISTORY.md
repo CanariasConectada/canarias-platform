@@ -1,3 +1,33 @@
+## 19.0.2.20.0 (2026-11-15)
+
+- Legacy homepages: the cover and the picture strips follow "Page content"
+  (client report: Zig Zag Merceria saved the button "Productos" and the
+  page kept "Tienda"). 203 imported homepages had the cover title, the
+  cover button, the SEC1 and Separador titles and the three backgrounds
+  typed into the arch; 19.0.2.13.0 only relinked the contact values. New
+  `tools/legacy_cover.py` and four live templates (`microsite_live_title`,
+  `_button`, `_intro_title`, `_strip_title`) extend the same mechanism; a
+  background becomes `/web/image/res.company/<id>/<field>`. Rules:
+  an empty company field never replaces the page's text; the button
+  `href` is untouched; the migration leaves a text the page already shows
+  (same value, ignoring case and whitespace) as typed, with its seven
+  translations, and relinks the button and the two strip titles only
+  where the company value differs (prod copy 2026-11-16: 2 buttons, 1
+  intro title); it never relinks the H1, a different one is listed for
+  the owner; a background is relinked by the migration only when the
+  company image is the same file (checksum), and by an upload whatever it
+  showed; only `ir.attachment` backgrounds are rewritten. A human edit of
+  a cover field relinks that kind (`res.company.write`), a builder save
+  puts flattened cover values back. The migration backs every page up as
+  `legacy-homepage-backup-<view>-19.0.2.20.0.json`, writes
+  `legacy-homepage-cover-review-19.0.2.20.0.csv` and is idempotent. The
+  live value is the single Spanish field in all seven languages, as in
+  19.0.2.13.0: an element that goes live (at the migration or on a later
+  edit of its field) shows the Spanish value in every language until the
+  company fields become translatable. The script runs in the `end` stage so that
+  `microsite_title` already has the trade-name fallback of
+  `website_directory_partner_microsite` (loaded after this module).
+
 ## 19.0.2.19.0 (2026-11-15)
 
 - Content editor: Save repairs a header still on Odoo's "Your Logo"

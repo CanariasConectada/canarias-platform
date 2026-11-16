@@ -30,6 +30,7 @@ from ..tools.opening_hours import (
     slots_from_parsed,
 )
 from ..tools.safe_url import safe_http_url
+from .res_company_cover import COVER_FIELD_KINDS, COVER_TEXT_FIELDS
 from .res_company_title import MICROSITE_COVER_TITLE_HELP
 
 _lt = LazyTranslate(__name__)
@@ -89,6 +90,8 @@ RETRYABLE_ERRORS = (psycopg2.OperationalError, ConcurrencyError)
 MAP_NORMALIZE_CONTEXT_KEY = "pmm_map_normalize"
 # Attachment the 19.0.2.13.0 migration stores the original arch_db in.
 LEGACY_BACKUP_NAME = "legacy-homepage-backup-{view_id}-19.0.2.13.0.json"
+# And the one the 19.0.2.20.0 (cover) migration stores.
+COVER_BACKUP_NAME = "legacy-homepage-backup-{view_id}-19.0.2.20.0.json"
 # Set while the relinker writes a page, so the builder-save guard on
 # ``ir.ui.view.write`` does not run again on its own write.
 LIVE_RELINK_CONTEXT_KEY = "pmm_live_relink"
@@ -104,6 +107,14 @@ LIVE_COMPANY_FIELDS = frozenset(
         "microsite_map_share_url",
         "microsite_opening_hours",
         "microsite_opening_slot_ids",
+        # Cover and picture strips (``tools/legacy_cover``).
+        "microsite_name",
+        "microsite_button_text",
+        "microsite_intro_title",
+        "microsite_banner_title",
+        "microsite_hero_image",
+        "microsite_intro_image",
+        "microsite_banner_image",
     }
 )
 
@@ -727,6 +738,8 @@ class ResCompany(models.Model):
                 self._microsite_live_has(name)
                 for name in ("hours", "parking", "delivery")
             )
+        if kind in COVER_TEXT_FIELDS:
+            return bool((self[COVER_TEXT_FIELDS[kind]] or "").strip())
         return False
 
     def _get_microsite_live_facts(self):
@@ -742,6 +755,7 @@ class ResCompany(models.Model):
                 "website",
                 "map",
                 "hours",
+                *COVER_TEXT_FIELDS,
             )
         }
 
@@ -935,6 +949,19 @@ class ResCompany(models.Model):
                 slot: self._microsite_image_shown(kind, ref, context)
                 for slot, (kind, ref) in shown["images"].items()
             }
+            # A strip title the page renders from the company field.
+            live_titles = {
+                "intro_title": self.microsite_intro_title,
+                "strip_title": self.microsite_banner_title,
+            }
+            shown = dict(
+                shown,
+                **{
+                    slot: live_titles[slot]
+                    for slot in shown.get("live", ())
+                    if slot in live_titles
+                },
+            )
         texts = {
             slot: microsite_text_filled(slot, shown[slot])
             for slot in ("intro_title", "about", "services", "strip_title")
@@ -1019,7 +1046,14 @@ class ResCompany(models.Model):
         - ``guard`` (a builder save): only what is already live, or was
           flattened by the save, is relinked; nothing is added;
         - ``edit`` (a human changed ``kinds`` on the company or partner):
-          those kinds go live on the page whatever it showed.
+          those kinds go live on the page whatever it showed;
+        - ``cover`` (19.0.2.20.0): only the cover title and button, the two
+          strip titles and the three background pictures
+          (``_relink_cover_from_authoring_copy``); nothing else is touched.
+
+        The guard and an edit also run the cover step
+        (``_relink_cover_after``): a flattened cover value is put back, and
+        an edited cover kind goes live.
 
         ``views`` narrows the run; whatever it holds, only imported
         homepages of non-zone shops are touched (``_get_legacy_homepage_views``).
@@ -1035,16 +1069,17 @@ class ResCompany(models.Model):
         ``inserted``, ``dropped``, ``restored``, ``kept_static``, ``notes``,
         ``skipped``).
         """
-        assert mode in ("migration", "guard", "edit"), mode
+        assert mode in ("migration", "cover", "guard", "edit"), mode
         targets = self._get_legacy_homepage_views(
             view_ids=views.ids if views is not None else None
         )
-        if mode != "migration":
+        if mode in ("guard", "edit"):
             # Before this module's 19.0.2.13.0 migration backed a page up,
             # nothing but the migration touches it -- whatever other code
             # (another module's migration, a shell script) writes first.
             targets = targets.filtered(
                 lambda view: self._find_legacy_homepage_backup(view.id)
+                or self._find_legacy_homepage_backup(view.id, name=COVER_BACKUP_NAME)
             )
         stats = []
         for view in targets.with_context(lang=None):
@@ -1062,11 +1097,19 @@ class ResCompany(models.Model):
                         new_arch, report = self._relink_from_authoring_copy(
                             view, company
                         )
+                    elif mode == "cover":
+                        new_arch, report = self._relink_cover_from_authoring_copy(
+                            view, company
+                        )
                     else:
+                        force = kinds if mode == "edit" else ()
                         new_arch, report = legacy_homepage.relink_live_data(
                             view.arch_db or "",
                             company._get_microsite_live_facts(),
-                            force=kinds if mode == "edit" else (),
+                            force=force,
+                        )
+                        new_arch, report = company._relink_cover_after(
+                            view.arch_db or "", new_arch, report, force
                         )
                     if new_arch:
                         before = self._get_arch_db_raw(view)
@@ -1232,7 +1275,7 @@ class ResCompany(models.Model):
             return []
 
     @api.model
-    def _find_legacy_homepage_backup(self, view_id):
+    def _find_legacy_homepage_backup(self, view_id, name=LEGACY_BACKUP_NAME):
         """The migration's own backup of ``view_id``, or an empty recordset.
 
         Only an attachment created by the superuser (the migration) counts,
@@ -1246,7 +1289,7 @@ class ResCompany(models.Model):
                 [
                     ("res_model", "=", "ir.ui.view"),
                     ("res_id", "=", view_id),
-                    ("name", "=", LEGACY_BACKUP_NAME.format(view_id=view_id)),
+                    ("name", "=", name.format(view_id=view_id)),
                     ("create_uid", "=", SUPERUSER_ID),
                 ],
                 order="id asc",
@@ -1593,6 +1636,16 @@ class ResCompany(models.Model):
         # site, and saving a form rewrites values that did not move.
         live_changed = _live_values_change(self, LIVE_COMPANY_FIELDS, vals)
         map_changed = _live_values_change(self, frozenset({"microsite_map_url"}), vals)
+        # A cover value a person typed or uploaded: it wins over the page's.
+        # Never an emptied one: the page keeps its own text rather than none.
+        cover_changes = {}
+        for name, kind in COVER_FIELD_KINDS.items():
+            value = vals.get(name)
+            if not (value.strip() if isinstance(value, str) else value):
+                continue
+            changed = self.filtered(lambda c, n=name: (c[n] or False) != value)
+            for company in changed:
+                cover_changes.setdefault(company, set()).add(kind)
         result = self._write_map_url_aware(vals)
         if live_changed:
             clear_templates_cache_on_commit(self.env)
@@ -1606,6 +1659,8 @@ class ResCompany(models.Model):
             # page's own map into the partner-address one, and the cron that
             # converts stored links is not a human edit.
             self.filtered("microsite_map_url")._relink_after_human_edit({"map"})
+        for company, kinds in cover_changes.items():
+            company._relink_after_human_edit(kinds)
         if "logo" in vals:
             for company in self:
                 websites = company.website_id | self.env["website"].sudo().search(
