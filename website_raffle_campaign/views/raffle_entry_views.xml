@@ -18,7 +18,7 @@
                 <field name="phone" optional="hide"/>
                 <field name="merchant_id"/>
                 <field name="purchase_date"/>
-                <field name="amount"/>
+                <field name="amount_label" string="Amount"/>
                 <field name="possible_duplicate" optional="show"/>
                 <field name="draw_rank" optional="show"/>
                 <field name="state" widget="badge"
@@ -39,7 +39,7 @@
                         <div class="fw-bold"><field name="reference"/> - <field name="participant_name"/></div>
                         <div><field name="merchant_id"/></div>
                         <div class="text-muted">
-                            <field name="purchase_date"/> - <field name="amount"/> EUR
+                            <field name="purchase_date"/> - <field name="amount_label"/>
                         </div>
                         <div t-if="record.possible_duplicate.raw_value" class="text-warning">
                             Possible duplicate
@@ -76,9 +76,11 @@
                             <field name="anonymized"/>
                         </group>
                         <group string="Purchase">
-                            <field name="merchant_id"/>
+                            <field name="ask_merchant" invisible="1"/>
+                            <field name="ask_amount" invisible="1"/>
+                            <field name="merchant_id" invisible="not ask_merchant"/>
                             <field name="purchase_date"/>
-                            <field name="amount"/>
+                            <field name="amount" invisible="not ask_amount"/>
                             <field name="possible_duplicate"/>
                             <field name="reject_reason" invisible="state != 'rejected'"/>
                             <field name="draw_rank"/>

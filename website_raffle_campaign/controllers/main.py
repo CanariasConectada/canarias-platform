@@ -58,9 +58,16 @@ class RaffleController(http.Controller):
         rows = [(m.id, (getattr(m, "comercial", False) or m.name)) for m in merchants]
         return sorted(rows, key=lambda row: row[1].casefold())
 
+    @staticmethod
+    def _long_date(day):
+        return day and format_date(request.env, day, date_format="long")
+
     def _landing_values(self, campaign, values=None, error=None):
         today = campaign._raffle_today()
         return {
+            "start_label": self._long_date(campaign.date_start),
+            "end_label": self._long_date(campaign.date_end),
+            "draw_label": self._long_date(campaign.draw_date),
             "campaign": campaign,
             "merchants": self._merchants(campaign),
             "is_open": campaign._is_open(),
@@ -94,11 +101,8 @@ class RaffleController(http.Controller):
             {
                 "campaign": campaign,
                 "main_object": campaign,
-                "start_label": format_date(
-                    request.env, campaign.date_start, date_format="long"
-                ),
-                "draw_label": campaign.draw_date
-                and format_date(request.env, campaign.draw_date, date_format="long"),
+                "start_label": self._long_date(campaign.date_start),
+                "draw_label": self._long_date(campaign.draw_date),
             },
         )
         # The page changes the day the campaign opens: never let a proxy or the
@@ -149,7 +153,12 @@ class RaffleController(http.Controller):
             ref = None
         return request.render(
             "website_raffle_campaign.thanks",
-            {"campaign": campaign, "reference": ref, "main_object": campaign},
+            {
+                "campaign": campaign,
+                "reference": ref,
+                "draw_label": self._long_date(campaign.draw_date),
+                "main_object": campaign,
+            },
         )
 
     @http.route(

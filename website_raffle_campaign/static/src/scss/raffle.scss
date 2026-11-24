@@ -1,10 +1,18 @@
-// Homepage banner: the artwork (often a portrait poster) kept compact so the
-// zone homepage hero stays visible on the first screen, the button under it.
+// Raffle campaign: homepage band and public pages. The accent colour comes
+// from the campaign through CSS custom properties set inline on the wrapper
+// (--raffle-accent, --raffle-on-accent, --raffle-accent-soft, ...).
+// Plain values only: Odoo's libsass rejects min()/max()/clamp() with mixed
+// units and the whole frontend bundle would fall back to a css error.
+
+// ---------------------------------------------------------------------------
+// Homepage banner: full-width band, artwork centred, gold call to action
+// ---------------------------------------------------------------------------
 .o_raffle_banner {
     width: 100%;
-    background: #fff;
+    background: #b3122e;
+    background: linear-gradient(135deg, var(--raffle-accent-deep, #7d0d20), var(--raffle-accent, #b3122e));
     text-align: center;
-    padding-top: 1rem;
+    padding-top: 1.25rem;
 
     .o_raffle_banner_img {
         display: block;
@@ -12,9 +20,9 @@
         width: auto;
         max-width: 100%;
         height: auto;
-        // Plain values only: Odoo's libsass rejects min() with mixed units.
         max-height: 420px;
         object-fit: contain;
+        border-radius: 0.75rem;
     }
 
     @media (max-height: 800px) {
@@ -30,24 +38,471 @@
     }
 
     .o_raffle_banner_cta {
-        padding: 0.75rem 1rem;
+        padding: 1rem 1rem 1.5rem;
+    }
+
+    .o_raffle_banner_btn {
+        background-color: #f2c46d;
+        border: 0;
+        color: #2b1a1f;
+        font-weight: 700;
+        padding: 0.7rem 2.5rem;
+        font-size: 1.2rem;
+        border-radius: 50rem;
+
+        &:hover,
+        &:focus-visible {
+            background-color: #f7d490;
+            color: #2b1a1f;
+        }
+
+        &:focus-visible {
+            outline: 3px solid #fff;
+            outline-offset: 2px;
+        }
+    }
+
+    .o_raffle_banner_sub {
+        margin: 0.6rem 0 0;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.95rem;
     }
 }
 
-.o_raffle_page {
-    .o_raffle_hero_img {
-        display: block;
-        width: 100%;
-        height: auto;
-        max-height: 50vh;
-        object-fit: contain;
+.o_raffle_banner.o_raffle_banner_slim {
+    padding: 0.75rem 1rem;
+
+    .o_raffle_banner_slim_inner {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem 1.25rem;
     }
 
-    .o_raffle_form {
-        max-width: 760px;
+    .o_raffle_banner_name {
+        color: var(--raffle-on-accent, #fff);
+        font-size: 1.15rem;
+        font-weight: 700;
+    }
+
+    .o_raffle_banner_btn {
+        padding: 0.4rem 1.5rem;
+        font-size: 1rem;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Public pages
+// ---------------------------------------------------------------------------
+.o_raffle_page {
+    --raffle-accent: #b3122e;
+    --raffle-on-accent: #fff;
+    --raffle-accent-soft: rgba(179, 18, 46, 0.1);
+    --raffle-accent-ring: rgba(179, 18, 46, 0.35);
+    --raffle-accent-deep: #7d0d20;
+
+    background: linear-gradient(180deg, var(--raffle-accent-soft), rgba(255, 255, 255, 0) 360px);
+    .o_raffle_shell {
+        padding-top: 1.25rem;
+        padding-bottom: 2.5rem;
     }
 
     .o_raffle_terms {
         max-width: 820px;
+    }
+
+    // Typographic hero (no artwork) ----------------------------------------
+    .o_raffle_hero {
+        background: var(--raffle-accent);
+        background: linear-gradient(135deg, var(--raffle-accent-deep), var(--raffle-accent));
+        color: var(--raffle-on-accent);
+        text-align: center;
+        padding: 2.5rem 0 4.5rem;
+
+        @media (min-width: 768px) {
+            padding: 3.5rem 0 5.5rem;
+        }
+
+        + .o_raffle_shell {
+            margin-top: -3rem;
+        }
+    }
+
+    .o_raffle_hero_title {
+        font-size: 2rem;
+        line-height: 1.15;
+        font-weight: 800;
+        margin: 0;
+
+        @media (min-width: 768px) {
+            font-size: 3rem;
+        }
+    }
+
+    .o_raffle_hero_period {
+        display: inline-block;
+        margin: 1rem 0 0;
+        padding: 0.35rem 1rem;
+        border-radius: 50rem;
+        background: rgba(255, 255, 255, 0.18);
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+
+    // Artwork -------------------------------------------------------------
+    .o_raffle_art {
+        margin: 0;
+        border-radius: 1rem;
+        overflow: hidden;
+        background: var(--raffle-accent-soft);
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.12);
+        text-align: center;
+    }
+
+    .o_raffle_art_img {
+        display: block;
+        width: auto;
+        max-width: 100%;
+        height: auto;
+        max-height: 55vh;
+        margin: 0 auto;
+        object-fit: contain;
+    }
+
+    @media (min-width: 992px) {
+        .o_raffle_art_col {
+            position: sticky;
+            top: 6rem;
+        }
+
+        .o_raffle_art_img {
+            width: 100%;
+            max-height: 80vh;
+        }
+    }
+
+    // Card ----------------------------------------------------------------
+    .o_raffle_card {
+        background: #fff;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        border-radius: 1rem;
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
+        padding: 1.25rem;
+
+        @media (min-width: 768px) {
+            padding: 2rem;
+        }
+    }
+
+    .o_raffle_card_center {
+        text-align: center;
+    }
+
+    .o_raffle_title {
+        font-size: 1.6rem;
+        line-height: 1.2;
+        margin-bottom: 1rem;
+    }
+
+    // Info chips ------------------------------------------------------------
+    .o_raffle_chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin: 0 0 1.5rem;
+        padding: 0;
+    }
+
+    .o_raffle_chip {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        flex: 1 1 auto;
+        padding: 0.5rem 0.85rem;
+        border-radius: 0.75rem;
+        background: var(--raffle-accent-soft);
+        font-size: 0.9rem;
+        line-height: 1.25;
+
+        > .fa {
+            color: var(--raffle-accent);
+            font-size: 1.15rem;
+        }
+
+        small {
+            display: block;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            opacity: 0.7;
+        }
+
+        .o_raffle_chip_text > span {
+            font-weight: 600;
+        }
+    }
+
+    // Form ------------------------------------------------------------------
+    .o_raffle_group {
+        border: 0;
+        margin: 0 0 1.5rem;
+        padding: 0;
+        min-width: 0;
+    }
+
+    .o_raffle_legend {
+        float: none;
+        width: auto;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--raffle-accent);
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.4rem;
+        border-bottom: 2px solid var(--raffle-accent-soft);
+        display: block;
+    }
+
+    .form-control,
+    .form-select {
+        min-height: 2.9rem;
+
+        &:focus {
+            border-color: var(--raffle-accent);
+            box-shadow: 0 0 0 0.25rem var(--raffle-accent-ring);
+        }
+    }
+
+    .input-group-text {
+        background: var(--raffle-accent-soft);
+    }
+
+    .form-check-input:checked {
+        background-color: var(--raffle-accent);
+        border-color: var(--raffle-accent);
+    }
+
+    .form-check-input:focus {
+        border-color: var(--raffle-accent);
+        box-shadow: 0 0 0 0.25rem var(--raffle-accent-ring);
+    }
+
+    // Receipt drop zone --------------------------------------------------------
+    .o_raffle_drop {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 1.25rem 1rem;
+        border: 2px dashed var(--raffle-accent);
+        border-radius: 0.75rem;
+        background: var(--raffle-accent-soft);
+        text-align: center;
+        cursor: pointer;
+
+        &:hover {
+            background: var(--raffle-accent-ring);
+        }
+
+        &:focus-within {
+            box-shadow: 0 0 0 0.25rem var(--raffle-accent-ring);
+        }
+    }
+
+    .o_raffle_file {
+        // The real input covers the zone: clickable, droppable, focusable.
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .o_raffle_drop_icon {
+        font-size: 1.8rem;
+        color: var(--raffle-accent);
+    }
+
+    .o_raffle_drop_title {
+        font-weight: 600;
+    }
+
+    .o_raffle_drop_hint {
+        font-size: 0.8rem;
+        opacity: 0.75;
+    }
+
+    .o_raffle_preview {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-top: 0.6rem;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 0.75rem;
+
+        &.d-none {
+            display: none;
+        }
+    }
+
+    .o_raffle_thumb {
+        width: 3.5rem;
+        height: 3.5rem;
+        object-fit: cover;
+        border-radius: 0.5rem;
+        flex: 0 0 auto;
+
+        &.d-none {
+            display: none;
+        }
+    }
+
+    .o_raffle_file_meta {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .o_raffle_file_name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: 600;
+    }
+
+    .o_raffle_drop_invalid .o_raffle_drop {
+        border-color: #dc3545;
+    }
+
+    .o_raffle_consent {
+        margin-bottom: 1.5rem;
+
+        .form-check {
+            margin-bottom: 0.5rem;
+        }
+
+        a {
+            color: var(--raffle-accent);
+            text-decoration: underline;
+        }
+    }
+
+    // Submit ---------------------------------------------------------------------
+    .o_raffle_submit {
+        display: block;
+        width: 100%;
+        background-color: var(--raffle-accent);
+        border: 2px solid var(--raffle-accent);
+        color: var(--raffle-on-accent);
+        font-weight: 700;
+        border-radius: 50rem;
+        padding: 0.8rem 1.5rem;
+
+        &:hover,
+        &:active {
+            background-color: var(--raffle-accent-deep);
+            border-color: var(--raffle-accent-deep);
+            color: var(--raffle-on-accent);
+        }
+
+        &:focus-visible {
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem var(--raffle-accent-ring);
+            color: var(--raffle-on-accent);
+        }
+
+        &:disabled {
+            opacity: 0.75;
+            color: var(--raffle-on-accent);
+        }
+
+        @media (min-width: 768px) {
+            display: inline-block;
+            width: auto;
+            min-width: 16rem;
+        }
+    }
+
+    .o_raffle_how {
+        margin-top: 2rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
+        font-size: 0.9rem;
+        color: #6c757d;
+
+        .o_raffle_how_title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: inherit;
+        }
+
+        ol,
+        ul {
+            padding-left: 1.2rem;
+        }
+    }
+
+    .o_raffle_legal_link {
+        margin: 1rem 0 0;
+        font-size: 0.85rem;
+
+        a {
+            color: var(--raffle-accent);
+        }
+    }
+
+    // Status pages and thank-you -----------------------------------------------------
+    .o_raffle_status_icon,
+    .o_raffle_check {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 4.5rem;
+        height: 4.5rem;
+        margin-bottom: 1rem;
+        border-radius: 50%;
+        background: var(--raffle-accent-soft);
+        color: var(--raffle-accent);
+        font-size: 2rem;
+    }
+
+    .o_raffle_check {
+        background: var(--raffle-accent);
+        color: var(--raffle-on-accent);
+    }
+
+    .o_raffle_ref_label {
+        margin: 0 0 0.4rem;
+        color: #6c757d;
+    }
+
+    .o_raffle_ref {
+        display: inline-block;
+        margin: 0 0 1.25rem;
+        padding: 0.5rem 1.25rem;
+        border-radius: 0.75rem;
+        border: 2px dashed var(--raffle-accent);
+        background: var(--raffle-accent-soft);
+        font-family: SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+        font-size: 1.6rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+    }
+
+    .o_raffle_success {
+        margin-bottom: 1rem;
+    }
+
+    .o_raffle_back {
+        margin-top: 0.5rem;
     }
 }

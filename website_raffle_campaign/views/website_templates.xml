@@ -7,16 +7,26 @@
     <template id="homepage_banner" inherit_id="website.layout" name="Raffle homepage banner">
         <xpath expr="//main/t[@t-out='0']" position="before">
             <t t-set="raffle_campaign" t-value="website._raffle_banner_campaign()"/>
-            <t t-if="raffle_campaign and raffle_campaign.banner_image">
+            <t t-if="raffle_campaign">
                 <t t-set="raffle_target" t-value="raffle_campaign.short_path or '/sorteo/%s' % raffle_campaign.slug"/>
-                <div class="o_raffle_banner o_not_editable">
+                <div t-if="raffle_campaign.banner_image" class="o_raffle_banner o_not_editable"
+                     t-att-style="raffle_campaign._accent_style()">
                     <a t-att-href="raffle_target" class="o_raffle_banner_link">
                         <img class="o_raffle_banner_img"
                              t-attf-src="/sorteo/#{raffle_campaign.slug}/banner?unique=#{int(raffle_campaign.write_date.timestamp())}"
                              t-att-alt="raffle_campaign.name"/>
                     </a>
                     <div class="o_raffle_banner_cta">
-                        <a t-att-href="raffle_target" class="btn btn-primary btn-lg"
+                        <a t-att-href="raffle_target" class="btn btn-lg o_raffle_banner_btn"
+                           t-out="raffle_campaign.banner_button_label or 'Participa'"/>
+                        <p class="o_raffle_banner_sub" t-out="raffle_campaign.name"/>
+                    </div>
+                </div>
+                <div t-else="" class="o_raffle_banner o_raffle_banner_slim o_not_editable"
+                     t-att-style="raffle_campaign._accent_style()">
+                    <div class="o_raffle_banner_slim_inner">
+                        <span class="o_raffle_banner_name" t-out="raffle_campaign.name"/>
+                        <a t-att-href="raffle_target" class="btn o_raffle_banner_btn"
                            t-out="raffle_campaign.banner_button_label or 'Participa'"/>
                     </div>
                 </div>
@@ -24,124 +34,222 @@
         </xpath>
     </template>
 
+    <template id="art" name="Raffle artwork">
+        <figure t-if="campaign.banner_image" class="o_raffle_art">
+            <img t-attf-src="/sorteo/#{campaign.slug}/banner?unique=#{int(campaign.write_date.timestamp())}"
+                 t-att-alt="campaign.name" class="o_raffle_art_img"/>
+        </figure>
+    </template>
+
+    <!-- Typographic hero: stands in for the artwork when there is none. -->
+    <template id="hero" name="Raffle typographic hero">
+        <div class="o_raffle_hero">
+            <div class="container">
+                <h1 class="o_raffle_hero_title" t-out="campaign.name"/>
+                <p t-if="show_period" class="o_raffle_hero_period">
+                    <i class="fa fa-calendar" aria-hidden="true"/>
+                    <t t-out="start_label"/> – <t t-out="end_label"/>
+                </p>
+            </div>
+        </div>
+    </template>
+
     <template id="landing" name="Raffle landing">
         <t t-call="website.layout">
-            <div id="wrap" class="o_raffle_page">
-                <div t-if="campaign.banner_image" class="o_raffle_hero">
-                    <img t-attf-src="/sorteo/#{campaign.slug}/banner?unique=#{int(campaign.write_date.timestamp())}"
-                         t-att-alt="campaign.name" class="o_raffle_hero_img"/>
-                </div>
-                <div class="container py-4">
+            <div id="wrap" class="o_raffle_page" t-att-style="campaign._accent_style()">
+                <t t-if="not campaign.banner_image">
+                    <t t-set="show_period" t-value="True"/>
+                    <t t-call="website_raffle_campaign.hero"/>
+                </t>
+                <div class="container o_raffle_shell">
                     <div t-if="preview_notice" class="alert alert-warning o_not_editable" role="status">
                         Vista previa: la campaña está en borrador
                     </div>
-                    <h1 class="o_raffle_title" t-out="campaign.name"/>
-                    <div t-if="campaign.intro_html" class="o_raffle_intro" t-out="campaign.intro_html"/>
-                    <p t-if="campaign.draw_date" class="text-muted">
-                        Sorteo previsto el <strong t-out="campaign.draw_date.strftime('%d/%m/%Y')"/>.
-                    </p>
+                    <div class="row g-4 g-lg-5 justify-content-center">
+                        <div t-if="campaign.banner_image" class="col-lg-5">
+                            <div class="o_raffle_art_col"><t t-call="website_raffle_campaign.art"/></div>
+                        </div>
+                        <div t-attf-class="#{'col-lg-7' if campaign.banner_image else 'col-lg-8'}">
+                            <div class="o_raffle_card">
+                                <div t-if="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    <span t-out="error"/>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"/>
+                                </div>
+                                <h1 t-if="campaign.banner_image" class="o_raffle_title" t-out="campaign.name"/>
+                                <ul class="o_raffle_chips list-unstyled">
+                                    <li t-if="campaign.banner_image" class="o_raffle_chip">
+                                        <i class="fa fa-calendar" aria-hidden="true"/>
+                                        <span class="o_raffle_chip_text">
+                                            <small>Participa</small>
+                                            <span><t t-out="start_label"/> – <t t-out="end_label"/></span>
+                                        </span>
+                                    </li>
+                                    <li t-if="campaign.min_amount &gt; 0" class="o_raffle_chip">
+                                        <i class="fa fa-shopping-bag" aria-hidden="true"/>
+                                        <span class="o_raffle_chip_text">
+                                            <small>Compras</small>
+                                            <span>de más de <t t-out="'%g' % campaign.min_amount"/> €</span>
+                                        </span>
+                                    </li>
+                                    <li t-if="draw_label" class="o_raffle_chip">
+                                        <i class="fa fa-gift" aria-hidden="true"/>
+                                        <span class="o_raffle_chip_text">
+                                            <small>Sorteo</small>
+                                            <span t-out="draw_label"/>
+                                        </span>
+                                    </li>
+                                </ul>
 
-                    <div t-if="not is_open" class="alert alert-info" role="status">
-                        <t t-if="not_started">
-                            La campaña empieza el <strong t-out="campaign.date_start.strftime('%d/%m/%Y')"/>.
-                            Guarda tus tickets de compra a partir de esa fecha.
-                        </t>
-                        <t t-else="">
-                            La participación en esta campaña ya ha terminado. Gracias por acompañarnos.
-                        </t>
-                    </div>
-
-                    <t t-if="is_open">
-                        <div t-if="error" class="alert alert-danger" role="alert" t-out="error"/>
-                        <form t-attf-action="/sorteo/#{campaign.slug}/submit" method="post"
-                              enctype="multipart/form-data" class="o_raffle_form row g-3">
-                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                            <div class="d-none" aria-hidden="true">
-                                <label for="raffle_website_url">No rellenar este campo</label>
-                                <input type="text" id="raffle_website_url" name="website_url"
-                                       tabindex="-1" autocomplete="off"/>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="raffle_name" class="form-label">Nombre y apellidos *</label>
-                                <input type="text" id="raffle_name" name="participant_name"
-                                       class="form-control" required="required" maxlength="120"
-                                       t-att-value="values.get('participant_name')"/>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="raffle_email" class="form-label">Correo electrónico *</label>
-                                <input type="email" id="raffle_email" name="email"
-                                       class="form-control" required="required"
-                                       t-att-value="values.get('email')"/>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="raffle_phone" class="form-label">Teléfono *</label>
-                                <input type="tel" id="raffle_phone" name="phone"
-                                       class="form-control" required="required" maxlength="30"
-                                       t-att-value="values.get('phone')"/>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="raffle_merchant" class="form-label">Comercio donde compraste *</label>
-                                <select id="raffle_merchant" name="merchant_id" class="form-select" required="required">
-                                    <option value="">Elige un comercio...</option>
-                                    <t t-foreach="merchants" t-as="merchant">
-                                        <option t-att-value="merchant[0]"
-                                                t-att-selected="'selected' if str(merchant[0]) == values.get('merchant_id') else None"
-                                                t-out="merchant[1]"/>
+                                <div t-if="not is_open" class="alert alert-info" role="status">
+                                    <t t-if="not_started">
+                                        La campaña empieza el <strong t-out="start_label"/>.
+                                        Guarda tus tickets de compra a partir de esa fecha.
                                     </t>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="raffle_amount" class="form-label">Importe del ticket (€) *</label>
-                                <input type="text" inputmode="decimal" id="raffle_amount" name="amount"
-                                       class="form-control" required="required"
-                                       t-att-value="values.get('amount')"/>
-                                <div class="form-text">
-                                    Debe superar <t t-out="'%g' % campaign.min_amount"/> €.
+                                    <t t-else="">
+                                        La participación en esta campaña ya ha terminado. Gracias por acompañarnos.
+                                    </t>
                                 </div>
+
+                                <form t-if="is_open" t-attf-action="/sorteo/#{campaign.slug}/submit" method="post"
+                                      enctype="multipart/form-data" class="o_raffle_form"
+                                      t-att-data-max-mb="max_mb">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <div class="d-none" aria-hidden="true">
+                                        <label for="raffle_website_url">No rellenar este campo</label>
+                                        <input type="text" id="raffle_website_url" name="website_url"
+                                               tabindex="-1" autocomplete="off"/>
+                                    </div>
+
+                                    <fieldset class="o_raffle_group">
+                                        <legend class="o_raffle_legend">Tus datos</legend>
+                                        <div class="row g-3">
+                                            <div class="col-12">
+                                                <label for="raffle_name" class="form-label">Nombre y apellidos *</label>
+                                                <input type="text" id="raffle_name" name="participant_name"
+                                                       class="form-control" required="required" maxlength="120"
+                                                       autocomplete="name"
+                                                       t-att-value="values.get('participant_name')"/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="raffle_email" class="form-label">Correo electrónico *</label>
+                                                <input type="email" id="raffle_email" name="email"
+                                                       class="form-control" required="required"
+                                                       autocomplete="email" inputmode="email"
+                                                       t-att-value="values.get('email')"/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="raffle_phone" class="form-label">Teléfono *</label>
+                                                <input type="tel" id="raffle_phone" name="phone"
+                                                       class="form-control" required="required" maxlength="30"
+                                                       autocomplete="tel" inputmode="tel"
+                                                       t-att-value="values.get('phone')"/>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+
+                                    <fieldset class="o_raffle_group">
+                                        <legend class="o_raffle_legend">Tu compra</legend>
+                                        <div class="row g-3">
+                                            <div t-if="campaign.ask_merchant" class="col-12">
+                                                <label for="raffle_merchant" class="form-label">Comercio donde compraste *</label>
+                                                <select id="raffle_merchant" name="merchant_id" class="form-select" required="required">
+                                                    <option value="">Elige un comercio...</option>
+                                                    <t t-foreach="merchants" t-as="merchant">
+                                                        <option t-att-value="merchant[0]"
+                                                                t-att-selected="'selected' if str(merchant[0]) == values.get('merchant_id') else None"
+                                                                t-out="merchant[1]"/>
+                                                    </t>
+                                                </select>
+                                            </div>
+                                            <div t-if="campaign.ask_amount" class="col-md-6">
+                                                <label for="raffle_amount" class="form-label">Importe del ticket *</label>
+                                                <div class="input-group">
+                                                    <input type="text" inputmode="decimal" id="raffle_amount" name="amount"
+                                                           class="form-control" required="required"
+                                                           autocomplete="off" aria-describedby="raffle_amount_hint"
+                                                           t-att-value="values.get('amount')"/>
+                                                    <span class="input-group-text" aria-hidden="true">€</span>
+                                                </div>
+                                                <div id="raffle_amount_hint" class="form-text">
+                                                    Debe superar <t t-out="'%g' % campaign.min_amount"/> €.
+                                                </div>
+                                            </div>
+                                            <div t-attf-class="#{'col-md-6' if campaign.ask_amount else 'col-12'}">
+                                                <label for="raffle_date" class="form-label">Fecha de compra *</label>
+                                                <input type="date" id="raffle_date" name="purchase_date"
+                                                       class="form-control" required="required"
+                                                       t-att-min="campaign.date_start.isoformat()"
+                                                       t-att-max="min(campaign.date_end, today).isoformat()"
+                                                       t-att-value="values.get('purchase_date')"/>
+                                            </div>
+                                            <div class="col-12">
+                                                <span class="form-label d-block" id="raffle_receipt_label">Foto del ticket *</span>
+                                                <div class="o_raffle_drop">
+                                                    <input type="file" id="raffle_receipt" name="receipt"
+                                                           class="o_raffle_file" required="required"
+                                                           aria-labelledby="raffle_receipt_label raffle_receipt_title"
+                                                           aria-describedby="raffle_receipt_hint"
+                                                           data-too-big="El archivo supera el tamaño máximo permitido."
+                                                           accept="image/jpeg,image/png,image/webp,image/heic,application/pdf,.heic"/>
+                                                    <i class="fa fa-camera o_raffle_drop_icon" aria-hidden="true"/>
+                                                    <span id="raffle_receipt_title" class="o_raffle_drop_title">
+                                                        Haz una foto o sube la imagen del ticket
+                                                    </span>
+                                                    <span id="raffle_receipt_hint" class="o_raffle_drop_hint">
+                                                        JPG, PNG, WEBP, HEIC o PDF, máximo <t t-out="max_mb"/> MB. Que se vean
+                                                        el comercio, la fecha y el importe.
+                                                    </span>
+                                                </div>
+                                                <div class="o_raffle_preview d-none" aria-live="polite">
+                                                    <img class="o_raffle_thumb d-none" alt="Vista previa del ticket"/>
+                                                    <span class="o_raffle_file_meta">
+                                                        <span class="o_raffle_file_name"/>
+                                                        <small class="o_raffle_file_size text-muted"/>
+                                                    </span>
+                                                    <button type="button" class="btn-close o_raffle_file_clear" aria-label="Quitar archivo"/>
+                                                </div>
+                                                <div class="o_raffle_file_error text-danger small mt-1 d-none" role="alert"/>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+
+                                    <div class="o_raffle_consent">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="raffle_adult"
+                                                   name="is_adult" value="1" required="required"/>
+                                            <label class="form-check-label" for="raffle_adult">
+                                                Soy mayor de 18 años.
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="raffle_terms"
+                                                   name="terms_accepted" value="1" required="required"/>
+                                            <label class="form-check-label" for="raffle_terms">
+                                                He leído y acepto las
+                                                <a t-attf-href="/sorteo/#{campaign.slug}/bases" target="_blank" rel="noopener">bases legales</a>.
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-lg o_raffle_submit">
+                                        <span class="o_raffle_submit_label">Registrar mi ticket</span>
+                                        <span class="o_raffle_submit_busy d-none">
+                                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"/>
+                                            Enviando…
+                                        </span>
+                                    </button>
+                                </form>
+
+                                <section t-if="campaign.intro_html" class="o_raffle_how">
+                                    <h2 class="o_raffle_how_title">Cómo participar</h2>
+                                    <div class="o_raffle_intro" t-out="campaign.intro_html"/>
+                                </section>
+                                <p class="o_raffle_legal_link">
+                                    <a t-attf-href="/sorteo/#{campaign.slug}/bases" target="_blank" rel="noopener">Bases legales del sorteo</a>
+                                </p>
                             </div>
-                            <div class="col-md-6">
-                                <label for="raffle_date" class="form-label">Fecha de compra *</label>
-                                <input type="date" id="raffle_date" name="purchase_date"
-                                       class="form-control" required="required"
-                                       t-att-min="campaign.date_start.isoformat()"
-                                       t-att-max="min(campaign.date_end, today).isoformat()"
-                                       t-att-value="values.get('purchase_date')"/>
-                            </div>
-                            <div class="col-12">
-                                <label for="raffle_receipt" class="form-label">Foto del ticket *</label>
-                                <input type="file" id="raffle_receipt" name="receipt"
-                                       class="form-control" required="required"
-                                       accept="image/jpeg,image/png,image/webp,image/heic,application/pdf,.heic"/>
-                                <div class="form-text">
-                                    JPG, PNG, WEBP, HEIC o PDF, máximo <t t-out="max_mb"/> MB. Que se vean
-                                    el comercio, la fecha y el importe.
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" id="raffle_adult"
-                                           name="is_adult" value="1" required="required"/>
-                                    <label class="form-check-label" for="raffle_adult">
-                                        Soy mayor de 18 años.
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" id="raffle_terms"
-                                           name="terms_accepted" value="1" required="required"/>
-                                    <label class="form-check-label" for="raffle_terms">
-                                        He leído y acepto las
-                                        <a t-attf-href="/sorteo/#{campaign.slug}/bases" target="_blank" rel="noopener">bases legales</a>.
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <button type="submit" class="btn btn-primary btn-lg">Registrar mi ticket</button>
-                            </div>
-                        </form>
-                    </t>
-                    <p class="mt-4">
-                        <a t-attf-href="/sorteo/#{campaign.slug}/bases">Bases legales del sorteo</a>
-                    </p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </t>
@@ -149,17 +257,27 @@
 
     <template id="coming_soon" name="Raffle coming soon">
         <t t-call="website.layout">
-            <div id="wrap" class="o_raffle_page o_raffle_status">
-                <div t-if="campaign.banner_image" class="o_raffle_hero">
-                    <img t-attf-src="/sorteo/#{campaign.slug}/banner?unique=#{int(campaign.write_date.timestamp())}"
-                         t-att-alt="campaign.name" class="o_raffle_hero_img"/>
-                </div>
-                <div class="container py-5 text-center">
-                    <h1 class="o_raffle_title" t-out="campaign.name"/>
-                    <p class="lead">
-                        ¡Muy pronto! El sorteo empieza el
-                        <strong t-out="start_label"/>.
-                    </p>
+            <div id="wrap" class="o_raffle_page o_raffle_status" t-att-style="campaign._accent_style()">
+                <t t-if="not campaign.banner_image">
+                    <t t-set="show_period" t-value="False"/>
+                    <t t-call="website_raffle_campaign.hero"/>
+                </t>
+                <div class="container o_raffle_shell">
+                    <div class="row g-4 g-lg-5 justify-content-center align-items-center">
+                        <div t-if="campaign.banner_image" class="col-lg-5">
+                            <div class="o_raffle_art_col"><t t-call="website_raffle_campaign.art"/></div>
+                        </div>
+                        <div t-attf-class="#{'col-lg-7' if campaign.banner_image else 'col-lg-8'}">
+                            <div class="o_raffle_card o_raffle_card_center">
+                                <div class="o_raffle_status_icon" aria-hidden="true"><i class="fa fa-clock-o"/></div>
+                                <h1 t-if="campaign.banner_image" class="o_raffle_title" t-out="campaign.name"/>
+                                <p class="lead">
+                                    ¡Muy pronto! El sorteo empieza el
+                                    <strong t-out="start_label"/>.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </t>
@@ -167,20 +285,30 @@
 
     <template id="ended" name="Raffle ended">
         <t t-call="website.layout">
-            <div id="wrap" class="o_raffle_page o_raffle_status">
-                <div t-if="campaign.banner_image" class="o_raffle_hero">
-                    <img t-attf-src="/sorteo/#{campaign.slug}/banner?unique=#{int(campaign.write_date.timestamp())}"
-                         t-att-alt="campaign.name" class="o_raffle_hero_img"/>
-                </div>
-                <div class="container py-5 text-center">
-                    <h1 class="o_raffle_title" t-out="campaign.name"/>
-                    <p class="lead">
-                        La participación en <strong t-out="campaign.name"/> ha finalizado.
-                        Gracias por participar.
-                    </p>
-                    <p t-if="draw_label and campaign.state != 'drawn'" class="text-muted">
-                        El sorteo está previsto para el <strong t-out="draw_label"/>.
-                    </p>
+            <div id="wrap" class="o_raffle_page o_raffle_status" t-att-style="campaign._accent_style()">
+                <t t-if="not campaign.banner_image">
+                    <t t-set="show_period" t-value="False"/>
+                    <t t-call="website_raffle_campaign.hero"/>
+                </t>
+                <div class="container o_raffle_shell">
+                    <div class="row g-4 g-lg-5 justify-content-center align-items-center">
+                        <div t-if="campaign.banner_image" class="col-lg-5">
+                            <div class="o_raffle_art_col"><t t-call="website_raffle_campaign.art"/></div>
+                        </div>
+                        <div t-attf-class="#{'col-lg-7' if campaign.banner_image else 'col-lg-8'}">
+                            <div class="o_raffle_card o_raffle_card_center">
+                                <div class="o_raffle_status_icon" aria-hidden="true"><i class="fa fa-flag-checkered"/></div>
+                                <h1 t-if="campaign.banner_image" class="o_raffle_title" t-out="campaign.name"/>
+                                <p class="lead">
+                                    La participación en <strong t-out="campaign.name"/> ha finalizado.
+                                    Gracias por participar.
+                                </p>
+                                <p t-if="draw_label and campaign.state != 'drawn'" class="text-muted">
+                                    El sorteo está previsto para el <strong t-out="draw_label"/>.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </t>
@@ -188,7 +316,7 @@
 
     <template id="terms" name="Raffle legal terms">
         <t t-call="website.layout">
-            <div id="wrap" class="o_raffle_page">
+            <div id="wrap" class="o_raffle_page" t-att-style="campaign._accent_style()">
                 <div class="container py-4 o_raffle_terms">
                     <h1 t-out="campaign.name"/>
                     <div t-out="campaign.terms_html"/>
@@ -202,20 +330,39 @@
 
     <template id="thanks" name="Raffle thank-you">
         <t t-call="website.layout">
-            <div id="wrap" class="o_raffle_page">
-                <div class="container py-5 text-center">
-                    <h1>¡Participación registrada!</h1>
-                    <p t-if="reference" class="lead">
-                        Tu número de participación es <strong t-out="reference"/>.
-                    </p>
-                    <div t-if="campaign.success_message" t-out="campaign.success_message"/>
-                    <p t-if="campaign.draw_date" class="text-muted">
-                        El sorteo está previsto para el
-                        <strong t-out="campaign.draw_date.strftime('%d/%m/%Y')"/>.
-                    </p>
-                    <p>
-                        <a t-attf-href="/sorteo/#{campaign.slug}" class="btn btn-secondary">Volver a la campaña</a>
-                    </p>
+            <div id="wrap" class="o_raffle_page o_raffle_status" t-att-style="campaign._accent_style()">
+                <t t-if="not campaign.banner_image">
+                    <t t-set="show_period" t-value="False"/>
+                    <t t-call="website_raffle_campaign.hero"/>
+                </t>
+                <div class="container o_raffle_shell">
+                    <div class="row g-4 g-lg-5 justify-content-center align-items-center">
+                        <div t-if="campaign.banner_image" class="col-lg-5">
+                            <div class="o_raffle_art_col"><t t-call="website_raffle_campaign.art"/></div>
+                        </div>
+                        <div t-attf-class="#{'col-lg-7' if campaign.banner_image else 'col-lg-8'}">
+                            <div class="o_raffle_card o_raffle_card_center">
+                                <div class="o_raffle_check" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="40" height="40" fill="none"
+                                         stroke="currentColor" stroke-width="3"
+                                         stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M5 12.5l4.5 4.5L19 7.5"/>
+                                    </svg>
+                                </div>
+                                <h1 class="o_raffle_title">¡Participación registrada!</h1>
+                                <t t-if="reference">
+                                    <p class="o_raffle_ref_label">Tu número de participación</p>
+                                    <p class="o_raffle_ref" t-out="reference"/>
+                                </t>
+                                <div t-if="campaign.success_message" class="o_raffle_success" t-out="campaign.success_message"/>
+                                <p t-if="draw_label" class="text-muted">
+                                    El sorteo está previsto para el
+                                    <strong t-out="draw_label"/>.
+                                </p>
+                                <a href="/" class="btn btn-lg o_raffle_submit o_raffle_back">Volver a la portada</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </t>
