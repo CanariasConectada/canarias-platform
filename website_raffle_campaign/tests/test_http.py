@@ -5,7 +5,9 @@ import base64
 import re
 from unittest.mock import patch
 
+from odoo.exceptions import UserError
 from odoo.tests import HttpCase, tagged
+from odoo.tests.common import new_test_user
 
 from .common import TODAY, make_image
 
@@ -115,7 +117,9 @@ class TestRaffleHttp(HttpCase):
         self.assertTrue(banner.headers["Content-Type"].startswith("image/"))
         self.assertEqual(self._get("/sorteo/nope").status_code, 404)
         self.campaign.state = "draft"
-        self.assertEqual(self._get("/sorteo/http-raffle").status_code, 404)
+        # Terms and thank-you stay hidden for a draft; the landing is the
+        # "coming soon" page (see test_phases).
+        self.assertEqual(self._get("/sorteo/http-raffle/bases").status_code, 404)
 
     def test_submit_end_to_end_and_receipt_is_private(self):
         response = self._post()
@@ -200,3 +204,101 @@ class TestRaffleHttp(HttpCase):
             [("campaign_id", "=", self.campaign.id)]
         )
         self.assertTrue(entry.submit_ip)
+
+    # -- phases -----------------------------------------------------------
+    def _assert_styled_404(self, response):
+        self.assertEqual(response.status_code, 404)
+        self.assertIn('id="wrapwrap"', response.text)  # the site layout
+        self.assertNotIn("The requested URL was not found on the server", response.text)
+
+    def _assert_soon(self, response):
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Muy pronto", response.text)
+        self.assertIn('id="wrapwrap"', response.text)
+        self.assertNotIn("<form", response.text.split('id="wrap"')[1])
+        self.assertNotIn("/bases", response.text)
+
+    def test_phases(self):
+        for path in ("/http-short", "/sorteo/http-raffle"):
+            with self.subTest("draft " + path):
+                self.campaign.state = "draft"
+                self._assert_soon(self._get(path))
+            with self.subTest("open before start " + path):
+                self.campaign.write({"state": "open", "date_start": "2026-12-20"})
+                response = self._get(path)
+                self._assert_soon(response)
+                self.assertRegex(
+                    response.text, "20 de diciembre de 2026|December 20, 2026"
+                )
+                self.campaign.write({"date_start": "2026-12-01"})
+            with self.subTest("inside window " + path):
+                response = self._get(path)
+                self.assertEqual(response.status_code, 200)
+                self.assertIn("Registrar mi ticket", response.text)
+            with self.subTest("after end " + path):
+                self.campaign.write({"date_end": "2026-12-05"})
+                response = self._get(path)
+                self.assertEqual(response.status_code, 200)
+                self.assertIn("ha finalizado", response.text)
+                self.assertNotIn("Registrar mi ticket", response.text)
+                self.campaign.write({"date_end": "2026-12-31"})
+            with self.subTest("closed " + path):
+                self.campaign.state = "closed"
+                self.assertIn("ha finalizado", self._get(path).text)
+                self.campaign.state = "open"
+
+    def test_ended_shows_draw_date_until_drawn(self):
+        self.campaign.write({"state": "closed", "draw_date": "2027-01-02"})
+        text = self._get("/http-short").text
+        self.assertRegex(text, "2 de enero de 2027|January 2, 2027")
+        self.campaign.state = "drawn"
+        self.assertNotRegex(
+            self._get("/http-short").text, "2 de enero de 2027|January 2, 2027"
+        )
+
+    def test_submit_still_rejected_outside_the_window(self):
+        for vals in ({"state": "draft"}, {"state": "open", "date_start": "2026-12-20"}):
+            self.campaign.write(vals)
+            with self.assertRaises(UserError):
+                self.campaign._submit_entry({}, None, "1.1.1.1")
+            self.campaign.write({"state": "open", "date_start": "2026-12-01"})
+
+    def test_unknown_paths_get_the_styled_404(self):
+        self._assert_styled_404(self._get("/no-such-campaign"))
+        self._assert_styled_404(self._get("/sorteo/nope"))
+        self._assert_styled_404(self._get("/sorteo/http-raffle/bases/extra"))
+        self.campaign.active = False
+        self._assert_styled_404(self._get("/http-short"))
+        self._assert_styled_404(self._get("/sorteo/http-raffle"))
+
+    def test_lang_prefix_on_coming_soon(self):
+        lang = self.env["res.lang"]._activate_lang("fr_FR")
+        self.website.language_ids = [(4, lang.id)]
+        self.campaign.state = "draft"
+        self._assert_soon(self._get("/fr/http-short"))
+        self._assert_soon(self._get("/fr/sorteo/http-raffle"))
+
+    def test_admin_sees_preview_notice_on_draft(self):
+        self.campaign.state = "draft"
+        self.assertNotIn("Vista previa", self._get("/http-short").text)
+        new_test_user(self.env, "raffle_http_admin", groups="base.group_system")
+        self.authenticate("raffle_http_admin", "raffle_http_admin")
+        # A custom Host header drops the test session cookie, so make this
+        # site the default one instead and call without it.
+        self.website.sequence = -1000
+        for path in ("/http-short", "/sorteo/http-raffle"):
+            text = self.url_open(path).text
+            self.assertIn("Vista previa: la campaña está en borrador", text)
+            self.assertNotIn("Muy pronto", text)
+
+    def test_coming_soon_not_stuck_after_opening(self):
+        self.campaign.state = "draft"
+        self._assert_soon(self._get("/http-short"))
+        self.campaign.state = "open"
+        self.assertIn("Registrar mi ticket", self._get("/http-short").text)
+        self.assertNotIn("Muy pronto", self._get("/sorteo/http-raffle").text)
+
+    def test_status_pages_are_not_cacheable(self):
+        self.campaign.state = "draft"
+        response = self._get("/http-short")
+        self.assertEqual(response.headers.get("Cache-Control"), "no-cache")

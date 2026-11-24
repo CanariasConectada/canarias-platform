@@ -8,6 +8,7 @@ from werkzeug.exceptions import NotFound
 from odoo import http
 from odoo.exceptions import UserError
 from odoo.http import request
+from odoo.tools import format_date
 
 from ..models.raffle_campaign import MAX_UPLOAD_BYTES
 
@@ -19,7 +20,7 @@ class RaffleController(http.Controller):
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
-    def _get_campaign(self, slug):
+    def _get_campaign(self, slug, allow_draft=False):
         campaign = (
             request.env["raffle.campaign"]
             .sudo()
@@ -28,13 +29,18 @@ class RaffleController(http.Controller):
                 limit=1,
             )
         )
-        # A draft is invisible to the public; admins may preview it.
+        # Terms and thank-you pages of a draft stay hidden from the public
+        # (the terms may still hold placeholders); the landing and the artwork
+        # of a draft are public on purpose, see ``_render_landing``.
         if not campaign or (
-            campaign.state == "draft"
-            and not request.env.user.has_group("base.group_system")
+            campaign.state == "draft" and not allow_draft and not self._is_admin()
         ):
             raise NotFound()
         return campaign
+
+    @staticmethod
+    def _is_admin():
+        return request.env.user.has_group("base.group_system")
 
     @staticmethod
     def _client_ip():
@@ -67,14 +73,38 @@ class RaffleController(http.Controller):
         }
 
     def _render_landing(self, campaign, values=None, error=None):
-        if campaign.state == "draft" and not request.env.user.has_group(
-            "base.group_system"
-        ):
-            raise NotFound()
-        return request.render(
-            "website_raffle_campaign.landing",
-            self._landing_values(campaign, values, error),
+        """The campaign page for the current phase.
+
+        The public sees the form only while the campaign is open; before the
+        start (a draft counts as "not started yet") and after the end they get
+        a page of their own, inside the normal site layout. Admins always see
+        the full page, with a notice when it is still a draft.
+        """
+        phase = campaign._public_phase()
+        if phase != "open" and not self._is_admin():
+            return self._render_status(campaign, phase)
+        context = self._landing_values(campaign, values, error)
+        context["preview_notice"] = self._is_admin() and campaign.state == "draft"
+        return request.render("website_raffle_campaign.landing", context)
+
+    def _render_status(self, campaign, phase):
+        template = "coming_soon" if phase == "soon" else "ended"
+        response = request.render(
+            f"website_raffle_campaign.{template}",
+            {
+                "campaign": campaign,
+                "main_object": campaign,
+                "start_label": format_date(
+                    request.env, campaign.date_start, date_format="long"
+                ),
+                "draw_label": campaign.draw_date
+                and format_date(request.env, campaign.draw_date, date_format="long"),
+            },
         )
+        # The page changes the day the campaign opens: never let a proxy or the
+        # browser keep it.
+        response.headers["Cache-Control"] = "no-cache"
+        return response
 
     # ------------------------------------------------------------------
     # Public pages
@@ -87,7 +117,7 @@ class RaffleController(http.Controller):
         sitemap=False,
     )
     def landing(self, slug, **kwargs):
-        return self._render_landing(self._get_campaign(slug))
+        return self._render_landing(self._get_campaign(slug, allow_draft=True))
 
     @http.route(
         "/sorteo/<string:slug>/bases",
@@ -132,7 +162,7 @@ class RaffleController(http.Controller):
     def banner(self, slug, **kwargs):
         """Serve the artwork. ``/web/image`` would refuse the public user
         (no read ACL on the model), and giving it one would expose entries."""
-        campaign = self._get_campaign(slug)
+        campaign = self._get_campaign(slug, allow_draft=True)
         if not campaign.banner_image:
             raise NotFound()
         stream = request.env["ir.binary"]._get_image_stream_from(
