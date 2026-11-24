@@ -57,6 +57,8 @@ export class RaffleForm extends Interaction {
         this.errorEl.textContent = "";
         this.errorEl.classList.add("d-none");
         this.fileInput.setCustomValidity("");
+        // Clear a previous "too large" mark even when the selection is now empty.
+        this.el.classList.remove("o_raffle_drop_invalid");
         const file = this.fileInput.files[0];
         if (!file) {
             this.preview.classList.add("d-none");
