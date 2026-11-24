@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <record id="raffle_campaign_view_list" model="ir.ui.view">
+        <field name="name">raffle.campaign.list</field>
+        <field name="model">raffle.campaign</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="website_id"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="entry_count"/>
+                <field name="valid_count"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-success="state == 'open'"
+                       decoration-warning="state == 'closed'"
+                       decoration-primary="state == 'drawn'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="raffle_campaign_view_form" model="ir.ui.view">
+        <field name="name">raffle.campaign.form</field>
+        <field name="model">raffle.campaign</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_open" type="object" string="Open campaign" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_close" type="object" string="Close" class="btn-primary"
+                            invisible="state != 'open'"/>
+                    <button name="action_draw" type="object" string="Draw winner" class="btn-primary"
+                            invisible="state != 'closed'"
+                            confirm="The draw cannot be run twice. Continue?"/>
+                    <button name="action_reopen" type="object" string="Re-open"
+                            invisible="state != 'closed'"/>
+                    <button name="action_set_draft" type="object" string="Back to draft"
+                            invisible="state not in ('open', 'closed')"/>
+                    <button name="action_reset_draw" type="object" string="Reset draw"
+                            invisible="state != 'drawn'"
+                            confirm="This discards the current result and leaves a trace in the chatter. Continue?"/>
+                    <button name="action_anonymize_entries" type="object" string="Anonymize entries"
+                            invisible="state != 'drawn'"
+                            confirm="This wipes names, emails, phones, IPs and receipt files of every entry except the winner and the alternates. It cannot be undone. Continue?"/>
+                    <button name="action_anonymize_all" type="object" string="Anonymize ALL (incl. winner)"
+                            invisible="state != 'drawn'"
+                            confirm="Only after the prize is delivered: this also wipes the winner and the alternates. It cannot be undone. Continue?"/>
+                    <button name="action_download_qr" type="object" string="Download QR"
+                            invisible="not id or not short_path and not slug"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,open,closed,drawn"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" icon="fa-ticket" type="action"
+                                name="%(website_raffle_campaign.raffle_entry_action_campaign)d"
+                                context="{'search_default_campaign_id': id, 'default_campaign_id': id}">
+                            <field name="entry_count" widget="statinfo" string="Entries"/>
+                        </button>
+                        <button class="oe_stat_button" icon="fa-check" type="action"
+                                name="%(website_raffle_campaign.raffle_entry_action_campaign)d"
+                                context="{'search_default_campaign_id': id, 'search_default_valid': 1}">
+                            <field name="valid_count" widget="statinfo" string="Valid"/>
+                        </button>
+                        <button class="oe_stat_button" icon="fa-hourglass-half" type="action"
+                                name="%(website_raffle_campaign.raffle_entry_action_campaign)d"
+                                context="{'search_default_campaign_id': id, 'search_default_pending': 1}">
+                            <field name="pending_count" widget="statinfo" string="Pending"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <field name="active" invisible="1"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="El Ticketaso - Navidad 2026"/></h1>
+                    </div>
+                    <group>
+                        <group name="identity">
+                            <field name="website_id"/>
+                            <field name="slug"/>
+                            <field name="short_path" placeholder="/ticketaso"/>
+                            <field name="alias_paths" placeholder="/ticketazo,/tiquetaso"/>
+                            <field name="public_url" widget="url"/>
+                        </group>
+                        <group name="dates">
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                            <field name="draw_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Content" name="content">
+                            <group>
+                                <field name="banner_image" widget="image" options="{'size': [0, 300]}"/>
+                                <field name="banner_button_label"/>
+                            </group>
+                            <separator string="Steps text (landing page)"/>
+                            <field name="intro_html"/>
+                            <separator string="Legal terms (Spanish only, not machine-translated)"/>
+                            <field name="terms_html"/>
+                            <separator string="Thank-you message"/>
+                            <field name="success_message"/>
+                        </page>
+                        <page string="Rules" name="rules">
+                            <group>
+                                <field name="currency_id"/>
+                                <field name="min_amount"/>
+                                <field name="alternate_count"/>
+                            </group>
+                        </page>
+                        <page string="Merchants" name="merchants">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <field name="zone_to_add" class="w-auto"/>
+                                <button name="action_add_zone_merchants" type="object"
+                                        string="Add all merchants of this zone"
+                                        class="btn-secondary"
+                                        invisible="not zone_to_add or not id"/>
+                            </div>
+                            <field name="participating_company_ids"/>
+                        </page>
+                        <page string="Entries" name="entries">
+                            <field name="entry_ids" readonly="1">
+                                <list>
+                                    <field name="reference"/>
+                                    <field name="participant_name"/>
+                                    <field name="merchant_id"/>
+                                    <field name="purchase_date"/>
+                                    <field name="amount"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Draw" name="draw">
+                            <group>
+                                <group>
+                                    <field name="winner_entry_id"/>
+                                    <field name="drawn_by"/>
+                                    <field name="drawn_at"/>
+                                    <field name="draw_candidates_hash"/>
+                                </group>
+                            </group>
+                            <separator string="Candidates at draw time"/>
+                            <field name="draw_candidates_snapshot"/>
+                            <separator string="Alternates (in order)"/>
+                            <field name="alternate_entry_ids">
+                                <list>
+                                    <field name="draw_rank"/>
+                                    <field name="reference"/>
+                                    <field name="participant_name"/>
+                                    <field name="email"/>
+                                    <field name="phone"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="raffle_campaign_action" model="ir.actions.act_window">
+        <field name="name">Raffle campaigns</field>
+        <field name="res_model">raffle.campaign</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

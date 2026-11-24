@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_raffle_campaign_admin,raffle.campaign admin,model_raffle_campaign,base.group_system,1,1,1,1
+access_raffle_entry_admin,raffle.entry admin,model_raffle_entry,base.group_system,1,1,1,1
+access_raffle_entry_reject_wizard_admin,raffle.entry.reject.wizard admin,model_raffle_entry_reject_wizard,base.group_system,1,1,1,1

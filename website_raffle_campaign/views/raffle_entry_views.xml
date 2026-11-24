@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <record id="raffle_entry_view_list" model="ir.ui.view">
+        <field name="name">raffle.entry.list</field>
+        <field name="model">raffle.entry</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="state == 'rejected'" decoration-warning="possible_duplicate">
+                <header>
+                    <button name="action_validate" type="object" string="Validate"/>
+                    <button name="action_reject_wizard" type="object" string="Reject"/>
+                </header>
+                <field name="reference"/>
+                <field name="campaign_id" optional="hide"/>
+                <field name="participant_name"/>
+                <field name="email" optional="show"/>
+                <field name="phone" optional="hide"/>
+                <field name="merchant_id"/>
+                <field name="purchase_date"/>
+                <field name="amount"/>
+                <field name="possible_duplicate" optional="show"/>
+                <field name="draw_rank" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'valid'"
+                       decoration-danger="state == 'rejected'"
+                       decoration-info="state == 'pending'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="raffle_entry_view_kanban" model="ir.ui.view">
+        <field name="name">raffle.entry.kanban</field>
+        <field name="model">raffle.entry</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state">
+                <templates>
+                    <t t-name="card">
+                        <div class="fw-bold"><field name="reference"/> - <field name="participant_name"/></div>
+                        <div><field name="merchant_id"/></div>
+                        <div class="text-muted">
+                            <field name="purchase_date"/> - <field name="amount"/> EUR
+                        </div>
+                        <div t-if="record.possible_duplicate.raw_value" class="text-warning">
+                            Possible duplicate
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="raffle_entry_view_form" model="ir.ui.view">
+        <field name="name">raffle.entry.form</field>
+        <field name="model">raffle.entry</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_validate" type="object" string="Validate" class="btn-primary"
+                            invisible="state == 'valid'"/>
+                    <button name="action_reject_wizard" type="object" string="Reject"
+                            invisible="state == 'rejected'"/>
+                    <button name="action_reset_pending" type="object" string="Back to pending"
+                            invisible="state == 'pending'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="pending,valid,rejected"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"><h1><field name="reference"/></h1></div>
+                    <group>
+                        <group string="Participant">
+                            <field name="campaign_id"/>
+                            <field name="participant_name"/>
+                            <field name="email"/>
+                            <field name="phone"/>
+                            <field name="submit_ip"/>
+                            <field name="anonymized"/>
+                        </group>
+                        <group string="Purchase">
+                            <field name="merchant_id"/>
+                            <field name="purchase_date"/>
+                            <field name="amount"/>
+                            <field name="possible_duplicate"/>
+                            <field name="reject_reason" invisible="state != 'rejected'"/>
+                            <field name="draw_rank"/>
+                        </group>
+                    </group>
+                    <group string="Consent">
+                        <field name="is_adult"/>
+                        <field name="terms_accepted"/>
+                        <field name="terms_accepted_at"/>
+                        <field name="terms_version"/>
+                    </group>
+                    <group string="Receipt">
+                        <field name="receipt_image" widget="image" options="{'size': [0, 600]}"
+                               invisible="not receipt_image"/>
+                        <field name="receipt_url" widget="url" text="Open the receipt file"
+                               invisible="not receipt_url"/>
+                        <field name="receipt_checksum"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="raffle_entry_view_search" model="ir.ui.view">
+        <field name="name">raffle.entry.search</field>
+        <field name="model">raffle.entry</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="reference"/>
+                <field name="participant_name"/>
+                <field name="email"/>
+                <field name="phone"/>
+                <field name="merchant_id"/>
+                <field name="campaign_id"/>
+                <filter name="pending" string="Pending" domain="[('state', '=', 'pending')]"/>
+                <filter name="valid" string="Valid" domain="[('state', '=', 'valid')]"/>
+                <filter name="rejected" string="Rejected" domain="[('state', '=', 'rejected')]"/>
+                <separator/>
+                <filter name="possible_duplicate" string="Possible duplicate"
+                        domain="[('possible_duplicate', '=', True)]"/>
+                <group>
+                    <filter name="group_campaign" string="Campaign" context="{'group_by': 'campaign_id'}"/>
+                    <filter name="group_merchant" string="Merchant" context="{'group_by': 'merchant_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="raffle_entry_action" model="ir.actions.act_window">
+        <field name="name">Raffle entries</field>
+        <field name="res_model">raffle.entry</field>
+        <field name="view_mode">list,kanban,form</field>
+    </record>
+
+    <record id="raffle_entry_action_campaign" model="ir.actions.act_window">
+        <field name="name">Entries</field>
+        <field name="res_model">raffle.entry</field>
+        <field name="view_mode">list,kanban,form</field>
+    </record>
+</odoo>

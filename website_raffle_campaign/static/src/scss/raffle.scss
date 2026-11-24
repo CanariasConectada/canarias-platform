@@ -1,0 +1,53 @@
+// Homepage banner: the artwork (often a portrait poster) kept compact so the
+// zone homepage hero stays visible on the first screen, the button under it.
+.o_raffle_banner {
+    width: 100%;
+    background: #fff;
+    text-align: center;
+    padding-top: 1rem;
+
+    .o_raffle_banner_img {
+        display: block;
+        margin: 0 auto;
+        width: auto;
+        max-width: 100%;
+        height: auto;
+        // Plain values only: Odoo's libsass rejects min() with mixed units.
+        max-height: 420px;
+        object-fit: contain;
+    }
+
+    @media (max-height: 800px) {
+        .o_raffle_banner_img {
+            max-height: 50vh;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .o_raffle_banner_img {
+            max-height: 60vh;
+        }
+    }
+
+    .o_raffle_banner_cta {
+        padding: 0.75rem 1rem;
+    }
+}
+
+.o_raffle_page {
+    .o_raffle_hero_img {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 50vh;
+        object-fit: contain;
+    }
+
+    .o_raffle_form {
+        max-width: 760px;
+    }
+
+    .o_raffle_terms {
+        max-width: 820px;
+    }
+}

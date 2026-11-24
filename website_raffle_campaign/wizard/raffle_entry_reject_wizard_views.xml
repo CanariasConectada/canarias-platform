@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <record id="raffle_entry_reject_wizard_view_form" model="ir.ui.view">
+        <field name="name">raffle.entry.reject.wizard.form</field>
+        <field name="model">raffle.entry.reject.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="reason" placeholder="Illegible receipt, not from a participating merchant..."/>
+                    <field name="entry_ids" widget="many2many_tags" readonly="1"/>
+                </group>
+                <footer>
+                    <button name="action_confirm" type="object" string="Reject" class="btn-primary"/>
+                    <button string="Cancel" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>
