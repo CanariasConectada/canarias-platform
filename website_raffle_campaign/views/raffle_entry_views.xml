@@ -20,6 +20,7 @@
                 <field name="purchase_date"/>
                 <field name="amount"/>
                 <field name="possible_duplicate" optional="show"/>
+                <field name="draw_rank" optional="show"/>
                 <field name="state" widget="badge"
                        decoration-success="state == 'valid'"
                        decoration-danger="state == 'rejected'"
