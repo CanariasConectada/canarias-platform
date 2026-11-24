@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <menuitem id="menu_raffle_root" name="Raffles"
+              parent="website.menu_website_configuration" sequence="90"
+              groups="base.group_system"/>
+    <menuitem id="menu_raffle_campaign" name="Campaigns"
+              parent="menu_raffle_root" action="raffle_campaign_action" sequence="10"
+              groups="base.group_system"/>
+    <menuitem id="menu_raffle_entry" name="Entries"
+              parent="menu_raffle_root" action="raffle_entry_action" sequence="20"
+              groups="base.group_system"/>
+</odoo>
