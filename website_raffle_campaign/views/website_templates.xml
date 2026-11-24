@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 Canarias Conectada
+     License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <!-- Homepage banner: the campaign artwork plus the call to action, at the
+         top of <main>. No open campaign, no markup at all. -->
+    <template id="homepage_banner" inherit_id="website.layout" name="Raffle homepage banner">
+        <xpath expr="//main/t[@t-out='0']" position="before">
+            <t t-set="raffle_campaign" t-value="website._raffle_banner_campaign()"/>
+            <t t-if="raffle_campaign and raffle_campaign.banner_image">
+                <t t-set="raffle_target" t-value="raffle_campaign.short_path or '/sorteo/%s' % raffle_campaign.slug"/>
+                <div class="o_raffle_banner o_not_editable">
+                    <a t-att-href="raffle_target" class="o_raffle_banner_link">
+                        <img class="o_raffle_banner_img"
+                             t-attf-src="/sorteo/#{raffle_campaign.slug}/banner?unique=#{int(raffle_campaign.write_date.timestamp())}"
+                             t-att-alt="raffle_campaign.name"/>
+                    </a>
+                    <div class="o_raffle_banner_cta">
+                        <a t-att-href="raffle_target" class="btn btn-primary btn-lg"
+                           t-out="raffle_campaign.banner_button_label or 'Participa'"/>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="landing" name="Raffle landing">
+        <t t-call="website.layout">
+            <div id="wrap" class="o_raffle_page">
+                <div t-if="campaign.banner_image" class="o_raffle_hero">
+                    <img t-attf-src="/sorteo/#{campaign.slug}/banner?unique=#{int(campaign.write_date.timestamp())}"
+                         t-att-alt="campaign.name" class="o_raffle_hero_img"/>
+                </div>
+                <div class="container py-4">
+                    <h1 class="o_raffle_title" t-out="campaign.name"/>
+                    <div t-if="campaign.intro_html" class="o_raffle_intro" t-out="campaign.intro_html"/>
+                    <p t-if="campaign.draw_date" class="text-muted">
+                        Sorteo previsto el <strong t-out="campaign.draw_date.strftime('%d/%m/%Y')"/>.
+                    </p>
+
+                    <div t-if="not is_open" class="alert alert-info" role="status">
+                        <t t-if="not_started">
+                            La campaña empieza el <strong t-out="campaign.date_start.strftime('%d/%m/%Y')"/>.
+                            Guarda tus tickets de compra a partir de esa fecha.
+                        </t>
+                        <t t-else="">
+                            La participación en esta campaña ya ha terminado. Gracias por acompañarnos.
+                        </t>
+                    </div>
+
+                    <t t-if="is_open">
+                        <div t-if="error" class="alert alert-danger" role="alert" t-out="error"/>
+                        <form t-attf-action="/sorteo/#{campaign.slug}/submit" method="post"
+                              enctype="multipart/form-data" class="o_raffle_form row g-3">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <div class="d-none" aria-hidden="true">
+                                <label for="raffle_website_url">No rellenar este campo</label>
+                                <input type="text" id="raffle_website_url" name="website_url"
+                                       tabindex="-1" autocomplete="off"/>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="raffle_name" class="form-label">Nombre y apellidos *</label>
+                                <input type="text" id="raffle_name" name="participant_name"
+                                       class="form-control" required="required" maxlength="120"
+                                       t-att-value="values.get('participant_name')"/>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="raffle_email" class="form-label">Correo electrónico *</label>
+                                <input type="email" id="raffle_email" name="email"
+                                       class="form-control" required="required"
+                                       t-att-value="values.get('email')"/>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="raffle_phone" class="form-label">Teléfono *</label>
+                                <input type="tel" id="raffle_phone" name="phone"
+                                       class="form-control" required="required" maxlength="30"
+                                       t-att-value="values.get('phone')"/>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="raffle_merchant" class="form-label">Comercio donde compraste *</label>
+                                <select id="raffle_merchant" name="merchant_id" class="form-select" required="required">
+                                    <option value="">Elige un comercio...</option>
+                                    <t t-foreach="merchants" t-as="merchant">
+                                        <option t-att-value="merchant[0]"
+                                                t-att-selected="'selected' if str(merchant[0]) == values.get('merchant_id') else None"
+                                                t-out="merchant[1]"/>
+                                    </t>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="raffle_amount" class="form-label">Importe del ticket (€) *</label>
+                                <input type="text" inputmode="decimal" id="raffle_amount" name="amount"
+                                       class="form-control" required="required"
+                                       t-att-value="values.get('amount')"/>
+                                <div class="form-text">
+                                    Debe superar <t t-out="'%g' % campaign.min_amount"/> €.
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="raffle_date" class="form-label">Fecha de compra *</label>
+                                <input type="date" id="raffle_date" name="purchase_date"
+                                       class="form-control" required="required"
+                                       t-att-min="campaign.date_start.isoformat()"
+                                       t-att-max="min(campaign.date_end, today).isoformat()"
+                                       t-att-value="values.get('purchase_date')"/>
+                            </div>
+                            <div class="col-12">
+                                <label for="raffle_receipt" class="form-label">Foto del ticket *</label>
+                                <input type="file" id="raffle_receipt" name="receipt"
+                                       class="form-control" required="required"
+                                       accept="image/jpeg,image/png,image/webp,image/heic,application/pdf,.heic"/>
+                                <div class="form-text">
+                                    JPG, PNG, WEBP, HEIC o PDF, máximo <t t-out="max_mb"/> MB. Que se vean
+                                    el comercio, la fecha y el importe.
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="raffle_adult"
+                                           name="is_adult" value="1" required="required"/>
+                                    <label class="form-check-label" for="raffle_adult">
+                                        Soy mayor de 18 años.
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="raffle_terms"
+                                           name="terms_accepted" value="1" required="required"/>
+                                    <label class="form-check-label" for="raffle_terms">
+                                        He leído y acepto las
+                                        <a t-attf-href="/sorteo/#{campaign.slug}/bases" target="_blank" rel="noopener">bases legales</a>.
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary btn-lg">Registrar mi ticket</button>
+                            </div>
+                        </form>
+                    </t>
+                    <p class="mt-4">
+                        <a t-attf-href="/sorteo/#{campaign.slug}/bases">Bases legales del sorteo</a>
+                    </p>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="terms" name="Raffle legal terms">
+        <t t-call="website.layout">
+            <div id="wrap" class="o_raffle_page">
+                <div class="container py-4 o_raffle_terms">
+                    <h1 t-out="campaign.name"/>
+                    <div t-out="campaign.terms_html"/>
+                    <p class="mt-4">
+                        <a t-attf-href="/sorteo/#{campaign.slug}">Volver a la campaña</a>
+                    </p>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="thanks" name="Raffle thank-you">
+        <t t-call="website.layout">
+            <div id="wrap" class="o_raffle_page">
+                <div class="container py-5 text-center">
+                    <h1>¡Participación registrada!</h1>
+                    <p t-if="reference" class="lead">
+                        Tu número de participación es <strong t-out="reference"/>.
+                    </p>
+                    <div t-if="campaign.success_message" t-out="campaign.success_message"/>
+                    <p t-if="campaign.draw_date" class="text-muted">
+                        El sorteo está previsto para el
+                        <strong t-out="campaign.draw_date.strftime('%d/%m/%Y')"/>.
+                    </p>
+                    <p>
+                        <a t-attf-href="/sorteo/#{campaign.slug}" class="btn btn-secondary">Volver a la campaña</a>
+                    </p>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

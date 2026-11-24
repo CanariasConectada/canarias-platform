@@ -21,7 +21,13 @@
         "views/raffle_campaign_views.xml",
         "wizard/raffle_entry_reject_wizard_views.xml",
         "views/menus.xml",
+        "views/website_templates.xml",
     ],
+    "assets": {
+        "web.assets_frontend": [
+            "website_raffle_campaign/static/src/scss/raffle.scss",
+        ],
+    },
     "installable": True,
     "application": False,
     "auto_install": False,

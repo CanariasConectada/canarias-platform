@@ -1,0 +1,36 @@
+// Homepage banner: the artwork edge to edge, the button under it.
+.o_raffle_banner {
+    width: 100%;
+    background: #fff;
+    text-align: center;
+
+    .o_raffle_banner_img {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 60vh;
+        object-fit: contain;
+    }
+
+    .o_raffle_banner_cta {
+        padding: 0.75rem 1rem;
+    }
+}
+
+.o_raffle_page {
+    .o_raffle_hero_img {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 50vh;
+        object-fit: contain;
+    }
+
+    .o_raffle_form {
+        max-width: 760px;
+    }
+
+    .o_raffle_terms {
+        max-width: 820px;
+    }
+}
