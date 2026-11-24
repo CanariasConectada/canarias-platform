@@ -1,15 +1,32 @@
-// Homepage banner: the artwork edge to edge, the button under it.
+// Homepage banner: the artwork (often a portrait poster) kept compact so the
+// zone homepage hero stays visible on the first screen, the button under it.
 .o_raffle_banner {
     width: 100%;
     background: #fff;
     text-align: center;
+    padding-top: 1rem;
 
     .o_raffle_banner_img {
         display: block;
-        width: 100%;
+        margin: 0 auto;
+        width: auto;
+        max-width: 100%;
         height: auto;
-        max-height: 60vh;
+        // Plain values only: Odoo's libsass rejects min() with mixed units.
+        max-height: 420px;
         object-fit: contain;
+    }
+
+    @media (max-height: 800px) {
+        .o_raffle_banner_img {
+            max-height: 50vh;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .o_raffle_banner_img {
+            max-height: 60vh;
+        }
     }
 
     .o_raffle_banner_cta {
