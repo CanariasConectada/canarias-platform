@@ -28,7 +28,7 @@
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <button name="action_open" type="object" string="Open" class="btn-primary"
+                    <button name="action_open" type="object" string="Open campaign" class="btn-primary"
                             invisible="state != 'draft'"/>
                     <button name="action_close" type="object" string="Close" class="btn-primary"
                             invisible="state != 'open'"/>
@@ -45,6 +45,9 @@
                     <button name="action_anonymize_entries" type="object" string="Anonymize entries"
                             invisible="state != 'drawn'"
                             confirm="This wipes names, emails, phones, IPs and receipt files of every entry except the winner and the alternates. It cannot be undone. Continue?"/>
+                    <button name="action_anonymize_all" type="object" string="Anonymize ALL (incl. winner)"
+                            invisible="state != 'drawn'"
+                            confirm="Only after the prize is delivered: this also wipes the winner and the alternates. It cannot be undone. Continue?"/>
                     <button name="action_download_qr" type="object" string="Download QR"
                             invisible="not id or not short_path and not slug"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,open,closed,drawn"/>
@@ -136,8 +139,11 @@
                                     <field name="winner_entry_id"/>
                                     <field name="drawn_by"/>
                                     <field name="drawn_at"/>
+                                    <field name="draw_candidates_hash"/>
                                 </group>
                             </group>
+                            <separator string="Candidates at draw time"/>
+                            <field name="draw_candidates_snapshot"/>
                             <separator string="Alternates (in order)"/>
                             <field name="alternate_entry_ids">
                                 <list>

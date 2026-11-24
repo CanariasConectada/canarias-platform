@@ -28,6 +28,7 @@
             "website_raffle_campaign/static/src/scss/raffle.scss",
         ],
     },
+    "uninstall_hook": "uninstall_hook",
     "installable": True,
     "application": False,
     "auto_install": False,

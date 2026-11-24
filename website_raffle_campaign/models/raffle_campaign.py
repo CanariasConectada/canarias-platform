@@ -5,10 +5,11 @@ import hashlib
 import io
 import re
 import secrets
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
 import pytz
-from psycopg2 import IntegrityError
+from markupsafe import Markup, escape
+from psycopg2 import IntegrityError, errors
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
@@ -44,7 +45,7 @@ EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]{2,}$")
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 MAX_IMAGE_SIDE = 2000
 HEIC_BRANDS = {b"heic", b"heix", b"hevc", b"hevx", b"heim", b"heis", b"mif1", b"msf1"}
-IP_LIMIT_PER_HOUR = 10
+MAX_IMAGE_PIXELS = 40_000_000
 EMAIL_LIMIT_PER_CAMPAIGN = 20
 
 
@@ -145,6 +146,14 @@ class RaffleCampaign(models.Model):
     )
     drawn_by = fields.Many2one("res.users", copy=False, readonly=True)
     drawn_at = fields.Datetime(copy=False, readonly=True)
+    draw_candidates_snapshot = fields.Text(
+        copy=False,
+        readonly=True,
+        help="Sorted references of the valid entries the draw picked from.",
+    )
+    draw_candidates_hash = fields.Char(
+        copy=False, readonly=True, help="SHA-256 of the candidate snapshot."
+    )
     entry_count = fields.Integer(compute="_compute_counts")
     valid_count = fields.Integer(compute="_compute_counts")
     pending_count = fields.Integer(compute="_compute_counts")
@@ -222,7 +231,7 @@ class RaffleCampaign(models.Model):
         self.ensure_one()
         return [p for p in (self.alias_paths or "").split(",") if p]
 
-    @api.constrains("slug", "short_path", "alias_paths")
+    @api.constrains("slug", "short_path", "alias_paths", "website_id")
     def _check_addresses(self):
         routing_rules = None
         for campaign in self:
@@ -272,6 +281,33 @@ class RaffleCampaign(models.Model):
                     raise ValidationError(
                         _("'%s' is already used by another campaign.", path)
                     )
+                campaign._check_path_free(path)
+
+    def _check_path_free(self, path):
+        """Refuse a path another redirect or a website page already owns."""
+        self.ensure_one()
+        sites = [False, self.website_id.id]
+        rewrite = (
+            self.env["website.rewrite"]
+            .sudo()
+            .with_context(active_test=False)
+            .search_count(
+                [
+                    ("url_from", "=", path),
+                    ("website_id", "in", sites),
+                    ("name", "not like", f"raffle.campaign:{self.id}:%"),
+                ]
+            )
+        )
+        page = (
+            self.env["website.page"]
+            .sudo()
+            .search_count([("url", "=", path), ("website_id", "in", sites)])
+        )
+        if rewrite or page:
+            raise ValidationError(
+                _("'%s' is already taken by a redirect or a website page.", path)
+            )
 
     @api.constrains("date_start", "date_end", "min_amount", "alternate_count")
     def _check_rules(self):
@@ -385,6 +421,8 @@ class RaffleCampaign(models.Model):
     # ------------------------------------------------------------------
     def action_open(self):
         for campaign in self:
+            if campaign.state != "draft":
+                raise UserError(_("Only a draft campaign can be opened."))
             if not campaign.participating_company_ids:
                 raise UserError(_("Add at least one participating merchant first."))
             if not (
@@ -394,6 +432,8 @@ class RaffleCampaign(models.Model):
         self.write({"state": "open"})
 
     def action_close(self):
+        if any(c.state != "open" for c in self):
+            raise UserError(_("Only an open campaign can be closed."))
         self.write({"state": "closed"})
 
     def action_reopen(self):
@@ -455,55 +495,72 @@ class RaffleCampaign(models.Model):
         text = html2plaintext(self.terms_html or "")
         return hashlib.sha256(text.encode()).hexdigest()[:16]
 
+    def _lock_for_draw(self):
+        """Serialise draw / reset / anonymize on this campaign."""
+        self.ensure_one()
+        self.env.cr.execute(
+            "SELECT id FROM raffle_campaign WHERE id = %s FOR UPDATE NOWAIT",
+            [self.id],
+        )
+        self.invalidate_recordset()
+
     def action_draw(self):
         self.ensure_one()
+        try:
+            with self.env.cr.savepoint():
+                self._lock_for_draw()
+        except errors.LockNotAvailable:
+            raise UserError(
+                _("Another draw operation is running on this campaign. Try again.")
+            ) from None
         if self.state != "closed":
             raise UserError(_("Close the campaign before drawing."))
+        # A previous reset leaves no rank behind; clear defensively anyway.
+        self.entry_ids.write({"draw_rank": 0})
         candidates = self.entry_ids.filtered(
             lambda e: e.state == "valid" and not e.anonymized
         )
         if not candidates:
             raise UserError(_("There are no valid entries to draw from."))
+        snapshot = "\n".join(sorted(candidates.mapped("reference")))
         picks = secrets.SystemRandom().sample(
             candidates.ids, k=min(len(candidates), 1 + self.alternate_count)
         )
-        entries = self.env["raffle.entry"].browse(picks)
-        lines = []
+        items = []
         for rank, entry_id in enumerate(picks, start=1):
             entry = self.env["raffle.entry"].browse(entry_id)
             entry.draw_rank = rank
             label = _("Winner") if rank == 1 else _("Alternate %s", rank - 1)
-            lines.append(
-                "<li><b>%s</b>: %s - %s (%s)</li>"
-                % (
-                    label,
-                    entry.reference,
-                    entry.participant_name,
-                    entry.merchant_id.display_name,
-                )
-            )
+            items.append(Markup("<li><b>%s</b>: %s</li>") % (label, entry.reference))
         self.write(
             {
-                "winner_entry_id": entries[0].id,
+                "winner_entry_id": picks[0],
                 "drawn_by": self.env.user.id,
                 "drawn_at": fields.Datetime.now(),
                 "state": "drawn",
+                "draw_candidates_snapshot": snapshot,
+                "draw_candidates_hash": hashlib.sha256(snapshot.encode()).hexdigest(),
             }
         )
+        # References only: the chatter must not hold personal data.
         self.message_post(
-            body=_(
-                "Draw performed among %(count)s valid entries by %(user)s.",
-                count=len(candidates),
-                user=self.env.user.name,
+            body=Markup("%s<ul>%s</ul>")
+            % (
+                escape(
+                    _(
+                        "Draw performed among %(count)s valid entries by %(user)s.",
+                        count=len(candidates),
+                        user=self.env.user.name,
+                    )
+                ),
+                Markup("").join(items),
             )
-            + "<ul>"
-            + "".join(lines)
-            + "</ul>"
         )
         return True
 
     def action_reset_draw(self):
         self.ensure_one()
+        self._lock_for_draw()
         if self.state != "drawn":
             raise UserError(_("There is no draw to reset."))
         if self.entry_ids.filtered("anonymized"):
@@ -512,8 +569,16 @@ class RaffleCampaign(models.Model):
             )
         previous = self.winner_entry_id.reference
         self.entry_ids.write({"draw_rank": 0})
-        self.write({"winner_entry_id": False, "drawn_by": False, "drawn_at": False})
-        self.state = "closed"
+        self.write(
+            {
+                "winner_entry_id": False,
+                "drawn_by": False,
+                "drawn_at": False,
+                "draw_candidates_snapshot": False,
+                "draw_candidates_hash": False,
+                "state": "closed",
+            }
+        )
         self.message_post(
             body=_(
                 "Draw RESET by %(user)s (previous winner: %(ref)s).",
@@ -543,6 +608,23 @@ class RaffleCampaign(models.Model):
         )
         return True
 
+    def action_anonymize_all(self):
+        """For after the prize is delivered: the winner and alternates go too."""
+        self.ensure_one()
+        if self.state != "drawn":
+            raise UserError(_("Anonymize only after the draw."))
+        entries = self.entry_ids.filtered(lambda e: not e.anonymized)
+        entries._anonymize()
+        self.message_post(
+            body=_(
+                "ALL %(count)s remaining entries anonymized (winner and alternates "
+                "included) by %(user)s.",
+                count=len(entries),
+                user=self.env.user.name,
+            )
+        )
+        return True
+
     # ------------------------------------------------------------------
     # Public submission (called by the controller with sudo)
     # ------------------------------------------------------------------
@@ -565,9 +647,15 @@ class RaffleCampaign(models.Model):
             raise UserError(_("Debes ser mayor de 18 años para participar."))
         if not data.get("terms_accepted"):
             raise UserError(_("Debes aceptar las bases legales para participar."))
-        stored_bytes, mimetype, checksum = campaign._check_upload(upload)
-        campaign._check_limits(ip, email, checksum)
-        entry_model = self.env["raffle.entry"].sudo()
+        # Cheap checks first (size, magic bytes, counters); decoding last.
+        content, mimetype, checksum = campaign._read_upload(upload)
+        campaign._check_limits(email, checksum)
+        stored_bytes = campaign._reencode(content, mimetype)
+        entry_model = (
+            self.env["raffle.entry"]
+            .sudo()
+            .with_context(mail_create_nosubscribe=True, mail_create_nolog=True)
+        )
         vals = {
             "campaign_id": campaign.id,
             "participant_name": name,
@@ -655,18 +743,15 @@ class RaffleCampaign(models.Model):
             )
         return merchant, amount, purchase_date
 
-    def _check_limits(self, ip, email, checksum):
-        """Anti-abuse counters live in the DB so every worker sees them."""
+    def _check_limits(self, email, checksum):
+        """Counters that are safe to enforce here.
+
+        There is deliberately NO per-IP limit: behind nginx and Traefik every
+        request reaches Odoo from the proxy address, so an IP counter would be
+        global and lock every shopper out. Per-IP throttling is nginx's job
+        (see ``docs/.../nginx_snippet.conf``); ``submit_ip`` is audit only.
+        """
         entry_model = self.env["raffle.entry"].sudo()
-        if ip:
-            since = fields.Datetime.now() - timedelta(hours=1)
-            recent = entry_model.search_count(
-                [("submit_ip", "=", ip), ("create_date", ">=", since)]
-            )
-            if recent >= IP_LIMIT_PER_HOUR:
-                raise UserError(
-                    _("Demasiados intentos desde tu conexión. Inténtalo más tarde.")
-                )
         by_email = entry_model.search_count(
             [("campaign_id", "=", self.id), ("email", "=", email)]
         )
@@ -691,19 +776,17 @@ class RaffleCampaign(models.Model):
 
     @staticmethod
     def _parse_amount(raw):
+        """Accept 1.500,50 / 15,5 / 15.50 / 1.500 / 1500; ``None`` otherwise."""
         raw = (raw or "").strip().replace("€", "").replace(" ", "")
         if not raw:
             return None
-        # "1.234,56" (es) and "1234.56" (en) both appear in the wild.
         if "," in raw:
             raw = raw.replace(".", "").replace(",", ".")
-        try:
-            value = float(raw)
-        except ValueError:
+        elif re.match(r"^\d{1,3}(\.\d{3})+$", raw):
+            raw = raw.replace(".", "")
+        if not re.match(r"^\d+(\.\d{1,2})?$", raw):
             return None
-        if value != value or value in (float("inf"), float("-inf")):
-            return None
-        return round(value, 2)
+        return round(float(raw), 2)
 
     @staticmethod
     def _sniff(content):
@@ -720,8 +803,8 @@ class RaffleCampaign(models.Model):
             return "application/pdf"
         return None
 
-    def _check_upload(self, upload):
-        """Return ``(bytes to store, mimetype, sha256 of the original)``."""
+    def _read_upload(self, upload):
+        """Size and magic-byte checks only: ``(bytes, mimetype, sha256)``."""
         if not upload or not upload[1]:
             raise UserError(_("Adjunta una foto de tu ticket."))
         content = upload[1]
@@ -732,27 +815,38 @@ class RaffleCampaign(models.Model):
             raise UserError(
                 _("Formato no admitido. Sube una foto JPG, PNG, WEBP, HEIC o un PDF.")
             )
-        checksum = hashlib.sha256(content).hexdigest()
-        if mimetype in ("image/jpeg", "image/png", "image/webp"):
-            content = self._downscale(content, mimetype)
-        return content, mimetype, checksum
+        return content, mimetype, hashlib.sha256(content).hexdigest()
 
     @staticmethod
-    def _downscale(content, mimetype):
+    def _reencode(content, mimetype):
+        """Re-encode every JPEG/PNG/WEBP: drops EXIF/GPS, caps the side.
+
+        PDF and HEIC are stored as they came. The pixel count is checked from
+        the header BEFORE decoding, so a decompression bomb costs nothing.
+        """
+        if mimetype not in ("image/jpeg", "image/png", "image/webp"):
+            return content
         from PIL import Image, ImageOps
 
+        bad = UserError(_("No se ha podido leer la imagen del ticket."))
         try:
             with Image.open(io.BytesIO(content)) as image:
+                if image.width * image.height > MAX_IMAGE_PIXELS:
+                    raise UserError(_("La imagen es demasiado grande."))
                 image.load()
                 image = ImageOps.exif_transpose(image)
-                if max(image.size) <= MAX_IMAGE_SIDE:
-                    return content
                 image.thumbnail((MAX_IMAGE_SIDE, MAX_IMAGE_SIDE))
-                out = io.BytesIO()
                 fmt = {"image/jpeg": "JPEG", "image/png": "PNG", "image/webp": "WEBP"}
                 if fmt[mimetype] == "JPEG" and image.mode not in ("RGB", "L"):
                     image = image.convert("RGB")
+                out = io.BytesIO()
+                # No exif=/pnginfo= argument: nothing of the original metadata
+                # survives the save.
                 image.save(out, format=fmt[mimetype], quality=88)
                 return out.getvalue()
+        except UserError:
+            raise
+        except (Image.DecompressionBombError, Image.DecompressionBombWarning):
+            raise UserError(_("La imagen es demasiado grande.")) from None
         except Exception:  # noqa: BLE001 - any decoder failure means a bad file
-            raise UserError(_("No se ha podido leer la imagen del ticket.")) from None
+            raise bad from None

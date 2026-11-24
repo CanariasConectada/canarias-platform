@@ -2,7 +2,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 from odoo import _, api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 
 ANONYMIZED_NAME = "[anonymized]"
 
@@ -88,11 +88,14 @@ class RaffleEntry(models.Model):
     @api.depends("receipt_attachment_id")
     def _compute_receipt_url(self):
         for entry in self:
-            entry.receipt_url = (
-                f"/web/content/{entry.receipt_attachment_id.id}?download=false"
-                if entry.receipt_attachment_id
-                else False
-            )
+            attachment = entry.receipt_attachment_id
+            if not attachment:
+                entry.receipt_url = False
+                continue
+            # Only images are safe to show inline; PDF and HEIC download.
+            inline = attachment.mimetype in ("image/jpeg", "image/png", "image/webp")
+            flag = "false" if inline else "true"
+            entry.receipt_url = f"/web/content/{attachment.id}?download={flag}"
 
     @api.constrains("participant_name", "email", "phone", "anonymized")
     def _check_participant(self):
@@ -128,6 +131,12 @@ class RaffleEntry(models.Model):
 
     def write(self, vals):
         keys = {"campaign_id", "merchant_id", "purchase_date", "amount"}
+        if (keys | {"state"}) & set(vals) and self.filtered(
+            lambda e: e.campaign_id.state == "drawn"
+        ):
+            raise UserError(
+                _("The draw is done: reset it before editing the entries' review.")
+            )
         touched = bool(keys & set(vals))
         before = self._duplicate_groups() if touched else self.browse()
         result = super().write(vals)
@@ -186,11 +195,19 @@ class RaffleEntry(models.Model):
             "context": {"default_entry_ids": self.ids},
         }
 
+    def unlink(self):
+        if self.filtered(lambda e: e.campaign_id.state == "drawn"):
+            raise UserError(_("The draw is done: entries cannot be deleted."))
+        return super().unlink()
+
     def _anonymize(self):
-        """Drop personal data and the receipt file; keep the audit skeleton."""
+        """Drop personal data, receipt file and chatter; keep the skeleton."""
         self.mapped("receipt_attachment_id").sudo().unlink()
-        self.write(
+        # tracking_disable: the wipe itself must not write a new tracking line
+        # holding the old reject reason.
+        self.with_context(tracking_disable=True).write(
             {
+                "reject_reason": False,
                 "participant_name": ANONYMIZED_NAME,
                 "email": False,
                 "phone": False,
@@ -199,3 +216,7 @@ class RaffleEntry(models.Model):
                 "anonymized": True,
             }
         )
+        # Earlier tracking lines (state, reject reason) go with their messages.
+        self.env["mail.message"].sudo().search(
+            [("model", "=", "raffle.entry"), ("res_id", "in", self.ids)]
+        ).unlink()
