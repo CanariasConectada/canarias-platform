@@ -402,6 +402,23 @@ class RaffleCampaign(models.Model):
             and self.date_start <= today <= self.date_end
         )
 
+    def _public_phase(self):
+        """What the public should see: ``soon``, ``open`` or ``ended``.
+
+        A draft, or an open campaign whose first day has not come, is
+        ``soon``; anything closed, drawn or past its last day is ``ended``.
+        """
+        self.ensure_one()
+        if self.state == "draft":
+            return "soon"
+        if self.state == "open":
+            today = self._raffle_today()
+            if today < self.date_start:
+                return "soon"
+            if today <= self.date_end:
+                return "open"
+        return "ended"
+
     @api.model
     def _open_campaign(self, website):
         today = self._raffle_today()

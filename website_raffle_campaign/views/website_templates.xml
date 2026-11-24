@@ -32,6 +32,9 @@
                          t-att-alt="campaign.name" class="o_raffle_hero_img"/>
                 </div>
                 <div class="container py-4">
+                    <div t-if="preview_notice" class="alert alert-warning o_not_editable" role="status">
+                        Vista previa: la campaña está en borrador
+                    </div>
                     <h1 class="o_raffle_title" t-out="campaign.name"/>
                     <div t-if="campaign.intro_html" class="o_raffle_intro" t-out="campaign.intro_html"/>
                     <p t-if="campaign.draw_date" class="text-muted">
@@ -138,6 +141,45 @@
                     </t>
                     <p class="mt-4">
                         <a t-attf-href="/sorteo/#{campaign.slug}/bases">Bases legales del sorteo</a>
+                    </p>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="coming_soon" name="Raffle coming soon">
+        <t t-call="website.layout">
+            <div id="wrap" class="o_raffle_page o_raffle_status">
+                <div t-if="campaign.banner_image" class="o_raffle_hero">
+                    <img t-attf-src="/sorteo/#{campaign.slug}/banner?unique=#{int(campaign.write_date.timestamp())}"
+                         t-att-alt="campaign.name" class="o_raffle_hero_img"/>
+                </div>
+                <div class="container py-5 text-center">
+                    <h1 class="o_raffle_title" t-out="campaign.name"/>
+                    <p class="lead">
+                        ¡Muy pronto! El sorteo empieza el
+                        <strong t-out="start_label"/>.
+                    </p>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="ended" name="Raffle ended">
+        <t t-call="website.layout">
+            <div id="wrap" class="o_raffle_page o_raffle_status">
+                <div t-if="campaign.banner_image" class="o_raffle_hero">
+                    <img t-attf-src="/sorteo/#{campaign.slug}/banner?unique=#{int(campaign.write_date.timestamp())}"
+                         t-att-alt="campaign.name" class="o_raffle_hero_img"/>
+                </div>
+                <div class="container py-5 text-center">
+                    <h1 class="o_raffle_title" t-out="campaign.name"/>
+                    <p class="lead">
+                        La participación en <strong t-out="campaign.name"/> ha finalizado.
+                        Gracias por participar.
+                    </p>
+                    <p t-if="draw_label and campaign.state != 'drawn'" class="text-muted">
+                        El sorteo está previsto para el <strong t-out="draw_label"/>.
                     </p>
                 </div>
             </div>
