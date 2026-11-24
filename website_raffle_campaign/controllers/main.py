@@ -36,6 +36,16 @@ class RaffleController(http.Controller):
             raise NotFound()
         return campaign
 
+    @staticmethod
+    def _client_ip():
+        """Best-effort address for the audit trail ONLY, never for decisions.
+
+        Behind nginx and Traefik Odoo sees the proxy for nearly everyone, and
+        both headers are client-controllable unless the proxy overwrites them.
+        """
+        headers = request.httprequest.headers
+        return (headers.get("X-Real-IP") or request.httprequest.remote_addr or "")[:45]
+
     def _merchants(self, campaign):
         """Participating merchants as (id, label), by label."""
         merchants = campaign.participating_company_ids
@@ -140,6 +150,7 @@ class RaffleController(http.Controller):
         website=True,
         methods=["POST"],
         sitemap=False,
+        max_content_length=11 * 1024 * 1024,
     )
     def submit(self, slug, **post):
         campaign = self._get_campaign(slug)
@@ -162,9 +173,7 @@ class RaffleController(http.Controller):
             if storage and storage.filename:
                 content = storage.stream.read(MAX_UPLOAD_BYTES + 1)
                 upload = (storage.filename, content)
-            entry = campaign._submit_entry(
-                data, upload, request.httprequest.remote_addr
-            )
+            entry = campaign._submit_entry(data, upload, self._client_ip())
         except UserError as exc:
             return self._render_landing(campaign, values=kept, error=str(exc))
         refs = request.session.get(SESSION_KEY, [])
