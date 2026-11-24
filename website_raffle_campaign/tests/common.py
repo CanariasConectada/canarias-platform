@@ -20,6 +20,8 @@ def make_image(fmt="PNG", size=(40, 40), color=(200, 30, 30)):
 
 
 class RaffleCommon(TransactionCase):
+    patch_today = True
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -46,13 +48,14 @@ class RaffleCommon(TransactionCase):
                 "state": "open",
             }
         )
-        patcher = patch.object(
-            type(cls.env["raffle.campaign"]),
-            "_raffle_today",
-            lambda self: TODAY,
-        )
-        patcher.start()
-        cls.addClassCleanup(patcher.stop)
+        if cls.patch_today:
+            patcher = patch.object(
+                type(cls.env["raffle.campaign"]),
+                "_raffle_today",
+                lambda self: TODAY,
+            )
+            patcher.start()
+            cls.addClassCleanup(patcher.stop)
 
     def _data(self, **overrides):
         data = {

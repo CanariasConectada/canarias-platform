@@ -1,7 +1,10 @@
 # Copyright 2026 Canarias Conectada
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import hashlib
 import io
+from datetime import datetime, timezone
+from unittest.mock import patch
 
 from PIL import Image
 
@@ -95,13 +98,11 @@ class TestRaffleSubmission(RaffleCommon):
         third = self._submit(amount="99")
         self.assertFalse(third.possible_duplicate)
 
-    def test_rate_limit_per_ip(self):
-        for i in range(10):
-            self._submit(ip="10.9.9.9", email=f"user{i}@example.com")
-        with self.assertRaises(UserError):
-            self._submit(ip="10.9.9.9", email="user99@example.com")
-        # Another address is unaffected.
-        self.assertTrue(self._submit(ip="10.9.9.8", email="fine@example.com"))
+    def test_same_ip_never_blocks(self):
+        """Behind the proxy everyone shares one address: no per-IP decision."""
+        for i in range(12):
+            self._submit(ip="172.17.0.1", email=f"user{i}@example.com")
+        self.assertEqual(len(self.campaign.entry_ids), 12)
 
     def test_rate_limit_per_email(self):
         for i in range(20):
@@ -226,15 +227,14 @@ class TestRaffleAccessAndConfig(RaffleCommon):
             sorted(rewrites.mapped("url_from")),
             ["/another", "/test-raffle-tipo"],
         )
+        rewrite = self.env["website.rewrite"].with_context(active_test=False)
+        domain = [("name", "=like", f"raffle.campaign:{self.campaign.id}:%")]
         self.campaign.active = False
-        self.assertFalse(
-            self.env["website.rewrite"].search(
-                [("name", "=like", f"raffle.campaign:{self.campaign.id}:%")]
-            )
-            and self.env["website.rewrite"]
-            .search([("name", "=like", f"raffle.campaign:{self.campaign.id}:%")])
-            .filtered("active")
-        )
+        found = rewrite.search(domain)
+        self.assertEqual(len(found), 2)
+        self.assertFalse(any(found.mapped("active")))
+        self.campaign.active = True
+        self.assertTrue(all(rewrite.search(domain).mapped("active")))
         self.campaign.unlink()
         self.assertFalse(
             self.env["website.rewrite"]
@@ -300,3 +300,264 @@ class TestRaffleAccessAndConfig(RaffleCommon):
             set(self.campaign._auto_translate_fields()),
             {"name", "banner_button_label", "intro_html", "success_message"},
         )
+
+
+@tagged("post_install", "-at_install")
+class TestRaffleHardening(RaffleCommon):
+    def test_amount_formats(self):
+        parse = self.env["raffle.campaign"]._parse_amount
+        for raw, expected in (
+            ("1.500,50", 1500.5),
+            ("15,5", 15.5),
+            ("15.50", 15.5),
+            ("1.500", 1500.0),
+            ("1500", 1500.0),
+            ("20 €", 20.0),
+            ("0,99", 0.99),
+        ):
+            self.assertEqual(parse(raw), expected, raw)
+        for raw in ("", "abc", "1,2,3", "-5", "nan", "1e3"):
+            self.assertIsNone(parse(raw), raw)
+
+    def test_invalid_calendar_date(self):
+        with self.assertRaises(UserError):
+            self._submit(purchase_date="2026-02-30")
+
+    def test_exact_boundary_purchase_dates(self):
+        self.campaign.date_end = "2026-12-10"  # patched today
+        self.assertTrue(self._submit(purchase_date="2026-12-01"))
+        self.assertTrue(self._submit(purchase_date="2026-12-10"))
+        with self.assertRaises(UserError):
+            self._submit(purchase_date="2026-11-30")
+        with self.assertRaises(UserError):
+            self._submit(purchase_date="2026-12-11")
+
+    def test_upload_size_at_limit(self):
+        pad = 10 * 1024 * 1024 - len(b"%PDF-")
+        entry = self._submit(upload=("max.pdf", b"%PDF-" + b"0" * pad))
+        self.assertEqual(entry.receipt_attachment_id.mimetype, "application/pdf")
+        with self.assertRaises(UserError):
+            self._submit(upload=("big.pdf", b"%PDF-" + b"0" * (pad + 1)))
+
+    def test_pdf_receipt_url_downloads_image_does_not(self):
+        pdf = self._submit(upload=("a.pdf", b"%PDF-1.4 x"))
+        self.assertIn("download=true", pdf.receipt_url)
+        img = self._submit(email="img@example.com")
+        self.assertIn("download=false", img.receipt_url)
+
+    def test_images_are_reencoded_without_exif(self):
+        buffer = io.BytesIO()
+        exif = Image.Exif()
+        exif[0x010F] = "SecretCamera"  # Make
+        gps = exif.get_ifd(0x8825)
+        gps[2] = (28.0, 8.0, 0.0)
+        Image.new("RGB", (50, 50), (9, 9, 9)).save(buffer, format="JPEG", exif=exif)
+        original = buffer.getvalue()
+        self.assertIn(b"SecretCamera", original)
+        entry = self._submit(upload=("p.jpg", original))
+        stored = entry.receipt_attachment_id.raw
+        self.assertNotIn(b"SecretCamera", stored)
+        self.assertFalse(Image.open(io.BytesIO(stored)).getexif())
+
+    def test_decompression_bomb_rejected_before_decoding(self):
+        buffer = io.BytesIO()
+        Image.new("1", (9000, 9000)).save(buffer, format="PNG")  # 81 Mpx, tiny file
+        self.assertLess(len(buffer.getvalue()), 1024 * 1024)
+        with self.assertRaises(UserError):
+            self._submit(upload=("bomb.png", buffer.getvalue()))
+
+    def test_duplicate_checksum_race_hits_integrity_path(self):
+        upload = self._upload()
+        self._submit(upload=upload)
+        model = type(self.env["raffle.campaign"])
+        with patch.object(model, "_check_limits", lambda *a, **k: None):
+            with self.assertRaises(UserError) as ctx:
+                self._submit(upload=upload, email="race@example.com")
+        self.assertIn("ya está registrado", str(ctx.exception))
+
+    def test_state_guards(self):
+        with self.assertRaises(UserError):
+            self.campaign.action_open()  # already open
+        self._submit_valid()
+        self.campaign.action_close()
+        with self.assertRaises(UserError):
+            self.campaign.action_close()
+        self.campaign.action_draw()
+        for method in (
+            "action_open",
+            "action_close",
+            "action_reopen",
+            "action_set_draft",
+        ):
+            with self.subTest(method), self.assertRaises(UserError):
+                getattr(self.campaign, method)()
+
+    def _submit_valid(self, n=1):
+        entries = self.env["raffle.entry"]
+        for i in range(n):
+            entries |= self._submit(email=f"v{i}@example.com")
+        entries.action_validate()
+        return entries
+
+    def test_drawn_campaign_locks_entry_review(self):
+        entries = self._submit_valid(2)
+        self.campaign.action_close()
+        self.campaign.action_draw()
+        for vals in (
+            {"state": "rejected"},
+            {"amount": 99.0},
+            {"merchant_id": self.merchant_b.id},
+        ):
+            with self.subTest(vals), self.assertRaises(UserError):
+                entries[0].write(vals)
+        with self.assertRaises(UserError):
+            entries[0].unlink()
+        self.campaign.action_reset_draw()
+        entries[0].write({"state": "rejected"})
+
+    def test_draw_with_fewer_valid_than_slots(self):
+        entries = self._submit_valid(2)
+        self.campaign.action_close()
+        self.campaign.action_draw()
+        self.assertEqual(len(self.campaign.entry_ids.filtered("draw_rank")), 2)
+        self.assertEqual(len(self.campaign.alternate_entry_ids), 1)
+        self.assertEqual(set(entries.mapped("draw_rank")), {1, 2})
+
+    def test_draw_chatter_has_references_only_and_snapshot(self):
+        entries = self._submit_valid(3)
+        self.campaign.action_close()
+        self.campaign.action_draw()
+        body = str(self.campaign.message_ids[0].body)
+        self.assertIn("<li>", body)
+        self.assertIn(self.campaign.winner_entry_id.reference, body)
+        for entry in entries:
+            self.assertNotIn(entry.participant_name, body)
+            self.assertNotIn(entry.email, body)
+        refs = sorted(entries.mapped("reference"))
+        self.assertEqual(self.campaign.draw_candidates_snapshot.split("\n"), refs)
+        self.assertEqual(
+            self.campaign.draw_candidates_hash,
+            hashlib.sha256("\n".join(refs).encode()).hexdigest(),
+        )
+
+    def test_draw_clears_stale_ranks(self):
+        entries = self._submit_valid(3)
+        entries[2].draw_rank = 7  # stale value from an interrupted run
+        self.campaign.action_close()
+        self.campaign.action_draw()
+        self.assertEqual(sorted(entries.mapped("draw_rank")), [1, 2, 3])
+
+    def test_entry_has_no_public_follower_or_creation_log(self):
+        entry = self._submit()
+        self.assertFalse(entry.message_follower_ids)
+
+    def test_anonymize_wipes_chatter_and_reject_reason(self):
+        entries = self._submit_valid(2)
+        entries[0].write({"state": "rejected", "reject_reason": "Illegible ticket"})
+        entries[0].message_post(body="Reviewer note")
+        self.assertTrue(entries[0].message_ids)
+        self.campaign.action_close()
+        self.campaign.action_draw()
+        self.campaign.action_anonymize_all()
+        for entry in entries:
+            self.assertTrue(entry.anonymized)
+            self.assertFalse(
+                entry.reject_reason or entry.email or entry.receipt_attachment_id
+            )
+            self.assertFalse(entry.message_ids)
+            self.assertEqual(entry.participant_name, "[anonymized]")
+
+    def test_address_clashes_with_pages_and_foreign_rewrites(self):
+        page = self.env["website.page"].create(
+            {
+                "url": "/clash-page",
+                "website_id": self.website.id,
+                "type": "qweb",
+                "arch": "<t t-call='website.layout'><div>x</div></t>",
+            }
+        )
+        self.assertTrue(page)
+        with self.assertRaises(ValidationError):
+            self.campaign.short_path = "/clash-page"
+        self.env["website.rewrite"].create(
+            {
+                "name": "foreign",
+                "website_id": self.website.id,
+                "url_from": "/clash-redirect",
+                "url_to": "/elsewhere",
+                "redirect_type": "301",
+            }
+        )
+        with self.assertRaises(ValidationError):
+            self.campaign.alias_paths = "/clash-redirect"
+
+    def test_moving_website_rechecks_addresses(self):
+        other = self.env["website"].create({"name": "Other site"})
+        self.env["website.rewrite"].create(
+            {
+                "name": "foreign2",
+                "website_id": other.id,
+                "url_from": "/test-raffle-short",
+                "url_to": "/elsewhere",
+                "redirect_type": "301",
+            }
+        )
+        with self.assertRaises(ValidationError):
+            self.campaign.website_id = other
+
+    def test_uninstall_hook_cleans_up(self):
+        from odoo.addons.website_raffle_campaign import uninstall_hook
+
+        entry = self._submit()
+        att = entry.receipt_attachment_id
+        uninstall_hook(self.env)
+        self.assertFalse(att.exists())
+        self.assertFalse(
+            self.env["website.rewrite"]
+            .with_context(active_test=False)
+            .search([("name", "=like", "raffle.campaign:%")])
+        )
+
+
+@tagged("post_install", "-at_install")
+class TestRaffleTimezone(RaffleCommon):
+    """Real clock, server in UTC, campaign days decided in Atlantic/Canary.
+
+    In July the Canaries are UTC+1, so local midnight is 23:00 UTC.
+    """
+
+    patch_today = False
+
+    def _at(self, iso_utc):
+        fixed = datetime.fromisoformat(iso_utc).replace(tzinfo=timezone.utc)
+        mocked = patch(
+            "odoo.addons.website_raffle_campaign.models.raffle_campaign.datetime"
+        )
+        fake = mocked.start()
+        fake.now.side_effect = lambda tz=None: fixed.astimezone(tz)
+        self.addCleanup(mocked.stop)
+
+    def setUp(self):
+        super().setUp()
+        self.campaign.write({"date_start": "2026-07-01", "date_end": "2026-07-31"})
+
+    def test_last_second_of_last_day_is_open(self):
+        self._at("2026-07-31T22:59:59")  # 23:59:59 local
+        self.assertTrue(self.campaign._is_open())
+
+    def test_midnight_after_last_day_is_closed(self):
+        self._at("2026-07-31T23:00:00")  # 00:00 on 1 August local
+        self.assertFalse(self.campaign._is_open())
+
+    def test_first_instant_of_first_day_is_open(self):
+        self._at("2026-06-30T23:00:00")  # 00:00 on 1 July local
+        self.assertTrue(self.campaign._is_open())
+
+    def test_just_before_first_day_is_closed(self):
+        self._at("2026-06-30T22:59:59")
+        self.assertFalse(self.campaign._is_open())
+
+    def test_purchase_today_in_local_time_not_future(self):
+        # 23:30 UTC on 30 June is already 1 July in the Canaries.
+        self._at("2026-06-30T23:30:00")
+        self.assertTrue(self._submit(purchase_date="2026-07-01"))

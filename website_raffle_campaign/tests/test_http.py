@@ -161,3 +161,42 @@ class TestRaffleHttp(HttpCase):
         self.assertFalse(
             self.env["raffle.entry"].search([("campaign_id", "=", self.campaign.id)])
         )
+
+    def test_lang_prefix_on_short_path_and_alias(self):
+        lang = self.env["res.lang"]._activate_lang("fr_FR")
+        self.website.language_ids = [(4, lang.id)]
+        page = self._get("/fr/http-short")
+        self.assertEqual(page.status_code, 200)
+        self.assertIn("Registrar mi ticket", page.text)
+        alias = self._get("/fr/http-typo", allow_redirects=False)
+        self.assertEqual(alias.status_code, 301)
+        self.assertTrue(
+            alias.headers["Location"].endswith("/fr/http-short"),
+            alias.headers["Location"],
+        )
+
+    def test_oversized_body_refused_by_route(self):
+        page = self._get("/sorteo/http-raffle")
+        response = self.url_open(
+            "/sorteo/http-raffle/submit",
+            data={"csrf_token": self._token(page.text)},
+            files={
+                "receipt": (
+                    "big.pdf",
+                    b"%PDF-" + b"0" * (12 * 1024 * 1024),
+                    "application/pdf",
+                )
+            },
+            headers={"Host": HOST},
+        )
+        self.assertEqual(response.status_code, 413)
+        self.assertFalse(
+            self.env["raffle.entry"].search([("campaign_id", "=", self.campaign.id)])
+        )
+
+    def test_submit_ip_is_audit_only(self):
+        self._post()
+        entry = self.env["raffle.entry"].search(
+            [("campaign_id", "=", self.campaign.id)]
+        )
+        self.assertTrue(entry.submit_ip)
