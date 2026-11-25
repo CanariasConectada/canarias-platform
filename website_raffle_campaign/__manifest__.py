@@ -4,7 +4,7 @@
     "name": "Website Raffle Campaign",
     "summary": "Receipt-raffle campaigns on a website: banner, public entry "
     "form, legal terms and an audited draw",
-    "version": "19.0.1.1.0",
+    "version": "19.0.1.2.0",
     "category": "Website",
     "author": "Canarias Conectada",
     "website": "https://github.com/CanariasConectada/canarias-platform",
@@ -26,6 +26,7 @@
     "assets": {
         "web.assets_frontend": [
             "website_raffle_campaign/static/src/scss/raffle.scss",
+            "website_raffle_campaign/static/src/js/raffle_form.js",
         ],
     },
     "uninstall_hook": "uninstall_hook",

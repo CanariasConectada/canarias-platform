@@ -17,6 +17,8 @@ from odoo.tools import html2plaintext
 
 CANARY_TZ = pytz.timezone("Atlantic/Canary")
 
+DEFAULT_ACCENT = "#b3122e"
+ACCENT_RE = re.compile(r"^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})\Z")
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 PATH_RE = re.compile(r"^/[a-z0-9_-]+(?:/[a-z0-9_-]+)*$")
 # First segments no campaign may take over, whatever the owner types.
@@ -91,11 +93,24 @@ class RaffleCampaign(models.Model):
         required=True,
         default=lambda self: self.env.company.currency_id,
     )
+    ask_merchant = fields.Boolean(
+        string="Preguntar el comercio",
+        default=True,
+        help="Untick when merchants that are not on the platform also take part: "
+        "the form then has no merchant question.",
+    )
+    ask_amount = fields.Boolean(
+        string="Preguntar el importe",
+        default=True,
+        help="Untick to let shoppers upload any receipt: the minimum amount is "
+        "then checked by hand at the draw.",
+    )
     min_amount = fields.Monetary(
         currency_field="currency_id",
         required=True,
         default=15.0,
-        help="A purchase counts only when its amount is STRICTLY greater.",
+        help="A purchase counts only when its amount is STRICTLY greater. "
+        "Se comprueba a mano en el sorteo when the amount is not asked.",
     )
     participating_company_ids = fields.Many2many(
         "res.company",
@@ -116,6 +131,11 @@ class RaffleCampaign(models.Model):
     # ------------------------------------------------------------------
     banner_image = fields.Image(max_width=1920, max_height=1920)
     banner_button_label = fields.Char(translate=True, default="Participa")
+    accent_color = fields.Char(
+        default=DEFAULT_ACCENT,
+        help="Colour of the buttons, chips and focus rings of the public pages "
+        "(#RGB or #RRGGBB).",
+    )
     intro_html = fields.Html(translate=True, sanitize=True)
     # Legal text: never machine-translated (translate=False is the default).
     terms_html = fields.Html(sanitize=True)
@@ -309,6 +329,49 @@ class RaffleCampaign(models.Model):
                 _("'%s' is already taken by a redirect or a website page.", path)
             )
 
+    @api.constrains("accent_color")
+    def _check_accent_color(self):
+        for campaign in self:
+            if not ACCENT_RE.match(campaign.accent_color or ""):
+                raise ValidationError(
+                    _("The accent colour must look like #RGB or #RRGGBB.")
+                )
+
+    def _accent_rgb(self):
+        """The accent as an (r, g, b) tuple, falling back to the default."""
+        self.ensure_one()
+        value = self.accent_color or ""
+        if not ACCENT_RE.match(value):
+            value = DEFAULT_ACCENT
+        digits = value[1:]
+        if len(digits) == 3:
+            digits = "".join(c * 2 for c in digits)
+        return tuple(int(digits[i : i + 2], 16) for i in (0, 2, 4))
+
+    def _accent_style(self):
+        """Inline ``style`` value carrying the accent as CSS custom properties.
+
+        Built only from the validated hex digits, never from raw user text.
+        """
+        self.ensure_one()
+        red, green, blue = self._accent_rgb()
+
+        # WCAG relative luminance decides white or dark text on the accent.
+        def lin(channel):
+            c = channel / 255
+            return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+
+        luminance = 0.2126 * lin(red) + 0.7152 * lin(green) + 0.0722 * lin(blue)
+        on_accent = "#ffffff" if luminance < 0.4 else "#2b1a1f"
+        return (
+            f"--raffle-accent: #{red:02x}{green:02x}{blue:02x}; "
+            f"--raffle-on-accent: {on_accent}; "
+            f"--raffle-accent-soft: rgba({red}, {green}, {blue}, 0.10); "
+            f"--raffle-accent-ring: rgba({red}, {green}, {blue}, 0.35); "
+            f"--raffle-accent-deep: rgb({red * 7 // 10}, {green * 7 // 10}, "
+            f"{blue * 7 // 10})"
+        )
+
     @api.constrains("date_start", "date_end", "min_amount", "alternate_count")
     def _check_rules(self):
         for campaign in self:
@@ -440,7 +503,7 @@ class RaffleCampaign(models.Model):
         for campaign in self:
             if campaign.state != "draft":
                 raise UserError(_("Only a draft campaign can be opened."))
-            if not campaign.participating_company_ids:
+            if campaign.ask_merchant and not campaign.participating_company_ids:
                 raise UserError(_("Add at least one participating merchant first."))
             if not (
                 campaign.terms_html and html2plaintext(campaign.terms_html).strip()
@@ -678,7 +741,7 @@ class RaffleCampaign(models.Model):
             "participant_name": name,
             "email": email,
             "phone": phone,
-            "merchant_id": merchant.id,
+            "merchant_id": merchant.id or False,
             "purchase_date": purchase_date,
             "amount": amount,
             "receipt_checksum": checksum,
@@ -725,25 +788,29 @@ class RaffleCampaign(models.Model):
         return name, email, phone
 
     def _clean_purchase(self, data):
-        try:
-            merchant_id = int(data.get("merchant_id") or 0)
-        except ValueError:
-            merchant_id = 0
-        merchant = self.participating_company_ids.filtered(
-            lambda c: c.id == merchant_id
-        )
-        if not merchant:
-            raise UserError(_("Elige un comercio de la lista."))
-        amount = self._parse_amount(data.get("amount"))
-        if amount is None or amount > 100000:
-            raise UserError(_("El importe no es válido."))
-        if amount <= self.min_amount:
-            raise UserError(
-                _(
-                    "La compra debe superar los %s €.",
-                    f"{self.min_amount:g}".replace(".", ","),
-                )
+        merchant = self.env["res.company"]
+        if self.ask_merchant:
+            try:
+                merchant_id = int(data.get("merchant_id") or 0)
+            except ValueError:
+                merchant_id = 0
+            merchant = self.participating_company_ids.filtered(
+                lambda c: c.id == merchant_id
             )
+            if not merchant:
+                raise UserError(_("Elige un comercio de la lista."))
+        amount = 0.0
+        if self.ask_amount:
+            amount = self._parse_amount(data.get("amount"))
+            if amount is None or amount > 100000:
+                raise UserError(_("El importe no es válido."))
+            if amount <= self.min_amount:
+                raise UserError(
+                    _(
+                        "La compra debe superar los %s €.",
+                        f"{self.min_amount:g}".replace(".", ","),
+                    )
+                )
         try:
             purchase_date = date.fromisoformat((data.get("purchase_date") or "")[:10])
         except ValueError:

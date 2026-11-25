@@ -303,6 +303,99 @@ class TestRaffleAccessAndConfig(RaffleCommon):
 
 
 @tagged("post_install", "-at_install")
+class TestRaffleAccent(RaffleCommon):
+    def test_default_accent(self):
+        self.assertEqual(self.campaign.accent_color, "#b3122e")
+        self.assertIn("--raffle-accent: #b3122e", self.campaign._accent_style())
+
+    def test_valid_accents(self):
+        for value in ("#fff", "#F2C46D", "#123abc"):
+            with self.subTest(value):
+                self.campaign.accent_color = value
+        self.campaign.accent_color = "#abc"
+        self.assertIn("--raffle-accent: #aabbcc", self.campaign._accent_style())
+
+    def test_invalid_accents_are_refused(self):
+        for value in (
+            "red",
+            "#12",
+            "#12345",
+            "#1234567",
+            "b3122e",
+            "#ggg",
+            "",
+            "#fff; background:url(x)",
+            "#fff\n",
+            '#fff"><script>',
+        ):
+            with (
+                self.subTest(value),
+                self.assertRaises(ValidationError),
+                self.env.cr.savepoint(),
+            ):
+                self.campaign.accent_color = value
+
+    def test_text_colour_follows_contrast(self):
+        self.campaign.accent_color = "#ffffff"
+        self.assertIn("--raffle-on-accent: #2b1a1f", self.campaign._accent_style())
+        self.campaign.accent_color = "#000000"
+        self.assertIn("--raffle-on-accent: #ffffff", self.campaign._accent_style())
+
+
+class TestRaffleOptionalQuestions(RaffleCommon):
+    def test_defaults_keep_the_old_rules(self):
+        self.assertTrue(self.campaign.ask_merchant)
+        self.assertTrue(self.campaign.ask_amount)
+        with self.assertRaises(UserError):
+            self._submit(merchant_id="")
+        with self.assertRaises(UserError):
+            self._submit(amount="15")
+
+    def test_no_merchant_no_amount(self):
+        self.campaign.write({"ask_merchant": False, "ask_amount": False})
+        entry = self._submit(merchant_id="", amount="")
+        self.assertFalse(entry.merchant_id)
+        self.assertEqual(entry.amount, 0)
+        self.assertEqual(entry.amount_label, "—")
+        # Whatever is posted is ignored, not validated.
+        entry2 = self._submit(merchant_id="999999", amount="1", email="b@example.com")
+        self.assertFalse(entry2.merchant_id)
+        self.assertEqual(entry2.amount, 0)
+
+    def test_no_merchant_still_checks_amount(self):
+        self.campaign.ask_merchant = False
+        with self.assertRaises(UserError):
+            self._submit(merchant_id="", amount="10")
+        entry = self._submit(merchant_id="", amount="20")
+        self.assertFalse(entry.merchant_id)
+        self.assertEqual(entry.amount, 20)
+
+    def test_duplicates_without_merchant(self):
+        self.campaign.ask_merchant = False
+        first = self._submit(amount="20", email="a@example.com")
+        second = self._submit(amount="20", email="b@example.com")
+        other = self._submit(amount="21", email="c@example.com")
+        self.assertTrue(first.possible_duplicate and second.possible_duplicate)
+        self.assertFalse(other.possible_duplicate)
+
+    def test_no_duplicate_hint_without_both_questions(self):
+        self.campaign.write({"ask_merchant": False, "ask_amount": False})
+        first = self._submit(email="a@example.com")
+        second = self._submit(email="b@example.com")
+        self.assertFalse(first.possible_duplicate or second.possible_duplicate)
+
+    def test_open_without_merchants_when_not_asked(self):
+        draft = self.campaign.copy(
+            {"slug": "no-merchants", "state": "draft", "short_path": False}
+        )
+        draft.participating_company_ids = False
+        with self.assertRaises(UserError):
+            draft.action_open()
+        draft.ask_merchant = False
+        draft.action_open()
+        self.assertEqual(draft.state, "open")
+
+
 class TestRaffleHardening(RaffleCommon):
     def test_amount_formats(self):
         parse = self.env["raffle.campaign"]._parse_amount

@@ -131,6 +131,8 @@ class TestRaffleHttp(HttpCase):
         self.assertEqual(entry.email, "luis@example.com")
         thanks = self.url_open(response.headers["Location"], headers={"Host": HOST})
         self.assertIn(entry.reference, thanks.text)
+        self.assertIn("o_raffle_ref", thanks.text)
+        self.assertIn("Volver a la portada", thanks.text)
         # An anonymous visitor cannot fetch the receipt.
         self.authenticate(None, None)
         att = entry.receipt_attachment_id
@@ -156,6 +158,65 @@ class TestRaffleHttp(HttpCase):
         self.assertFalse(
             self.env["raffle.entry"].search([("campaign_id", "=", self.campaign.id)])
         )
+
+    def test_landing_has_every_field_and_the_csrf_token(self):
+        html = self._get("/sorteo/http-raffle").text
+        self.assertTrue(self._token(html))
+        for name in (
+            "participant_name",
+            "email",
+            "phone",
+            "merchant_id",
+            "amount",
+            "purchase_date",
+            "receipt",
+            "is_adult",
+            "terms_accepted",
+            "website_url",
+        ):
+            self.assertIn(f'name="{name}"', html)
+        self.assertIn("--raffle-accent: #b3122e", html)
+        self.assertIn("Tus datos", html)
+        self.assertIn("Tu compra", html)
+
+    def test_accent_reaches_pages_and_banner(self):
+        self.campaign.accent_color = "#0a8f5c"
+        self.assertIn("--raffle-accent: #0a8f5c", self._get("/sorteo/http-raffle").text)
+        self.assertIn("--raffle-accent: #0a8f5c", self._get("/").text)
+
+    def test_server_error_is_a_dismissible_alert(self):
+        html = self._post(amount="10").text
+        self.assertIn("alert-dismissible", html)
+        self.assertIn("La compra debe superar los 15", html)
+
+    def test_form_without_optional_questions(self):
+        self.campaign.write({"ask_merchant": False, "ask_amount": False})
+        html = self._get("/sorteo/http-raffle").text
+        self.assertNotIn('name="merchant_id"', html)
+        self.assertNotIn('name="amount"', html)
+        self.assertIn('name="purchase_date"', html)
+        # min_amount stays visible as a participation rule.
+        self.assertIn("de más de 15", html)
+        response = self._post(merchant_id="", amount="")
+        self.assertIn(response.status_code, (302, 303))
+        entry = self.env["raffle.entry"].search(
+            [("campaign_id", "=", self.campaign.id)]
+        )
+        self.assertEqual(len(entry), 1)
+        self.assertFalse(entry.merchant_id)
+
+    def test_pages_without_artwork_get_a_typographic_hero(self):
+        self.campaign.banner_image = False
+        for path in ("/sorteo/http-raffle", "/sorteo/http-raffle/gracias"):
+            html = self._get(path).text
+            self.assertIn("o_raffle_hero_title", html, path)
+            self.assertNotIn("o_raffle_art", html, path)
+        self.assertEqual(self._get("/sorteo/http-raffle/banner").status_code, 404)
+        home = self._get("/").text
+        self.assertIn("o_raffle_banner_slim", home)
+        self.assertIn("Http raffle", home)
+        self.campaign.state = "closed"
+        self.assertNotIn("o_raffle_banner", self._get("/").text)
 
     def test_validation_error_rerenders_with_values(self):
         response = self._post(amount="10", participant_name="Keep Me")

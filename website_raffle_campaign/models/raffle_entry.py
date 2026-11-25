@@ -29,9 +29,14 @@ class RaffleEntry(models.Model):
     # Named ``merchant_id`` and not ``company_id`` on purpose: a field called
     # ``company_id`` makes other modules of this platform treat the record as
     # company-owned and filter it by the user's companies.
-    merchant_id = fields.Many2one("res.company", required=True, ondelete="restrict")
+    # Empty when the campaign does not ask for the merchant.
+    merchant_id = fields.Many2one("res.company", ondelete="restrict")
     purchase_date = fields.Date(required=True)
-    amount = fields.Float(digits=(16, 2), required=True)
+    # 0 when the campaign does not ask for the amount.
+    amount = fields.Float(digits=(16, 2))
+    ask_merchant = fields.Boolean(related="campaign_id.ask_merchant")
+    ask_amount = fields.Boolean(related="campaign_id.ask_amount")
+    amount_label = fields.Char(compute="_compute_amount_label")
     receipt_attachment_id = fields.Many2one(
         "ir.attachment", copy=False, ondelete="set null", readonly=True
     )
@@ -72,6 +77,13 @@ class RaffleEntry(models.Model):
     )
 
     # ------------------------------------------------------------------
+    @api.depends("amount", "campaign_id.ask_amount")
+    def _compute_amount_label(self):
+        for entry in self:
+            entry.amount_label = (
+                f"{entry.amount:.2f}" if entry.campaign_id.ask_amount else "—"
+            )
+
     @api.depends("receipt_attachment_id")
     def _compute_receipt_image(self):
         for entry in self:
@@ -108,7 +120,10 @@ class RaffleEntry(models.Model):
     @api.constrains("merchant_id", "campaign_id")
     def _check_merchant(self):
         for entry in self:
-            if entry.merchant_id not in entry.campaign_id.participating_company_ids:
+            campaign = entry.campaign_id
+            if not campaign.ask_merchant:
+                continue
+            if entry.merchant_id not in campaign.participating_company_ids:
                 raise ValidationError(
                     _("The merchant does not take part in this campaign.")
                 )
@@ -148,15 +163,26 @@ class RaffleEntry(models.Model):
         """Every entry sharing a (campaign, merchant, date, amount) key with self."""
         found = self.browse()
         for entry in self:
-            found |= self.search(
-                [
-                    ("campaign_id", "=", entry.campaign_id.id),
-                    ("merchant_id", "=", entry.merchant_id.id),
-                    ("purchase_date", "=", entry.purchase_date),
-                    ("amount", "=", entry.amount),
-                ]
-            )
+            found |= self.search(entry._duplicate_domain())
         return found | self
+
+    def _duplicate_domain(self):
+        """Key of a possible duplicate: date, plus the merchant and the amount
+        when the campaign asks for them. With neither there is nothing to
+        compare, so the domain matches the entry alone."""
+        self.ensure_one()
+        campaign = self.campaign_id
+        if not (campaign.ask_merchant or campaign.ask_amount):
+            return [("id", "=", self.id)]
+        domain = [
+            ("campaign_id", "=", campaign.id),
+            ("purchase_date", "=", self.purchase_date),
+        ]
+        if campaign.ask_merchant:
+            domain.append(("merchant_id", "=", self.merchant_id.id))
+        if campaign.ask_amount:
+            domain.append(("amount", "=", self.amount))
+        return domain
 
     def _refresh_duplicate_flags(self):
         """Recompute the hint for the whole group each entry belongs to.
@@ -166,14 +192,7 @@ class RaffleEntry(models.Model):
         can express.
         """
         for entry in self:
-            group = self.search(
-                [
-                    ("campaign_id", "=", entry.campaign_id.id),
-                    ("merchant_id", "=", entry.merchant_id.id),
-                    ("purchase_date", "=", entry.purchase_date),
-                    ("amount", "=", entry.amount),
-                ]
-            )
+            group = self.search(entry._duplicate_domain())
             flag = len(group) > 1
             todo = group.filtered(lambda e, flag=flag: e.possible_duplicate != flag)
             if todo:
